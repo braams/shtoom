@@ -947,6 +947,8 @@ class Registration(Call):
                 log.err("Unknown registration state '%s' for a 401/407"%(state))
         elif message.code in ( 200, ):
             self.sip.app.statusMessage("Registration: OK")
+            if hasattr(self.sip.app, 'registrationOK'):
+                self.sip.app.registrationOK(self)
             # Woo. registration succeeded.
             self.register_attempts = 0
             if state == 'SENT_REGISTER':

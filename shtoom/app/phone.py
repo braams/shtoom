@@ -55,7 +55,7 @@ class Phone(BaseApplication):
     def register(self):
         register_uri = self.getPref('register_uri')
         if register_uri is not None:
-            self.sip.register()
+            return self.sip.register()
 
     def start(self):
         "Start the application."
