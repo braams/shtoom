@@ -5,7 +5,7 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# $Id: rtp.py,v 1.33 2004/03/03 13:21:42 anthony Exp $
+# $Id: rtp.py,v 1.34 2004/03/03 14:39:04 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -32,7 +32,6 @@ class RTPProtocol(DatagramProtocol):
     PT_gsm = rtpPTDict[('GSM', 8000, 1)]
 
     def __init__(self, app, cookie, *args, **kwargs):
-        print "rtp"
         self.app = app
         self.cookie = cookie
         #DatagramProtocol.__init__(self, *args, **kwargs)
@@ -140,7 +139,7 @@ class RTPProtocol(DatagramProtocol):
             elif ((rtp[1] % 2) != 0):
                 print "stun showed unusable rtp/rtcp ports", results
                 # XXX close connection, try again, tell user
-                if self._stunAttempts > 5:
+                if self._stunAttempts > 8:
                     print "Giving up. Made %d attempts to get a working port"%(
                         self._stunAttempts)
                 self._stunAttempts += 1
