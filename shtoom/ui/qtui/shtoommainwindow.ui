@@ -1,0 +1,775 @@
+<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<class>ShtoomMainWindow</class>
+<widget class="QMainWindow">
+    <property name="name">
+        <cstring>ShtoomMainWindow</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>493</width>
+            <height>499</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>20</y>
+                <width>40</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Call:</string>
+        </property>
+    </widget>
+    <widget class="QFrame">
+        <property name="name">
+            <cstring>frame3</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>380</x>
+                <y>120</y>
+                <width>99</width>
+                <height>138</height>
+            </rect>
+        </property>
+        <property name="paletteBackgroundColor">
+            <color>
+                <red>230</red>
+                <green>230</green>
+                <blue>230</blue>
+            </color>
+        </property>
+        <property name="frameShape">
+            <enum>StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+            <enum>Raised</enum>
+        </property>
+        <hbox>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLayoutWidget">
+                <property name="name">
+                    <cstring>layout1</cstring>
+                </property>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QPushButton" row="2" column="2">
+                        <property name="name">
+                            <cstring>dtmfButton9</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>9</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="3" column="1">
+                        <property name="name">
+                            <cstring>dtmfButton0</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>0</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="0" column="0">
+                        <property name="name">
+                            <cstring>dtmfButton1</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>1</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="3" column="0">
+                        <property name="name">
+                            <cstring>dtmfButtonStar</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>*</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="1" column="1">
+                        <property name="name">
+                            <cstring>dtmfButton5</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>5</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="2" column="0">
+                        <property name="name">
+                            <cstring>dtmfButton7</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>7</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="1" column="2">
+                        <property name="name">
+                            <cstring>dtmfButton6</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>6</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="2" column="1">
+                        <property name="name">
+                            <cstring>dtmfButton8</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>8</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="1" column="0">
+                        <property name="name">
+                            <cstring>dtmfButton4</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>4</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="0" column="2">
+                        <property name="name">
+                            <cstring>dtmfButton3</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>3</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="0" column="1">
+                        <property name="name">
+                            <cstring>dtmfButton2</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>2</string>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="3" column="2">
+                        <property name="name">
+                            <cstring>dtmfButtonHash</cstring>
+                        </property>
+                        <property name="font">
+                            <font>
+                                <pointsize>10</pointsize>
+                            </font>
+                        </property>
+                        <property name="text">
+                            <string>#</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+        </hbox>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>138</y>
+                <width>50</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Status</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>lookupAddressButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>370</x>
+                <y>20</y>
+                <width>31</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+        <property name="pixmap">
+            <pixmap>filefind.png</pixmap>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>callButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>60</y>
+                <width>80</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Call</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>hangupButton</cstring>
+        </property>
+        <property name="enabled">
+            <bool>false</bool>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>140</x>
+                <y>60</y>
+                <width>80</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Hang Up</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>statusLabel</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>60</x>
+                <y>140</y>
+                <width>180</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+    </widget>
+    <widget class="QTextEdit">
+        <property name="name">
+            <cstring>debuggingTextEdit</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>270</y>
+                <width>490</width>
+                <height>120</height>
+            </rect>
+        </property>
+        <property name="sizePolicy">
+            <sizepolicy>
+                <hsizetype>7</hsizetype>
+                <vsizetype>7</vsizetype>
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+            </sizepolicy>
+        </property>
+        <property name="font">
+            <font>
+                <family>Courier</family>
+                <pointsize>10</pointsize>
+            </font>
+        </property>
+        <property name="textFormat">
+            <enum>PlainText</enum>
+        </property>
+        <property name="wrapPolicy">
+            <enum>Anywhere</enum>
+        </property>
+        <property name="undoDepth">
+            <number>0</number>
+        </property>
+        <property name="readOnly">
+            <bool>true</bool>
+        </property>
+        <property name="undoRedoEnabled">
+            <bool>false</bool>
+        </property>
+        <property name="toolTip" stdset="0">
+            <string>Debugging Messages</string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <property name="name">
+            <cstring>addressComboBox</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>20</y>
+                <width>311</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="editable">
+            <bool>true</bool>
+        </property>
+        <property name="sizeLimit">
+            <number>20</number>
+        </property>
+        <property name="insertionPolicy">
+            <enum>AtTop</enum>
+        </property>
+        <property name="autoCompletion">
+            <bool>true</bool>
+        </property>
+        <property name="duplicatesEnabled">
+            <bool>false</bool>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>clearButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>400</y>
+                <width>71</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Clear</string>
+        </property>
+    </widget>
+    <widget class="QLayoutWidget">
+        <property name="name">
+            <cstring>layout6</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>11</x>
+                <y>191</y>
+                <width>246</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <hbox>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel2</cstring>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Sent Pkts</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit">
+                <property name="name">
+                    <cstring>sentPacketsLineEdit</cstring>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Courier</family>
+                    </font>
+                </property>
+            </widget>
+        </hbox>
+    </widget>
+    <widget class="QLayoutWidget">
+        <property name="name">
+            <cstring>layout6_2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>220</y>
+                <width>246</width>
+                <height>28</height>
+            </rect>
+        </property>
+        <hbox>
+            <property name="name">
+                <cstring>unnamed</cstring>
+            </property>
+            <widget class="QLabel">
+                <property name="name">
+                    <cstring>textLabel2_r</cstring>
+                </property>
+                <property name="font">
+                    <font>
+                        <pointsize>10</pointsize>
+                    </font>
+                </property>
+                <property name="text">
+                    <string>Rcvd Pkts</string>
+                </property>
+            </widget>
+            <widget class="QLineEdit">
+                <property name="name">
+                    <cstring>rcvdPacketsLineEdit</cstring>
+                </property>
+                <property name="font">
+                    <font>
+                        <family>Courier</family>
+                    </font>
+                </property>
+            </widget>
+        </hbox>
+    </widget>
+</widget>
+<menubar>
+    <property name="name">
+        <cstring>menubar</cstring>
+    </property>
+    <item text="&amp;File" name="fileMenu">
+        <action name="fileNewAction"/>
+        <action name="fileOpenAction"/>
+        <action name="fileSaveAction"/>
+        <action name="fileSaveAsAction"/>
+        <separator/>
+        <action name="filePrintAction"/>
+        <separator/>
+        <action name="fileExitAction"/>
+    </item>
+    <item text="&amp;Help" name="helpMenu">
+        <action name="helpContentsAction"/>
+        <action name="helpIndexAction"/>
+        <separator/>
+        <action name="helpAboutAction"/>
+    </item>
+</menubar>
+<toolbars>
+</toolbars>
+<actions>
+    <action>
+        <property name="name">
+            <cstring>fileNewAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>icon-network.png</iconset>
+        </property>
+        <property name="text">
+            <string>New</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;New</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+N</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileOpenAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>fileopen</iconset>
+        </property>
+        <property name="text">
+            <string>Open</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Open...</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+O</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileSaveAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>filesave</iconset>
+        </property>
+        <property name="text">
+            <string>Save</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Save</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+S</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileSaveAsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Save As</string>
+        </property>
+        <property name="menuText">
+            <string>Save &amp;As...</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>filePrintAction</cstring>
+        </property>
+        <property name="iconSet">
+            <iconset>print</iconset>
+        </property>
+        <property name="text">
+            <string>Print</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Print...</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+P</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>fileExitAction</cstring>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+        <property name="menuText">
+            <string>E&amp;xit</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpContentsAction</cstring>
+        </property>
+        <property name="text">
+            <string>Contents</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Contents...</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpIndexAction</cstring>
+        </property>
+        <property name="text">
+            <string>Index</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Index...</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>helpAboutAction</cstring>
+        </property>
+        <property name="text">
+            <string>About</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;About</string>
+        </property>
+        <property name="accel">
+            <string></string>
+        </property>
+    </action>
+</actions>
+<connections>
+    <connection>
+        <sender>fileNewAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>fileNew()</slot>
+    </connection>
+    <connection>
+        <sender>fileOpenAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>fileOpen()</slot>
+    </connection>
+    <connection>
+        <sender>fileSaveAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>fileSave()</slot>
+    </connection>
+    <connection>
+        <sender>fileSaveAsAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>fileSaveAs()</slot>
+    </connection>
+    <connection>
+        <sender>filePrintAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>filePrint()</slot>
+    </connection>
+    <connection>
+        <sender>fileExitAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>fileExit()</slot>
+    </connection>
+    <connection>
+        <sender>helpIndexAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>helpIndex()</slot>
+    </connection>
+    <connection>
+        <sender>helpContentsAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>helpContents()</slot>
+    </connection>
+    <connection>
+        <sender>helpAboutAction</sender>
+        <signal>activated()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>helpAbout()</slot>
+    </connection>
+    <connection>
+        <sender>lookupAddressButton</sender>
+        <signal>clicked()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>lookupAddressButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>callButton</sender>
+        <signal>clicked()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>callButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>hangupButton</sender>
+        <signal>clicked()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>hangupButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>clearButton</sender>
+        <signal>clicked()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>clearButton_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">shtoommainwindow.ui.h</include>
+</includes>
+<slots>
+    <slot>fileNew()</slot>
+    <slot>fileOpen()</slot>
+    <slot>fileSave()</slot>
+    <slot>fileSaveAs()</slot>
+    <slot>filePrint()</slot>
+    <slot>fileExit()</slot>
+    <slot>helpIndex()</slot>
+    <slot>helpContents()</slot>
+    <slot>helpAbout()</slot>
+    <slot>lookupAddressButton_clicked()</slot>
+    <slot>dtmfButtonHash_clicked()</slot>
+    <slot>dtmfButtonHash_pressed()</slot>
+    <slot>dtmfButtonHash_released()</slot>
+    <slot>dtmfButton0_released()</slot>
+    <slot>dtmfButton0_pressed()</slot>
+    <slot>dtmfButtonStar_pressed()</slot>
+    <slot>dtmfButtonStar_released()</slot>
+    <slot>dtmfButton9_pressed()</slot>
+    <slot>dtmfButton9_released()</slot>
+    <slot>dtmfButton8_pressed()</slot>
+    <slot>dtmfButton8_released()</slot>
+    <slot>dtmfButton7_pressed()</slot>
+    <slot>dtmfButton7_released()</slot>
+    <slot>dtmfButton6_pressed()</slot>
+    <slot>dtmfButton6_released()</slot>
+    <slot>dtmfButton5_pressed()</slot>
+    <slot>dtmfButton5_released()</slot>
+    <slot>dtmfButton4_pressed()</slot>
+    <slot>dtmfButton4_released()</slot>
+    <slot>dtmfButton3_pressed()</slot>
+    <slot>dtmfButton3_released()</slot>
+    <slot>dtmfButton2_pressed()</slot>
+    <slot>dtmfButton2_released()</slot>
+    <slot>callButton_clicked()</slot>
+    <slot>hangupButton_clicked()</slot>
+    <slot>clearButton_clicked()</slot>
+</slots>
+<pixmapinproject/>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

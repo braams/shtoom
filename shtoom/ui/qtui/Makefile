@@ -1,8 +1,8 @@
 
-all: shtoommain.py  preferencesdialog.py
+all: shtoommainwindow.py
 
-shtoommain.py: shtoommain.ui
-	pyuic shtoommain.ui -o shtoommain.py
+shtoommainwindow.py: shtoommainwindow.ui
+	pyuic shtoommainwindow.ui -o shtoommainwindow.py
 
 preferencesdialog.py: preferencesdialog.ui
 	pyuic preferencesdialog.ui -o preferencesdialog.py
