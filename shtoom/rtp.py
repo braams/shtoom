@@ -332,7 +332,6 @@ class RTPProtocol(DatagramProtocol):
         # Now send any pending DTMF keystrokes
         if self._pendingDTMF:
             payload = self._pendingDTMF[0].getPayload(self.ts)
-            print "dtmf", self._pendingDTMF
             if payload:
                 # XXX Hack. telephone-event isn't always 101!
                 hdr = struct.pack('!BBHII', 0x80, 101, self.seq, self.ts, self.ssrc)
