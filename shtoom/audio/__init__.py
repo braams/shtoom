@@ -1,7 +1,12 @@
-# Copyright (C) 2003 Anthony Baxter
+"""Find appropriate audio device and expose via getAudioDevice().
+
+getAudioDevice() accepts either 'r', 'w' or 'rw' as arguments,
+and result will implement shtoom.audio.interfaces.IAudioReader
+and/or IAudioWriter, as appropriate.
+"""
 
 def findAudioDevice():
-    for attempt in ( tryOssAudio, ):
+    for attempt in (tryOssAudio, tryFastAudio):
 	audio = attempt()
 	if audio is not None:
 	    return audio
@@ -12,11 +17,17 @@ def tryOssAudio():
     try:
 	import ossaudiodev
     except ImportError:
-	ossaudiodev = None
-    if ossaudiodev is not None:
-	from ossaudio import getAudioDevice 
-	return getAudioDevice
-    return None
+	return None
+    from ossaudio import getAudioDevice 
+    return getAudioDevice
+
+def tryFastAudio():
+    try:
+        import fastaudio
+    except ImportError:
+        return None
+    from fast import getAudioDevice
+    return getAudioDevice
 
 getAudioDevice = findAudioDevice()
 if getAudioDevice is None:

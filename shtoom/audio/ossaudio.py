@@ -8,5 +8,3 @@ def getAudioDevice(mode):
     dev.channels(1)
     dev.setfmt(ossaudiodev.AFMT_MU_LAW)
     return dev
-
-
