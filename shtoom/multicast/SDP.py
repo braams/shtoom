@@ -24,13 +24,11 @@ class Announcement:
                 self._a.setdefault(subkey, []).append(val)
             self._d.setdefault(line[0], []).append(line[2:])
 
-        print self._d.keys(), self._a.keys()
-
     def get(self,typechar,optional=0):
         return self._d.get(typechar)
 
     def getA(self, subkey):
-        return self._a.get(typechar)
+        return self._a.get(subkey)
 
 class SDP:
     def __init__(self,text=None,sdrcompat=0):
@@ -75,11 +73,21 @@ class SDP:
 	self._sessionC = self.parseC(ann.get("c",optional=1))
 	self._sessionB = self.parseB(ann.get("b",optional=1))
 	self._sessionM = self.parseM(ann.get("m",optional=1))
+        self._ann = ann
+
+    def get(self, typechar, option=None):
+        if option is None:
+            return self._ann.get(typechar)
+        elif typechar is 'a':
+            return self._ann.getA(option)
+        else:
+            raise ValueError, "only know about suboptions for 'a' so far"
 
     def parseM(self,value):
-        print "m=", value
         if value:
-            audio,port,type,first,last = value[0].split()
+            els = value[0].split()
+            self.media,port,self.transport = els[:3]
+            self.formats = [ int(x) for x in els[3:] ]
             self.port = int(port)
 
     def parseB(self,value):
@@ -97,6 +105,7 @@ class SDP:
                 raise BadAnnounce,"wrong # fields in o=`%s'"%value
             ( self._o_username, self._o_sessid, self._o_version,
                 self._o_nettype, self._o_addrtype, self._o_addr ) = tuple(l)
+            self.ipaddr = self._o_addr
 
     def assertSanity(self):
 	pass
@@ -105,25 +114,28 @@ class SimpleSDP:
     """ a much simpler SDP class. For building announcements for RTSP.
       assumes a single audio stream, given type """
     def __init__(self):
-        self.packetsize = self.bitrate = self.serverIP = self.length = None
+        self.serverIP = None
         self.localPort = None
         self.rtpmap = []
-    def setLength(self,l):
-	self.length = l
+        self.packetsize = 160
+        self.media = 'audio'
+        self.transport = 'RTP/AVP'
+    def setMedia(self, media):
+        self.media = media
+    def setTransport(self, transport):
+        self.transport = transport
     def setPacketSize(self,l):
 	self.packetsize = l
-    def setBitRate(self,l):
-	self.bitrate = l
     def setServerIP(self, l):
 	self.serverIP = l
     def setLocalPort(self, l):
 	self.localPort = l
-
     def addRtpMap(self, payload, encname, clockrate, encparams=None):
         # Should store Table 4 from RFC3551 for 'payload'
-        self.rtpmap.append("%d %s/%d%s%s"%(payload, encname, clockrate, 
+        self.rtpmap.append((payload,"%d %s/%d%s%s"%(
+                                          payload, encname, clockrate, 
                                           ((encparams and '/') or ""), 
-                                           encparams or ""))
+                                           encparams or "")))
     def show(self):
 	out = []
 	out.append("v=0")
@@ -131,11 +143,13 @@ class SimpleSDP:
 	out.append("s=<No title>")
 	out.append("i=<No author> <No copyright>")
 	out.append("t=0 0")
-	out.append("m=audio %s RTP/AVP 0 97 3"%(self.localPort))
+        payloads = ' '.join([ str(x[0]) for x in self.rtpmap ])
+	out.append("m=%s %s %s %s"%(self.media, self.localPort, 
+                                    self.transport,payloads))
         out.append("c=IN IP4 %s"%(self.serverIP))
 	out.append("a=control:streamid=0")
-        for rtp in self.rtpmap:
-            out.append("a=rtpmap:%s"%(rtp))
+        for payload,mapentry in self.rtpmap:
+            out.append("a=rtpmap:%s"%(mapentry))
 	out.append('a=AvgPacketSize:integer;%d'%self.packetsize)
 	out.append('a=MaxPacketSize:integer;%d'%self.packetsize)
 	out.append('')
