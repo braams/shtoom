@@ -17,9 +17,12 @@ def main(application):
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
 
-    from twisted.python import log
     from shtoom.ui.gnomeui.main import ShtoomWindow
+
     UI = ShtoomWindow()
     UI.connectApplication(application)
+
+    from shtoom import log
     log.startLogging(UI.getLogger(), setStdout=False)
+
     return UI

@@ -77,7 +77,7 @@ def gotResults(natresults):
 if __name__ == "__main__":
     from twisted.internet import reactor
     import sys
-    from twisted.python import log
+    from shtoom import log
     if len(sys.argv) > 1 and sys.argv[1] == "-v":
 	import shtoom.stun
 	shtoom.stun.STUNVERBOSE = True

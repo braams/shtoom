@@ -16,13 +16,12 @@ def shutdown():
 def main(application):
     import sys
     from twisted.internet import reactor
-    from twisted.python import log
     from twisted.internet import tksupport
 
     from shtoom.ui.tkui import ShtoomMainWindow
     UI = ShtoomMainWindow()
     tksupport.install(UI.getMain())
     UI.connectApplication(application)
-    print "UI done"
+    from shtoom import log
     log.startLogging(UI.getLogger(), setStdout=False)
     return UI

@@ -11,14 +11,14 @@ def main(application):
 
     import sys
     from twisted.internet import reactor
-    from twisted.python import log
 
     from shtoom.ui.qtui import ShtoomMainWindow
     UI = ShtoomMainWindow()
     UI.connectApplication(application)
     UI.show()
+
+    from shtoom import log
     log.startLogging(UI.getLogger(), setStdout=False)
-    #log.startLogging(sys.stdout)
 
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), reactor.stop)

@@ -138,7 +138,7 @@ class WxShtoomApplication(wxApp):
 
 
 def main(shtoomapp):
-    from twisted.python import log, threadable
+    from twisted.python import threadable
 
     # wxreactor sucks generally.
     # wxsupport sucks on windows.
@@ -150,11 +150,12 @@ def main(shtoomapp):
     appproxy = ShtoomProxy(wxproxy)
     wxapp.frame.connectApplication(appproxy)
 
+    from shtoom import log
+    import sys
     # TODO: This style of logging isn't thread safe. Need to plugin
     # the logging into the WxInjector. i.e. the logger targets the
     # WxInjector.evtlist
     #log.startLogging(wxapp.frame.getLogger(), setStdout=False)
-    import sys
     log.startLogging(sys.stdout)
 
     return wxproxy
