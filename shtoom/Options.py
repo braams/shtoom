@@ -268,6 +268,8 @@ class AllOptions(object):
 
     def handleOptParse(self, opts, args):
         for g in self:
+            if g.variableNames:
+                continue
             for o in g:
                 val = getattr(opts, o.getName())
                 if val is not NoDefaultOption and val is not None:
@@ -378,6 +380,17 @@ class AllOptions(object):
                             del self._cached_options[option]
                         o.setDynamic(dynamic)
 
+    def hasValue(self, option):
+        if not self._cached_options.has_key(option):
+            for g in self:
+                if g.variableNames:
+                    # Then cache the group object, not the items in it
+                    self._cached_options[g.getName()] = g
+                    continue
+                for o in g:
+                    self._cached_options[o.getName()] = o
+        return option in self._cached_options
+
     def getValue(self, option, dflt=NoDefaultOption):
         if not self._cached_options.has_key(option):
             for g in self:
@@ -387,7 +400,9 @@ class AllOptions(object):
                     continue
                 for o in g:
                     self._cached_options[o.getName()] = o
-        val = self._cached_options[option].getValue()
+        val = self._cached_options[option]
+        if hasattr(val, 'getValue'):
+            val = val.getValue()
         if val is NoDefaultOption:
             val = dflt
         return val

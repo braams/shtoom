@@ -52,10 +52,14 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         self.transport.write(">> ")
 
     def cmd_help(self, line):
-        methods = [ x[4:] for x in dir(self) if x[:4] == "cmd_" ]
-        self.transport.write("Commands: %s\n"%(' '.join(methods)))
+        "help -- show help"
+        methods = [ x for x in dir(self) if x[:4] == "cmd_" ]
+        self.transport.write("Commands:\n")
+        for m in methods:
+            self.transport.write("%s\n"%(getattr(self, m).__doc__))
 
     def cmd_call(self, line):
+        "call sip:whatever -- place a new outbound call"
         if self._cookie is not None:
             self.transport.write("error: only one call at a time for now\n")
             return
@@ -85,6 +89,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         self._cookie = None
 
     def cmd_hangup(self, line):
+        "hangup -- hangs up current call"
         if self._cookie is not None:
             self.app.dropCall(self._cookie)
             self._cookie = None
@@ -92,9 +97,11 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             self.transport.write("error: no active call\n")
 
     def cmd_quit(self, line):
+        "quit -- exit the program"
         self.shutdown()
 
     def cmd_accept(self, line):
+        "accept -- accept an incoming call"
         if not self._pending:
             self.transport.write("no pending calls")
             return
@@ -104,9 +111,20 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         resp.callback(self._cookie)
 
     def cmd_reject(self, line):
+        "reject -- reject an incoming call"
         if not self._pending:
             self.transport.write("no pending calls")
             return
         self._cookie, resp, setup = self._pending
         self._pending = None
         resp.errback('no')
+
+    def cmd_auth(self, line):
+        "auth realm user password -- add a user/password"
+        toks = line.split(' ')
+        if len(toks) != 4:
+            self.transport.write("usage: auth realm user password")
+            return
+        auth, realm, user, password = toks
+        self.app.creds.addCred(realm, user, password, save=True)
+

@@ -41,10 +41,14 @@ class Phone(BaseApplication):
         return self.ui.threadedUI
 
     def boot(self, options=None, args=None):
+        from shtoom.credcache import CredCache
         if options is None:
             options = buildOptions(self)
         self.initOptions(options, args)
-
+        self.creds = CredCache(self)
+        saved = self.getPref('credentials')
+        if saved:
+            self.creds.loadCreds(saved)
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
         l = self.getPref('logfile')
