@@ -78,10 +78,6 @@ class Phone(BaseApplication):
             from twisted.internet import reactor
             reactor.run()
 
-    def getAuth(self, method, realm):
-        self.ui.getString("Please enter user,passwd for %s at %s"%(method,
-                                                                   realm))
-
     def acceptCall(self, call):
         log.msg("dialog is %r"%(call.dialog))
         cookie = self.getCookie()
@@ -251,8 +247,8 @@ class Phone(BaseApplication):
         if user is not None and passwd is not None and retry is False:
             return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
-        elif hasattr(self.ui, 'getAuth'):
-            return self.ui.getAuth("Auth needed for %s %s, realm '%s'"%(method, uri, realm))
+        #elif hasattr(self.ui, 'getAuth'):
+        #    return self.ui.getAuth(method, realm)
         else:
             return defer.fail(CallFailed("No auth available"))
 
