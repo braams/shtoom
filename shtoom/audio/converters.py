@@ -178,7 +178,7 @@ class Codecker:
             return None
         codec = self.codecs.get(self.format)
         if not codec:
-            raise ValueError("can't encode format %r"%format)
+            raise ValueError("can't encode format %r"%self.format)
         encaudio = codec.encode(bytes)
         if not encaudio:
             return None
