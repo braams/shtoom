@@ -5,7 +5,7 @@ from distutils.core import setup
 try:
     import py2exe
 except:
-    pass
+    py2exe = None
 
 from shtoom import Version
 
@@ -24,6 +24,13 @@ except ImportError:
 from twisted.copyright import version as tcversion
 if tcversion < '1.1.1':
     raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
+
+if py2exe is not None:
+    addnl = { 'console':['shtoom.py'], 
+              'windows': [ { 'script':'shtoom.py',
+		             'icon_resources' : [( 1, 'shtoom.ico')] } ] }
+else:
+    addnl = {}
 
 setup(
     name = "shtoom",
@@ -50,6 +57,6 @@ setup(
        'Programming Language :: Python',
        'Topic :: Internet',
        'Topic :: Communications :: Internet Phone',
-    ]
-
+    ],
+    **addnl
 )
