@@ -6,7 +6,7 @@
 #
 # Set option 'use_setitimer' for better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: qtshtoom.py,v 1.1 2003/11/14 05:55:32 anthonybaxter Exp $
+# $Id: qtshtoom.py,v 1.2 2003/11/16 06:28:16 anthonybaxter Exp $
 #
 
 import time, signal, socket, struct
@@ -37,7 +37,8 @@ def main():
     #UI.setAudioSource(sys.argv[1])
     UI.connectSIP()
     UI.show()
-    log.startLogging(UI.getLogger())
+    #log.startLogging(UI.getLogger())
+    log.startLogging(sys.stdout)
     
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
