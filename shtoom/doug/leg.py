@@ -23,6 +23,12 @@ class Leg(object):
         self._dialog = dialog
         self._acceptDeferred = None
 
+    def getDialog(self):
+        return self._dialog
+
+    def getCookie(self):
+        return self._cookie
+
     def incomingCall(self, d):
         " This leg is an incoming call "
         self._acceptDeferred = d
@@ -61,7 +67,7 @@ class Leg(object):
             d.callback(self._cookie)
         else:
             log.msg("can't answer call %s, already answered/rejected"%(
-                                                            self.cookie), system='doug')
+                                                self.cookie), system='doug')
 
     def rejectCall(self, reason):
         " Reject the (incoming) call on this leg "
@@ -72,7 +78,7 @@ class Leg(object):
             d.errback(reason)
         else:
             log.msg("can't reject call %s, already answered/rejected"%(
-                                                            self.cookie), system='doug')
+                                                self.cookie), system='doug')
     
     def hangupCall(self):
         self._voiceapp.va_hangupCall(self._cookie)
