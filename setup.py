@@ -26,6 +26,11 @@ from twisted.copyright import version as tcversion
 if tcversion < '1.3':
     raise VersionCheckFailed("Twisted 1.3 or later is required")
 
+try:
+    import zope.interface
+except ImportError:
+    raise DependencyFailed("You need to install zope.interface - http://zope.org/Products/ZopeInterface")
+
 if py2exe is not None:
     addnl = { 'console':['scripts/shtoomphone.py'],
               'windows': [ { 'script':'script/shtoomphone.py',
