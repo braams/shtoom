@@ -100,6 +100,31 @@ class Dialog:
         self._caller = caller
         self._callee = callee
         self._cseq = random.randint(1000,5000)
+        self._direction = None
+
+    def setDirection(self, inbound=False, outbound=False):
+        if inbound:
+            self._direction = 'inbound'
+        elif outbound:
+            self._direction = 'outbound'
+        else:
+            raise ValueError, "must be either inbound or outbound"
+
+    def getLocalTag(self):
+        if self._direction == 'inbound':
+            return self.getCallee()
+        elif self._direction == 'outbound':
+            return self.getCaller()
+        else:
+            raise ValueError, "direction be either inbound or outbound"
+
+    def getRemoteTag(self):
+        if self._direction == 'inbound':
+            return self.getCaller()
+        elif self._direction == 'outbound':
+            return self.getCallee()
+        else:
+            raise ValueError, "direction be either inbound or outbound"
 
     def setCaller(self, address):
         if not isinstance(address, Address):
@@ -366,7 +391,7 @@ class Call(object):
         vias = message.headers['via']
         try:
             via0 = tpsip.parseViaHeader(vias[0])
-            viaAddress = (via0.host, via0.port)
+            viaAddress = (via0.host.strip(), via0.port)
             self.sip.transport.write(resp,viaAddress)
             self.sip.app.debugMessage("Response sent to %r\n%s"%(viaAddress,resp))
         except (socket.error, socket.gaierror):
@@ -381,6 +406,7 @@ class Call(object):
         uri = tpsip.parseURL(toAddr)
         self._remoteAOR = uri
         # XXX Display name? needs an option
+        self.dialog.setDirection(outbound=True)
         self.dialog.setCallee(Address(uri, ensureTag=False))
         self.dialog.setCaller(self.getLocalAOR())
         d = self.setupLocalSIP(uri=uri)
@@ -396,10 +422,11 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
+        self.dialog.setDirection(inbound=True)
         self.dialog.setCaller(Address(invite.headers['from'][0]))
         self.dialog.setCallee(Address(invite.headers['to'][0], ensureTag=True))
         self._remoteURI = Address(self.contact).getURI(parsed=True)
-        self._remoteAOR = self.dialog.getCallee().getURI()
+        self._remoteAOR = self.dialog.getCaller().getURI()
         d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
         if invite.headers.has_key('subject'):
             desc = invite.headers['subject'][0]
@@ -548,14 +575,14 @@ class Call(object):
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.dialog.getCSeq(incr=1))
-        bye.addHeader('to', str(self.dialog.getCallee()))
-        bye.addHeader('from', str(self.dialog.getCaller()))
+        bye.addHeader('from', str(self.dialog.getLocalTag()))
+        bye.addHeader('to', str(self.dialog.getRemoteTag()))
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         bye = bye.toString()
-        print "sending BYE to %s %s"%dest
+        print "sending BYE to %r\n%s"%(dest, bye)
         self.sip.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
@@ -1059,8 +1086,7 @@ class SipPhone(DatagramProtocol, object):
             _d = defer.Deferred()
             callid = message.headers['call-id'][0]
             call = self._newCallObject(_d, callid = callid)
-            _d.addCallbacks(lambda x: call.sendResponse(message, 481), log.err
-                                                                ).addErrback(log.err)
+            call.sendResponse(message, 481)
             self._delCallObject(callid)
             # XXX In this case, send a 481!
             return
