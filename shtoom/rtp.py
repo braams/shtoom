@@ -39,7 +39,7 @@ class NTE:
 
     def end(self):
         self.ending = True
-        self.counter = 3
+        self.counter = 1
 
     def getPayload(self, ts):
         if self.counter > 0:
