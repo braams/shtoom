@@ -119,7 +119,7 @@ def _parseStunResponse(dgram, address, expectedTID=None):
         mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
         if expectedTID is not None and expectedTID != tid:
             # a response from an earlier request
-            log.msg("%s got unexpected STUN response %s != %s from %s"% (ts(), `expectedTID`, `tid`, repr(address),), system='stun')
+            log.msg("got unexpected STUN response %s != %s from %s"% (`expectedTID`, `tid`, repr(address),), system='stun')
             return
         resdict = {}
         if mt == 0x0101:
