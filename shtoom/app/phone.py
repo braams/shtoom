@@ -174,8 +174,11 @@ class Phone(BaseApplication):
         return self.sip.placeCall(sipURL)
 
     def dropCall(self, cookie):
-        call = self._calls[cookie]
-        call.dropCall()
+        call = self._calls.get(cookie)
+        if call:
+            call.dropCall()
+        else:
+            self.ui.callDisconnected(None, "no call")
 
     def startDTMF(self, cookie, digit):
         rtp = self._rtp[cookie]
