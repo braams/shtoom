@@ -36,6 +36,8 @@ class Recorder:
             data = self._dev.read()
         except IOError:
             return
+        if not data:
+            print "no audio, skipping"
         if self._outfp:
             self._outfp.write(data)
         if self._play:
