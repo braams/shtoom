@@ -1,4 +1,3 @@
-
 # Feed it hostname, port, and an audio file (in 8bit ulaw - sox -t ul)
 # Or skip the audio file and it'll read from the microphone
 # See also rtprecv.py for something that listens to a port and dumps it to
@@ -6,10 +5,10 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.5 2003/11/15 06:59:15 itamar Exp $
+# $Id: rtp.py,v 1.6 2003/11/15 07:22:32 itamar Exp $
 #
 
-import time, signal, socket, struct
+import time, signal, struct, random
 from time import time, sleep
 
 from select import select as Select
@@ -24,8 +23,13 @@ from twisted.internet.protocol import DatagramProtocol
 
 from shtoom.audio import getAudioDevice
 
-class RTPProtocol(DatagramProtocol):
 
+class RTPProtocol(DatagramProtocol):
+    """Implementation of the RTP protocol.
+
+    Also manages a RTCP instance.
+    """
+    
     if itimer:
         use_setitimer = 1
     else:
@@ -35,25 +39,29 @@ class RTPProtocol(DatagramProtocol):
     outfp = None
 
     def createRTPSocket(self):
+        """Start listening on UDP ports for RTP and RTCP.
+
+        Return (rtpPortNo, rtcpPortNo).
+        """
         from twisted.internet.error import CannotListenError
         import rtcp
-        sock1 = getsock()
-        port = sock1.getsockname()[1]
-        sock1.close()
         self.RTCP = rtcp.RTCPProtocol()
-        if port % 2 == 0:
-            rtpPort = port
-            rtcpPort = port + 1
-        else:
-            rtpPort = port + 1
-            rtcpPort = port + 2
+
+        # RTP port must be even, RTCP must be odd
+        rtpPort = 30000 + random.randint(0, 20000)
+        if (rtpPort % 2) == 1:
+            rtpPort += 1
         while True:
             try:
                 self.rtpListener = reactor.listenUDP(rtpPort, self)
             except CannotListenError:
-                rtpPort = rtpPort + 2
-                rtcpPort = rtpPort + 1
+                rtpPort += 2
                 continue
+            else:
+                break
+        
+        rtcpPort = rtpPort + 1
+        while True:
             try:
                 self.rtcpListener = reactor.listenUDP(rtcpPort, self.RTCP)
             except CannotListenError:
@@ -61,11 +69,8 @@ class RTPProtocol(DatagramProtocol):
                 rtpPort = rtpPort + 2
                 rtcpPort = rtpPort + 1
                 continue
-            break
-            self.rtpPort = rtpPort
-            self.rtcpPort = rtcpPort
-            # New approach - let the main timer loop deal with this
-            self.rtpListener.stopReading()
+            else:
+                break
         return (rtpPort, rtcpPort)
 
     def whenDone(self, cbDone):
@@ -206,10 +211,3 @@ class RTPProtocol(DatagramProtocol):
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
-
-def getsock():
-    rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    rsock.bind(('',0))
-    return rsock
-
