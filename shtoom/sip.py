@@ -5,12 +5,13 @@
 from interfaces import ISipPhone
 
 from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
+from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.protocols import sip as tpsip
 from rtp import RTPProtocol
 
 from twisted.python import log
-import random
+import random, sys, socket
 
 from shtoom import prefs
 
@@ -22,13 +23,19 @@ def genCallId():
 class Call(object):
     """State machine for a phone call."""
     
-    def __init__(self, to):
+    def __init__(self, to, deferred):
+        self.compDef = deferred
         self.cseq = random.randint(1000,5000)
         self.rtp = None
         self.url = tpsip.parseURL(to)
-        self.setLocalIP((self.url.host, self.url.port or 5060))
-        self.setCallID()
-        self.state = 'NONE'
+        ip = self.setLocalIP((self.url.host, self.url.port or 5060))
+        if ip:
+            self.setCallID()
+            self.state = 'NONE'
+
+    def abortCall(self):
+        # Bail out.
+        self.state = 'ABORTED'
 
     def setCallID(self):
         self._callID = '%s@%s'%(genCallId(), self.getLocalSIPAddress()[0])
@@ -38,6 +45,11 @@ class Call(object):
 
     def getState(self):
         return self.state 
+
+    def getTag(self):
+        if not hasattr(self, '_tag'):
+            self._tag = ('%08x'%(random.randint(0, 2**32)))[:8]
+        return self._tag
 
     def setLocalIP(self, (host,port)):
         """ Try and determine the local IP address to use. We do a connect_ex
@@ -52,9 +64,16 @@ class Call(object):
             # it is a hack! and won't work for NAT. oh well.
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
-            self._localIP = protocol.transport.getHost()[1]
-            port.stopListening()
-        log.msg("using local IP address %s"%(self._localIP))
+            if protocol.transport:
+                self._localIP = protocol.transport.getHost()[1]
+                port.stopListening()
+                log.msg("using local IP address %s"%(self._localIP))
+                return self._localIP
+            else:
+                self.compDef.errback(ValueError("couldn't connect to %s"%(
+                                            host)))
+                self.abortCall()
+                return None
 
     def getCSeq(self, incr=0):
         if incr:
@@ -87,12 +106,12 @@ class Call(object):
         invite.addHeader('to', str(self.url))
         invite.addHeader('content-type', 'application/sdp')
         invite.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                                    prefs.myname, prefs.myemail, prefs.mytag))
+                            prefs.username, prefs.email_address, self.getTag()))
         invite.addHeader('call-id', self.getCallID())
-        invite.addHeader('subject', 'sip%s'%(prefs.myemail))
+        invite.addHeader('subject', 'sip%s'%(prefs.email_address))
         invite.addHeader('user-agent', 'Shtoom/0.0')
         invite.addHeader('contact', '"%s" <sip:%s;transport=udp>'%(
-                                    prefs.myname, self.getLocalSIPAddress()[0]))
+                                prefs.username, self.getLocalSIPAddress()[0]))
         s = SimpleSDP()
         s.setPacketSize(160)
         s.setServerIP(self.getLocalSIPAddress()[0])
@@ -129,7 +148,8 @@ class Call(object):
         ack.addHeader('via', 'SIP/2.0/UDP %s;rport'%self.getLocalSIPAddress()[0])
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
         ack.addHeader('to', to)
-        ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(prefs.myname, prefs.myemail, prefs.mytag))
+        ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
+                            prefs.username, prefs.email_address, self.getTag()))
         ack.addHeader('call-id', self.getCallID())
         ack.addHeader('user-agent', 'Shtoom/0.1')
         ack.addHeader('content-length', 0)
@@ -137,7 +157,12 @@ class Call(object):
         self._sentAck = ack.toString(), (url.host, (url.port or 5060))
         if startRTP:
             self.rtp.startSendingAndReceiving((sdp.ipaddr,sdp.port))
-        return self._sentAck
+        if hasattr(self, 'compDef'):
+            deferred = self.compDef
+            del self.compDef
+        else:
+            deferred = None
+        return self._sentAck, deferred
 
     def genBye(self):
         url = tpsip.parseURL(self.to)
@@ -145,14 +170,14 @@ class Call(object):
         bye.addHeader('via', 'SIP/2.0/UDP %s;rport'%self.getLocalSIPAddress()[0])
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
         bye.addHeader('to', self.to)
-        bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(prefs.myname, prefs.myemail, prefs.mytag))
+        bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
+                            prefs.username, prefs.email_address, self.getTag()))
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/0.1')
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         self._sentBye = bye.toString(), (url.host, (url.port or 5060))
         return self._sentBye
-
 
 
 class SipPhone(DatagramProtocol, object):
@@ -165,10 +190,11 @@ class SipPhone(DatagramProtocol, object):
         self._calls = {}
         super(SipPhone, self, *args, **kwargs)
 
-    def _newCallObject(self, to):
-        call = Call(to)
-        self._calls[call.getCallID()] = call
-        return call
+    def _newCallObject(self, to, deferred):
+        call = Call(to, deferred)
+        if call.getState() != 'ABORTED':
+            self._calls[call.getCallID()] = call
+            return call
 
     def _getCallObject(self, callid):
         if type(callid) is list:
@@ -190,19 +216,28 @@ class SipPhone(DatagramProtocol, object):
         url should be a string, an address of the person we are calling,
         e.g. 'sip:foo@example.com'.
 
-        Returns callid, a string
+        Returns callid, a string, and a Deferred
         """
         self.ui.debugMessage("placeCall starting")
-        call = self._newCallObject(url)
+        _d = defer.Deferred()
+        call = self._newCallObject(url, _d)
+        if call is None:
+            return '', _d
         call.setupRTP()
         invite = call.genInvite(url)
-        self.transport.write(invite, call.getRemoteSIPAddress())
-        # Set up a callLater in case we don't get a response, for a retransmit
+        try:
+            self.transport.write(invite, call.getRemoteSIPAddress())
+        except (socket.error, socket.gaierror):
+            e,v,t = sys.exc_info()
+            _d.errback(e(v))
         call.setState('SENT_INVITE')
-        return call.getCallID()
+        # Set up a callLater in case we don't get a response, for a retransmit
+        # Set up a timeout for the call completion
+        return call.getCallID(), _d
 
     def dropCall(self, callid):
         """Drop call identified by 'callid'."""
+        # XXX return a deferred.
         call = self._getCallObject(callid)
         if not call:
             self.ui.debugMessage("no such call %s"%callid)
@@ -215,7 +250,6 @@ class SipPhone(DatagramProtocol, object):
             self.transport.write(bye, dest)
             self.ui.debugMessage("sent a BYE message")
             call.setState('SENT_BYE')
-
 
     def startDTMF(self, digit):
         """Start sending DTMF digit 'digit'
@@ -251,12 +285,16 @@ class SipPhone(DatagramProtocol, object):
             state = call.getState() 
             if state == 'SENT_INVITE':
                 self.ui.debugMessage(message.body)
-                ack, dest = call.genAck(message, startRTP=1)
+                (ack, dest), deferred = call.genAck(message, startRTP=1)
+                if deferred is not None:
+                    deferred.callback(call)
+                else:
+                    print "Already triggered call_connected Deferred!"
                 self.transport.write(ack, dest)
                 call.setState('SENT_ACK')
             elif state == 'SENT_ACK':
                 self.ui.debugMessage('Got duplicate OK to our ACK')
-                ack, dest = call.genAck(message)
+                (ack, dest), deferred = call.genAck(message)
                 self.transport.write(ack, dest)
             elif state == 'SENT_BYE':
                 call.teardownRTP()

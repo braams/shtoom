@@ -19,6 +19,9 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
     def statusMessage(self, message):
         self.statusLabel.setText(message)
 
+    def errorMessage(self, message, exception=None):
+        log.msg("ERROR: %s"%message)
+
     def hangupButton_clicked(self):
         self.sip.dropCall(self.connected)
         self.callButton.setEnabled(True)
@@ -31,8 +34,16 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
             log.msg("Invalid SIP url %s"%(sipURL))
             return
         self.callButton.setEnabled(False)
+        self.connected, defer = self.sip.placeCall(sipURL)
+        defer.addCallbacks(self.call_connected, self.call_failed)
+
+    def call_connected(self, call):
         self.hangupButton.setEnabled(True)
-        self.connected = self.sip.placeCall(sipURL)
+
+    def call_failed(self, e):
+        self.errorMessage("call failed", e)
+        self.hangupButton.setEnabled(False)
+        self.callButton.setEnabled(True)
 
     def setAudioSource(self, fn):
         self.audiosource = fn

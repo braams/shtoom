@@ -38,14 +38,25 @@ class ShtoomMainWindow(ShtoomBaseUI):
     def statusMessage(self, msg):
         print "status", msg
 
+    def errorMessage(self, message, exc=None):
+        log.msg("error %s"%(message))
+
     def callButton_clicked(self, evt=None):
         sipURL = self._urlentry.get()
         if not sipURL.startswith('sip:'):
             log.msg("Invalid SIP url %s"%(sipURL))
             return
         self._callButton.config(state=DISABLED)
+        self.connected, deferred = self.sip.placeCall(sipURL)
+        deferred.addCallbacks(self.call_connected, self.call_failed)
+
+    def call_connected(self, call):
         self._hangupButton.config(state=NORMAL)
-        self.connected = self.sip.placeCall(sipURL)
+
+    def call_failed(self, e):
+        self.errorMessage("call failed", e)
+        self._hangupButton.config(state=DISABLED)
+        self._callButton.config(state=NORMAL)
 
     def hangupButton_clicked(self):
         self.sip.dropCall(self.connected)
