@@ -1,6 +1,6 @@
 Before 0.1:
     Fix Windows audio
-    STUN and possibly UPnP support in order to bust out of NAT.
+    Hook up Stun client
     Finish Tkinter GUI
     Re-hookup the debugging log to the GUI
     Integrate existing RTCP code
@@ -17,6 +17,9 @@ Before 0.2:
 Later:
     Statistics display
     Preferences storage
+
+    UPnP support in order to bust out of NAT - specs? I (Anthony) don't
+    have anything that does uPnP to test against.
 
     New codec support: 
         - http://www.freenet.org.nz/python/pySpeex/
