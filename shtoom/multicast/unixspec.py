@@ -3,7 +3,7 @@
 # Copyright (c) 2004 Anthony Baxter.
 #
 
-from socket import *
+import socket
 
 def leaveGroup(sock,addr):
     """Join a multicast group.
@@ -14,18 +14,17 @@ def leaveGroup(sock,addr):
 """
     mreq = _addr2mreq(addr)
     # And join the group .
-    sock.setsockopt(IPPROTO_IP, IP_DROP_MEMBERSHIP, mreq)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP, mreq)
 
 def _addr2mreq(addr):
-    import netnum,struct
-    from socket import *
+    import netnum, struct
 
     if type(addr) is type(""):
-        group = gethostbyname(addr)
+        group = socket.gethostbyname(addr)
         grpaddr = netnum.dq2num(group)
     else:
         grpaddr = addr
-    mreq = struct.pack('ll', grpaddr, INADDR_ANY)
+    mreq = struct.pack('ll', grpaddr, socket.INADDR_ANY)
     return mreq
 
 def joinGroup(sock,addr):
@@ -36,4 +35,4 @@ def joinGroup(sock,addr):
        a 32 bit number (the string can be a DNS name, or a dotted quad.
 """
     mreq = _addr2mreq(addr)
-    sock.setsockopt(IPPROTO_IP, IP_ADD_MEMBERSHIP, mreq)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
