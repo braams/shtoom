@@ -719,6 +719,12 @@ class SipPhone(DatagramProtocol, object):
         self._calls = {}
         super(SipPhone, self, *args, **kwargs)
 
+    def getCalls(self):
+        return [c for c in self._calls.values() if not isinstance(c, Registration)]
+
+    def getRegistrations(self):
+        return [c for c in self._calls.values() if isinstance(c, Registration)]
+
     def register(self):
         if self.app.getPref('register_uri') is not None:
             d = defer.Deferred()
