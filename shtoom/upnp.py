@@ -32,7 +32,7 @@ from shtoom.defcache import DeferredCache
 
 from shtoom.interfaces import NATMapper as INATMapper
 from shtoom.nat import BaseMapper
-from zope.interface import implements
+#from zope.interface import implements
 
 class UPnPError(Exception): pass
 class NoUPnPFound(UPnPError): pass
