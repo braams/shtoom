@@ -9,54 +9,24 @@
 #import "AudioMonitorDocument.h"
 #import "MTAudioDeviceBrowser.h"
 #import "MTConversionBuffer.h"
-#import <math.h>
+#import <sys/socket.h>
+#import <arpa/inet.h>
+#import <netinet/in.h>
 #import <fcntl.h>
+
+#define SHTOOM_FREQUENCY 8000
+#define SHTOOM_NETBUFFER_LENGTH 4096
+#define SHTOOM_PORT 22000
+#ifndef SR_ERROR_ALLOWANCE
+#define SR_ERROR_ALLOWANCE 1.01 // 1%
+#endif
 
 static double _db_to_scalar ( Float32 decibels )
 {
 	return pow ( 10.0, decibels / 20.0 );
 }
 
-#define SHTOOM_BUFFER_SIZE 16384
-
 @implementation AudioMonitorDocument
-
- - init
-{
-    self = [super init];
-    sockdesc = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sockdesc == -1) {
-        NSLog(@"bad socket!?");
-    }
-    sa_self.sin_family = sa_other.sin_family = AF_INET;
-    sa_self.sin_addr.s_addr = sa_other.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    sa_self.sin_port = htons(SHTOOM_SERVER_LISTEN);
-    sa_other.sin_port = htons(SHTOOM_SERVER_SEND);
-    const int optOn = 1;
-    if (setsockopt(sockdesc, SOL_SOCKET, SO_REUSEPORT, &optOn, sizeof(optOn)) == -1) {
-        NSLog(@"couldn't reuse port");
-    }
-    if (setsockopt(sockdesc, SOL_SOCKET, SO_REUSEADDR, &optOn, sizeof(optOn)) == -1) {
-        NSLog(@"couldn't reuse addr");
-    }
-    if (fcntl(sockdesc, F_SETFL, O_NONBLOCK) == -1) {
-        NSLog(@"couldn't set nonblocking");
-    }
-    if (bind(sockdesc, (struct sockaddr*)&sa_self, sizeof(sa_self)) == -1) {
-        NSLog(@"couldn't bind listening socket?!");
-    }
-
-    
-    inBuffer.mNumberBuffers = 1;
-    inBuffer.mBuffers[0].mNumberChannels = 1;
-    inBuffer.mBuffers[0].mDataByteSize = SHTOOM_BUFFER_SIZE;
-    inBuffer.mBuffers[0].mData = malloc(SHTOOM_BUFFER_SIZE);
-    outBuffer.mNumberBuffers = 1;
-    outBuffer.mBuffers[0].mNumberChannels = 1;
-    outBuffer.mBuffers[0].mDataByteSize = SHTOOM_BUFFER_SIZE;
-    outBuffer.mBuffers[0].mData = malloc(SHTOOM_BUFFER_SIZE);
-    return self;
-}
 
 - (NSString *)displayName
 {
@@ -92,13 +62,21 @@ static double _db_to_scalar ( Float32 decibels )
 // ------------------- ioTarget methods ---------------
 - (OSStatus) recordIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
-    [outconverter writeFromAudioBufferList:inInputData timestamp:inInputTime];
+    unsigned framesQueued = [outConverter writeFromAudioBufferList:inInputData timestamp:inInputTime];
+    printf("queued = %d\n", framesQueued);
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    [self performSelectorOnMainThread:@selector(sendDataFromConverter:) withObject:nil waitUntilDone:NO];
+    [pool release];
     return noErr;
 }
 
 - (OSStatus) playbackIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
-	[inconverter readToAudioBufferList:outOutputData timestamp:inOutputTime];
+    unsigned framesRead = [inConverter readToAudioBufferList:outOutputData timestamp:inOutputTime];
+    printf("read = %d\n", framesRead);
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    [self performSelectorOnMainThread:@selector(flushDataForConverter:) withObject:nil waitUntilDone:NO];
+    [pool release];
 	return noErr;
 }
 // ----------------------------------
@@ -131,61 +109,54 @@ static double _db_to_scalar ( Float32 decibels )
 	[self playthroughButton:playthroughButton];
 }
 
-#ifndef SR_ERROR_ALLOWANCE
-#define SR_ERROR_ALLOWANCE 1.01 // 1%
-#endif
-
 - (void) allocNewConverter
 {
-	[inconverter release];
-	//inconverter = [[MTConversionBuffer alloc] initWithSourceDevice:inputDevice destinationDevice:outputDevice];
-	inconverter = [[MTConversionBuffer alloc]
-        initWithSourceSampleRate:8000
-                        channels:1 
-//                    bufferFrames:ceil( 50 * SR_ERROR_ALLOWANCE )
-                    bufferFrames:ceil ( [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE )
-           destinationSampleRate:[outputDevice nominalSampleRate] 
-                        channels:[outputDevice channelsForDirection:kMTCoreAudioDevicePlaybackDirection] 
-                    bufferFrames:ceil ( [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE )];
-	[inconverter setGain:adjustLeft forOutputChannel:0];
-	[inconverter setGain:adjustRight forOutputChannel:1];
-	[outconverter release];
-	outconverter = [[MTConversionBuffer alloc]
-        initWithSourceSampleRate:[inputDevice nominalSampleRate]
-                        channels:[inputDevice channelsForDirection:kMTCoreAudioDeviceRecordDirection]
-                    bufferFrames:ceil ( [inputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE )
-           destinationSampleRate:8000
-                        channels:1
-                    //bufferFrames:ceil ( 50 * SR_ERROR_ALLOWANCE )];
-                    bufferFrames:ceil ( [inputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE )];
-	[outconverter setGain:adjustLeft forOutputChannel:0];
-	[outconverter setGain:adjustRight forOutputChannel:1];
-}
+    // XXX - hack - the 0.5 accomodates for Float32 being twice as big as Int16, and the buffers being smaller?
+    Float64 inScale = (SHTOOM_FREQUENCY / [outputDevice nominalSampleRate]) * 0.5;
+    unsigned inBufferSize = ceil ( inScale * [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE );
+    if (inBuffer) MTAudioBufferListDispose(inBuffer);
+    inBuffer = MTAudioBufferListNew(1, inBufferSize, NO);
+    printf("inBufferSize = %d\n", inBufferSize);
+    
+    AudioStreamBasicDescription shtoomDescription;
+    shtoomDescription.mSampleRate = SHTOOM_FREQUENCY;
+    shtoomDescription.mFormatID = kAudioFormatLinearPCM;
+    shtoomDescription.mFormatFlags = kLinearPCMFormatFlagIsPacked | kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsBigEndian;
+    shtoomDescription.mBytesPerFrame = sizeof(SInt16);
+    shtoomDescription.mFramesPerPacket = 1;
+    shtoomDescription.mBytesPerPacket = sizeof(SInt16);
+    shtoomDescription.mChannelsPerFrame = 1;
+    shtoomDescription.mBitsPerChannel = 16;
+    shtoomDescription.mReserved = 0;
+        
+	[inConverter release];
+	inConverter = [[MTConversionBuffer alloc]
+        initWithSourceDescription:shtoomDescription 
+                     bufferFrames:inBufferSize 
+           destinationDescription:[MTConversionBuffer descriptionForDevice:outputDevice forDirection:kMTCoreAudioDevicePlaybackDirection]
+                     bufferFrames:ceil ( [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE )];
 
-- (void) pumpNetBuffers:(NSTimer *)aTimer
-{
-    [outconverter readToAudioBufferList:&outBuffer timestamp:NULL];
-    int size = outBuffer.mBuffers[0].mDataByteSize;
-    void *data = outBuffer.mBuffers[0].mData;
-    void *end = data + size;
-    int sentbytes = 1;
-    while (sentbytes > 0 && data != end) {
-        sentbytes = sendto(sockdesc, data, MIN(320, end - data), 0, (struct sockaddr*)&sa_other, sizeof(sa_other));
-        if (sentbytes > 0) {
-            data += sentbytes;
-        }
-    }
-    size = inBuffer.mBuffers[0].mDataByteSize;
-    data = inBuffer.mBuffers[0].mData;
-    int addrlen = sizeof(sa_self);
-    int cnt = 0;
-    int recvbytes = 1;
-    while (recvbytes > 0) {
-        recvbytes = recvfrom(sockdesc, data, size, 0, (struct sockaddr*)&sa_self, &addrlen);
-        NSLog(@"recvbytes: %d\n", recvbytes);
-        cnt += 1;
-    }
-    NSLog(@"-------------- cnt = %d", cnt);
+	[inConverter setGain:adjustLeft forOutputChannel:0];
+	[inConverter setGain:adjustRight forOutputChannel:1];
+
+    // XXX - hack - the 0.5 accomodates for Float32 being twice as big as Int16
+    Float64 outScale = (SHTOOM_FREQUENCY / [inputDevice nominalSampleRate]) * 0.5;
+    unsigned outBufferSize = ceil ( outScale * [inputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE );
+    if (outBuffer) MTAudioBufferListDispose(outBuffer);
+    outBuffer = MTAudioBufferListNew(1, outBufferSize, NO);
+    printf("outBufferSize = %d\n", outBufferSize);
+    
+    [outConverter release];
+	outConverter = [[MTConversionBuffer alloc]
+        initWithSourceDescription:[MTConversionBuffer descriptionForDevice:inputDevice forDirection:kMTCoreAudioDeviceRecordDirection]
+                     bufferFrames:outBufferSize 
+           destinationDescription:shtoomDescription
+                     bufferFrames:ceil ( [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE )];
+    
+	
+	[outConverter setGain:adjustLeft forOutputChannel:0];
+	[outConverter setGain:adjustRight forOutputChannel:1];
+        
 }
 
 - (void) playthroughButton:(id)sender
@@ -203,18 +174,163 @@ static double _db_to_scalar ( Float32 decibels )
 			[sender setState:FALSE];
 			[self playthroughButton:sender];
 		} else {
-            NSLog(@"netTimer created");
-            netTimer = [[NSTimer scheduledTimerWithTimeInterval:(1.0/8000.0)*50 target:self selector:@selector(pumpNetBuffers:) userInfo:nil repeats:YES] retain];
+            [self startNetworkQueues];
         }
 	}
 	else
 	{
 		[inputDevice  deviceStop];
 		[outputDevice deviceStop];
-        [netTimer invalidate];
-        [netTimer release];
-        netTimer = nil;
+        [self stopNetworkQueues];
 	}
+}
+
+- (void) sendDataFromConverter:(MTConversionBuffer *)converter
+{
+    @try {
+        if (!converter) converter = outConverter;
+        [self _sendDataFromConverter:converter];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"sendDataFromConverter: caught %@: %@", [exception name], [exception reason]);
+    }
+}
+
+- (void) _sendDataFromConverter:(MTConversionBuffer *)converter
+{
+    AudioBuffer *buffer = outBuffer->mBuffers;
+    while (1) {
+        unsigned frames = [converter readToAudioBufferList:outBuffer timestamp:NULL];
+        if (frames == 0) {
+            //printf("no frames!\n");
+            break;
+        }
+        NSMutableData *dataContainer = [NSMutableData dataWithBytes:buffer->mData length:(frames * sizeof(Float32))];
+        [sendQueue addObject:dataContainer];
+    }
+    [self streamReadyToWrite:outputStream];
+}
+
+- (void) flushDataForConverter:(MTConversionBuffer *)converter
+{
+    @try {
+        if (!converter) converter = inConverter;
+        [self _flushDataForConverter:converter];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"flushDataForConverter: caught %@: %@", [exception name], [exception reason]);
+    }
+}
+
+- (void) _flushDataForConverter:(MTConversionBuffer *)converter
+{
+    // empty queue
+    if (receiveQueue == nil || [receiveQueue length] < sizeof(Float32)) return;
+    AudioBufferList myList;
+    myList.mNumberBuffers = 1;
+    AudioBuffer *buffer = myList.mBuffers;
+    buffer->mData = (void *)[receiveQueue bytes];
+    unsigned bytesLeft = [receiveQueue length];
+    unsigned bytesRemoved = 0;
+    while (bytesLeft > 0) {
+        // make sure it's an even Float32 big
+        buffer->mDataByteSize = bytesLeft - (bytesLeft % sizeof(Float32));
+        unsigned bytesRead = [converter writeFromAudioBufferList:&myList timestamp:NULL] * sizeof(Float32);
+        printf("bytesRead = %d bytesLeft = %d\n", bytesRead, bytesLeft);
+        if (bytesRead == 0) {
+            printf("no bytes read\n");
+            break;
+        }
+        buffer->mData += bytesRead;
+        bytesRemoved += bytesRead;
+        bytesLeft -= bytesRead;
+    }
+    if (bytesRemoved) {
+        [receiveQueue replaceBytesInRange:NSMakeRange(0, bytesRemoved) withBytes:NULL length:0];
+    }
+}
+
+- (void) streamReadyToRead:(NSInputStream *)s
+{
+    if (receiveQueue == nil) return;
+
+    NSMutableData *inDataContainer = [NSMutableData dataWithCapacity:SHTOOM_NETBUFFER_LENGTH];
+    [inDataContainer setLength:SHTOOM_NETBUFFER_LENGTH];
+    SInt16 *inData = (SInt16 *)[inDataContainer mutableBytes];
+    unsigned len = [s read:(uint8_t *)inData maxLength:[inDataContainer length]];
+    if (len == 0) return;
+    
+    [receiveQueue appendData:inDataContainer];
+    [self flushDataForConverter:inConverter];
+}
+
+- (void) streamReadyToWrite:(NSOutputStream *)s
+{
+    if (sendQueue == nil) return;
+    
+    while ([sendQueue count] > 0) {
+        NSMutableData *data = [sendQueue objectAtIndex:0];
+        int dataLength = [data length];
+        int bytesWritten = [s write:(const uint8_t *)[data bytes] maxLength:dataLength];
+        if (bytesWritten <= 0) {
+            break;
+        } else if (bytesWritten < dataLength) {
+            [data replaceBytesInRange:NSMakeRange(0, bytesWritten) withBytes:NULL length:0];
+            break;
+        } else {            
+            [sendQueue removeObjectAtIndex:0];
+        }
+    }
+}
+
+- (void) startNetworkQueues
+{
+    [self stopNetworkQueues];
+    [NSStream getStreamsToHost:[NSHost hostWithAddress:@"127.0.0.1"] port:SHTOOM_PORT inputStream:&inputStream outputStream:&outputStream];
+    [inputStream retain];
+    [inputStream setDelegate:self];
+    [inputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:(NSString *)kCFRunLoopCommonModes];
+    [inputStream open];
+    [outputStream retain];
+    [outputStream setDelegate:self];
+    [outputStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:(NSString *)kCFRunLoopCommonModes];
+    [outputStream open];
+}
+
+- (void) stream:(NSStream *)stream handleEvent:(NSStreamEvent)streamEvent
+{
+    if (streamEvent & NSStreamEventOpenCompleted) {
+        if ([stream isEqualTo:outputStream]) sendQueue = [[NSMutableArray alloc] init];
+        if ([stream isEqualTo:inputStream])  receiveQueue = [[NSMutableData alloc] initWithCapacity:SHTOOM_NETBUFFER_LENGTH];
+    }
+    if (streamEvent & NSStreamEventHasBytesAvailable) {
+        [self streamReadyToRead:inputStream];
+    }
+    if (streamEvent & NSStreamEventHasSpaceAvailable) {
+        [self streamReadyToWrite:outputStream];
+    }
+    if (streamEvent & NSStreamEventErrorOccurred) {
+        NSLog(@"stream error: %@", [stream streamError]);
+        [self stopNetworkQueues];
+    }
+    if (streamEvent & NSStreamEventEndEncountered) {
+        NSLog(@"stream end encountered");
+        [self stopNetworkQueues];
+    }
+}
+
+- (void) stopNetworkQueues
+{
+    [inputStream close];
+    [inputStream release];
+    inputStream = nil;
+    [outputStream close];
+    [outputStream release];
+    outputStream = nil;
+    [sendQueue release];
+    sendQueue = nil;
+    [receiveQueue release];
+    receiveQueue = nil;
 }
 
 - (void) setAdjustVolume:(id)sender
@@ -238,7 +354,7 @@ static double _db_to_scalar ( Float32 decibels )
 	
 	[whichLabel setFloatValue:[sender floatValue]];
 	*whichAdjust = _db_to_scalar ( [sender floatValue] );
-	[inconverter setGain:*whichAdjust forOutputChannel:whichChannel];
+	[inConverter setGain:*whichAdjust forOutputChannel:whichChannel];
 }
 
 - (void) audioDeviceDidOverload:(MTCoreAudioDevice *)theDevice
@@ -277,15 +393,15 @@ static double _db_to_scalar ( Float32 decibels )
 
 - (void) dealloc
 {
-    close(sockdesc);
-    free(outBuffer.mBuffers[0].mData);
-    free(inBuffer.mBuffers[0].mData);
-    [netTimer invalidate];
-    [netTimer release];
+    if (inAudioConverter) AudioConverterDispose(inAudioConverter);
+    if (outAudioConverter) AudioConverterDispose(outAudioConverter);
+    if (inBuffer) MTAudioBufferListDispose(inBuffer);
+    if (outBuffer) MTAudioBufferListDispose(outBuffer);    
+    [self stopNetworkQueues];
 	[inputDevice release];
 	[outputDevice release];
-	[inconverter release];
-    [outconverter release];
+	[inConverter release];
+    [outConverter release];
 	
 	[super dealloc];
 }

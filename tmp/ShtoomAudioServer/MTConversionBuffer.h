@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <MTCoreAudio/MTCoreAudio.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import <CoreAudio/CoreAudioTypes.h>
 
 @interface MTConversionBuffer : NSObject {
 	AudioConverterRef converter;
@@ -16,14 +17,18 @@
 	AudioBufferList * outputBufferList;
 	MTAudioBuffer * audioBuffer;
 	Float32 * gainArray;
+    AudioStreamBasicDescription inDescription;
+    AudioStreamBasicDescription outDescription;    
 }
 
++ (AudioStreamBasicDescription)descriptionForDevice:(MTCoreAudioDevice *)device forDirection:(MTCoreAudioDirection)direction;
+- initWithSourceDescription:(AudioStreamBasicDescription)srcDescription bufferFrames:(UInt32)srcFrames destinationDescription:(AudioStreamBasicDescription)dstDescription bufferFrames:(UInt32)dstFrames;
 - initWithSourceDevice:(MTCoreAudioDevice *)inputDevice destinationDevice:(MTCoreAudioDevice *)outputDevice;
 - initWithSourceSampleRate:(Float64)srcRate channels:(UInt32)srcChans bufferFrames:(UInt32)srcFrames destinationSampleRate:(Float64)dstRate channels:(UInt32)dstChans bufferFrames:(UInt32)dstFrames;
 - (void) setGain:(Float32)theGain forOutputChannel:(UInt32)theChannel;
 - (Float32) gainForOutputChannel:(UInt32)theChannel;
-- (void) writeFromAudioBufferList:(const AudioBufferList *)src timestamp:(const AudioTimeStamp *)timestamp;
-- (void) readToAudioBufferList:(AudioBufferList *)dst timestamp:(const AudioTimeStamp *)timestamp;
+- (unsigned) writeFromAudioBufferList:(const AudioBufferList *)src timestamp:(const AudioTimeStamp *)timestamp;
+- (unsigned) readToAudioBufferList:(AudioBufferList *)dst timestamp:(const AudioTimeStamp *)timestamp;
 // - (void) setInterpolation:(Boolean)flag forDirection:(MTCoreAudioDirection)theDirection;
 // - (Boolean) shouldInterpolateForDirection:(MTCoreAudioDirection)theDirection;
 

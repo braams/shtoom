@@ -7,6 +7,12 @@
 	objects = {
 		080E96DDFE201D6D7F000001 = {
 			children = (
+				C4FDD204073E2BA300B2363E,
+				C4FDD205073E2BA300B2363E,
+				C4FDD206073E2BA300B2363E,
+				C4FDD207073E2BA300B2363E,
+				C4FDD208073E2BA300B2363E,
+				C4FDD209073E2BA300B2363E,
 			);
 			isa = PBXGroup;
 			name = Classes;
@@ -121,7 +127,6 @@
 		29B97314FDCFA39411CA2CEA = {
 			children = (
 				C4984231073B278C00AC5FC1,
-				C4984204073B249A00AC5FC1,
 				080E96DDFE201D6D7F000001,
 				29B97315FDCFA39411CA2CEA,
 				29B97317FDCFA39411CA2CEA,
@@ -279,6 +284,7 @@
 			buildRules = (
 			);
 			buildSettings = {
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ShtoomAudioServer_Prefix.pch;
@@ -302,10 +308,10 @@
 			files = (
 				8D11072A0486CEB800E47090,
 				8D11072B0486CEB800E47090,
-				C498420B073B24A600AC5FC1,
-				C498420D073B24A600AC5FC1,
-				C498420F073B24A600AC5FC1,
 				C4984213073B24B600AC5FC1,
+				C4FDD20A073E2BA300B2363E,
+				C4FDD20C073E2BA300B2363E,
+				C4FDD20E073E2BA300B2363E,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -325,10 +331,10 @@
 		8D11072C0486CEB800E47090 = {
 			buildActionMask = 2147483647;
 			files = (
-				C498420C073B24A600AC5FC1,
-				C498420E073B24A600AC5FC1,
-				C4984210073B24A600AC5FC1,
 				C4B775EE073B56E5001FE78F,
+				C4FDD20B073E2BA300B2363E,
+				C4FDD20D073E2BA300B2363E,
+				C4FDD20F073E2BA300B2363E,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -463,110 +469,6 @@
 			settings = {
 			};
 		};
-		C4984204073B249A00AC5FC1 = {
-			children = (
-				C4984205073B24A600AC5FC1,
-				C4984206073B24A600AC5FC1,
-				C4984207073B24A600AC5FC1,
-				C4984208073B24A600AC5FC1,
-				C4984209073B24A600AC5FC1,
-				C498420A073B24A600AC5FC1,
-			);
-			isa = PBXGroup;
-			name = AudioMonitor;
-			refType = 4;
-			sourceTree = "<group>";
-		};
-		C4984205073B24A600AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			name = AudioMonitorDocument.h;
-			path = /Volumes/Meth/src/ShtoomAudioServer/AudioMonitorDocument.h;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
-		C4984206073B24A600AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			name = AudioMonitorDocument.m;
-			path = /Volumes/Meth/src/ShtoomAudioServer/AudioMonitorDocument.m;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
-		C4984207073B24A600AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			name = MTAudioDeviceBrowser.h;
-			path = /Volumes/Meth/src/ShtoomAudioServer/MTAudioDeviceBrowser.h;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
-		C4984208073B24A600AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			name = MTAudioDeviceBrowser.m;
-			path = /Volumes/Meth/src/ShtoomAudioServer/MTAudioDeviceBrowser.m;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
-		C4984209073B24A600AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			name = MTConversionBuffer.h;
-			path = /Volumes/Meth/src/ShtoomAudioServer/MTConversionBuffer.h;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
-		C498420A073B24A600AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			name = MTConversionBuffer.m;
-			path = /Volumes/Meth/src/ShtoomAudioServer/MTConversionBuffer.m;
-			refType = 0;
-			sourceTree = "<absolute>";
-		};
-		C498420B073B24A600AC5FC1 = {
-			fileRef = C4984205073B24A600AC5FC1;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C498420C073B24A600AC5FC1 = {
-			fileRef = C4984206073B24A600AC5FC1;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C498420D073B24A600AC5FC1 = {
-			fileRef = C4984207073B24A600AC5FC1;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C498420E073B24A600AC5FC1 = {
-			fileRef = C4984208073B24A600AC5FC1;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C498420F073B24A600AC5FC1 = {
-			fileRef = C4984209073B24A600AC5FC1;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		C4984210073B24A600AC5FC1 = {
-			fileRef = C498420A073B24A600AC5FC1;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		C4984211073B24B600AC5FC1 = {
 			children = (
 				C4984212073B24B600AC5FC1,
@@ -619,6 +521,90 @@
 		};
 		C4B775EE073B56E5001FE78F = {
 			fileRef = 29B97316FDCFA39411CA2CEA;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4FDD204073E2BA300B2363E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = AudioMonitorDocument.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4FDD205073E2BA300B2363E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = AudioMonitorDocument.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4FDD206073E2BA300B2363E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTAudioDeviceBrowser.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4FDD207073E2BA300B2363E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTAudioDeviceBrowser.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4FDD208073E2BA300B2363E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTConversionBuffer.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4FDD209073E2BA300B2363E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTConversionBuffer.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		C4FDD20A073E2BA300B2363E = {
+			fileRef = C4FDD204073E2BA300B2363E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4FDD20B073E2BA300B2363E = {
+			fileRef = C4FDD205073E2BA300B2363E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4FDD20C073E2BA300B2363E = {
+			fileRef = C4FDD206073E2BA300B2363E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4FDD20D073E2BA300B2363E = {
+			fileRef = C4FDD207073E2BA300B2363E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4FDD20E073E2BA300B2363E = {
+			fileRef = C4FDD208073E2BA300B2363E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C4FDD20F073E2BA300B2363E = {
+			fileRef = C4FDD209073E2BA300B2363E;
 			isa = PBXBuildFile;
 			settings = {
 			};

@@ -9,18 +9,10 @@
 
 #import <Cocoa/Cocoa.h>
 #import <MTCoreAudio/MTCoreAudio.h>
-
-#import <arpa/inet.h>
-#import <netinet/in.h>
-#import <stdio.h>
-#import <sys/types.h>
-#import <sys/socket.h>
-#import <unistd.h>
+#import <CoreAudio/CoreAudio.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 @class MTConversionBuffer;
-
-#define SHTOOM_SERVER_SEND 21000
-#define SHTOOM_SERVER_LISTEN 21001
 
 @interface AudioMonitorDocument : NSDocument
 {
@@ -34,21 +26,32 @@
 	
 	MTCoreAudioDevice * inputDevice;
 	MTCoreAudioDevice * outputDevice;
-	MTConversionBuffer * inconverter;
-    MTConversionBuffer * outconverter;
+	MTConversionBuffer * inConverter;
+    MTConversionBuffer * outConverter;
+    
+    AudioConverterRef inAudioConverter;
+    AudioConverterRef outAudioConverter;
 
 	double adjustLeft;
 	double adjustRight;
     
-    NSTimer *netTimer;
-    AudioBufferList inBuffer;
-    AudioBufferList outBuffer;
-    struct sockaddr_in sa_self, sa_other;
-    int sockdesc;
-    
+    AudioBufferList *inBuffer;
+    AudioBufferList *outBuffer;
+    NSInputStream *inputStream;
+    NSOutputStream *outputStream;
+    NSMutableData *receiveQueue;
+    NSMutableArray *sendQueue;
 }
 
-- (void) pumpNetBuffers:(NSTimer *)aTimer;
+- (void) sendDataFromConverter:(MTConversionBuffer *)converter;
+- (void) _sendDataFromConverter:(MTConversionBuffer *)converter;
+- (void) flushDataForConverter:(MTConversionBuffer *)converter;
+- (void) _flushDataForConverter:(MTConversionBuffer *)converter;
+- (void) startNetworkQueues;
+- (void) stopNetworkQueues;
+- (void) streamReadyToRead:(NSInputStream *)s;
+- (void) streamReadyToWrite:(NSOutputStream *)s;
 - (void) playthroughButton:(id)sender;
 - (void) setAdjustVolume:(id)sender;
+
 @end

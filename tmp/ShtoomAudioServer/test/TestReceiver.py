@@ -4,5 +4,5 @@ class Print(DatagramProtocol):
     def datagramReceived(self, data, (host, port)):
         print "received %r from %s:%d" % (data, host, port)
 
-reactor.listenUDP(21000, Print())
+reactor.listenUDP(22000, Print())
 reactor.run()
