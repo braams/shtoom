@@ -1,12 +1,16 @@
 # Copyright (C) 2004 Anthony Baxter
-import audioop
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4, PT_RAW
 from shtoom.rtp.formats import PT_CN, PT_xCN
 from shtoom.rtp.packets import RTPPacket
+from shtoom import avail
+try:
+    import audioop
+except ImportError:
+    audioop = None
 
 class NullConv:
+    # Should be refactored away
     def __init__(self, device):
-        print "audio: __init__"
         self._d = device
     def getDevice(self):
         return self._d
@@ -28,43 +32,143 @@ class NullConv:
         return self._d.reopen()
     def isClosed(self):
         return self._d.isClosed()
-
     def __repr__(self):
         return '<%s wrapped around %r>'%(self.__class__.__name__, self._d)
 
-class PCM16toULAWConv(NullConv):
-    """ Wraps an audio device that returns Linear PCM and turns it into
-        G711 ulaw
-    """
-    def read(self, count=160, conv=audioop.lin2ulaw):
-        count = count * 2
-        return conv(self._d.read(count), 2)
-    def write(self, bytes, conv=audioop.ulaw2lin):
-        return self._d.write(conv(bytes,2))
+def isLittleEndian():
+    import struct
+    p = struct.pack('H', 1)
+    if p == '\x01\x00':
+        return True
+    elif p == '\x00\x01':
+        return False
+    else:
+        raise ValueError("insane endian-check result %r"%(p))
 
-from shtoom.avail import gsm
+class _Codec:
+    "Base class for codecs"
 
-if gsm is not None:
-    class PCM16toGSMConv(NullConv):
-        def __init__(self, *args, **kwargs):
-            if gsm is not None:
-                self._encoder = gsm.gsm(gsm.LITTLE)
-                self._decoder = gsm.gsm(gsm.LITTLE)
-            NullConv.__init__(self, *args, **kwargs)
+class GSMCodec(_Codec):
+    def __init__(self):
+        if isLittleEndian():
+            self.enc = avail.gsm.gsm(gsm.LITTLE)
+            self.dec = avail.gsm.gsm(gsm.LITTLE)
+        else:
+            self.enc = avail.gsm.gsm(gsm.BIG)
+            self.dec = avail.gsm.gsm(gsm.BIG)
 
-        def read(self, count=33):
-            indata = self._d.read(320)
-            encdata = self._encoder.encode(indata)
-            return encdata
+    def encode(self, bytes):
+        if len(bytes) != 320:
+            log.msg("GSM: got short read len = %s"%len(indata))
+            return None
+        return self.enc.encode(bytes)
 
-        def write(self, data):
-            if len(data) != 33:
-                print "warning: didn't see 33 bytes of data, but %s"%len(data)
-            decdata = self._decoder.decode(data)
-            self._d.write(decdata)
-            return 33
+    def decode(self, bytes):
+        if len(bytes) != 33:
+            print "GSM: warning: %d bytes of data, not 33"%len(bytes)
+            return None
+        return self.dec.encode(bytes)
 
+class SpeexCodec:
+    "A codec for Speex"
+    # XXX completely untested
 
+    def __init__(self):
+        self.enc = speex.Encoder(8)
+        self.dec = speex.Decoder(8)
+
+    def encode(self, bytes):
+        # XXX length validity tests?
+        return self.enc.Encode(bytes)
+
+    def decode(self, bytes):
+        # XXX length validity tests?
+        return self.enc.Decode(bytes)
+
+class MulawCodec(_Codec):
+    "A codec for mulaw encoded audio (e.g. G.711U)"
+
+    def encode(self, bytes):
+        # XXX Check bytes length
+        return audioop.lin2ulaw(bytes, 2)
+
+    def decode(self, bytes):
+        # XXX Check bytes length
+        return audioop.ulaw2lin(bytes, 2)
+
+class AlawCodec(_Codec):
+    "A codec for alaw encoded audio (e.g. G.711A)"
+
+    def encode(self, bytes):
+        # XXX Check bytes length?
+        return audioop.lin2alaw(bytes, 2)
+
+    def decode(self, bytes):
+        # XXX Check bytes length?
+        return audioop.alaw2lin(bytes, 2)
+
+class NullCodec(_Codec):
+    "A codec that consumes/emits nothing (e.g. for confort noise)"
+
+    def encode(self, bytes):
+        return None
+
+    def decode(self, bytes):
+        return None
+
+class PassthruCodec(_Codec):
+    "A codec that leaves it's input alone"
+    encode = decode = lambda self, bytes: bytes
+
+class Codecker:
+    def __init__(self):
+        self.codecs = {}
+        self.codecs[PT_CN] = NullCodec()
+        self.codecs[PT_xCN] = NullCodec()
+        self.codecs[PT_RAW] = PassthruCodec()
+        if avail.mulaw is not None:
+            self.codecs[PT_PCMU] = MulawCodec()
+        if avail.alaw is not None:
+            self.codecs[PT_PCMA] = AlawCodec()
+        if avail.gsm is not None:
+            self.codecs[PT_GSM] = GSMCodec()
+        if avail.speex is not None: 
+            self.codecs[PT_GSM] = SpeexCodec()
+        if avail.dvi4 is not None:
+            self.codecs[PT_DVI4] = DVI4Codec()
+        if avail.ilbc is not None:
+            self.codecs[PT_ILBC] = ILBCCodec()
+
+    def getDefaultFormat(self):
+        return self.format
+
+    def setDefaultFormat(self, format):
+        if self.codecs.has_key(format):
+            self.format = format
+        else:
+            raise ValueError("Can't handle codec %r"%format)
+
+    def encode(self, bytes):
+        "Accepts audio as bytes, emits an RTPPacket"
+        if not bytes:
+            return None
+        codec = self.codecs.get(self.format)
+        if not codec:
+            raise ValueError("can't encode format %r"%format)
+        encaudio = codec.encode(bytes)
+        if not encaudio:
+            return None
+        return RTPPacket(self.format, encaudio, ts=None)
+
+    def decode(self, packet):
+        "Accepts an RTPPacket, emits audio as bytes"
+        if not packet.data:
+            return None
+        codec = self.codecs.get(packet.pt)
+        if not codec:
+            raise ValueError("can't decode format %r"%format)
+        encaudio = codec.decode(packet.data)
+        return encaudio
 
 class MediaLayer(NullConv):
     """ The MediaLayer sits between the network and the raw
@@ -72,124 +176,32 @@ class MediaLayer(NullConv):
         the network to the format used by the lower-level audio
         devices (16 bit signed ints at 8KHz).
     """
-
-    def __init__(self, *args, **kwargs):
-        self._fmt = PT_PCMU # default format PCMU
-        if gsm is not None:
-            self._gsmencoder = gsm.gsm(gsm.LITTLE)
-            self._gsmdecoder = gsm.gsm(gsm.LITTLE)
-        else:
-            self._gsmencoder = self._gsmdecoder = None
-        NullConv.__init__(self, *args, **kwargs)
+    def __init__(self, device, defaultFormat=PT_PCMU, *args, **kwargs):
+        self.codecker = Codecker()
+        self.codecker.setDefaultFormat(defaultFormat)
+        NullConv.__init__(self, device, *args, **kwargs)
 
     def selectDefaultFormat(self, fmt):
-        print "audio: selectDefaultFormats"
-        self._fmt = fmt
-
-    def read(self):
-        format = self._fmt
-        if format == PT_PCMU:
-            lin = self._d.read()
-            if lin is None: return None
-            ret = RTPPacket(format, audioop.lin2ulaw(lin, 2), ts=None)
-        elif format == PT_RAW:
-            ret = RTPPacket(format, self._d.read(), ts=None)
-        elif format == PT_GSM:
-            if self._gsmencoder:
-                indata = self._d.read()
-                if indata is None:
-                    ret = None
-                elif len(indata) != 320:
-                    print "GSM: got short read len = %s"%len(indata)
-                    ret = None
-                else:
-                    outdata = self._gsmencoder.encode(indata)
-                    ret = RTPPacket(format, outdata, ts=None)
-            else:
-                print "No GSM available"
-        else:
-            raise ValueError, "Unknown format %s"%(format)
-        if ret.data is None:
-            return None
-        return ret
-
-    def write(self, packet):
-        #print "audio: write"
-        if not packet.data:
-            return 0
-        data = packet.data
-        if packet.pt == PT_PCMU:
-            return self._d.write(audioop.ulaw2lin(data, 2))
-        elif packet.pt == PT_RAW:
-            return self._d.write(data)
-        elif packet.pt == PT_GSM:
-            if self._gsmdecoder:
-                if len(data) != 33:
-                    print "GSM: warning: %d bytes of data, not 33"%len(data)
-                    return 0
-                else:
-                    decdata = self._gsmdecoder.decode(data)
-                    self._d.write(decdata)
-                    return 33
-            else:
-                print "No GSM available"
-        elif packet.pt in ( PT_CN, PT_xCN ):
-            return None
-        else:
-            raise ValueError, "Unknown format %s"%(packet.pt)
-
-class DougConverter:
-    " yeah, yeah, refactor me "
-    def __init__(self, *args, **kwargs):
-        self._fmt = PT_PCMU
-        if gsm is not None:
-            self._gsmencoder = gsm.gsm(gsm.LITTLE)
-            self._gsmdecoder = gsm.gsm(gsm.LITTLE)
-        else:
-            self._gsmencoder = self._gsmdecoder = None
-
-    def selectDefaultFormat(self, fmt):
-        self._fmt = fmt
+        self.codecker.setDefaultFormat(fmt)
 
     def getFormat(self):
-        return self._fmt
+        return self.codecker.getDefaultFormat()
 
-    def convertOutbound(self, indata):
-        format = self._fmt
-        if format == PT_PCMU:
-            return RTPPacket(format, audioop.lin2ulaw(indata, 2), ts=None)
-        elif format == PT_RAW:
-            return RTPPacket(format, indata, ts=None)
-        elif format == PT_GSM:
-            if self._gsmencoder:
-                if len(indata) != 320:
-                    print "GSM: got short read len = %s"%len(indata)
-                    return None
-                else:
-                    outdata = self._gsmencoder.encode(indata)
-                    return RTPPacket(format, outdata, ts=None)
-            else:
-                print "No GSM available"
-        else:
-            raise ValueError, "Unknown format %s"%(format)
+    def read(self):
+        bytes = self._d.read()
+        return self.codecker.encode(bytes)
 
-    def convertInbound(self, packet):
-        if packet.pt == PT_PCMU:
-            return audioop.ulaw2lin(indata, 2)
-        elif packet.pt == PT_RAW:
-            return indata
-        elif packet.pt == PT_GSM:
-            if self._gsmdecoder:
-                if len(indata) != 33:
-                    print "GSM: warning: %d bytes of data, not 33"%len(indata)
-                    return ''
-                else:
-                    decdata = self._gsmdecoder.decode(indata)
-                    return decdata
-            else:
-                print "No GSM available"
-        elif packet.pt in ( PT_CN, PT_xCN ):
-            return None
-        else:
-            raise ValueError, "Unknown format %s"%(packet.pt)
+    def write(self, packet):
+        audio = self.codecker.encode(packet)
+        if not audio:
+            return 0
+        return self._d.write(data)
 
+class DougConverter(MediaLayer):
+    "Specialised converter for Doug."
+    # XXX should be refactored away to just use a Codecker directly
+    def __init__(self, defaultFormat=PT_PCMU, *args, **kwargs):
+        MediaLayer.__init__(self, defaultFormat=defaultFormat, 
+                            *args, **kwargs)
+        self.convertOutbound = self.codecker.encode
+        self.convertInbound = self.codecker.decode

@@ -15,10 +15,25 @@ except ImportError:
     _removeImport('gsm')
 
 try:
-    import speex
+    import pyspeex as speex
 except ImportError:
     speex = None
-    _removeImport('speex')
+    _removeImport('pyspeex')
+
+# XXX Haven't implemented speex yet, so disabling it
+speex = None
+
+try:
+    from audioop import ulaw2lin, lin2ulaw
+    mulaw = ulaw2lin
+except ImportError:
+    mulaw = None
+
+try:
+    from audioop import alaw2lin, lin2alaw
+    alaw = alaw2lin
+except ImportError:
+    alaw = None
 
 dvi4 = None # always, until it's implemented
-
+ilbc = None # always, until it's implemented
