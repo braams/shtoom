@@ -6,7 +6,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.4 2003/11/14 09:07:24 anthonybaxter Exp $
+# $Id: rtp.py,v 1.5 2003/11/15 06:59:15 itamar Exp $
 #
 
 import time, signal, socket, struct
@@ -18,10 +18,6 @@ try:
     import itimer
 except ImportError:
     itimer = None
-
-import qt
-
-from twisted.internet import qtreactor
 
 from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
