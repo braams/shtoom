@@ -1,9 +1,11 @@
 #!/usr/bin/env python2.3
 
-import shtoom.audio
+
 import struct, math, sys
+sys.path.append(sys.path.pop(0))
+import shtoom.audio
 
-
+app = None
 
 class Recorder:
     def __init__(self, dev, play=False, outfp=None):
@@ -28,7 +30,7 @@ class Recorder:
         deviations = [ mean-x for x in abssamp ]
         var = reduce(lambda x,y: x+(y*y), deviations)/float(sampcount - 1)
         std = math.sqrt(var)
-        print "Mean % 5d  RMS % 5d STD % 3d"%(mean,rms,std)
+        #print "Mean % 5d  RMS % 5d STD % 3d"%(mean,rms,std)
         return 
 
     def sample(self, *args):
@@ -44,7 +46,7 @@ class Recorder:
         if self._play:
             self._dev.write(data, shtoom.audio.FMT_RAW)
         if len(data) != 320:
-            print "discarding short (%d) packet"%(len(data))
+            print "discarding bad length (%d) packet"%(len(data))
         else:
             self.analyse(struct.unpack('160h', data))
 
