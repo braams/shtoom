@@ -3,12 +3,12 @@
 import os, fnmatch
 
 def getMatchingFiles(root, pattern):
-    """ Returns a list of all files under directory 'root' that 
+    """ Returns a list of all files under directory 'root' that
         match pattern 'pattern'
     """
     pyfiles = []
     for path, dirnames, filenames in os.walk(root):
-        if '.svn' in dirnames: 
+        if '.svn' in dirnames:
             dirnames.remove('.svn')
         py = fnmatch.filter(filenames, pattern)
         py = [ os.path.join(path, x) for x in py ]

@@ -18,8 +18,8 @@ class IAudio(Interface):
     def reopen(self):
         '''Reopen a closed audio device'''
 
-    def isClosed(self):
-        '''Return true/false about whether the underlying audio is available'''
+    def isOpen(self):
+        '''Return True if and only if the underlying audio is available'''
 
     def read(self):
         '''Return a packet of audio. The length of the audio returned depends

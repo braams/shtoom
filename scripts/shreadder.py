@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 
-import struct, math, sys
+import math, random, struct, sys
 sys.path.append(sys.path.pop(0))
 import shtoom.audio
 from shtoom.rtp import formats
+
+from shtoom.rtp.packets import RTPPacket
 
 app = None
 
@@ -13,6 +15,7 @@ class Recorder:
         self._dev = dev
         self._play = play
         self._outfp = outfp
+        self.seq = random.randrange(0, 2**48)
         import sys
         if '-q' in sys.argv:
             self.quiet = True
@@ -34,17 +37,15 @@ class Recorder:
         #print "Mean % 5d  RMS % 5d STD % 3d"%(mean,rms,std)
         return
 
-    def sample(self, *args):
-        try:
-            packet = self._dev.read()
-        except IOError:
-            return
-        if not packet:
+    def handle_media_sample(self, sample):
+        if not sample:
             print "no audio, skipping"
             return
         if self._outfp:
-            self._outfp.write(packet.data)
+            self._outfp.write(sample.data)
         if self._play:
+            packet = RTPPacket(0, self.seq, 0, data=sample.data, ct=sample.ct)
+            self.seq = (self.seq + 1) % 2**48
             self._dev.write(packet)
         #if len(packet.data) != 320:
         #    print "discarding bad length (%d) packet"%(len(packet.data))
@@ -57,27 +58,24 @@ def main(Recorder = Recorder):
     from shtoom.rtp import formats
     from twisted.internet.task import LoopingCall
     from twisted.internet import reactor
+    from twisted.python import log
     import sys
+    log.startLogging(sys.stdout)
 
     dev = getAudioDevice()
     dev.close()
-    dev.reopen()
     if len(sys.argv) > 1:
         fmt = sys.argv[1]
         if not hasattr(formats, fmt):
             print "unknown PT marker %s"%(fmt)
             sys.exit(1)
-        dev.selectDefaultFormat(getattr(formats,fmt))
+        dev.selectDefaultFormat([getattr(formats,fmt),])
     else:
-        dev.selectDefaultFormat(formats.PT_RAW)
-    outfp = None
-    rec = Recorder(dev, play=True, outfp=outfp)
+        dev.selectDefaultFormat([formats.PT_RAW,])
+    rec = Recorder(dev, play=True)
+    dev.reopen(mediahandler=rec)
 
-    LC = LoopingCall(rec.sample)
-    LC.start(0.020)
     reactor.run()
-    if outfp:
-        outfp.close()
 
 if __name__ == "__main__":
     main()

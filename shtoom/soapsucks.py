@@ -1,9 +1,9 @@
-# A bare-bones SOAP client (needed for UPnP). I know it probably doesn't 
+# A bare-bones SOAP client (needed for UPnP). I know it probably doesn't
 # do everything, and I also don't care - as long as it allows UPnP to work,
 # it's met it's design goal. Feel free to send patches to improve it, so long as
 # you don't make it suck any more than it does already.
 
-# (C) Copyright 2004 Anthony Baxter 
+# (C) Copyright 2004 Anthony Baxter
 
 from twisted.python import log
 
@@ -41,12 +41,12 @@ class _BeautifulSaxParser(ContentHandler, Tag):
 
     def pushTag(self, tag):
         if self.currentTag:
-           self.currentTag.append(tag)
+            self.currentTag.append(tag)
         self.tagStack.append(tag)
         self.currentTag = self.tagStack[-1]
 
     def popTag(self, name):
-        # We stuff tags with no attributes and only text inside it as 
+        # We stuff tags with no attributes and only text inside it as
         # attributes on the parent
         if self.crackfulXML and len(self.tagStack) > 1:
             tag = self.tagStack[-1]
@@ -56,13 +56,13 @@ class _BeautifulSaxParser(ContentHandler, Tag):
                              len(tag.contents) == 1 and
                              isinstance(tag.contents[0], NavigableText) and
                              not parent.attrMap.has_key(tag.name) ):
-                 parent[tag.name] = str(tag.contents[0])
-                 parent.attrs.append((tag.name, str(tag.contents[0])))
+                parent[tag.name] = str(tag.contents[0])
+                parent.attrs.append((tag.name, str(tag.contents[0])))
         tag = self.tagStack.pop()
         if tag.name != name:
             raise ValueError("expected to pop %s, but got %s"%(name, tag.name))
         self.currentTag = self.tagStack[-1]
-        return self.currentTag 
+        return self.currentTag
 
     def endData(self):
         if self.currentData:
@@ -110,7 +110,7 @@ class _BeautifulSaxParser(ContentHandler, Tag):
                         results.append(i)
                 elif name == i.name:
                     results.append(i)
-                if i.contents: 
+                if i.contents:
                     results.extend(self._checkContents(i, name))
         return results
 
@@ -118,22 +118,22 @@ class _BeautifulSaxParser(ContentHandler, Tag):
         "A much stupider version of fetch that only ignores XML namespaces"
         return self._checkContents(self, name)
 
-            
+
 
 
 def BeautifulSax(data):
     bs = _BeautifulSaxParser()
     parseString(data, bs)
-    return bs 
+    return bs
 
 def BeautifulSoap(data):
     bs = _BeautifulSaxParser()
     bs.crackfulXML = True
     parseString(data, bs)
-    return bs 
+    return bs
 
 class SOAPRequestFactory:
-    """A Factory object for SOAP Requests, which can then be passed to 
+    """A Factory object for SOAP Requests, which can then be passed to
        either urllib2 or nonsuckhttp.
     """
     def __init__(self, url, prefix=None):
@@ -153,7 +153,7 @@ class SOAPRequestFactory:
 
     def _methodCall(self, name, **kwargs):
         arglist = []
-        log.msg("called %s(%s)"%(name, 
+        log.msg("called %s(%s)"%(name,
                 ', '.join([ ('%s=%s'%x) for x in kwargs.items()])
                           ), system='SOAP')
         if self.scpd:
@@ -168,11 +168,11 @@ class SOAPRequestFactory:
         # instead of the canned XML. I'm not happy to make shtoom depend on
         # Nevow for all platforms, particularly if it's only for this piece
         # of trivial code.
-        body = _CannedSoapHorror % dict(arglist=arglist, 
-                                       prefix=self._prefix, 
+        body = _CannedSoapHorror % dict(arglist=arglist,
+                                       prefix=self._prefix,
                                        method=name)
         body = body.encode('utf-8')
-        headers = { 'SOAPAction': '"%s#%s"'%(self._prefix,name) } 
+        headers = { 'SOAPAction': '"%s#%s"'%(self._prefix,name) }
         req = urllib2.Request(self.url, body, headers)
         req.soapURN = self._prefix
         req.soapMethod = name
@@ -202,7 +202,7 @@ def SOAPResponseFactory(request, response):
         r = r[0]
         out = {}
         for c in r.contents:
-            if isinstance(c, Tag): 
+            if isinstance(c, Tag):
                 if len(c.contents) == 1:
                     if out.get(c.name):
                         print "duplicated %s in response"%(c)
@@ -307,7 +307,7 @@ class SCPD:
             inargs = [ x for x in action.arguments if x.direction == 'in' ]
             outargs = [ x for x in action.arguments if x.direction == 'out' ]
             print
-            print "def %s(%s):"%(action.name, 
+            print "def %s(%s):"%(action.name,
                                  ', '.join([x.name for x in inargs]))
             print '    """'
             if inargs:
@@ -369,5 +369,3 @@ def parseSCPD(xml):
                     var.allowedValues.append(str(av.contents[0]))
         scpd.variables[var.name] = var
     return scpd
-
-    

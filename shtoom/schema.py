@@ -10,16 +10,16 @@ class _BackwardsCompatMixin:
         return {'Integer':'Number'}.get(t, t)
     optionType = property(_getOptionType)
 
-    def getDescription(self): 
-        warnings.warn("object.getDescription()", DeprecationWarning, 
+    def getDescription(self):
+        warnings.warn("object.getDescription()", DeprecationWarning,
                                                         stacklevel=2)
         return self.description
 
-    def getValue(self): 
+    def getValue(self):
         warnings.warn("object.getValue()", DeprecationWarning, stacklevel=2)
         return self.value
 
-    def getName(self): 
+    def getName(self):
         warnings.warn("object.getName()", DeprecationWarning, stacklevel=2)
         return self.name
 
@@ -35,7 +35,7 @@ class SchemaValueError(SchemaError):
     pass
 
 # construct a singleton marker
-class _NoDefaultValue(object): 
+class _NoDefaultValue(object):
     "Marker indicating no default value was specified"
     def _getValue(self):
         return self
@@ -49,19 +49,19 @@ class SchemaObject(_BackwardsCompatMixin, object):
     _value = NoDefaultValue
     _requiredType = None
 
-    def __init__(self, name='', description='', default=NoDefaultValue, 
+    def __init__(self, name='', description='', default=NoDefaultValue,
                  shortName='', help='', **kwargs):
         self.name = name
         self.description = description
         self.default = default
-        if default is not NoDefaultValue: 
+        if default is not NoDefaultValue:
             self.value = default
         self.shortName = shortName
         self.help = help
         self.type = self.__class__.__name__
         # Allow additional values, e.g. shortopt
         self.__dict__.update(kwargs)
-        
+
     def _getValue(self):
         return self._value
 
@@ -89,7 +89,7 @@ class SchemaObject(_BackwardsCompatMixin, object):
 
     def _validateValue(self, value):
         if value is NoDefaultValue:
-            return 
+            return
         if self._requiredType and not isinstance(value, self._requiredType):
             raise SchemaValueError('expected %s, got %r'%(
                                                 self._requiredType, value))
@@ -195,7 +195,7 @@ class List(_BackwardsCompatMixin, ObjectGroup):
         ObjectGroup.__init__(self, *args, **kwargs)
 
     def _addObject(self, object):
-        if object.name in self._objectNames: 
+        if object.name in self._objectNames:
             raise DuplicateItemError(object)
         self._subobjects.append(object)
         self._objectNames[object.name] = True

@@ -30,7 +30,7 @@ class GtkSlidingWindow:
         #import gobject
         #gobject.timeout_add(int(time*1000), lambda args=args:callable(*args))
         return reactor.callLater(time, callable, *args)
-        
+
 
 
 def demo():
@@ -92,4 +92,3 @@ if __name__ == "__main__":
 
     reactor.callLater(0, demo)
     reactor.run()
-

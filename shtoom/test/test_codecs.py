@@ -19,6 +19,8 @@ if not isLittleEndian():
 
 class DummyDev:
     # Should have read/write
+    def isOpen(self):
+        return False
     pass
 
 class CodecTest(unittest.TestCase):
@@ -27,39 +29,44 @@ class CodecTest(unittest.TestCase):
         a_ = self.assert_
         ae = self.assertEquals
         ar = self.assertRaises
-        c = Codecker()
-        a_(isinstance(c.codecs.get(PT_PCMU), MulawCodec))
-        a_(isinstance(c.codecs.get(PT_RAW), PassthruCodec))
-        a_(isinstance(c.codecs.get(PT_CN), NullCodec))
-        for codec in c.codecs.values():
+        c = Codecker(PT_PCMU)
+        a_(isinstance(c.format_to_codec.get(PT_PCMU), MulawCodec))
+        a_(isinstance(c.format_to_codec.get(PT_RAW), PassthruCodec))
+        a_(isinstance(c.format_to_codec.get(PT_CN), NullCodec))
+        for codec in c.format_to_codec.values():
             a_(isinstance(codec, _Codec))
-        c.setDefaultFormat(PT_PCMU)
         ae(c.getDefaultFormat(), PT_PCMU)
-        c.setDefaultFormat(PT_PCMU)
-        ar(ValueError, c.setDefaultFormat, PT_QCELP)
+        ar(ValueError, Codecker, PT_QCELP)
 
     def testNullCodec(self):
         ae = self.assertEquals
         ar = self.assertRaises
         n = NullCodec()
-        ae(n.encode('frobozulate'), None)
+        ae(n._encode('frobozulate'), None)
         ae(n.decode('frobozulate'), None)
-        c = Codecker()
-        ar(ValueError, c.setDefaultFormat, PT_CN)
+        ar(ValueError, Codecker, PT_CN)
 
     def testPassthruCodec(self):
         ae = self.assertEquals
-        c = Codecker()
-        c.setDefaultFormat(PT_RAW)
+        c = Codecker(PT_RAW)
         ae(c.getDefaultFormat(), PT_RAW)
         p = PassthruCodec()
         ae = self.assertEquals
-        ae(p.encode('frobozulate'), 'frobozulate')
-        ae(p.decode('frobozulate'), 'frobozulate')
-        p = RTPPacket(0, 0, 0, 'farnarkling', ct=PT_RAW)
-        ae(c.decode(p), 'farnarkling')
-        ae(c.encode('farnarkling').data, 'farnarkling')
-        ae(c.encode('farnarkling').header.pt, PT_RAW.pt)
+
+        class Foo:
+            def handle_media_sample(self, sample):
+                ae(sample.data, 'frobozulate')
+        c.set_handler(Foo())
+
+        c.handle_data('frobozulate')
+
+        class Foo:
+            def handle_media_sample(self, sample):
+                ae(sample.data, 'farnarkling')
+                ae(sample.ct, PT_RAW)
+        c.set_handler(Foo())
+
+        c.handle_data('farnarkling')
 
     # XXX testing other codecs - endianness issues? crap.
 
@@ -67,55 +74,87 @@ class CodecTest(unittest.TestCase):
         if codecs.mulaw is None:
             raise unittest.SkipTest("no mulaw support")
         ae = self.assertEquals
-        c = Codecker()
-        c.setDefaultFormat(PT_PCMU)
+        c = Codecker(PT_PCMU)
         ae(c.getDefaultFormat(), PT_PCMU)
-        ae(len(c.encode(instr).data), 160)
-        ae(c.encode(instr).data, ulawout)
-        ae(c.encode(instr).header.ct, PT_PCMU)
+
+        class Foo:
+            def handle_media_sample(self, sample):
+                ae(len(sample.data), 160)
+                ae(sample.data, ulawout)
+                ae(sample.ct, PT_PCMU)
+        c.set_handler(Foo())
+        c.handle_data(instr)
 
     def testGSMCodec(self):
         if codecs.gsm is None:
             raise unittest.SkipTest("no gsm support")
         ae = self.assertEquals
-        c = Codecker()
-        c.setDefaultFormat(PT_GSM)
+        c = Codecker(PT_GSM)
         ae(c.getDefaultFormat(), PT_GSM)
-        p = c.encode(instr)
-        ae(len(p.data), 33)
-        ae(p.header.ct, PT_GSM)
-        ae(len(c.decode(p)), 320)
-        ae(c.encode('\0'*32), None)
+
+        class Foo:
+            def handle_media_sample(self, sample):
+                ae(len(sample.data), 33)
+                ae(sample.ct, PT_GSM)
+                p = RTPPacket(0, 0, 0, data=sample.data, ct=sample.ct)
+                ae(len(c.decode(p)), 320)
+        c.set_handler(Foo())
+
+        c.handle_data(instr)
+
+        c = Codecker(PT_GSM)
+        ae(c.getDefaultFormat(), PT_GSM)
+
+        class Foo:
+            def handle_media_sample(self, sample, tester=self):
+                tester.fail("WRONG.  The decoding of 32 zeroes (a short GSM frame) is required to be None, but it came out: %s" % (sample,))
+        c.set_handler(Foo())
+
+        c.handle_data('\0'*32)
 
     def testSpeexCodec(self):
         if codecs.gsm is None:
             raise unittest.SkipTest("no speex support")
         ae = self.assertEquals
-        c = Codecker()
-        c.setDefaultFormat(PT_SPEEX)
+        c = Codecker(PT_SPEEX)
         ae(c.getDefaultFormat(), PT_SPEEX)
-        p = c.encode(instr)
-        ae(len(p.data), 40)
-        ae(p.header.ct, PT_SPEEX)
-        ae(len(c.decode(p)), 320)
-        ae(c.encode('\0'*30), None)
+
+        class Foo:
+            def handle_media_sample(self, sample):
+                ae(len(sample.data), 40)
+                ae(sample.ct, PT_SPEEX)
+                p = RTPPacket(0, 0, 0, data=sample.data, ct=sample.ct)
+                ae(len(c.decode(p)), 320)
+        c.set_handler(Foo())
+
+        p = c.handle_data(instr)
+
+        class Foo:
+            def handle_media_sample(self, sample, tester=self):
+                tester.fail("WRONG.  The decoding of 30 zeroes (a short Speex frame) is required to be None, but it came out: %s" % (sample,))
+        c.set_handler(Foo())
+
+        c.handle_data('\0'*30)
 
     def testMediaLayer(self):
         ae = self.assertEquals
         dev = DummyDev()
         m = MediaLayer(device=dev)
+        m.selectDefaultFormat([PT_PCMU,])
         ae(m.getDevice(), dev)
         ae(m.getFormat(), PT_PCMU)
-        m = MediaLayer(device=dev, defaultFormat=PT_RAW)
+        m = MediaLayer(device=dev)
+        m.selectDefaultFormat([PT_RAW,])
         ae(m.getFormat(), PT_RAW)
 
     def testDougConverter(self):
         ae = self.assertEquals
         d = DougConverter(device=DummyDev())
-        d.selectDefaultFormat(PT_RAW)
+        d.selectDefaultFormat([PT_RAW,])
         ae(d.getFormat(), PT_RAW)
         test='froooooooooooogle'
-        ae(d.convertOutbound(test).data, test)
+        p = RTPPacket(0, 0, 0, data=test, ct=PT_RAW)
+        ae(d.convertInbound(p), test)
 
 
 ulawout = '\x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 '

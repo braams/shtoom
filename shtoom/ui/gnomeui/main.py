@@ -90,7 +90,7 @@ class ShtoomWindow(ShtoomBaseUI):
 
     def on_preferences_activate(self, widget):
         from prefs import PreferencesDialog
-        p = PreferencesDialog(self.xml.get_widget("callwindow"), self, 
+        p = PreferencesDialog(self.xml.get_widget("callwindow"), self,
                               self.app.getOptions())
         p.show()
 
@@ -294,5 +294,3 @@ class DebugTextView:
 
     def flush(self):
         pass
-
-

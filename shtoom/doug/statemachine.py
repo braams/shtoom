@@ -40,7 +40,7 @@ class StateMachine(object):
         if self._deferredState is not None:
             # We're waiting for a deferred to trigger to set up the state -
             # queue the event.
-            self._deferredState.addCallback(lambda x, e=event: 
+            self._deferredState.addCallback(lambda x, e=event:
                                             self._triggerEvent(e))
             return
         for e, a in self.getCurrentEvents():

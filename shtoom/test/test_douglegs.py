@@ -53,7 +53,10 @@ class DougLegTests(unittest.TestCase):
         l.setCookie('foo')
         ae(l.getCookie(), 'foo')
         # We should be connected to silence at this point
-        ae(l.leg_giveRTP(), None)
+        class Foo:
+            def handle_media_sample(self, sample, tester=self):
+                tester.fail("WRONG.  We should be hearing silence, but we received this sample: %s" % (sample,))
+        l.set_handler(Foo())
 
     def test_legCallSetup(self):
         from shtoom.sip import Dialog

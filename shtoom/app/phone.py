@@ -2,7 +2,7 @@
 
 # The Phone app.
 
-import threading
+import os, sys, threading
 
 from twisted.internet import defer, protocol
 from twisted.python import log, threadable
@@ -10,11 +10,10 @@ from twisted.python import log, threadable
 from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
 from shtoom.exceptions import CallFailed
-from shtoom.audio import getAudioDevice
 from shtoom.sdp import SDP, MediaDescription
 from shtoom.ui import findUserInterface
 from shtoom.opts import buildOptions
-from shtoom.Options import OptionGroup, StringOption, ChoiceOption, OptionDict
+from shtoom.Options import OptionGroup, StringOption, ChoiceOption, OptionDict, BooleanOption
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 
@@ -30,12 +29,37 @@ class Phone(BaseApplication):
         self._calls = {}
         self._pendingRTP = {}
         self._audio = audio
-        self._audioFormat = None
         self.ui = ui
         self._currentCall = None
         self._muted = False
         self._rtpProtocolClass = None
         self._debugrev = 10
+
+    def find_resource_file(self, fname):
+        """ Return the fully-qualified path to the desired resource file that came bundled with Shtoom.  On failure, it returns fname.
+        fname must be relative to the appropriate directory for storing this kind of file.
+        Currently this works on Mac OS X and Linux.
+        """
+        if 'linux' in sys.platform.lower():
+            shtoomdir = self.getPref('shtoomdir')
+            if not shtoomdir:
+                shtoomdir='.'
+            return os.path.join(shtoomdir, 'share', 'shtoom', 'audio', fname)
+        elif sys.platform == 'darwin':
+            try:
+                import ShtoomAppDelegate
+                whereami = ShtoomAppDelegate.__file__
+                return os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(whereami))), fname)
+            except:
+                return fname
+        else:
+            return fname
+
+    def play_wav_file(self, soundconfigurename):
+        fname = self.getPref(soundconfigurename)
+        if fname:
+            fullfname = self.find_resource_file(fname)
+            self._audio.play_wave_file(fullfname)
 
     def needsThreadedUI(self):
         return self.ui.threadedUI
@@ -79,27 +103,24 @@ class Phone(BaseApplication):
             if not hasattr(reactor,'running') or not reactor.running:
                 reactor.run()
 
+    def ringBack(self):
+        self.play_wav_file('ring_back_file')
+
     def acceptCall(self, call):
         log.msg("dialog is %r"%(call.dialog))
         cookie = self.getCookie()
         self._calls[cookie] = call
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
-            # Otherwise we chain callbacks
-            ringingCommand = self.getPref('ringing_command')
-            # Commented out until I test it
-            if 0 and ringingCommand:
-                from twisted.internet import reactor
-                args = ringingCommand.split(' ')
-                cmdname = args[0]
-                reactor.spawnProcess(protocol.ProcessProtocol(), cmdname, args)
+            self.statusMessage('Incoming call')
+            self.play_wav_file('incoming_ring_file')
+
             uidef = self.ui.incomingCall(call.dialog.getCaller(), cookie)
             uidef.addCallback(lambda x: self._createRTP(x,
                                         call.getLocalSIPAddress()[0],
                                         call.getSTUNState()))
             return uidef
         elif calltype == 'outbound':
-            self.openAudioDevice()
             return self._createRTP(cookie, call.getLocalSIPAddress()[0],
                                            call.getSTUNState())
         else:
@@ -110,10 +131,9 @@ class Phone(BaseApplication):
         from shtoom.rtp.protocol import RTPProtocol
         from shtoom.exceptions import CallFailed
         if isinstance(cookie, CallFailed):
-            del self._calls[cookie.cookie] 
+            del self._calls[cookie.cookie]
             return defer.succeed(cookie)
 
-        self.openAudioDevice()
         self.ui.callStarted(cookie)
         if self._rtpProtocolClass is None:
             rtp = RTPProtocol(self, cookie)
@@ -124,13 +144,17 @@ class Phone(BaseApplication):
         return d
 
     def selectDefaultFormat(self, callcookie, sdp, format=None):
+        oldmediahandler = self._audio and self._audio.codecker and self._audio.codecker.handler
+        self._audio.close()
         if not sdp:
-            self._audio.selectDefaultFormat(format)
+            self._audio.selectDefaultFormat([format,])
             return
         md = sdp.getMediaDescription('audio')
         rtpmap = md.rtpmap
         ptlist = [ x[1] for x in  rtpmap.values() ]
         self._audio.selectDefaultFormat(ptlist)
+        if oldmediahandler:
+            self._audio.reopen(oldmediahandler)
 
     def getSDP(self, callcookie, othersdp=None):
         rtp = self._rtp[callcookie]
@@ -142,11 +166,11 @@ class Phone(BaseApplication):
         md = remoteSDP.getMediaDescription('audio')
         ipaddr = md.ipaddr or remoteSDP.ipaddr
         remoteAddr = (ipaddr, md.port)
-        if not self._currentCall:
-            self._audio.reopen()
         log.msg("call Start %r %r"%(callcookie, remoteAddr))
-        self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         self._currentCall = callcookie
+        self._rtp[callcookie].start(remoteAddr)
+        self.openAudioDevice([PT_PCMU,], self._rtp[callcookie])
+        log.msg("startCall opened %r %r"%(self._currentCall, self._audio))
         cb(callcookie)
 
     def endCall(self, callcookie, reason=''):
@@ -162,24 +186,15 @@ class Phone(BaseApplication):
             self.closeAudioDevice()
         self.ui.callDisconnected(callcookie, reason)
 
-    def openAudioDevice(self):
-        if self._audio is None:
-            audioPref = self.getPref('audio')
-            audio_in = self.getPref('audio_infile')
-            audio_out = self.getPref('audio_outfile')
-            if audio_in and audio_out:
-                aF = ( audio_in, audio_out )
-            else:
-                aF = None
-            log.msg("Getting new audio device", system='phone')
-            self._audio = getAudioDevice()
-            self._audio.close()
-            log.msg("Got new audio device")
+    def openAudioDevice(self, fmts=[PT_PCMU,], mediahandler=None):
+        assert isinstance(fmts, (list, tuple,)), fmts
+        assert self._audio
+        self._audio.close()
+        self._audio.selectDefaultFormat(fmts)
+        self._audio.reopen(mediahandler)
 
     def closeAudioDevice(self):
         self._audio.close()
-        self._audioFormat = None
-        #self._audio = None
 
     def receiveRTP(self, callcookie, packet):
         # XXX the mute/nonmute should be in the AudioLayer
@@ -192,16 +207,6 @@ class Phone(BaseApplication):
             self._audio.write(packet)
         except IOError:
             pass
-
-    def giveRTP(self, callcookie):
-        # Check that callcookie is the active call
-        if self._currentCall != callcookie or self._muted:
-            return None # comfort noise
-        packet = self._audio.read()
-        if packet is None:
-            return None
-        else:
-            return packet
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)
@@ -230,14 +235,23 @@ class Phone(BaseApplication):
 
     def appSpecificOptions(self, opts):
         app = OptionGroup('shtoom', 'Shtoom')
-        app.add(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','wx', 'tk','text']))
-        app.add(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port', 'alsa']))
-        app.add(StringOption('audio_infile','read audio from this file'))
-        app.add(StringOption('audio_outfile','write audio to this file'))
-        app.add(StringOption('ringing_command','run this command when a call comes in'))
-        app.add(StringOption('logfile','log to this file'))
+        app.add(ChoiceOption('ui',_('use UI for interface'), choices=['qt','gnome','wx', 'tk','text']))
+        app.add(ChoiceOption('audio',_('use AUDIO for interface'), choices=['oss', 'fast', 'port', 'alsa']))
+        app.add(StringOption('audio_device',_('use this audio device')))
+        app.add(StringOption('audio_infile',_('read audio from this file')))
+        app.add(StringOption('audio_outfile',_('write audio to this file')))
+        # XXX TOFIX: This next option Must Die.
+        app.add(StringOption('shtoomdir',_('root dir of shtoom installation')))
+        app.add(StringOption('incoming_ring_file',
+                    _('play this wave file when a call comes in'),'ring.wav'))
+        app.add(StringOption('ring_back_file',
+                    _('play this wave file when remote phone is ringing'),
+                    'ringback.wav'))
+
+
+        app.add(StringOption('logfile',_('log to this file')))
         opts.add(app)
-        creds = OptionDict('credentials', 'cached credentials', gui=False)
+        creds = OptionDict('credentials', _('cached credentials'), gui=False)
         opts.add(creds)
         opts.setOptsFile('.shtoomrc')
 

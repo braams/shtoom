@@ -8,7 +8,7 @@ class AddressEntry(Interface):
     def isreadonly(self):
         """Indicate whether this address is editable. LDAP and other
            address sources may not be editable by the user"""
-        
+
     def sip(self):
         """Return the sip address of the contact"""
 
@@ -46,7 +46,7 @@ class AddressEntry(Interface):
     def setorganization(self):
         """Set the organization this contact is associated with"""
 
-    
+
 
 class AddressBook(Interface):
     """Interface for actual address book implementations. All address books inherit
@@ -69,7 +69,7 @@ class AddressBook(Interface):
     def cansuggest(self):
         """Indicates whether this book allows suggest calls. Some books may simply
            chose to disallow this if the operation would be too expensive"""
-    
+
     def lookup(self,key):
         """Returns an AddressEntry by looking up the address as entered by a user"""
 

@@ -38,11 +38,6 @@ class ApplicationRTPInterface(Interface):
             packet, or something else.
         """
 
-    def giveRTP(self, callcookie):
-        """ The network layer wants an RTP packet to send. Return a 2-tuple
-            of (payloadType, payloadData)
-        """
-
 class ApplicationUIInterface(Interface):
     """ This interface describes the interface that the UI can use
         to communicate with the Application.

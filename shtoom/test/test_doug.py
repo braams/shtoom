@@ -11,11 +11,17 @@ from twisted.internet import defer, reactor
 from shtoom.doug import VoiceApp
 from shtoom.app.doug import DougApplication
 from shtoom.doug.events import *
+from shtoom.i18n import install as i18n_install
+i18n_install()
 
 class TestDougApplication(DougApplication):
     _trial_def = None
     needLogging = False
     configFileName = None
+
+    def ringBack(self):
+        # ring ring
+        pass
 
     def acceptErrors(self, cookie, error):
         #print "cookie %s got error %r"%(cookie, error)
@@ -28,7 +34,7 @@ class TestDougApplication(DougApplication):
         if self._trial_def is not None:
             d, self._trial_def = self._trial_def, None
             reactor.callLater(0, d.callback, result)
-        
+
 class NullApp(VoiceApp):
     """ This application does nothing but return """
 
@@ -76,7 +82,7 @@ class SimpleCallApp(VoiceApp):
         return ( ( CallStartedEvent, self.started), )
 
     def started(self, evt):
-        self.placeCall(self.callURL, 'sip:test@127.0.0.1')    
+        self.placeCall(self.callURL, 'sip:test@127.0.0.1')
         return ( (CallAnsweredEvent, self.callAnswered),
                  (CallRejectedEvent, self.callFailed),
                  (Event,            self.unknownEvent),
@@ -186,4 +192,3 @@ class DougDTMFTest(unittest.TestCase):
         self.assertEquals(s2.val, 'completed')
         lapp.stopSIP()
         capp.stopSIP()
-    

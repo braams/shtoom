@@ -40,13 +40,13 @@ def _findLocaleDir(domain):
     if f:
         return 'locale'
 
-    # next try python prefix 
+    # next try python prefix
     pydir = os.path.join(sys.prefix, 'share', 'locale')
     f = gettext.find(domain, pydir)
     if f:
         return pydir
 
-    # next try shtoom installation prefix 
+    # next try shtoom installation prefix
     import shtoom
     # -5 is prefix , lib, pythonN.N, site-packages, shtoom, __init__.pyc
     prefix = os.path.sep.join(shtoom.__file__.split(os.path.sep)[:-5])
@@ -66,6 +66,6 @@ def _findLocaleDir(domain):
     f = gettext.find(domain, pydir)
     if f:
         return pydir
-    
+
     # just wing it
     return None

@@ -22,7 +22,7 @@ class DTMFDetectTest(unittest.TestCase):
         cur = None
         while True:
             data = fp.read(640)
-            if len(data) != 640: 
+            if len(data) != 640:
                 break
             digit = dtmf.detect(data)
             if digit != cur:
@@ -63,12 +63,21 @@ class DTMFDetectTest(unittest.TestCase):
         for k in dtmf.dtmf2freq.keys():
             s = dtmf.dtmfGenerator(k, 320)
             s1, s2 = s[:320], s[320:]
-            codec.decode(codec.encode(s1))
-            codec.decode(codec.encode(s2))
-            s1 = codec.decode(codec.encode(s1))
-            s2 = codec.decode(codec.encode(s2))
-            s = s1+s2
+            s1res = []
+            s2res = []
+            for frame in codec.buffer_and_encode(s1):
+                codec.decode(frame)
+            for frame in codec.buffer_and_encode(s2):
+                codec.decode(frame)
+            for frame in codec.buffer_and_encode(s1):
+                s1res.append(codec.decode(frame))
+            for frame in codec.buffer_and_encode(s2):
+                s2res.append(codec.decode(frame))
+            self.failUnless(len(s1res) == 1, s1res)
+            self.failUnless(len(s2res) == 1, s2res)
+            s = s1res[0]+s2res[0]
             digit = detect.detect(s)
-            self.assertEquals(k, digit)
+            self.assertEquals(k, digit, msg="k: %s, digit: %s, s=%s" % (k, digit, `s`,))
             silence = '\0'*320
-            codec.decode(codec.encode(silence))
+            for frame in codec.buffer_and_encode(silence):
+                codec.decode(frame)

@@ -149,13 +149,3 @@ class SchemaTests(unittest.TestCase):
         k = dobj.keys()
         k.sort()
         ae(k, ['abc_name', 'floob', 'ghi_name'])
-
-
-
-
-
-
-
-        
-
-

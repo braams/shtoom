@@ -18,7 +18,7 @@ def checkUPnP():
     d.addCallback(s.save)
     util.wait(d, timeout=8)
     if s.val is None:
-	raise unittest.SkipTest('no UPnP available')
+        raise unittest.SkipTest('no UPnP available')
 
 class TestUPnP:
 
@@ -132,5 +132,3 @@ class UPnPTest(unittest.TestCase):
             ar(ValueError, mapper.map, port)
             # Can't get info on a closed port
             ar(ValueError, mapper.info, port)
-
-

@@ -1,40 +1,82 @@
 # Copyright (C) 2004 Anthony Baxter
 
-import baseaudio, alsaaudio
-import traceback
+# from pyalsa
+import alsaaudio
+
+# from Shtoom
+import baseaudio
+
+# from Twisted
 from twisted.python import log
+from twisted.internet.task import LoopingCall
+
+import time
+import audioop
 
 opened = None
 
 class ALSAAudioDevice(baseaudio.AudioDevice):
 
+    def __init__(self):
+        baseaudio.AudioDevice.__init__(self)
+
     def openDev(self):
-        log.msg("alsaaudiodev opening")
+        device = 'default'
+        try:
+            from __main__ import app
+        except:
+            app = None
+        if app is not None:
+            device = app.getPref('audio_device')
+        log.msg("alsaaudiodev opening device %s"%(device))
         writedev = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK,
-                                 alsaaudio.PCM_NONBLOCK)
-        writedev.setchannels(1)
+                                 alsaaudio.PCM_NONBLOCK, device)
+        self.writechannels = writedev.setchannels(1)
         writedev.setrate(8000)
         writedev.setperiodsize(160)
+        writedev.setformat(alsaaudio.PCM_FORMAT_S16_LE)
         self.writedev = writedev
 
         readdev = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,
-                                alsaaudio.PCM_NONBLOCK)
-        readdev.setchannels(1)
+                                alsaaudio.PCM_NONBLOCK, device)
+        self.readchannels = readdev.setchannels(1)
         readdev.setrate(8000)
         readdev.setperiodsize(160)
+        readdev.setformat(alsaaudio.PCM_FORMAT_S16_LE)
         self.readdev = readdev
 
-    def read(self):
-        l,data = self.readdev.read()
-        return data
+        self.LC = LoopingCall(self._push_up_some_data)
+        self.LC.start(0.010)
+
+    def _push_up_some_data(self):
+        (l, data,) = self.readdev.read()
+        if self.readchannels == 2:
+            data = audioop.tomono(data, 2, 1, 1)
+        if self.sink and data:
+            self.sink.handle_data(data)
 
     def write(self, data):
+        if not hasattr(self, 'LC'):
+            return
+        assert self.isOpen(), "calling write() on closed %s"%(self,)
+        if self.writechannels == 2:
+            data = audioop.tostereo(data, 2, 1, 1)
         wrote = self.writedev.write(data)
         if not wrote: log.msg("ALSA overrun")
 
+    def isOpen(self):
+        return hasattr(self, 'writedev')
+
     def close(self):
-        log.msg("alsaaudiodev closing")
-        del self.writedev
-        del self.readdev
+        if self.isOpen():
+            log.msg("alsaaudiodev closing")
+            try:
+                self.LC.stop()
+            except AttributeError:
+                # ? bug in Twisted?  Not sure.  This catch-and-ignore is a temporary workaround.  --Zooko
+                pass
+            del self.LC
+            del self.writedev
+            del self.readdev
 
 Device = ALSAAudioDevice

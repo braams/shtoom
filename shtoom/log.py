@@ -1,7 +1,7 @@
 from twisted.python.log import err, msg
 from twisted.python import log
 
-try: 
+try:
     from twisted.python.util import untilConcludes
 except ImportError:
     def untilConcludes(f, *a, **kw):
@@ -41,11 +41,11 @@ class SaneLogObserver:
         text = self.formatMessage(eventDict)
         if text is None:
             # Don't know how to format this entry, so dump it
-            return 
+            return
         # Indent all but first line
         text = text.replace(self.NL, self.NL+'\t')
         timestamp = self.formatTime(eventDict.get('time'))
-        output = '%s [%s] %s%s'%(timestamp, eventDict.get('system', '-'), 
+        output = '%s [%s] %s%s'%(timestamp, eventDict.get('system', '-'),
                                 text, self.NL)
         self.output(output)
 
@@ -64,4 +64,3 @@ class SaneLogObserver:
 def startLogging(fp, *a, **kw):
     obs = SaneLogObserver(fp)
     log.startLoggingWithObserver(obs.emit, *a, **kw)
-

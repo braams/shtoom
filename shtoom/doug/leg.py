@@ -182,12 +182,8 @@ class Leg(object):
         if dtmf == self.__currentDTMFKey:
             self.__currentDTMFKey = None
 
-    def leg_giveRTP(self):
-        data = self.__connected.read()
-        if data:
-            packet = self.__converter.convertOutbound(data)
-            return packet
-        return None # comfort noise
+    def set_handler(self, handler):
+        self.__converter.set_handler(handler)
 
     def leg_receiveRTP(self, packet):
         data = self.__converter.convertInbound(packet)

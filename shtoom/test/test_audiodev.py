@@ -4,30 +4,37 @@
 
 from twisted.trial import unittest
 
+from shtoom.rtp.formats import PT_PCMU
+
 class _dummy:
     pass
 
 from shtoom.audio.baseaudio import AudioDevice
 class FakeDevice(AudioDevice):
     def __init__(self):
+        self.open = False
         self.ops = []
         AudioDevice.__init__(self)
     def openDev(self):
+        self.open = True
         self.ops.append('openDev')
     def close(self):
+        self.open = False
         self.ops.append('close')
     def reopen(self):
+        self.open = True
         self.ops.append('reopen')
     def write(self, bytes):
         self.ops.append('write')
-    def read(self):
-        self.ops.append('read')
+    def set_sink(self, sink):
+        pass
+    def isOpen(self):
+        return self.open
 
 class AudioDevsTest(unittest.TestCase):
 
     def test_create(self):
         from shtoom.audio import getAudioDevice
-        from shtoom.audio.playout import _Playout
         from twisted.internet.task import LoopingCall
         ae = self.assertEquals
         a_ = self.assert_
@@ -38,17 +45,13 @@ class AudioDevsTest(unittest.TestCase):
             return dev
         dummymod.Device = Device
         m = getAudioDevice(dummymod)
+        m.close()
+        m.selectDefaultFormat([PT_PCMU,])
 
         ae(m.getDevice(), dev)
-        a_(m.audioLC is None)
         a_(m.playout is None)
         m.close()
-        a_(m.audioLC is None)
         a_(m.playout is None)
         m.reopen()
-        a_(isinstance(m.playout, _Playout))
-        a_(isinstance(m.audioLC, LoopingCall))
         m.close()
-        a_(m.audioLC is None)
         a_(m.playout is None)
-        ae(dev.ops, ['openDev', 'close', 'reopen', 'write', 'close'])

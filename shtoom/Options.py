@@ -49,14 +49,14 @@ def _optParseBuilder(opt, parser):
     args = {}
     if isinstance(opt, Boolean):
         if opt.default is False:
-            args['action'] = 'store_true' 
+            args['action'] = 'store_true'
         elif opt.default is True:
             args['action'] = 'store_false'
         else:
             raise ValueError("Boolean must default to True or False, not %r"%
-                                                                self._default) 
-    args.update({'dest': opt.name, 
-                 'help': opt.description, 
+                                                                self._default)
+    args.update({'dest': opt.name,
+                 'help': opt.description,
                  'default':opt.default})
     cmdopt = '--' + opt.name.replace('_', '-')
     if hasattr(opt, 'shortOpt'):

@@ -14,6 +14,10 @@ import fastaudio
 import interfaces
 import baseaudio
 
+# from Twisted
+from twisted.python import log
+from twisted.internet.task import LoopingCall
+
 class FastAudioDevice(baseaudio.AudioDevice):
 
     def openDev(self):
@@ -28,6 +32,9 @@ class FastAudioDevice(baseaudio.AudioDevice):
             self.stop = fdev.stop
             self.buffer = ''
 
+            self.LC = LoopingCall(self._push_up_some_data)
+            self.LC.start(0.010)
+
     def write(self, bytes):
         if bytes:
             self.dev.write(bytes)
@@ -37,22 +44,22 @@ class FastAudioDevice(baseaudio.AudioDevice):
         self.dev.start()
 
     def close(self):
-        self.dev.stop()
-        self.dev.close()
+        if self.isOpen():
+            log.msg("fastaudiodev closing")
+            try:
+                self.LC.stop()
+            except AttributeError:
+                # ? bug in Twisted?  Not sure.  This catch-and-ignore is a temporary workaround.  --Zooko
+                pass
+            del self.LC
+            baseaudio.AudioDevice.close(self)
+            del self.dev
 
-    def read(self, length=320):
-        fc = 0
-        while len(self.buffer) < length:
-            nb = self._f.read()
-            if nb:
-                self.buffer += nb
-            else:
-                fc += 1
-                if fc > 4:
-                    # just give up, for now
-                    print "audio is not ready. wah"
-                    return ''
-        result, self.buffer = self.buffer[:length], self.buffer[length:]
-        return result
+    def _push_up_some_data(self):
+        if hasattr(self, 'sink') and self.sink:
+            data = self._f.read()
+            while data:
+                self.sink.handle_data(data)
+                data = self._f.read()
 
 Device = FastAudioDevice

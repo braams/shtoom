@@ -13,10 +13,10 @@ class DefaultBookEntry:
     def __init__(self,book,name,settings=[]):
         self.book = book
         self._values = {'nick': name}
-        
+
         for key,val in settings:
             self._values[key]=val
-        
+
     def isreadonly(self):
         return False
 
@@ -24,19 +24,19 @@ class DefaultBookEntry:
         return self._values.get('sip','sip:<not available>')
 
     def nickname(self):
-        return self._values.get('nick','')        
+        return self._values.get('nick','')
 
     def givenname(self):
-        return self._values.get('givenname','')        
+        return self._values.get('givenname','')
 
     def surname(self):
-        return self._values.get('surname','')        
+        return self._values.get('surname','')
 
     def realname(self):
         return "%s %s"%(self._values.get('givenname',''),self._values.get('surname',''))
-    
+
     def organization(self):
-        return self._values.get('organization','')        
+        return self._values.get('organization','')
 
     def setnickname(self,nick):
         del self.book.entries[self._values['nick']]
@@ -59,7 +59,7 @@ class DefaultBookEntry:
 class DefaultBook:
     __implements__ = (AddressBook)
     _startReactor = True
-    
+
     def __init__(self):
         self.entries = {}
         self.cfg = SafeConfigParser()
@@ -72,7 +72,7 @@ class DefaultBook:
         for name in self.cfg.sections():
             entry = DefaultBookEntry(self,name,self.cfg.items(name))
             self.entries[name]=entry
-            
+
 
     def prefix(self):
         return "addr"
@@ -122,5 +122,5 @@ class DefaultBook:
         file = open(self._filename,"w")
         parser.write(file)
         file.close()
-        
+
 book = DefaultBook()

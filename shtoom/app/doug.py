@@ -155,7 +155,7 @@ class DougApplication(BaseApplication):
         md = remoteSDP.getMediaDescription('audio')
         ipaddr = md.ipaddr or remoteSDP.ipaddr
         remoteAddr = (ipaddr, md.port)
-        self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
+        self._rtp[callcookie].start(remoteAddr)
         call = self._calls[callcookie]
         if call.dialog.getDirection() == "inbound":
             self._voiceapps[callcookie].va_callanswered()
@@ -190,11 +190,6 @@ class DougApplication(BaseApplication):
             self._voiceapps[callcookie].va_receiveRTP(packet, callcookie)
         except IOError:
             pass
-
-    def giveRTP(self, callcookie):
-        v = self._voiceapps[callcookie]
-        packet = v.va_giveRTP(callcookie)
-        return packet
 
     def placeCall(self, cookie, nleg, sipURL, fromURI=None):
         ncookie = self.getCookie()

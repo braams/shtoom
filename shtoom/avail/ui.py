@@ -76,7 +76,7 @@ def getGnomeInterface(fail=False):
 def listUI():
     uis = [ 'text', 'qt', 'wx', 'tk', 'gnome' ]
 
-    uis = [ (x,globals()['get%sInterface'%(x.capitalize())](fail=False)) 
+    uis = [ (x,globals()['get%sInterface'%(x.capitalize())](fail=False))
                                                         for x in uis ]
     uis = [ x[0] for x in uis if x[1] is not None ]
     return uis

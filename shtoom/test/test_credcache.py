@@ -54,4 +54,3 @@ class CredCacheTests(unittest.TestCase):
         c.loadCreds(app.creds)
         ae(c.getCred('sip.bar.com'), ('gazpacho', 'bowl'))
         ae(c.getCred('sip.foo.com'), ('gonzo', 'seekrit'))
-

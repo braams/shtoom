@@ -3,19 +3,20 @@
 # $Id: rtp.py,v 1.40 2004/03/07 14:41:39 anthony Exp $
 #
 
-import struct, random, os, md5, socket
+import struct, sys, random, os, md5, socket
 from time import sleep, time
 
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet.task import LoopingCall
 from twisted.python import log
 
 from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN, PT_NTE
 from shtoom.rtp.packets import RTPPacket, parse_rtppacket
+from shtoom.audio.converters import MediaSample
 
 TWO_TO_THE_16TH = 2<<16
 TWO_TO_THE_32ND = 2<<32
+TWO_TO_THE_48TH = 2<<48
 
 from shtoom.rtp.packets import NTE
 
@@ -28,15 +29,21 @@ class RTPProtocol(DatagramProtocol):
     _stunAttempts = 0
 
     _cbDone = None
-    LC = None
 
-    rtpParser = None
-
+    Done = False
     def __init__(self, app, cookie, *args, **kwargs):
         self.app = app
         self.cookie = cookie
         self._pendingDTMF = []
         #DatagramProtocol.__init__(self, *args, **kwargs)
+        self.ptdict = {}
+        self.seq = self.genRandom(bits=16)
+        self.ts = self.genInitTS()
+        self.ssrc = self.genSSRC()
+        # only for debugging -- the way to prevent the sending of RTP packets 
+        # onto the Net is to reopen the audio device with a None (default) 
+        # media sample handler instead of this RTP object as the media sample handler.
+        self.sending = False 
 
     def getSDP(self, othersdp=None):
         sdp = SDPGenerator().getSDP(self)
@@ -223,9 +230,6 @@ class RTPProtocol(DatagramProtocol):
 
     def stopSendingAndReceiving(self):
         self.Done = 1
-        if self.LC: 
-            self.LC.stop()
-            self.LC = None
         d = self.unmapRTP()
         d.addCallback(lambda x: self.rtpListener.stopListening())
         d.addCallback(lambda x: self.rtcpListener.stopListening())
@@ -234,9 +238,18 @@ class RTPProtocol(DatagramProtocol):
         packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
 
         self.seq += 1
-        self.transport.write(packet.netbytes(), self.dest)
+        # Note that seqno gets modulo 2^16 in RTPPacket, so it doesn't need 
+        # to be wrapped at 16 bits here.
+        if self.seq >= TWO_TO_THE_48TH:
+            self.seq = self.seq - TWO_TO_THE_48TH
+
+        try:
+            self.transport.write(packet.netbytes(), self.dest)
+        except Exception, le:
+            pass
 
     def _send_cn_packet(self):
+        assert hasattr(self, 'dest'), "_send_cn_packet called before start %r" % (self,)
         # PT 13 is CN.
         if self.ptdict.has_key(PT_CN):
             cnpt = PT_CN.pt
@@ -246,39 +259,26 @@ class RTPProtocol(DatagramProtocol):
             # We need to send SOMETHING!?!
             cnpt = 0
 
-        log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt, self.dest[0], self.dest[1]), system='rtp')
+        log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt, 
+                                        self.dest[0], self.dest[1]), system='rtp')
 
         self._send_packet(cnpt, chr(127))
 
-    def startSendingAndReceiving(self, dest, fp=None):
+    def start(self, dest, fp=None):
         self.dest = dest
-        self.prevInTime = self.prevOutTime = time()
-        self.sendFirstData()
 
-    def sendFirstData(self):
-        self.seq = self.genRandom(bits=16)
-        self.ts = self.genInitTS()
-        self.ssrc = self.genSSRC()
-        self.sample = None
-        self.packets = 0
-        self.Done = 0
-        self.sent = 0
-        try:
-            self.sample = self.app.giveRTP(self.cookie)
-        except IOError: # stupid sound devices
-            self.sample = None
-            pass
-        self.LC = LoopingCall(self.nextpacket)
-        self.LC.start(0.020)
-        # Now send a single CN packet to seed any firewalls that might
-        # need an outbound packet to let the inbound back.
-        self._send_cn_packet()
+        self.Done = False
+        self.sending = True
         if hasattr(self.transport, 'connect'):
             self.transport.connect(*self.dest)
 
-    def datagramReceived(self, datagram, addr):
-        # XXX check for late STUN packets here. see, e.g datagramReceived in sip.py
+        # Now send a single CN packet to seed any firewalls that might
+        # need an outbound packet to let the inbound back.
+        self._send_cn_packet()
+
+    def datagramReceived(self, datagram, addr, t=time):
         packet = parse_rtppacket(datagram)
+
         try:
             packet.header.ct = self.ptdict[packet.header.pt]
         except KeyError:
@@ -286,8 +286,14 @@ class RTPProtocol(DatagramProtocol):
                 # Argh nonstandardness suckage
                 packet.header.pt = 13
                 packet.header.ct = self.ptdict[packet.header.pt]
-        if packet:
-            self.app.receiveRTP(self.cookie, packet)
+            else:
+                # XXX This could overflow the log.  Ideally we would have a 
+                # "previous message repeated N times" feature...  --Zooko 2004-10-18
+                log.msg("received packet with unknown PT %s" % packet.header.pt)
+                return # drop the packet on the floor
+
+        packet.header.ct = self.ptdict[packet.header.pt]
+        self.app.receiveRTP(self.cookie, packet)
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
@@ -338,26 +344,27 @@ class RTPProtocol(DatagramProtocol):
             hex = m.hexdigest()
         return int(hex[:bits//4],16)
 
-    def nextpacket(self, n=None, f=None, pack=struct.pack):
+    def handle_media_sample(self, sample):
         if self.Done:
-            if self.LC is not None:
-                self.LC.stop()
-                self.LC = None
             if self._cbDone:
                 self._cbDone()
             return
-        self.ts += 160
-        self.packets += 1
         # We need to keep track of whether we were in silence mode or not -
         # when we go from silent->talking, set the marker bit. Other end
         # can use this as an excuse to adjust playout buffer.
-        if self.sample is not None:
-            pt = self.ptdict[self.sample.header.ct]
-            self._send_packet(pt, self.sample.data)
-            self.sent += 1
-            self.sample = None
-        elif (self.packets - self.sent) % 100 == 0:
-            self._send_cn_packet()
+        if not self.sending:
+            if not hasattr(self, 'warnedaboutthis'):
+                log.msg(("%s.handle_media_sample() should only be called" +
+                         " only when it is in sending mode.") % (self,))
+                self.warnedaboutthis = True
+            return
+
+        pt = self.ptdict[sample.ct]
+        self._send_packet(pt, sample.data)
+        self.ts += 160
+        # Wrapping
+        if self.ts >= TWO_TO_THE_32ND:
+            self.ts = self.ts - TWO_TO_THE_32ND
 
         # Now send any pending DTMF keystrokes
         if self._pendingDTMF:
@@ -368,14 +375,3 @@ class RTPProtocol(DatagramProtocol):
                     self._send_packet(pt=ntept, data=payload)
                 if self._pendingDTMF[0].isDone():
                     self._pendingDTMF = self._pendingDTMF[1:]
-        try:
-            self.sample = self.app.giveRTP(self.cookie)
-        except IOError:
-            pass
-
-        # Wrapping
-        if self.seq >= TWO_TO_THE_16TH:
-            self.seq = self.seq - TWO_TO_THE_16TH
-
-        if self.ts >= TWO_TO_THE_32ND:
-            self.ts = self.ts - TWO_TO_THE_32ND

@@ -6,19 +6,19 @@ class     DependencyFailure(FatalError): pass
 class         NoAudioDevice(DependencyFailure): pass
 class         NoUserInterface(DependencyFailure): pass
 
-class CallFailed(Exception): 
+class CallFailed(Exception):
     sipCode = 500
     def __init__(self, args, cookie=None):
         self.args = args
         self.cookie = cookie
 
-class     CallRejected(CallFailed): 
+class     CallRejected(CallFailed):
     sipCode = 603
 
-class     CallNotAnswered(CallFailed): 
+class     CallNotAnswered(CallFailed):
     sipCode = 600
 
-class     UserBusy(CallFailed): 
+class     UserBusy(CallFailed):
     sipCode = 600
 
 class     STUNFailed(CallFailed): pass

@@ -20,7 +20,7 @@ class TestBlobby:
         self.operation = DeferredCache(self._operation, inProgressOnly=False)
 
     def _operation(self, *args, **kwargs):
-        # Stub pointless operation - returns the first value passed, 
+        # Stub pointless operation - returns the first value passed,
         # after a small delay
         self.calls.append((args,kwargs))
         opdef = defer.Deferred()
@@ -72,7 +72,7 @@ class DefcacheTests(unittest.TestCase):
         util.wait(d3)
         ae(s3.val, 'foo')
         ae(t.calls, [(('foo',),{})])
-        
+
         # Now test kwargs
         t = TestBlobby()
         s1 = Saver()
@@ -169,7 +169,7 @@ class DefcacheTests(unittest.TestCase):
         util.wait(d3)
         ae(s3.val, 'foo')
         ae(len(t.calls), 2)
-        
+
         # Now test kwargs
         t = TestBlobby()
         s1 = Saver()
@@ -197,8 +197,8 @@ class DefcacheTests(unittest.TestCase):
         ae = self.assertEquals
         ar = self.assertRaises
 
-	# Has to be elsewhere to avoid SyntaxErrors :-(
-	from shtoom.test.py24tests import Dectest
+        # Has to be elsewhere to avoid SyntaxErrors :-(
+        from shtoom.test.py24tests import Dectest
 
         # XXX actually test the stupid things?!
         d = Dectest()
@@ -213,4 +213,3 @@ class DefcacheTests(unittest.TestCase):
         d.addCallback(s.save)
         util.wait(d)
         ae(s.val, (1,2,3))
-

@@ -79,8 +79,8 @@ class RTP(Interface):
         """ Returns the IP address for this end of the RTP connection.
         """
 
-    def startSendingAndReceiving(self):
-        """ Start the timer loop that delivers and receives packets.
+    def start(self):
+        """ Start the timer loop that sends packets of audio.
         """
 
     def stopSendingAndReceiving(self):
@@ -120,11 +120,11 @@ class StunPolicy(Interface):
         """ return True/False for whether STUN should apply """
 
 class NATMapper(Interface):
-    """ NAT Mapper interface. 
+    """ NAT Mapper interface.
 
         A NAT Mapper is passed a Port object, and does the appropriate
-        thing to make the port available on the outside of a NAT. 
-        
+        thing to make the port available on the outside of a NAT.
+
         The STUN NAT Mapper can only do this for UDP, while the UPnP Mapper
         can do both UDP and TCP.
     """
@@ -132,24 +132,23 @@ class NATMapper(Interface):
     def map(self, port):
         """ Passed a Port object, returns a Deferred. The Deferred will
             be triggered with a t.i.address.IPv4Address of the external
-            address. If the same Port is passed a second time, the same 
+            address. If the same Port is passed a second time, the same
             address will be returned.
         """
 
     def info(self, port):
-        """ Returns an IPv4Address of a mapped Port. .map() should have 
+        """ Returns an IPv4Address of a mapped Port. .map() should have
             been called with this Port object first and the resulting deferred
             is required to have been triggered - otherwise a ValueError will be
             raised.
         """
 
     def unmap(self, port):
-        """ Remove the external port mapping for the given port. .map() 
-            should have already been called with the given Port. 
-            Returns a deferred that will be triggered when the mapping 
+        """ Remove the external port mapping for the given port. .map()
+            should have already been called with the given Port.
+            Returns a deferred that will be triggered when the mapping
             has been removed.
 
             Note that for the STUN mapper, this is a no-op, but you should do
             it anyway.
         """
-

@@ -19,7 +19,7 @@ class SoapTests(unittest.TestCase):
         body = request.get_data()
         bs = BeautifulSax(body)
         meth = bs.fetch('u:GetGenericPortMappingEntry')
-        ae(len(meth), 1) 
+        ae(len(meth), 1)
         meth = meth[0]
         ae(meth['xmlns:u'], schema)
         # strip stupid whitespace text nodes
@@ -37,7 +37,7 @@ class SoapTests(unittest.TestCase):
         body = request.get_data()
         bs = BeautifulSax(body)
         meth = bs.fetch('u:GetTotallyBogusRequest')
-        ae(len(meth), 1) 
+        ae(len(meth), 1)
         meth = meth[0]
         ae(meth['xmlns:u'], schema)
         # strip stupid whitespace text nodes
@@ -72,7 +72,7 @@ class SoapTests(unittest.TestCase):
         body = request.get_data()
         bs = BeautifulSax(body)
         meth = bs.fetch('u:GetGenericPortMappingEntry')
-        ae(len(meth), 1) 
+        ae(len(meth), 1)
         meth = meth[0]
         ae(meth['xmlns:u'], schema)
         # strip stupid whitespace text nodes
@@ -85,21 +85,21 @@ class SoapTests(unittest.TestCase):
 
         ar(NameError, soap.GetNonExistentMethod, )
         ar(TypeError, soap.GetGenericPortMappingEntry, a=1, b=2)
-        ar(TypeError, soap.GetGenericPortMappingEntry, 
+        ar(TypeError, soap.GetGenericPortMappingEntry,
                                                 NewPortMappingIndex=1, b=2)
         # XXX Type checking not coded yet
-        #ar(ValueError, soap.GetGenericPortMappingEntry, 
+        #ar(ValueError, soap.GetGenericPortMappingEntry,
         #                                     NewPortMappingIndex='abcd')
 
         # XXX required arg checking not coded yet
         #ar(TypeError, lambda : soap.GetGenericPortMappingEntry())
 
         # XXX allowed values checking not coded yet
-        #ar(ValueError, soap.DeletePortMapping, 
+        #ar(ValueError, soap.DeletePortMapping,
         #          NewRemoteHost=None, NewExternalPort=1234, NewProtocol='IP')
 
         # XXX int bounds checking not coded yet
-        #ar(ValueError, soap.DeletePortMapping, 
+        #ar(ValueError, soap.DeletePortMapping,
         #          NewRemoteHost=None, NewExternalPort=-1, NewProtocol='UDP')
 
 
@@ -439,5 +439,3 @@ canned_scpd = """<?xml version="1.0"?>
 </serviceStateTable>
 </scpd>
 """
-
-

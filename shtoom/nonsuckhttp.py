@@ -48,7 +48,7 @@ class Response:
             res = self.data[self._readcount:self._readcount+bytes]
             self._readcount+=bytes
             return res
-    
+
     def addheader(self, key, value):
         """Add header for field key handling repeats."""
         #print "got a header", key, value
@@ -131,7 +131,7 @@ class HTTPClient(basic.LineReceiver):
             b = self.__buffer
             self.__buffer = None
             self.handleResponse(b)
-    
+
     def handleResponsePart(self, data):
         self.__buffer += data
 
@@ -171,7 +171,7 @@ class HTTPClient(basic.LineReceiver):
         self.sendRequest()
         self.response = Response(self.request.get_full_url())
 
-    def handleTimeout(self): 
+    def handleTimeout(self):
         "override, if necessary"
         return None
 
@@ -206,8 +206,8 @@ class HTTPClient(basic.LineReceiver):
             resdef, self.resdef = self.resdef, None
             resdef.errback(ValueError('401 auth scheme %s not supported'%scheme))
             return
-        
-            
+
+
     def getBasicAuthResponse(self, chal):
         from base64 import encodestring
         if _AuthSource is None:
@@ -237,13 +237,13 @@ class HTTPClient(basic.LineReceiver):
         elif (resp.status in (301, 302, 303, 307) and m in ("GET", "HEAD")
             or resp.status in (301, 302, 303) and m == "POST"):
                 # Some sane defaults
-                newurl = self.response.getheader('Location')
-                newurl = urlparse.urljoin(req.get_full_url(), newurl)
-                log.msg("redirecting %s request to %s"%(m, newurl))
-                newreq = URLRequest(newurl, data=req.data, headers=req.headers)
-                resdef, self.resdef = self.resdef, None
-                protocol.ClientCreator(reactor, HTTPClient, newreq, resdef, self.timeout
-                                                    ).connectTCP(*splithostport(newreq))
+            newurl = self.response.getheader('Location')
+            newurl = urlparse.urljoin(req.get_full_url(), newurl)
+            log.msg("redirecting %s request to %s"%(m, newurl))
+            newreq = URLRequest(newurl, data=req.data, headers=req.headers)
+            resdef, self.resdef = self.resdef, None
+            protocol.ClientCreator(reactor, HTTPClient, newreq, resdef, self.timeout
+                                                ).connectTCP(*splithostport(newreq))
         elif (resp.status - resp.status%100) in (400, 500, 600):
             resdef, self.resdef = self.resdef, None
             resdef.errback(HTTPError(resp.status, resp))
@@ -258,7 +258,7 @@ class HTTPClient(basic.LineReceiver):
         resp.version = version
         resp.message = message
 
-    
+
     def handleHeader(self, key, value):
         self.response.addheader(key, value)
 
@@ -298,12 +298,12 @@ def splithostport(req):
     else:
         port = 80
     return host, port
-    
+
 # Ugly hack. Should remove utterly, can be done with passing a factory
 # to urlopen instead.
 _OpenerClass = HTTPClient
 def installOpener(klass):
-    global _OpenerClass 
+    global _OpenerClass
     _OpenerClass = klass
     HTTPClientFactory.protocol = _OpenerClass
 
@@ -326,7 +326,7 @@ def urlopen(url, factory=None, timeout=300):
     f = factory(url, resdef, timeout)
     resdef = reactor.connectTCP(host, port, f)
     return f.deferred
-    
+
 
 if __name__ == "__main__":
     from twisted.internet import reactor

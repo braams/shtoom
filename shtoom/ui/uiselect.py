@@ -19,8 +19,8 @@ def findUserInterface(application, prefui):
         else:
             raise ValueError('ui %s not known'%(prefui))
         return main(application)
-    for attempt in ( ui.getGnomeInterface, ui.getQtInterface, 
-                     ui.getWxInterface, ui.getTkInterface, 
+    for attempt in ( ui.getGnomeInterface, ui.getQtInterface,
+                     ui.getWxInterface, ui.getTkInterface,
                      ui.getTextInterface, ):
         main = attempt(fail=False)
         if main is not None:

@@ -55,7 +55,7 @@ class Popup(Toplevel):
     def hideWindow(self):
         Toplevel.destroy(self)
 
-    
+
 
 class Dialog(Popup):
 
@@ -70,7 +70,7 @@ class Dialog(Popup):
         self.top = Frame(self)
         self.top.grid(row=1,column=1,sticky=E)
         self.label = Label(self.top, text=self.message, justify='center')
-        self.label.grid(row=1, column=1, padx=5, pady=5, 
+        self.label.grid(row=1, column=1, padx=5, pady=5,
                                     columnspan=len(self.buttons),sticky=NW)
         for n, b in enumerate(self.buttons):
             b = Button(self.top, text=b, command=lambda b=b: self.selected(b))
@@ -124,7 +124,7 @@ class AuthDialog(Popup):
         self.saveCheck = Checkbutton(self.top, command=self._saveBoolean)
         self.saveCheck.grid(row=4, column=1, columnspan=1, **defargs)
 
-        self.savelabel = Label(self.top, 
+        self.savelabel = Label(self.top,
                                 text=_('Save this username and password'))
         self.savelabel.grid(row=4, column=2, columnspan=3, **defargs)
 
@@ -180,7 +180,7 @@ class MovingDialog(Dialog):
         if newx > self._fx:
             print "move",(newx, newy), (self._fx, self._fy)
             reactor.callLater(0.02, self._moveWindow)
-            
+
 
 
     def hideWindow(self):
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
     def ping():
         print "ping"
-    
+
     p = LoopingCall(ping)
     p.start(0.5)
     reactor.callLater(0, mainWindow)

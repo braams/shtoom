@@ -1,5 +1,5 @@
 
-# Based on code originally by Glyph 
+# Based on code originally by Glyph
 
 
 import sys
@@ -13,7 +13,7 @@ class PopupNotice:
         self.deferred = None
 
     def popup(self, text, buttons=('OK',), timeout=5000):
-	import gtk, gtk.gdk
+        import gtk, gtk.gdk
         from twisted.internet import defer
         self.deferred = defer.Deferred()
         self.win = gtk.Window(gtk.WINDOW_POPUP)
@@ -97,7 +97,7 @@ def done(*args):
 def testrun3(*args):
     print "second dialog got %s"%(args,)
     p = PopupNotice()
-    d = p.popup('this is a notice\nwith three buttons', 
+    d = p.popup('this is a notice\nwith three buttons',
                                 buttons=('Yes','No','Maybe'))
     p.start()
     d.addCallback(done)
@@ -105,7 +105,7 @@ def testrun3(*args):
 def testrun2(*args):
     print "first dialog got %s"%(args,)
     p = PopupNotice()
-    d = p.popup('this is a notice with two buttons\n(and no timeout)', 
+    d = p.popup('this is a notice with two buttons\n(and no timeout)',
                     buttons=('Yes','No'), timeout = 0)
     p.start()
     d.addCallback(testrun3)

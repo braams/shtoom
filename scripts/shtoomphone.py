@@ -23,7 +23,35 @@ def main():
     app = Phone()
     app.boot(args=sys.argv[1:])
 
-    app.start()
+    audioPref = app.getPref('audio')
+    audio_in = app.getPref('audio_infile')
+    audio_out = app.getPref('audio_outfile')
+    if audio_in and audio_out:
+        aF = ( audio_in, audio_out )
+    else:
+        aF = None
+
+    from twisted.python import log
+    log.msg("Getting new audio device", system='phone')
+
+    from shtoom.audio import getAudioDevice
+    app._audio = getAudioDevice()
+    log.msg("Got new audio device %s :: %s" % (app._audio, type(app._audio),))
+
+    def run_it():
+        app.start()
+
+    def run_it_with_profiling():
+        import profile
+        p = profile.Profile()
+        p.runcall(app.start)
+        import tempfile
+        (tmpfile, tmpfname,) = tempfile.mkstemp(prefix='shtoomphone')
+        p.dump_stats(tmpfname)
+        del p
+
+    run_it()
+    # run_it_with_profiling()
 
 if __name__ == "__main__":
     from shtoom import i18n

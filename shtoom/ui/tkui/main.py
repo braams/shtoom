@@ -29,7 +29,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         filemenu = Menu(self._menu)
         filemenu.add_command(label=_("Exit"), command = self.shutdown)
         self._menu.add_cascade(label=_("File"), menu=filemenu)
-        
+
         editmenu = Menu(self._menu)
         editmenu.add_command(label=_("Preferences"), command = self.prefmenuitem_selected)
         self._menu.add_cascade(label=_("Edit"), menu=editmenu)
@@ -49,7 +49,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._urlentry.bind('<Return>', self.callButton_clicked)
         self._urlentry.focus_set()
         self._addrButton = Button(self._top1, text="...", command=self.addrButton_clicked)
-        
+
         self._addrButton.grid(row=1, column=6, sticky=E)
         self._img = PhotoImage(data=b64logo)
         self._logo = Label(self._top1, image=self._img)
@@ -210,7 +210,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         import popups
         from twisted.internet import defer
         d = defer.Deferred()
-        popup = popups.Dialog(self.main, d, 
+        popup = popups.Dialog(self.main, d,
                               "Incoming Call: %s\nAnswer?"%description,
                               ("Yes", "No"),)
         d.addCallback(lambda x: self._cb_popupIncoming(x, cookie))

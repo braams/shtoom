@@ -593,7 +593,7 @@ class Call(object):
             contact = contact[0]
         self.contact = contact
         # If there's a record-route header, we need to send to the specified
-        # host, not the contact. 
+        # host, not the contact.
         if okmessage.headers.get('record-route'):
             rr = okmessage.headers['record-route']
             if type(rr) is list: rr = rr[0]
@@ -793,7 +793,9 @@ class Call(object):
     def recvResponse(self, message):
         state = self.getState()
         log.msg("Handling %s while in state %s"%(message.code, state), system="sip")
-        if message.code in ( 100, 180, 181, 182 ):
+        if message.code == 180:
+            self.sip.app.ringBack()
+        elif message.code in ( 100, 181, 182 ):
             return
         elif message.code == 183:
             self.sip.app.debugMessage('Should handle early media here:\n' + message.toString())

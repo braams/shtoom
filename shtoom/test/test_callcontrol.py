@@ -1,6 +1,8 @@
 from twisted.internet import reactor, defer
 from twisted.python import log
 import twisted.trial.util
+from shtoom.i18n import install as i18n_install
+i18n_install()
 
 #TDEBUG=True
 TDEBUG=False
@@ -46,6 +48,7 @@ callFlowInboundHorror = """
 class TestAudio:
     def __init__(self):
         self.actions = []
+
     def selectDefaultFormat(self, fmt):
         self.actions.append('select')
         if TDEBUG: print "selecting fake audio format"
@@ -54,7 +57,7 @@ class TestAudio:
         self.actions.append('list')
         return []
 
-    def reopen(self):
+    def reopen(self, mediahandler):
         self.actions.append('reopen')
         if TDEBUG: print "reopening fake audio"
 
@@ -70,12 +73,20 @@ class TestAudio:
         self.actions.append('write')
         pass
 
+    def play_wave_file(self, file):
+        self.actions.append('wave')
+        pass
+
 class TestUI:
     threadedUI = False
+    cookie = None
 
     def __init__(self, stopOnDisconnect=True):
         self.stopOnDisconnect = stopOnDisconnect
         self.actions = []
+
+    def statusMessage(self, *args):
+        pass
 
     def connectApplication(self, app):
         self.app = app
@@ -209,7 +220,7 @@ class TestRTP:
         self.actions.append('create')
         return defer.succeed(self.cookie)
 
-    def startSendingAndReceiving(self, remote):
+    def start(self, remote):
         self.actions.append('start')
         pass
 
@@ -239,7 +250,7 @@ class TestCallControl(unittest.TestCase):
             reactor.callLater(0, ui.dropCall)
             p.start()
             twisted.trial.util.wait(testdef)
-            self.assertEquals(au.actions, ['reopen', 'close'])
+            self.assertEquals(au.actions, ['close', 'select', 'reopen', 'close'])
             self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
             actions = ui.actions
             if TDEBUG: print actions
@@ -268,7 +279,7 @@ class TestCallControl(unittest.TestCase):
         reactor.callLater(0.3, lambda : p.sip.dropCall(ui.cookie))
         p.start()
         twisted.trial.util.wait(testdef)
-        self.assertEquals(au.actions, ['reopen', 'close'])
+        self.assertEquals(au.actions, ['close', 'select', 'reopen', 'close'])
         self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
         actions = ui.actions
         cookie = actions[0][1]
@@ -295,7 +306,7 @@ class TestCallControl(unittest.TestCase):
         d.addCallback(p.sip.dropFakeInbound)
         p.start()
         twisted.trial.util.wait(testdef)
-        self.assertEquals(au.actions, ['reopen', 'close'])
+        self.assertEquals(au.actions, ['wave', 'close', 'select', 'reopen', 'close'])
         self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
         actions = ui.actions
         cookie = actions[0][1]

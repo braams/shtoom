@@ -28,7 +28,7 @@ from twisted.python import log
 import sys, socket, random, urlparse
 from nonsuckhttp import urlopen
 from shtoom.soapsucks import BeautifulSoap, SOAPRequestFactory, soapenurl
-from shtoom.defcache import DeferredCache 
+from shtoom.defcache import DeferredCache
 
 from shtoom.interfaces import NATMapper as INATMapper
 from shtoom.nat import BaseMapper
@@ -69,17 +69,17 @@ class UPnPProtocol(DatagramProtocol, object):
                                         system='UPnP')
         if status == "200":
             self.gotSearchResponse = True
-            self.handleSearchResponse(message)
             if self.upnpTimeout:
                 self.upnpTimeout.cancel()
                 self.upnpTimeout = None
+            self.handleSearchResponse(message)
 
     def handleSearchResponse(self, message):
         import urlparse
         headers, body = self.parseSearchResponse(message)
         loc = headers.get('location')
         if not loc:
-            log.msg("No location header in response to M-SEARCH!", 
+            log.msg("No location header in response to M-SEARCH!",
                                                             system='UPnP')
             return
         loc = loc[0]
@@ -174,19 +174,19 @@ class UPnPProtocol(DatagramProtocol, object):
 
     def stupidrandomdelaytoworkaroundbug(self, body, loc):
         """
-        On Mac (but not on Linux), Twisted seems to drop the ball on 
-        connecTCP().  The TCP connection gets set up (as confirmed by packet 
-        trace showing three-part handshake), but the factory object never gets 
-        buildProtocol().  Eventually (depending on the timeout value), the 
+        On Mac (but not on Linux), Twisted seems to drop the ball on
+        connecTCP().  The TCP connection gets set up (as confirmed by packet
+        trace showing three-part handshake), but the factory object never gets
+        buildProtocol().  Eventually (depending on the timeout value), the
         factory object gets its connectionFailed() method called instead.
-    
-        Mysteriously, this *always* happens on the urlopen in this method, and 
-        never on any of the other TCP connections that are made during Shtoom 
+
+        Mysteriously, this *always* happens on the urlopen in this method, and
+        never on any of the other TCP connections that are made during Shtoom
         setup.  Also mysteriously, inserting this stupidrandomdelay of 4 seconds
         fixes it.
 
-        Surely I should write a minimal test case and then either give the test 
-        case to the Twisted folks or fix it myself, but some other things are 
+        Surely I should write a minimal test case and then either give the test
+        case to the Twisted folks or fix it myself, but some other things are
         way too urgent today.
 
         The sequence of events that I observed was: connect 1; connect 2;
@@ -199,7 +199,7 @@ class UPnPProtocol(DatagramProtocol, object):
         """
         log.msg("after stupidrandomrelaytoworkaroundbug, got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
-            log.msg("already found UPnP, discarding duplicate response", 
+            log.msg("already found UPnP, discarding duplicate response",
                                                                 system="UPnP")
             # We already got a working one - ignore this one
             return
@@ -207,7 +207,7 @@ class UPnPProtocol(DatagramProtocol, object):
         bs = BeautifulSoap(data)
         manufacturer = bs.first('manufacturer')
         if manufacturer and manufacturer.contents:
-            log.msg("you're behind a %s"%(manufacturer.contents[0]), 
+            log.msg("you're behind a %s"%(manufacturer.contents[0]),
                                                                 system='UPnP')
             self.upnpInfo['manufacturer'] = manufacturer.contents[0]
         friendly = bs.first('friendlyName')
@@ -221,7 +221,7 @@ class UPnPProtocol(DatagramProtocol, object):
             log.msg("upnp response has no urlbase, falling back to %s"%(loc,), system='UPnP')
             self.urlbase = loc
 
-        wanservices = bs.fetch('service', 
+        wanservices = bs.fetch('service',
             dict(serviceType='urn:schemas-upnp-org:service:WANIPConnection:%'))
         for service in wanservices:
             scpdurl = service.get('SCPDURL')
@@ -240,7 +240,7 @@ class UPnPProtocol(DatagramProtocol, object):
     def handleWanServiceDesc(self, body):
         log.msg("got WANServiceDesc from %s"%(self.urlbase,), system='UPnP')
         data = body.read()
-        self.soap = SOAPRequestFactory(self.controlURL, 
+        self.soap = SOAPRequestFactory(self.controlURL,
                             "urn:schemas-upnp-org:service:WANIPConnection:1")
         self.soap.setSCPD(data)
         self.completedDiscovery()
@@ -266,15 +266,15 @@ class UPnPProtocol(DatagramProtocol, object):
         return cd
 
     def getGenericPortMappingEntry(self, nextPMI=0, cd=None, saved=None):
-        if saved is None: 
+        if saved is None:
             saved = {}
         request = self.soap.GetGenericPortMappingEntry(
                                                 NewPortMappingIndex=nextPMI)
         d = soapenurl(request)
-        d.addCallbacks(lambda x: self.cb_gotGenericPortMappingEntry(x, 
-                                                                 nextPMI+1, 
+        d.addCallbacks(lambda x: self.cb_gotGenericPortMappingEntry(x,
+                                                                 nextPMI+1,
                                                                  cd, saved),
-                       lambda x: self.cb_failedGenericPortMappingEntry(x, 
+                       lambda x: self.cb_failedGenericPortMappingEntry(x,
                                                                     cd, saved))
 
     def cb_gotGenericPortMappingEntry(self, response, nextPMI, cd, saved):
@@ -296,12 +296,12 @@ class UPnPProtocol(DatagramProtocol, object):
         cd = defer.Deferred()
         d = getLocalIPAddress()
         d.addCallback(lambda locIP: self._cbAddPortMapping(intport, extport,
-                                                           desc, proto, lease, 
+                                                           desc, proto, lease,
                                                            locIP, cd))
         return cd
 
     def _cbAddPortMapping(self, iport, eport, desc, proto, lease, locip, cd):
-        request = self.soap.AddPortMapping(NewRemoteHost=None, 
+        request = self.soap.AddPortMapping(NewRemoteHost=None,
                                            NewExternalPort=eport,
                                            NewProtocol=proto,
                                            NewInternalPort=iport,
@@ -310,9 +310,9 @@ class UPnPProtocol(DatagramProtocol, object):
                                            NewPortMappingDescription=desc,
                                            NewLeaseDuration=lease)
         d = soapenurl(request)
-        d.addCallbacks(lambda x,cd=cd:self.cb_gotAddPortMapping(x,cd), 
+        d.addCallbacks(lambda x,cd=cd:self.cb_gotAddPortMapping(x,cd),
                        lambda x,cd=cd:self.cb_failedAddPortMapping(x,cd))
-        
+
     def cb_gotAddPortMapping(self, response, compdef):
         log.msg('AddPortMapping ok', system='UPnP')
         compdef.callback(None)
@@ -325,15 +325,15 @@ class UPnPProtocol(DatagramProtocol, object):
     def deletePortMapping(self, extport, proto='UDP'):
         "remove a port mapping"
         cd = defer.Deferred()
-        request = self.soap.DeletePortMapping(NewRemoteHost=None, 
+        request = self.soap.DeletePortMapping(NewRemoteHost=None,
                                               NewExternalPort=extport,
                                               NewProtocol=proto)
         d = soapenurl(request)
-        d.addCallbacks(lambda x,cd=cd:self.cb_gotDeletePortMapping(x,cd), 
+        d.addCallbacks(lambda x,cd=cd:self.cb_gotDeletePortMapping(x,cd),
                        lambda x,cd=cd:self.cb_failedDeletePortMapping(x,cd))
         return cd
-        
-        
+
+
     def cb_gotDeletePortMapping(self, response, compdef):
         log.msg('DeletePortMapping ok', system='UPnP')
         compdef.callback(None)
@@ -401,10 +401,10 @@ class UPnPMapper(BaseMapper):
             # XXX when the SOAP code fixes up types, remove the 'str()' version
             if existing is None:
                 existing = mappings.get((ptype,str(extport)))
-            if existing is None: 
+            if existing is None:
                 break
-            exhost = existing['NewInternalClient'] 
-            exint = existing['NewInternalPort'] 
+            exhost = existing['NewInternalClient']
+            exint = existing['NewInternalPort']
             exproto = existing['NewProtocol']
             # More string nasties when I fix SOAP typing
             if exproto == ptype and exhost == locIP and exint in (intport, str(intport)):
@@ -416,13 +416,13 @@ class UPnPMapper(BaseMapper):
             extport += random.randint(1,20)
         # XXX hardcoded description makes me sad - should be an optional
         # argument!?
-        d = self.upnp.addPortMapping(intport=intport, extport=extport, 
+        d = self.upnp.addPortMapping(intport=intport, extport=extport,
                                         desc='Shtoom', proto=ptype, lease=0)
         d.addCallback(lambda x: self.upnp.getExternalIPAddress())
         d.addCallback(lambda x: self.cb_map_addedPortMapping(x, extport, port))
 
     def cb_map_addedPortMapping(self, extaddr, extport, port):
-        cd = self._mapped[port] 
+        cd = self._mapped[port]
         self._mapped[port] = (extaddr, extport)
         cd.callback((extaddr, extport))
 
@@ -465,7 +465,7 @@ def _cb_gotUPnP(upnp):
         log.msg("no UPnP found!", system="UPnP")
         return None
     # A little bit of tricksiness here. If we got the same upnp server,
-    # keep the UPnPMapper alive, so that unmap of existing entries work 
+    # keep the UPnPMapper alive, so that unmap of existing entries work
     # correctly. Otherwise, kill it.
     global _cached_mapper
     if _cached_mapper and _cached_mapper.upnp and _cached_mapper.upnp.controlURL != upnp.controlURL:

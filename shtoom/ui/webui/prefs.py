@@ -46,7 +46,7 @@ label { margin-left: 5px; cursor: pointer; }
     padding: 15px;
     padding-top: 4px;
     padding-bottom: 4px; }
-    
+
 img { border: 0px; }
 
 .header-line {
@@ -316,7 +316,7 @@ class WizardConfiguration(rend.Page):
 class IConfigurationWizard(annotate.TypedInterface):
     def divmod(self, req=annotate.Request(), name=annotate.String(label="Configuration Name"), username=annotate.String(), password=annotate.PasswordEntry()):
         """Divmod Account
-        
+
         Add a configuration for a Divmod account.
         """
         pass
@@ -324,7 +324,7 @@ class IConfigurationWizard(annotate.TypedInterface):
 
     def fwd(self, req=annotate.Request(), name=annotate.String(label="Configuration Name"), username=annotate.String(), password=annotate.PasswordEntry()):
         """Free World Dialup Account
-        
+
         Add a configuration for a FWD account.
         """
         pass
@@ -389,4 +389,3 @@ class Reloader(rend.Page):
         from shtoom.ui.webui import prefs
         reload(prefs)
         return prefs.WizardConfiguration(self.original), segments
-

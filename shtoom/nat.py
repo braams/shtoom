@@ -66,7 +66,7 @@ def _clearCachedLocalIP():
     _cacheresult(None)
 
 def _getLocalIPAddress():
-    # So much pain. Don't even bother with 
+    # So much pain. Don't even bother with
     # socket.gethostbyname(socket.gethostname()) - the number of ways this
     # is broken is beyond belief.
     from twisted.internet import reactor
@@ -116,9 +116,9 @@ def _getLocalIPAddressViaConnectedUDP(ip):
 
 
 def _getLocalIPAddressViaMulticast():
-    # We listen on a new multicast address (using UPnP group, and 
-    # a random port) and send out a packet to that address - we get 
-    # our own packet back and get the address from it. 
+    # We listen on a new multicast address (using UPnP group, and
+    # a random port) and send out a packet to that address - we get
+    # our own packet back and get the address from it.
     from twisted.internet import reactor
     from twisted.internet.interfaces import IReactorMulticast
     try:
@@ -250,7 +250,7 @@ class NullMapper(BaseMapper):
         cd = self._mapped[port]
         self._mapped[port] = (locIP, port.getHost().port)
         cd.callback(self._mapped[port])
-        
+
     def info(self, port):
         "See shtoom.interfaces.NATMapper.info"
         if port in self._mapped:
@@ -272,7 +272,7 @@ def getNullMapper():
     if _cached_nullmapper is None:
         _cached_nullmapper = NullMapper()
     return _cached_nullmapper
-        
+
 
 
 if __name__ == "__main__":

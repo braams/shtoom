@@ -24,17 +24,17 @@ class AddressBook:
         self.tvcolumn = gtk.TreeViewColumn('Column 0')
         self.addresslist.append_column(self.tvcolumn)
         self.cell = gtk.CellRendererText()
-        self.tvcolumn.pack_start(self.cell, True)        
+        self.tvcolumn.pack_start(self.cell, True)
         self.tvcolumn.add_attribute(self.cell, 'text', 0)
-        
+
     def show(self):
         books = self.main.addrlookup.getactivebooks()
         booknames = map(lambda b: b.bookname(),books)
         self.bookcombo.set_popdown_strings(booknames)
-            
+
         self.window.show()
 
-    
+
     # GUI callbacks
 
     def on_selection_change(self,path, user_data):
@@ -52,7 +52,7 @@ class AddressBook:
 
     def on_bookcombo_choice(self,item):
         self.book = None
-        
+
         for book in self.main.addrlookup.getactivebooks():
             if book.bookname() == item.get_text():
                 self.book = book
@@ -75,7 +75,7 @@ class AddressBook:
         self.main.setaddress(entry.sip())
         self.window.hide()
         self.window.destroy()
-        
+
     def on_cancel_clicked(self,button):
         self.window.hide()
         self.window.destroy()
@@ -85,7 +85,7 @@ class AddressBook:
         self.entry_editor = EntryEdit(self,self.book,entry)
         self.entry_editor.show()
         self.reloadlist()
-        
+
     def on_remove_clicked(self,button):
         iter = self.entrytreestore.get_iter(self.selpath[0])
         nick = self.entrytreestore.get_value(iter,0)
@@ -104,7 +104,7 @@ class AddressBook:
         self.entry_editor.apply()
         self.entry_editor.hide()
         self.reloadlist()
-        
+
     def on_edit_cancel_clicked(self,button):
         self.entry_editor.hide()
 
@@ -134,7 +134,7 @@ class EntryEdit:
         self.organizationentry.set_text(self.entry.organization())
         self.sipentry.set_text(self.entry.sip())
         self.window.show()
-        
+
     def hide(self):
         self.window.hide()
 
@@ -147,4 +147,3 @@ class EntryEdit:
         self.entry.setsip(self.sipentry.get_text())
         if not self.book.isreadonly():
             self.book.savebook()
-        

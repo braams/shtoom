@@ -2,13 +2,27 @@
 
 import baseaudio, ossaudiodev
 
+# from Twisted
+from twisted.python import log
+from twisted.internet.task import LoopingCall
+
 opened = None
 
 class OSSAudioDevice(baseaudio.AudioDevice):
 
     def openDev(self):
-        print "ossaudiodev opening"
-        dev = ossaudiodev.open('rw')
+        try:
+            from __main__ import app
+        except:
+            app = None
+        if app is not None:
+            device = app.getPref('audio_device')
+        if device is not None:
+            log.msg("ossaudiodev opening device %s")
+            dev = ossaudiodev.open(device, 'rw')
+        else:
+            log.msg("ossaudiodev opening default device")
+            dev = ossaudiodev.open('rw')
         dev.speed(8000)
         dev.nonblock()
         ch = dev.channels(1)
@@ -23,7 +37,10 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             raise ValueError("Couldn't find signed 16 bit PCM, got %s"%(
                                                     ", ".join(formats)))
 
-    def read(self):
+        self.LC = LoopingCall(self._push_up_some_data)
+        self.LC.start(0.010)
+
+    def _push_up_some_data(self):
         from audioop import tomono
         try:
             data = self.dev.read(320*self._channels)
@@ -31,7 +48,8 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             return None
         if self._channels == 2:
             data = tomono(data, 2, 1, 1)
-        return data
+        if self.sink and data:
+            self.sink.handle_data(data)
 
     def write(self, data):
         from audioop import tostereo
@@ -40,8 +58,18 @@ class OSSAudioDevice(baseaudio.AudioDevice):
         self.dev.write(data)
 
     def close(self):
-        print "ossaudiodev closing"
-        self.dev.close()
+        if self.isOpen():
+            log.msg("ossaudiodev closing")
+            try:
+                self.LC.stop()
+            except AttributeError:
+                # ? bug in Twisted?  Not sure.  This catch-and-ignore is a temporary workaround.  --Zooko
+                pass
+            del self.LC
+            baseaudio.AudioDevice.close(self)
+            del self.dev
+
+
 
 def listFormats(dev):
     import ossaudiodev as O

@@ -15,11 +15,11 @@ class DemoWizard(wiz.Wizard):
         print "final values:", self.entry, self.entry2, self.pick, self.opt
 
     def start(self):
-        page = wiz.Page('Demonstration - Page 1', [ 
-                 wiz.Label('intro', 'This is the first page of a wizard, with some very very very very very very very very very very long introductory text'), 
+        page = wiz.Page('Demonstration - Page 1', [
+                 wiz.Label('intro', 'This is the first page of a wizard, with some very very very very very very very very very very long introductory text'),
                  wiz.Text('entry2', 'Some more text', default=self.entry2),
                  wiz.Password('entry', 'Enter a secret', default=self.entry),
-                 wiz.Choice('pick', 'Choose a number', choices=['one', 'two', 'three'], 
+                 wiz.Choice('pick', 'Choose a number', choices=['one', 'two', 'three'],
                                                      default=self.pick),
                  wiz.Boolean('onoff', 'Select on or off', default=self.onoff),
                  wiz.Label('outro', 'Make your choices and hit Next'),
@@ -33,8 +33,8 @@ class DemoWizard(wiz.Wizard):
         print "got", args
         self.__dict__.update(args)
 
-        page = wiz.Page('Demonstration - Page 2', 
-                        [wiz.Label('thanks', 'Thank You'),], 
+        page = wiz.Page('Demonstration - Page 2',
+                        [wiz.Label('thanks', 'Thank You'),],
                         (('Back', self.start), ('Finish', self.finished),))
         d = defer.Deferred()
         reactor.callLater(1, d.callback, page)
@@ -46,4 +46,3 @@ class DemoWizard(wiz.Wizard):
 
     def cancelled(self, **args):
         print "cancelled got", args
-

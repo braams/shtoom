@@ -99,9 +99,6 @@ class BaseApplication:
     def receiveRTP(self, callcookie, payloadType, payloadData):
         raise NotImplementedError
 
-    def giveRTP(self, callcookie):
-        raise NotImplementedError
-
     def getCookie(self):
         self.__cookieCount += 1
         return "CallCookie%d"%(self.__cookieCount)

@@ -53,9 +53,6 @@ class VoiceApp(StateMachine):
     def va_selectDefaultFormat(self, ptlist, callcookie):
         return self.getLeg(callcookie).selectDefaultFormat(ptlist)
 
-    def va_giveRTP(self, callcookie):
-        return self.getLeg(callcookie).leg_giveRTP()
-
     def va_receiveRTP(self, packet, callcookie):
         return self.getLeg(callcookie).leg_receiveRTP(packet)
 
@@ -81,7 +78,7 @@ class VoiceApp(StateMachine):
             del self.__legs[leg]
         except KeyError:
             log.msg("can't find leg %s, current legs: %r"%(
-                                    leg, self.__legs.keys()), 
+                                    leg, self.__legs.keys()),
                                     system='doug')
         self._triggerEvent(CallRejectedEvent(leg))
 
@@ -146,7 +143,7 @@ class VoiceApp(StateMachine):
         for n,key in enumerate(digits):
             if key not in ',01234567890#*':
                 raise ValueError, key
-            if key == ',': 
+            if key == ',':
                 # pause
                 continue
             n = float(n) # just in case

@@ -4,7 +4,7 @@
 
 class AddrLookup:
     def __init__(self,app):
-        self.app = app        
+        self.app = app
         self.bookmap = {}  # A map of all active address books. The map key is the book prefix
         self.booklist = [] # A list of all active address books in priority order
 
@@ -23,7 +23,7 @@ class AddrLookup:
                     default_domain = default_domain[4:]
                 sipaddr += '@'+default_domain
         return sipaddr
-        
+
     def lookup(self,key):
         """Used to lookup a valid sip url from a possibly partial one"""
         key = key.strip()
@@ -56,6 +56,3 @@ class AddrLookup:
 
     def getactivebooks(self):
         return self.booklist
-    
-
-        

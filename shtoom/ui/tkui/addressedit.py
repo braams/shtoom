@@ -28,20 +28,20 @@ class AddressBook(Dialog):
         self._list = Listbox(parent,width=40)
         self._list.grid(row=2,columnspan=2,rowspan=4,sticky=W+E+N+S)
         self._list.bind("<Button-1>",self.select_addr)
-        
+
         self._add  = Button(parent,text="+",command=self.add_clicked)
         self._add.grid(row=2,column=2,sticky=W+E)
         self._del  = Button(parent,text="-",command=self.del_clicked)
         self._del.grid(row=3,column=2,sticky=W+E)
         self._edit = Button(parent,text="E",command=self.edit_clicked)
         self._edit.grid(row=4,column=2,sticky=W+E)
-        
+
         Frame(parent).grid(row=5)
         parent.rowconfigure(5,weight=2)
         parent.pack()
         self._optionvar.trace("w",self.book_changed)
         self.book_changed(None,None,None)
-        
+
     def book_changed(self,dummy1,dummy2,dummy3):
         bookname = self._optionvar.get()
         self.book = None
@@ -90,7 +90,7 @@ class AddressBook(Dialog):
         entry = self.get_selected_entry()
         self.book.delentry(entry)
         self.update_list()
-        
+
     def edit_clicked(self):
         entry = self.get_selected_entry()
         dlg = EntryEdit(self,self.book,entry)
@@ -101,13 +101,13 @@ class AddressBook(Dialog):
         if entry:
             self.main._urlentry.delete(0,END)
             self.main._urlentry.insert(0,entry.sip())
-        
+
 class EntryEdit(Dialog):
     def __init__(self,addrdlg,book,entry):
         self.addrdlg = addrdlg
         self.entry = entry
         self.book = book
-        Dialog.__init__(self, addrdlg, title="Edit Contact")        
+        Dialog.__init__(self, addrdlg, title="Edit Contact")
 
     def body(self,parent):
         Label(parent,text="Nickname:").grid(row=0,sticky=W)
@@ -119,7 +119,7 @@ class EntryEdit(Dialog):
         self._nickname = Entry(parent)
         self._nickname.grid(row=0,column=1,sticky=W+E)
         self._nickname.insert(0,self.entry.nickname())
-        
+
         self._givenname = Entry(parent)
         self._givenname.grid(row=1,column=1,sticky=W+E)
         self._givenname.insert(0,self.entry.givenname())
@@ -146,5 +146,3 @@ class EntryEdit(Dialog):
         self.entry.setsip(self._sip.get())
         if not self.book.isreadonly():
             self.book.savebook()
-        
-        

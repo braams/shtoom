@@ -40,13 +40,13 @@ class TestCall:
             d.addCallback(self._cb_startFakeOutboundWithAuth, uri)
         else:
             d = self.sip.app.acceptCall(call=self)
-            d.addCallbacks(self._cb_incomingCall, 
+            d.addCallbacks(self._cb_incomingCall,
                            self.failedIncoming).addErrback(log.err)
 
     def _cb_startFakeOutboundWithAuth(self, auth, uri):
         print "got auth", auth
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self._cb_incomingCall, 
+        d.addCallbacks(self._cb_incomingCall,
                        self.failedIncoming).addErrback(log.err)
 
     def _cb_incomingCall(self, response):
@@ -67,7 +67,7 @@ class TestCall:
         from shtoom.rtp.formats import PT_PCMU, SDPGenerator
         from shtoom.exceptions import CallRejected
         self.cookie = cookie
-        self.sip.app.selectDefaultFormat(self.cookie, sdp=None,format=PT_PCMU)
+        self.sip.app.selectDefaultFormat(self.cookie, sdp=None,fmts=[PT_PCMU,])
         sdp = SDPGenerator().getSDP(self)
         d, self.d = self.d, None
         self.sip.app.startCall(self.cookie, sdp, d.callback)
@@ -121,7 +121,7 @@ class TestSip:
                     print "new incoming call starting"
                     uri = open(self.callFile).readline().strip()
                     d = self.fakeInbound(uri)
-                    d.addCallbacks(self._cb_fakeInbound, 
+                    d.addCallbacks(self._cb_fakeInbound,
                                    self._eb_fakeInbound).addErrback(log.err)
 
     def _cb_fakeInbound(self, response):
@@ -175,12 +175,12 @@ class EchoRTP:
         self.actions.append('create')
         return defer.succeed(self.cookie)
 
-    def startSendingAndReceiving(self, remote):
+    def start(self, remote):
         from twisted.internet.task import LoopingCall
         self.actions.append('start')
         self.go = True
         self.echo = ''
-        self.LC = LoopingCall(self.nextpacket)
+        self.LC = LoopingCall(self.mic_event)
         self.LC.start(0.020)
 
     def stopSendingAndReceiving(self):
@@ -188,9 +188,9 @@ class EchoRTP:
         self.LC.stop()
         self.echo = ''
 
-    def nextpacket(self):
+    def mic_event(self):
         from twisted.internet import reactor
-        self.echo = self.app.giveRTP(self.cookie)
+        self.echo = self.app.giveSample(self.cookie)
         if self.echo is not None:
             packet = self.echo
             reactor.callLater(0, lambda : self.app.receiveRTP(self.cookie,

@@ -45,7 +45,7 @@ def getDataFiles():
     files = []
     out = []
     for path, dirnames, filenames in os.walk('shtoom'):
-        if '.svn' in dirnames: 
+        if '.svn' in dirnames:
             dirnames.remove('.svn')
         wanted = []
         for glob in DataGlobs:
@@ -62,6 +62,8 @@ if sys.version_info < (2,4):
 else:
     addnl['data_files'] = []
     addnl['package_data'] = {'': DataGlobs}
+
+addnl['data_files'].extend([('share/shtoom/audio', ['share/shtoom/audio/ring.wav', 'share/shtoom/audio/ringback.wav',],),])
 
 setup(
     name = "shtoom",
@@ -92,4 +94,3 @@ setup(
     ],
     **addnl
 )
-

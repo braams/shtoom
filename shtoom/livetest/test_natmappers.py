@@ -9,7 +9,7 @@ from twisted.trial import util
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import Protocol, Factory, DatagramProtocol
 
-from shtoom.test.test_upnp import checkUPnP
+from shtoom.livetest.test_upnp import checkUPnP
 
 import random
 
@@ -145,5 +145,3 @@ class MapperTest(unittest.TestCase):
             ar(ValueError, mapper.map, port)
             # Can't get info on a closed port
             ar(ValueError, mapper.info, port)
-
-

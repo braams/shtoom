@@ -2,11 +2,11 @@ import time
 
 from twisted.python.components import Interface
 
-# 
+#
 # To Do:
 #      Make the Tk window on the Mac get raised!
 #      Test on Windows, see if it works there
-# 
+#
 
 _Debug = True
 
@@ -17,7 +17,7 @@ class ISlidable(Interface):
 
         Note very well:
 
-            A window with 'override redirect' set (a Gtk Popup, or 
+            A window with 'override redirect' set (a Gtk Popup, or
             Tk's Toplevel.overrideredirect(1), can NOT get input focus.
             The window manager ignores it. Things you click on will work.
             Things you attempt to type into will NOT work.
@@ -56,8 +56,8 @@ class ISlider(Interface):
 
     def show(direction):
         """ Slide the window in from the direction specified. Direction
-            should be one of 
-              'n', 'nne', 'ene', 'e', 'ese', 'sse', 
+            should be one of
+              'n', 'nne', 'ene', 'e', 'ese', 'sse',
               's', 'ssw', 'wsw', 'w', 'wnw', 'nnw'
         """
 
@@ -108,7 +108,7 @@ def updatepos(cur, delta, final):
                 return final
             else:
                 raise ValueError('asked to not move %d to %d'%(cur, final))
-        else: 
+        else:
             return cur
     elif delta > 0:
         if new < final:
@@ -150,19 +150,19 @@ class Slider:
         if not self.direction:
             raise ValueError("call .show first")
         self._startMoving(self.direction, show=False)
-        
+
     def _startMoving(self, direction, show=True):
         from twisted.internet import reactor
         sx, sy = self.win.getScreenSize()
         wx, wy = self.winX, self.winY
         if _Debug: print "window is", wx, wy
-        dx, dy = delta[direction] 
+        dx, dy = delta[direction]
         showx, showy = endPosition[direction]((sx,sy),(wx,wy),self.offset)
         hidex = showx + (-dx * (wx+self.offset))
         hidey = showy + (-dy * (wy+self.offset))
         distance = max(abs(showx-hidex), abs(showy-hidey))
 
-        if show: 
+        if show:
             steps = float(self.showTime) / self.stepTime
             startx, starty = hidex, hidey
             endx, endy = showx, showy
@@ -181,7 +181,7 @@ class Slider:
             if _Debug: print "jumping to",(startx, startx)
             self.win.movePosition((int(startx), int(starty)))
         if _Debug: print "jumped to",(startx, starty)
-        self._cl = self.win.callLater(self.stepTime, 
+        self._cl = self.win.callLater(self.stepTime,
             self._moveTo, (startx,starty), (dx,dy), (endx,endy), show)
 
     def _moveTo(self, (cx,cy), (dx,dy), (fx,fy), show):
@@ -195,10 +195,10 @@ class Slider:
                 self.win.windowShown()
             else:
                 self.win.windowHidden()
-            if _Debug: 
+            if _Debug:
                 print "done with this one"
         else:
-            self._cl = self.win.callLater(self.stepTime, 
+            self._cl = self.win.callLater(self.stepTime,
                     self._moveTo, (nx,ny), (dx,dy), (fx,fy), show)
 
 
@@ -258,5 +258,3 @@ class SliderDemo:
         self.directions = ['n','nne','ene','e','ese','sse',
                            's','ssw','wsw','w','wnw','nnw']
         self.slidable.callLater(0, self.nextDirection)
-
-

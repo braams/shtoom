@@ -1,6 +1,6 @@
 """
     DTMF generation and detection code. This replaces the old nasty
-    code with something a bit nicer (but a bit slower, too :-( 
+    code with something a bit nicer (but a bit slower, too :-(
 """
 
 # DTMF tones (aka "the beeps when you hit a keypad consist of a pair
@@ -32,10 +32,10 @@ dtmf2freq = {}
 for f, d in freq2dtmf.items():
     dtmf2freq[d] = f
 del f, d
-    
+
 import sets
 frequencies = freq2dtmf.keys()
-frequencies = sets.Set([ x[0] for x in frequencies ] + 
+frequencies = sets.Set([ x[0] for x in frequencies ] +
                        [ x[1] for x in frequencies ])
 
 def getSineWave(freq, samplecount=320):
@@ -94,14 +94,14 @@ class DtmfDetector:
         from numarray import nonzero
         from numarray.fft import real_fft
         fft = abs(real_fft(sample))
-        # We compare each point to the point on either side - we must be 
+        # We compare each point to the point on either side - we must be
         # greater than both.
-        # To do this, we left-shift and right-shift the array by one to 
+        # To do this, we left-shift and right-shift the array by one to
         # compare.
         peaks = nonzero((fft[1:-1] > fft[:-2]) * (fft[1:-1] > fft[2:]))
-        if not len(peaks) or not len(peaks[0]): 
+        if not len(peaks) or not len(peaks[0]):
             return ()
-        # Avoiding 'zip; sort; reverse' will give a big speedup. 
+        # Avoiding 'zip; sort; reverse' will give a big speedup.
         try:
             peakvals = zip(fft[1:-1].take(peaks)[0], peaks[0])
         except:
@@ -135,7 +135,7 @@ def dtmfGenerator(key, duration=160):
     s1 = getSineWave(f1, duration)
     s2 = getSineWave(f2, duration)
     # combine them and make louder
-    s = [ (2**13)*(s1[x]+s2[x]) for x in range(duration) ] 
+    s = [ (2**13)*(s1[x]+s2[x]) for x in range(duration) ]
     # turn into a string
     s = struct.pack('%dh'%duration, *s)
     return s

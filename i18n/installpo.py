@@ -3,7 +3,7 @@
 import os, fnmatch, shutil
 
 def getMatchingFiles(root, pattern):
-    """ Returns a list of all files under directory 'root' that 
+    """ Returns a list of all files under directory 'root' that
         match pattern 'pattern'
     """
     pyfiles = []

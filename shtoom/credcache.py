@@ -42,4 +42,3 @@ class CredCache:
         cred.add(opt)
         if save:
             self.app.updateOptions({}, forceSave=True)
-

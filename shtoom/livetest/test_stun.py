@@ -75,4 +75,3 @@ class NetAddressTests(unittest.TestCase):
         d.addCallback(s.save)
         util.wait(d, timeout=16)
         a_(isinstance(s.arg, _NatType), "%s, %s :: %s" % (s, s.arg, type(s.arg),))
-

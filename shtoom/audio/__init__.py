@@ -41,7 +41,9 @@ def findAudioInterface():
     if audioPref:
         audioint = audioOptions.get(audioPref)
         if not audioint:
-            log.msg("requested oss audio interface unavailable")
+            log.msg("requested audio interface %s unavailable"%(audioPref,))
+        else:
+            return audioint
 
     for audioint in allAudioOptions:
         if audioint:
