@@ -3,7 +3,7 @@ from twisted.trial import unittest
 
 from shtoom.audio.converters import Codecker, _Codec, MediaLayer, DougConverter
 from shtoom.audio.converters import MulawCodec, NullCodec, PassthruCodec
-from shtoom.rtp.formats import PT_PCMU, PT_RAW, PT_CN, PT_QCELP, PT_GSM
+from shtoom.rtp.formats import PT_PCMU, PT_RAW, PT_CN, PT_QCELP, PT_GSM, PT_SPEEX
 from shtoom.rtp.packets import RTPPacket
 
 from shtoom.avail import codecs
@@ -84,6 +84,17 @@ class CodecTest(unittest.TestCase):
         ae(p.pt, PT_GSM)
         ae(len(c.decode(p)), 320)
 
+    def testSpeexCodec(self):
+        if codecs.gsm is None:
+            raise unittest.SkipTest("no speex support")
+        ae = self.assertEquals
+        c = Codecker()
+        c.setDefaultFormat(PT_SPEEX)
+        ae(c.getDefaultFormat(), PT_SPEEX)
+        p = c.encode(instr)
+        ae(len(p.data), 40)
+        ae(p.pt, PT_SPEEX)
+        ae(len(c.decode(p)), 320)
 
     def testMediaLayer(self):
         ae = self.assertEquals

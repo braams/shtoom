@@ -45,3 +45,14 @@ else:
 
 from shtoom.audio import fileaudio
 
+
+def listAudio():
+    all = globals().copy()
+    del all['listAudio']
+    for name, val in all.items():
+        if val is None:
+            del all[name]
+        elif name.startswith('_'):
+            del all[name]
+    return all.keys()
+
