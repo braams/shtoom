@@ -1,6 +1,6 @@
 import gtk
 
-from shtoom.Options import NoDefaultOption
+from shtoom.Options import NoDefaultOption, getPrettyName
 from twisted.python import log
 
 class PreferencesDialog:
@@ -27,13 +27,13 @@ class PreferencesDialog:
         for otype, oname, oget in self.widgets:
             if otype != 'Choice':
                 oval = oget()
-                if oval == gtk.TRUE:
+                if oval == True:
                     oval = True
-                if oval == gtk.FALSE:
+                if oval == False:
                     oval = False
             else:
                 for c, cget in oget:
-                    if cget() == gtk.TRUE:
+                    if cget() == True:
                         oval = c
                         break
                 else:
@@ -68,68 +68,68 @@ class PreferencesDialog:
             tab = gtk.VBox(False,8)
             tab.set_border_width(8)
             #print "tab", tab
-            desc = gtk.Label(group.getDescription())
-            tab.pack_start(desc, gtk.FALSE, gtk.FALSE)
+            desc = gtk.Label(group.description)
+            tab.pack_start(desc, False, False)
 
             for optnumber, option in enumerate(group):
                 optBox = gtk.HBox(spacing=8)
 
-                l = gtk.Label(option.getPrettyName())
-                self.tooltips.set_tip(l, option.getDescription())
-                optBox.pack_start(l, gtk.FALSE, gtk.TRUE)
+                l = gtk.Label(getPrettyName(option))
+                self.tooltips.set_tip(l, option.description)
+                optBox.pack_start(l, False, True)
 
-                if option.optionType in ('String', 'Number', 'Password'):
+                if option.type in ('String', 'Integer', 'Password'):
                     entry = gtk.Entry()
-                    if option.optionType == 'Password':
-                        entry.set_visibility(gtk.FALSE)
+                    if option.type == 'Password':
+                        entry.set_visibility(False)
 
-                    val = option.getValue()
+                    val = option.value
 
                     if val and val is not NoDefaultOption:
                         entry.set_text(str(val))
 
-                    self.tooltips.set_tip(entry, option.getDescription())
-                    optBox.pack_end(entry, gtk.FALSE, gtk.TRUE)
-                    self.widgets.append((option.optionType,
-                                         option.getName(),
+                    self.tooltips.set_tip(entry, option.description)
+                    optBox.pack_end(entry, False, True)
+                    self.widgets.append((option.type,
+                                         option.name,
                                          entry.get_text))
 
-                elif option.optionType == 'Choice':
+                elif option.type == 'Choice':
                     choices = option.getChoices()
                     lb = None
                     buttons = []
                     for c in choices[::-1]:
                         b = gtk.RadioButton(lb, c)
-                        self.tooltips.set_tip(b, option.getDescription(), None)
-                        if c == option.getValue():
+                        self.tooltips.set_tip(b, option.description, None)
+                        if c == option.value:
                             #print "setting", c
-                            b.set_active(gtk.TRUE)
+                            b.set_active(True)
                         else:
-                            b.set_active(gtk.FALSE)
-                        optBox.pack_end(b, gtk.FALSE, gtk.TRUE)
+                            b.set_active(False)
+                        optBox.pack_end(b, False, True)
                         buttons.append((c,b.get_active))
                         lb = b
                     b = gtk.RadioButton(lb, 'default')
-                    optBox.pack_end(b, gtk.FALSE, gtk.TRUE)
+                    optBox.pack_end(b, False, True)
                     buttons.append((NoDefaultOption,b.get_active))
-                    self.widgets.append((option.optionType,
-                                         option.getName(),
+                    self.widgets.append((option.type,
+                                         option.name,
                                          buttons))
 
-                elif option.optionType == 'Boolean':
+                elif option.type == 'Boolean':
                     entry = gtk.CheckButton("")
-                    self.tooltips.set_tip(entry, option.getDescription())
-                    if option.getValue():
-                        entry.set_active(gtk.TRUE)
+                    self.tooltips.set_tip(entry, option.description)
+                    if option.value:
+                        entry.set_active(True)
                     else:
-                        entry.set_active(gtk.FALSE)
-                    optBox.pack_end(entry, gtk.FALSE, gtk.TRUE)
-                    self.widgets.append((option.optionType,
-                                         option.getName(),
+                        entry.set_active(False)
+                    optBox.pack_end(entry, False, True)
+                    self.widgets.append((option.type,
+                                         option.name,
                                          entry.get_active))
                 else:
-                    print "unknown option", option.optionType
+                    print "unknown option", option.type
 
-                tab.pack_start(optBox, gtk.FALSE, gtk.FALSE)
-            notebook.append_page(tab, gtk.Label(group.getName()))
+                tab.pack_start(optBox, False, False)
+            notebook.append_page(tab, gtk.Label(group.name))
         self.tooltips.enable()
