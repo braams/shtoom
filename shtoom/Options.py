@@ -184,6 +184,7 @@ class OptionGroup(object):
 class AllOptions(object):
     def __init__(self):
         self._groups = []
+        self._filename = None
 
     def __iter__(self):
         for g in self._groups:
