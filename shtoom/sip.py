@@ -670,8 +670,8 @@ class Registration(Call):
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s REGISTER'%self.getCSeq(incr=1))
-        invite.addHeader('to', '"anthony baxter" <%s>'%(str(self.regAOR)))
-        invite.addHeader('from', '"anthony baxter" <%s>'%(str(self.regAOR)))
+        invite.addHeader('to', '"%s" <%s>'%(username,str(self.regAOR)))
+        invite.addHeader('from', '"%s" <%s>'%(username,str(self.regAOR)))
         state =  self.getState() 
         if state in ( 'NEW', 'SENT_REGISTER', 'REGISTERED' ):
             invite.addHeader('expires', 900)
