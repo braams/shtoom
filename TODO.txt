@@ -35,4 +35,5 @@ Later:
     - KDE addressbook integration. KDE panel integration.
     - Mac OS X UI and addressbook integration.
     - Windows address book? Is there such a beast?
-
+    - PGP integration for SIP
+    - Crypto for RTP (via codec? what's the standard?)
