@@ -117,8 +117,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             return
         # have hang up and call buttons toggle
         self.updateCallButton(do_call=False)
-        deferred = self.app.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
+        self.app.placeCall(sipURL)
 
     def callStarted(self, cookie):
         self.cookie = cookie
@@ -217,7 +216,10 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
     def DoClose(self, event):
         # Write out the current address history
         self.saveHistory()
-        reactor.stop()
+        # TODO: Move this into the proxy app
+        print "Stopping app now"
+        reactor.callFromThread(reactor.stop)
+        self.Destroy()
         
     def DoExit(self, event):
         self.Close(True)
