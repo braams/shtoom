@@ -16,7 +16,7 @@ from shtoom.interfaces import StunPolicy as IStunPolicy
 from shtoom.defcache import DeferredCache
 from shtoom.nat import BaseMapper
 
-STUNVERBOSE = False
+STUNVERBOSE = True
 # If we're going to follow RFC recommendation, make this 7
 MAX_RETRANSMIT = 5
 
@@ -161,7 +161,7 @@ class _StunBase(object):
         pkt = struct.pack('!hh16s', mt, pktlen, tid) + avstr
         if STUNVERBOSE:
             print "sending request with %d avpairs to %r (in state %s)"%(
-                                        len(avpairs), server, self._stunState)
+                                        len(avpairs), server, getattr(self, '_stunState'))
         self.transport.write(pkt, server)
 
 class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
@@ -223,8 +223,8 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                 # We already have a working STUN server to play with.
                 pass
             return
-        if STUNVERBOSE: print 'calling handleStunState%s'%(self._stunState)
-        getattr(self, 'handleStunState%s'%(self._stunState))(dgram, address)
+        if STUNVERBOSE: print 'calling handleStunState%s'%(getattr(self, '_stunState'))
+        getattr(self, 'handleStunState%s'%(getattr(self, '_stunState')))(dgram, address)
 
     def handleStunState1(self, dgram, address):
         resdict = self._parseStunResponse(dgram, address)
