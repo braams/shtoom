@@ -145,6 +145,7 @@ class DougApplication(BaseApplication):
 
     def getSDP(self, callcookie):
         from shtoom.multicast.SDP import SimpleSDP
+        from shtoom.rtp import RTP_PT_CN
         rtp =  self._rtp[callcookie]
         s = SimpleSDP()
         s.setPacketSize(160)
@@ -162,7 +163,11 @@ class DougApplication(BaseApplication):
         if FMT_DVI4 in fmts:
             s.addRtpMap('DVI4', 8000)
             #s.addRtpMap('DVI4', 16000)
+        if RTP_PT_CN:
+            print "added comfort noise"
+            s.addRtpMap('CN', 8000)
         s.addRtpMap('telephone-event', 8000, payload=101)
+        # a=fmtp:101 0-16
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
