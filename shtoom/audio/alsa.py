@@ -10,15 +10,15 @@ class ALSAAudioDevice(baseaudio.AudioDevice):
 
     def openDev(self):
         log.msg("alsaaudiodev opening")
-        writedev = alsaaudio.openpcm(alsaaudio.PCM_PLAYBACK,
-                                     alsaaudio.PCM_NONBLOCK)
+        writedev = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK,
+                                 alsaaudio.PCM_NONBLOCK)
         writedev.setchannels(1)
         writedev.setrate(8000)
         writedev.setperiodsize(160)
         self.writedev = writedev
 
-        readdev = alsaaudio.openpcm(alsaaudio.PCM_CAPTURE,
-                                    alsaaudio.PCM_NONBLOCK)
+        readdev = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,
+                                alsaaudio.PCM_NONBLOCK)
         readdev.setchannels(1)
         readdev.setrate(8000)
         readdev.setperiodsize(160)
