@@ -44,6 +44,12 @@ class Leg(object):
     def getCookie(self):
         return self._cookie
 
+    def setDialog(self, dialog):
+        self._dialog = dialog
+
+    def setCookie(self, cookie):
+        self._cookie = cookie
+
     def incomingCall(self, d):
         " This leg is an incoming call "
         self._acceptDeferred = d
@@ -216,8 +222,7 @@ class Leg(object):
 
 class BridgeSource(Source):
     "A BridgeSource connects a leg to another leg via a bridge"
-    def __init__(self, app, bridge):
-        self.app = app
+    def __init__(self, bridge):
         self.bridge = bridge
         self._readbuffer = ''
 
@@ -239,29 +244,32 @@ class BridgeSource(Source):
         return b
 
     def write(self, bytes):
-        self.other.copyData(bytes)
+        if self.other is not None:
+            self.other.copyData(bytes)
     
     def close(self):
-        self.bridge.closeBridge(self)
-        self.other.close()
+        if self.bridge is not None:
+            self.bridge.closeBridge(self)
+            self.bridge = None
+            self.other.close()
+            self.other = None
 
 class Bridge:
     """A bridge connects two legs together, and passes audio from one to
        the other. It creates two Source objects, that are connected to
        each leg"""
-    def __init__(self, app, leg1, leg2):
-        self.app = app
+    def __init__(self, leg1, leg2):
         self.connectLegs(leg1, leg2)
 
     def connectLegs(self, l1, l2):
-        bs1 = BridgeSource(self.app, self)
-        bs2 = BridgeSource(self.app, self)
+        bs1 = BridgeSource(self)
+        bs2 = BridgeSource(self)
         bs1.connect(bs2)
         bs2.connect(bs1)
-        l1.connectSource(bs1)
-        l2.connectSource(bs2)
+        l1._connectSource(bs1)
+        l2._connectSource(bs2)
 
-    def close(self, bs):
+    def closeBridge(self, bs):
         # Nothing for now.
         pass
         

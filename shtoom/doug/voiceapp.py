@@ -42,17 +42,20 @@ class VoiceApp(StateMachine):
     def getDefaultLeg(self):
         return self.__legs.values()[0]
 
-    def _getLeg(self, cookie):
+    def getLeg(self, cookie):
         return self.__legs.get(cookie)
 
+    def setLeg(self, leg, cookie):
+        self.__legs[cookie] = leg
+
     def va_selectDefaultFormat(self, ptlist, callcookie):
-        return self.__legs[callcookie].selectDefaultFormat(ptlist)
+        return self.getLeg(callcookie).selectDefaultFormat(ptlist)
 
     def va_giveRTP(self, callcookie):
-        return self._getLeg(callcookie).leg_giveRTP()
+        return self.getLeg(callcookie).leg_giveRTP()
 
     def va_receiveRTP(self, packet, callcookie):
-        return self._getLeg(callcookie).leg_receiveRTP(packet)
+        return self.getLeg(callcookie).leg_receiveRTP(packet)
 
     def va_start(self):
         self._start(callstart=0)
@@ -112,18 +115,23 @@ class VoiceApp(StateMachine):
         leg.dtmfMode(single, inband, timeout)
 
     def placeCall(self, toURI, fromURI=None):
-        self.__appl.placeCall(self.__cookie, toURI, fromURI)
+        from shtoom.doug.leg import Leg
+        nleg = Leg(cookie=None, dialog=None)
+        self.__appl.placeCall(self.__cookie, nleg, toURI, fromURI)
 
     def va_hangupCall(self, cookie):
         self.__appl.dropCall(cookie)
 
-    def connectLeg(self, leg1, leg2=None):
+    def connectLegs(self, leg1, leg2=None):
+        from shtoom.doug.leg import Bridge
+
         if leg2 is None:
             leg2 = self.getDefaultLeg()
         if leg1 is leg2:
             raise ValueError, "can't join %r to itself!"%(leg1)
         else:
-            raise NotImplementedError, "can't connect legs yet"
+            b = Bridge(leg1, leg2)
+            return b
 
     def sendDTMF(self, digits, cookie=None, duration=0.1, delay=0.05):
         "Send a string of DTMF keystrokes"
