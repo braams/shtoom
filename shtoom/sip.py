@@ -178,15 +178,17 @@ class Call(object):
                 return
             self.sip.app.selectFormat(self.cookie, sdp.rtpmap)
         resp = tpsip.Response(code)
-        # XXXXXXX add a branch= ...
-        via = tpsip.parseViaHeader(message.headers['via'][0])
-        branch = via.branch
-        if branch:
-            branch = ';branch=%s'%branch
-        else:
-            branch = ''
-        resp.addHeader('via', 'SIP/2.0/UDP %s:%s%s'%(
-                                    self.getLocalSIPAddress()+(branch,)))
+        #via = tpsip.parseViaHeader(message.headers['via'][0])
+        #branch = via.branch
+        #if branch:
+        #    branch = ';branch=%s'%branch
+        #else:
+        #    branch = ''
+        vias = message.headers['via']
+        #resp.addHeader('via', 'SIP/2.0/UDP %s:%s%s'%(
+        #                            self.getLocalSIPAddress()+(branch,)))
+        for via in vias:
+            resp.addHeader('via', via)
         resp.addHeader('from', message.headers['from'][0])
         toaddr = message.headers['to'][0]
         toname,touri,toparams = tpsip.parseAddress(toaddr)
@@ -198,7 +200,10 @@ class Call(object):
         resp.addHeader('server', 'Shtoom/%s'%shtoom.Version)
         resp.addHeader('cseq', message.headers['cseq'][0])
         if message.method == 'INVITE' and code == 200:
-            resp.addHeader('contact', message.headers['to'][0])
+            if message.headers.get('contact'):
+                resp.addHeader('contact', message.headers['contact'][0])
+            else:
+                resp.addHeader('contact', message.headers['to'][0])
             # We include SDP here
             resp.addHeader('content-type', 'application/sdp')
             sdp = sdp.show()
@@ -234,7 +239,7 @@ class Call(object):
                     self.sip.app.acceptCall(self,
                                             calltype='inbound',
                                             desc=desc,
-                                            fromIP=self.getLocalSIPAddress()[0],
+                                            fromIP=self.getRemoteSIPAddress()[0],
                                             withSTUN=self.getSTUNState() 
                                            )
         defaccept.addCallbacks(self.acceptedCall, self.rejectCall).addErrback(
@@ -313,6 +318,7 @@ class Call(object):
 
     def sendAck(self, okmessage, startRTP=0):
         from shtoom.multicast.SDP import SDP
+        print "sending ACK"
         username = self.sip.app.getPref('username')
         email_address = self.sip.app.getPref('email_address')
         oksdp = SDP(okmessage.body)
@@ -352,6 +358,7 @@ class Call(object):
             del self.compDef
         else:
             cb = lambda *args: None
+        print "sending ACK to %s %s"%(uri.host, uri.port or 5060)
         self.sip.transport.write(ack.toString(), (uri.host, (uri.port or 5060)))
         self.setState('CONNECTED')
         if startRTP:
@@ -482,10 +489,11 @@ class Call(object):
         return base
 
     def recvResponse(self, message):
+        state = self.getState()
+        print "Handling %s while in state %s"%(message.code, state)
         if message.code in ( 100, 180, 181, 182 ):
             return
         elif message.code == 200:
-            state = self.getState()
             if state == 'SENT_INVITE':
                 self.sip.app.debugMessage(message.body)
                 self.sendAck(message, startRTP=1)
