@@ -5,7 +5,7 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# $Id: rtp.py,v 1.37 2004/03/06 10:08:24 anthony Exp $
+# $Id: rtp.py,v 1.38 2004/03/06 10:17:56 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -166,6 +166,7 @@ class RTPProtocol(ConnectedDatagramProtocol):
 
     def startSendingAndReceiving(self, dest, fp=None):
         reactor.connectUDP(dest[0], dest[1], self)
+        self.dest = dest
         self.prevInTime = self.prevOutTime = time()
         self.sendFirstData()
 
