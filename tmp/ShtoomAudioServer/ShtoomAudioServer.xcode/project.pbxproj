@@ -530,10 +530,10 @@
 		C4984212073B24B600AC5FC1 = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.nib;
-			name = English;
-			path = /Volumes/Meth/src/ShtoomAudioServer/English.lproj/AudioMonitorDocument.nib;
-			refType = 0;
-			sourceTree = "<absolute>";
+			name = AudioMonitorDocument.nib;
+			path = English.lproj/AudioMonitorDocument.nib;
+			refType = 4;
+			sourceTree = "<group>";
 		};
 		C4984213073B24B600AC5FC1 = {
 			fileRef = C4984211073B24B600AC5FC1;
