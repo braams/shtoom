@@ -17,6 +17,7 @@ New to-do before 0.3:
     - write prefs UI for an OptionDict
     - finish credcache
     - package for Windows
+    - multiple registration support?
 
 Old to-do before 0.3:
     - Handle a CANCEL and withdraw any incoming-call-dialog
