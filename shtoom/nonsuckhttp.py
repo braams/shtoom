@@ -281,6 +281,7 @@ class HTTPClientFactory(protocol.ClientFactory):
         return self.instance
 
     def clientConnectionFailed(self, connector, reason):
+        from twisted.internet import reactor
         reactor.callLater(0, self.instance.resdef.errback, reason)
 
 
