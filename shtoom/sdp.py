@@ -47,8 +47,12 @@ def unparse_o(obj, o):
                                     obj._o_addrfamily, obj._o_ipaddr )]
 
 def parse_a(obj, a, text):
-    words = text.split(':')
+    words = text.split(':', 1)
     if len(words) > 1:
+        # I don't know what is happening here, but I got a traceback here
+        # because 'words' was too long before the ,1 was added.  The value was:
+        # ['alt', '1 1 ', ' 55A94DDE 98A2400C *ip address elided* 6086']
+        # Adding the ,1 seems to fix it but I don't know why. -glyph
         attr, attrvalue = words
     else:
         attr, attrvalue = text, None
