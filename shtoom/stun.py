@@ -323,8 +323,8 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                                                     address, tid, count+1)
             self.sendRequest(self._altStunAddress, tid)
         else:
-            self._finished = True
-            raise ValueError("STUN Failed in state 3")
+            log.err("STUN Failed in state 3")
+            self._finishedStun()
 
     def handleStunState4(self, resdict, address):
         self.state4DelayedCall.cancel()
