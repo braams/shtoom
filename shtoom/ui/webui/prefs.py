@@ -8,6 +8,7 @@ from nevow import entities
 from nevow import inevow
 from nevow import flat
 from nevow import static
+from formless import annotate, webform, iformless
 
 from shtoom import Options
 
@@ -217,9 +218,150 @@ class Configure(rend.Page):
         return '<html><body>Options set. <a href="/">Go back.</a></body></html>'
 
 
+class IWizardConfiguration(annotate.TypedInterface):
+    currentConfiguration = annotate.Choice(choicesAttribute='configurationChoices')
+
+
+currentConfigFilename = os.path.expanduser('~/.shtoomrc.d/.currentConfigName')
+class WizardConfiguration(rend.Page):
+    __implements__ = IWizardConfiguration, rend.Page.__implements__
+
+    def child_add_config(self, ctx):
+        return ConfigurationWizard(self.original)
+
+    child_css = webform.defaultCSS
+
+    def getConfigurationChoices(self):
+        print "get configuration choices"
+        rcd = os.path.expanduser('~/.shtoomrc.d')
+        if not os.path.exists(rcd):
+            os.mkdir(rcd)
+        rv = os.listdir(rcd)
+        rv = [x for x in rv if not x.startswith('.')]
+        if not rv: return ['No current configurations']
+        return rv
+    configurationChoices = property(getConfigurationChoices)
+
+    def getCurrentConfig(self):
+        if os.path.exists(currentConfigFilename):
+            return open(currentConfigFilename).read().strip()
+        return ''
+    def setCurrentConfig(self, new):
+        open(currentConfigFilename, 'w').write(new)
+        open(os.path.expanduser('~/.shtoomrc'), 'w').write(open(os.path.expanduser('~/.shtoomrc.d/%s' % new)).read())
+        ## reload app options
+        self.original.loadOptsFile()
+    currentConfiguration = property(getCurrentConfig, setCurrentConfig)
+
+    def render_currentConfiguration(self, ctx, data):
+        if not os.path.exists(currentConfigFilename):
+            noConfig = True
+        else:
+            currentConfigFile = open(currentConfigFilename).read().strip()
+            configFilename = os.path.expanduser('~/.shtoomrc.d/%s' % (currentConfigFile, ))
+            if not os.path.exists(configFilename):
+                noConfig = True
+            else:
+                noConfig = False
+
+        if noConfig:
+        #    import pdb; pdb.Pdb().set_trace()
+            return "No current configurations. Please add one below."
+        return T.h2[currentConfigFile]
+
+    docFactory = loaders.stan(T.html[
+    T.head[
+        T.title["Shtoom Configuration"]],
+        T.body[
+            T.h1["Shtoom Configuration"],
+            webform.renderForms()[
+                T.form(pattern='freeform-form',
+                action=T.slot('form-action'),
+                enctype="multipart/form-data",
+                method="POST",
+                id=T.slot('form-id'))[
+                    T.slot('form-arguments'),
+                    T.span(pattern="binding")[
+                        T.strong[T.slot('label')],
+                        T.span(style="margin-left: 15px")[T.select(pattern='selector', onchange='submit();'), T.slot('input')]]]],
+            render_currentConfiguration,
+            T.h1["Add a Configuration"],
+            T.form(action="add_config")[
+                T.p[T.input(type="radio", name="config_type", value="divmod")["Divmod account"]],
+                T.p[T.input(type="radio", name="config_type", value="fwd")["Free world dialup account"]],
+                T.p[T.input(type="radio", name="config_type", value="manual")["Manual configuration"]],
+                T.input(type="submit", name="configure", value="Create configuration")
+                ]
+            ]])
+
+
+class IConfigurationWizard(annotate.TypedInterface):
+    def divmod(self, req=annotate.Request(), name=annotate.String(label="Configuration Name"), username=annotate.String(), password=annotate.PasswordEntry()):
+        """Divmod Account
+        
+        Add a configuration for a Divmod account.
+        """
+        pass
+    divmod = annotate.autocallable(divmod, action="Create")
+
+    def fwd(self, req=annotate.Request(), name=annotate.String(label="Configuration Name"), username=annotate.String(), password=annotate.PasswordEntry()):
+        """Free World Dialup Account
+        
+        Add a configuration for a FWD account.
+        """
+        pass
+    fwd = annotate.autocallable(fwd, action="Create")
+
+    def manual(self, req=annotate.Request(), name=annotate.String(label="Configuration Name"), username=annotate.String(), password=annotate.PasswordEntry()):
+        """Manual
+        
+        Add a configuration manually.
+        """
+        pass
+    manual = annotate.autocallable(manual, action="Create")
+
+
+class ConfigurationWizard(rend.Page):
+    __implements__ = IConfigurationWizard, rend.Page.__implements__
+    def render_configBody(self, ctx, data):
+        return webform.renderForms(bindingNames=[ctx.arg('config_type')])
+
+    docFactory = loaders.stan(T.html[
+    T.head[
+        T.title["Configuration Wizard"],
+        T.link(rel="stylesheet", type="text/css", href="css")],
+    T.body[
+        T.h1["Add configuration"],
+        render_configBody,
+        T.form(action=".")[
+            T.input(type="submit", name="cancel", value="Cancel")]]])
+
+    def divmod(self, req, name, username, password):
+        self.original.updateOptions(dict(
+            username=username,
+            email_address="%s@divmod.com" % (username, ),
+            register_uri='sip:divmod.com:5060',
+            register_user=username,
+            register_authuser=username,
+            register_authpasswd=password))
+        self.original.saveOptsFile()
+        self.original.loadOptsFile()
+        self.original.setOptsFile('.shtoomrc.d/%s' % (name, ))
+        self.original.saveOptsFile()
+        self.original.setOptsFile('.shtoomrc')
+        open(currentConfigFilename, 'w').write(name)
+        req.setComponent(iformless.IRedirectAfterPost, '/')
+
+    def fwd(self, req, name, username, password):
+        pass
+
+    def manual(self, req, name, username, password):
+        pass
+
+
 class Reloader(rend.Page):
     def locateChild(self, ctx, segments):
         from shtoom.ui.webui import prefs
         reload(prefs)
-        return prefs.PreferencesPage(self.original), segments
+        return prefs.WizardConfiguration(self.original), segments
 
