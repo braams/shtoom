@@ -10,12 +10,19 @@ from twisted.python import log
 from interfaces import StunPolicy
 
 
+# This should be replaced with lookups of 
+# _stun._udp.divmod.com and _stun._udp.wirlab.net
 DefaultServers = [
     ('stun2.wirlab.net', 3478),
+    ('stun.wirlab.net', 3478),
+    ('stun1.vovida.org', 3478),
+    ('stun.xten.net', 3478),
     ('tesla.divmod.net', 3478),
+    #('tesla.divmod.net', 3479),
+    #('ohm.divmod.net', 3478),
+    #('ohm.divmod.net', 3479),
     ('erlang.divmod.net', 3478),
-    ('tesla.divmod.net', 3479),
-    ('erlang.divmod.net', 3479),
+    #('erlang.divmod.net', 3479),
 ]
 
 StunTypes = {
@@ -56,7 +63,8 @@ class StunProtocol(DatagramProtocol, object):
         if self._pending.has_key(tid):
             del self._pending[tid]
         else:
-            log.err("error, unknown transaction ID %s, have %r"%(tid,self._pending.keys()))
+            log.err("error, unknown transaction ID %s, have %r"%(tid,
+                                                      self._pending.keys()))
             return
         if mt == 0x0101:
             log.msg("got STUN response from %s"%repr(address), system='stun')
@@ -259,7 +267,11 @@ is probably not going to work with SIP."""
 
 if __name__ == "__main__":
     import sys
-    stunClient = StunProtocol()
+    class TestStunProtocol(StunProtocol):
+        def gotMappedAddress(self, addr, port):
+            log.msg("got address %s %s"%(addr, port))
+        
+    stunClient = TestStunProtocol()
     log.startLogging(sys.stdout)
     reactor.listenUDP(5061, stunClient)
     reactor.callLater(10, giveUpInteractive)
