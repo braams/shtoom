@@ -60,8 +60,12 @@ def hexrepr(bytes):
     return out
 
 class RTCPPacket:
-    def __init__(self, pt, contents=None):
+    def __init__(self, pt, contents=None, ptcode=None):
         self._pt = pt
+        if ptcode is None:
+            self._ptcode = rtcpPTdict.get(pt)
+        else:
+            self._ptcode = ptcode
         self._body = ''
         if contents: 
             self._contents = contents
@@ -72,10 +76,7 @@ class RTCPPacket:
         return self._pt
 
     def getContents(self):
-        return self._content
-
-    def getCount(self):
-        return self._count
+        return self._contents
 
     def decode(self, count, body):
         self._count = count
@@ -83,13 +84,12 @@ class RTCPPacket:
         getattr(self, 'decode_%s'%self._pt)()
 
     def encode(self):
-        getattr(self, 'encode_%s'%self._pt)()
-        raise NotImplementedError
+        out = getattr(self, 'encode_%s'%self._pt)()
+        return out
 
     def decode_SDES(self):
         for i in range(self._count):
             self._contents = []
-            print len(self._body)
             ssrc, = struct.unpack('!I', self._body[:4])
             self._contents.append((ssrc,[]))
             self._body = self._body[4:]
@@ -105,6 +105,9 @@ class RTCPPacket:
                     self._body = self._body[maybepadlen:]
                     break
 
+    def encode_SDES(self):
+        return ''
+
     def decode_BYE(self):
         self._contents = [[],'']
         for i in range(self._count):
@@ -118,6 +121,20 @@ class RTCPPacket:
             self._contents[1] = reason
             self._body = ''
 
+    def encode_BYE(self):
+        ssrcs, reason = self._contents
+        packet = struct.pack('!BBH',len(ssrcs)|128, self._ptcode, 0)
+        for ssrc in ssrcs:
+            packet = packet + struct.pack('!I', ssrc)
+        if reason:
+            packet = packet + chr(len(reason)) + reason
+        if len(packet)%4:
+            pad = '\0' * (4-(len(packet)%4))
+            packet += pad
+        length = (len(packet)/4) - 1
+        packet = packet[:2] + struct.pack('!H', length) + packet[4:]
+        return packet
+
     def decode_SR(self):
         self._contents = []
         ssrc, = struct.unpack('!I', self._body[:4])
@@ -129,11 +146,17 @@ class RTCPPacket:
         blocks = self._decodeRRSRReportBlocks()
         self._contents = [ssrc,sender,blocks]
 
+    def encode_SR(self):
+        return ''
+
     def decode_RR(self):
         ssrc, = struct.unpack('!I', self._body[:4])
         self._body = self._body[4:]
         blocks = self._decodeRRSRReportBlocks()
         self._contents = [ssrc,blocks]
+
+    def encode_RR(self):
+        return ''
 
     def _decodeRRSRReportBlocks(self):
         blocks = []
@@ -156,23 +179,13 @@ class RTCPPacket:
         value = self._body[8:]
         self._contents = [subtype,ssrc,name,value]
 
-    def decode_UNKNOWN(self):
-        self._contents = 'UNKNOWN'
-
-    def encode_SDES(self):
-        pass
-
-    def encode_BYE(self):
-        pass
-
-    def encode_SR(self):
-        pass
-
-    def encode_RR(self):
-        pass
-
     def encode_APP(self):
-        pass
+        return ''
+
+    def decode_UNKNOWN(self):
+        self._contents = self._body
+        self._body = ''
+
 
     def __repr__(self):
         if self._body:
@@ -194,13 +207,17 @@ class RTCPCompound:
     def decode(self, bytes):
         while bytes:
             count = ord(bytes[0]) & 31
-            PT = rtcpPTdict.get(ord(bytes[1]), 'UKNOWN')
+            pt = ord(bytes[1])
+            PT = rtcpPTdict.get(pt, 'UNKNOWN')
             length, = struct.unpack('!H', bytes[2:4])
             offset = 4*(length+1)
             body, bytes = bytes[4:offset], bytes[offset:]
-            p = RTCPPacket(PT)
+            p = RTCPPacket(PT, ptcode=pt)
             p.decode(count, body)
             self._rtcp.append(p)
+
+    def encode(self):
+        return ''.join([x.encode() for x in self._rtcp])
 
     def __len__(self):
         return len(self._rtcp)
