@@ -17,14 +17,17 @@ Before 0.3:
         - A better dialog to prompt for user, password information
     - ui(tk): window resize currently sucks.
     - ui(qt): window resize currently sucks
+    - ui(wx): move the UI and twisted to seperate threads. This will also be
+      needed for mfcui
     - doug: reimplement shmessage and shecho in doug
     - doug: make the incoming call a leg, pass it in at call start
-    - doug: create an EchoSource
+    - doug: API for connecting up a specific Source (e.g. EchoSource)
     - doug: test that media record works, write a sample app to use it
     - doug: implement placeCall
     - doug: implement leg conferencing (connection)
     - doug: create application frameworky bit (look at quotient.deployment?)
     - doug: implement timers
+    - doug: sending of DTMF
     - ui(all): multi-tab view for multiple calls
     - shtoom: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
