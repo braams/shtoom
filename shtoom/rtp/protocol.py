@@ -11,18 +11,11 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.task import LoopingCall
 from twisted.python import log
 
-from shtoom.rtp.formats import SDPGenerator, PT_CN
+from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN
 from shtoom.rtp.packets import RTPPacket, RTPParser
 
 TWO_TO_THE_16TH = 2<<16
 TWO_TO_THE_32ND = 2<<32
-
-# Sane systems
-RTP_PT_CN=13
-# Cisco
-#RTP_PT_CN=19
-# No comfort noise at all
-#RTP_PT_CN=None
 
 from shtoom.rtp.packets import NTE
 
@@ -234,14 +227,22 @@ class RTPProtocol(DatagramProtocol):
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
-        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest),
-                                                                system='rtp')
-        if RTP_PT_CN is not None:
-            cnpt = RTP_PT_CN
+        if self.rtpParser.haspt(PT_CN):
+            cnpt = PT_CN.pt
+        elif self.rtpParser.haspt(PT_xCN):
+            cnpt = PT_xCN.pt
         else:
-            cnpt = 13
-        hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, self.ts, self.ssrc)
-        self.transport.write(hdr+chr(0), self.dest)
+            cnpt = None
+        if cnpt:
+            log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt, 
+                                    self.dest[0], self.dest[1]), system='rtp')
+            hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, self.ts,self.ssrc)
+            self.transport.write(hdr+chr(0), self.dest)
+        else:
+            log.msg("hack - seeding firewall with PT_PCMU")
+            hdr = struct.pack('!BBHII', 0x80, 0, self.seq, self.ts,self.ssrc)
+            self.transport.write(hdr+(160*chr(0)), self.dest)
+            # We need to send SOMETHING!?!
         if hasattr(self.transport, 'connect'):
             self.transport.connect(*self.dest)
 
