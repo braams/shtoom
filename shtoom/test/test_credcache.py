@@ -35,11 +35,12 @@ class CredCacheTests(unittest.TestCase):
         ae(c.getCred('sip.foo.com'), ('gonzo', 'seekrit'))
         c.addCred('sip.bar.com', 'gazpacho', 'soup', save=True)
         ae(c.getCred('sip.bar.com'), ('gazpacho', 'soup'))
-        ae(app.ini, '[credentials]\nsip.bar.com=Z2F6cGFjaG86c291cA==\n\n')
+        ae(app.ini, '[credentials]\nsip.bar.com=Z2F6cGFjaG8Ac291cA==\n\n')
         c.addCred('sip.bar.com', 'gazpacho', 'bowl', save=True)
-        ae(app.ini, '[credentials]\nsip.bar.com=Z2F6cGFjaG86Ym93bA==\n\n')
+        ae(c.getCred('sip.bar.com'), ('gazpacho', 'bowl'))
+        ae(app.ini, '[credentials]\nsip.bar.com=Z2F6cGFjaG8AYm93bA==\n\n')
         c.addCred('sip.foo.com', 'gonzo', 'seekrit', save=True)
-        ae(app.ini, '[credentials]\nsip.foo.com=Z29uem86c2Vla3JpdA==\n\nsip.bar.com=Z2F6cGFjaG86Ym93bA==\n\n')
+        ae(app.ini, '[credentials]\nsip.foo.com=Z29uem8Ac2Vla3JpdA==\n\nsip.bar.com=Z2F6cGFjaG8AYm93bA==\n\n')
 
     def test_credcache_load(self):
         from StringIO import StringIO
@@ -47,10 +48,10 @@ class CredCacheTests(unittest.TestCase):
         app = DummyApp()
         c = CredCache(app)
         s = StringIO()
-        s.write('[credentials]\nsip.foo.com=Z29uem86c2Vla3JpdA==\n\nsip.bar.com=Z2F6cGFjaG86Ym93bA==\n\n')
+        s.write('[credentials]\nsip.foo.com=Z29uem8Ac2Vla3JpdA==\n\nsip.bar.com=Z2F6cGFjaG8AYm93bA==\n\n')
         s.seek(0)
         app.all.loadOptsFile(s)
         c.loadCreds(app.creds)
         ae(c.getCred('sip.bar.com'), ('gazpacho', 'bowl'))
-        ae(c.getCred('sip.bar.com'), ('gazpacho', 'bowl'))
+        ae(c.getCred('sip.foo.com'), ('gonzo', 'seekrit'))
 
