@@ -29,6 +29,10 @@ class NTE:
         elif key >= 'A' and key <= 'D':
             # A - D are 12-15
             self._payKey = chr(ord(key)-53)
+        elif key == 'flash':
+            self._payKey = chr(16)
+        else:
+            raise ValueError, "%s is not a valid NTE"%(key)
 
     def getKey(self):
         return self.key
@@ -56,7 +60,7 @@ class NTE:
             return False
 
     def __repr__(self):
-        return '<NTE %s%s>'%(self.key, self.ending and ' (ending)')
+        return '<NTE %s%s>'%(self.key, self.ending and ' (ending)' or '')
 
 
 class RTPProtocol(DatagramProtocol):
@@ -187,9 +191,14 @@ class RTPProtocol(DatagramProtocol):
                     print "Giving up. Made %d attempts to get a working port"%(
                         self._stunAttempts)
                 self._stunAttempts += 1
-                self.rtpListener.stopListening()
-                self.rtcpListener.stopListening()
-                self._socketCreationAttempt()
+                defer.maybeDeferred(self.rtpListener.stopListening).addCallback(
+                                        lambda x:self.rtcpListener.stopListening()
+                                                                   ).addCallback(
+                                        lambda x:self._socketCreationAttempt()
+                                                                    )
+                #self.rtpListener.stopListening()
+                #self.rtcpListener.stopListening()
+                #self._socketCreationAttempt()
             else:
                 # phew. working NAT
                 log.msg("discovered sane NAT for RTP/RTCP")
