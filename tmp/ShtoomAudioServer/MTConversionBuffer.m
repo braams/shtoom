@@ -41,36 +41,36 @@ static OSStatus _FillComplexBufferProc (
     unsigned framesInCount = ((*ioNumberFrames * inDescription.mBytesPerFrame) / inDescription.mChannelsPerFrame) / sizeof(Float32);
     unsigned framesInConversionBuffer = MTAudioBufferListFrameCount( conversionBufferList );
     
-    printf("[%.0f - %.0f] ioNumberFrames = %d at (%d bytes per packet)\n", inDescription.mSampleRate, outDescription.mSampleRate, *ioNumberFrames, inDescription.mBytesPerPacket);
-    printf("framesInBuffer = %d framesInCount = %d framesInConversionBuffer = %d\n", framesInBuffer, framesInCount, framesInConversionBuffer);
+    // XXX // printf("[%.0f - %.0f] ioNumberFrames = %d at (%d bytes per packet)\n", inDescription.mSampleRate, outDescription.mSampleRate, *ioNumberFrames, inDescription.mBytesPerPacket);
+    // XXX // printf("framesInBuffer = %d framesInCount = %d framesInConversionBuffer = %d\n", framesInBuffer, framesInCount, framesInConversionBuffer);
 	unsigned framesToCopy = MIN ( framesInCount, MTAudioBufferListFrameCount ( conversionBufferList ) );
-    printf("framesToCopy = %d\n", framesToCopy);
+    // XXX // printf("framesToCopy = %d\n", framesToCopy);
 	// link the appropriate amount of data into the proto-AudioBufferList in ioData
 	unsigned x;
 	for ( x = 0; x < ioData->mNumberBuffers; x++ )
 	{
         unsigned channelsThisBuffer;
 		channelsThisBuffer = ioData->mBuffers[x].mNumberChannels;
-        printf("channelsThisBuffer[%d] = %d\n", x, channelsThisBuffer);
+        // XXX // printf("channelsThisBuffer[%d] = %d\n", x, channelsThisBuffer);
 		ioData->mBuffers[x].mDataByteSize = channelsThisBuffer * framesToCopy * sizeof(Float32);
 		ioData->mBuffers[x].mData = conversionBufferList->mBuffers[x].mData;
-        printf("ioData->mBuffers[x].mData = %08X\n", ioData->mBuffers[x].mData);
+        // XXX // printf("ioData->mBuffers[x].mData = %08X\n", ioData->mBuffers[x].mData);
 	}
 	if ( framesInBuffer >= framesToCopy )
 	{
 		unsigned actuallyRead = [audioBuffer readToAudioBufferList:ioData maxFrames:framesToCopy waitForData:NO];
-        printf("actuallyRead = %d\n", actuallyRead);
+        // XXX // printf("actuallyRead = %d\n", actuallyRead);
         if (actuallyRead != framesToCopy) {
-            printf("MISMATCH! %d != %d\n", framesToCopy, actuallyRead);
+            // XXX // printf("MISMATCH! %d != %d\n", framesToCopy, actuallyRead);
         }
 
         unsigned numberCopied = (actuallyRead * sizeof(Float32) * ioData->mBuffers[0].mNumberChannels) / inDescription.mBytesPerFrame;
-        printf("(actuallyRead * sizeof(Float32) * ioData->mBuffers[0].mNumberChannels) / inDescription.mBytesPerFrame = %d\n", numberCopied);
+        // XXX // printf("(actuallyRead * sizeof(Float32) * ioData->mBuffers[0].mNumberChannels) / inDescription.mBytesPerFrame = %d\n", numberCopied);
         *ioNumberFrames = numberCopied;
         
         /*
         if (inDescription.mBytesPerFrame == 2) {
-            printf("$$$$$$$$$$$$$\n");
+            // XXX // printf("$$$$$$$$$$$$$\n");
             SInt16 *outPtr = (SInt16*)ioData->mBuffers[0].mData;
             float inc = ((M_PI * 2) * 440) / inDescription.mSampleRate;
             unsigned i;
@@ -85,7 +85,7 @@ static OSStatus _FillComplexBufferProc (
 	else
 	{
         // DEBUG_PRINT_JUNK
-		printf ( "underrun: ask: %u  queued: %u  provided: 0\n", framesToCopy, framesInBuffer );
+		// XXX // printf ( "underrun: ask: %u  queued: %u  provided: 0\n", framesToCopy, framesInBuffer );
         *ioNumberFrames = 0;
         return 'NDTA';
 	}
@@ -182,7 +182,7 @@ static OSStatus _FillComplexBufferProc (
     double srcRate = srcDescription.mSampleRate;
     double dstRate = dstDescription.mSampleRate;
     
-    printf("[%.0f:%d:%d:%d -> %.0f:%d:%d:%d]\n", srcRate, srcChans, srcDescription.mBytesPerFrame, srcDescription.mBytesPerPacket, dstRate, dstChans, dstDescription.mBytesPerFrame, dstDescription.mBytesPerPacket);
+    // XXX // printf("[%.0f:%d:%d:%d -> %.0f:%d:%d:%d]\n", srcRate, srcChans, srcDescription.mBytesPerFrame, srcDescription.mBytesPerPacket, dstRate, dstChans, dstDescription.mBytesPerFrame, dstDescription.mBytesPerPacket);
     srcFrames = ((srcFrames * srcDescription.mBytesPerFrame) / srcChans) / sizeof(Float32);
     dstFrames = ((dstFrames * dstDescription.mBytesPerFrame) / dstChans) / sizeof(Float32);
     
@@ -261,7 +261,7 @@ static OSStatus _FillComplexBufferProc (
 	framesQueued = [audioBuffer writeFromAudioBufferList:src maxFrames:framesRequested rateScalar:rateScalar waitForRoom:NO];
 	if ( framesQueued != framesRequested ) {
         // DEBUG_PRINT_JUNK
-		printf ( "overrun: %u frames queued: %u frames factor: %f  queue factor: %f\n", framesRequested - framesQueued, framesQueued, rateScalar, [audioBuffer rateScalar] );
+		// XXX // printf ( "overrun: %u frames queued: %u frames factor: %f  queue factor: %f\n", framesRequested - framesQueued, framesQueued, rateScalar, [audioBuffer rateScalar] );
     }
     return framesQueued;
 }
@@ -280,25 +280,25 @@ static OSStatus _FillComplexBufferProc (
         char errMsg[5];
         memcpy(errMsg, &err, sizeof(err));
         errMsg[4] = '\0';
-        printf("AudioConverterGetProperty err %d ('%s')\n", err, errMsg);
+        // XXX // printf("AudioConverterGetProperty err %d ('%s')\n", err, errMsg);
         return 0;
     }
     
     if (bytesAfterOutput == 0) {
-        printf("can not generate any output with a buffer size of %d bytes\n", bytesAvailable);
+        // XXX // printf("can not generate any output with a buffer size of %d bytes\n", bytesAvailable);
         return 0;
     }
     
-    printf("dst frame count = %d mNumberBuffers = %d mBuffers[0].mNumberChannels = %d size = %d\n", MTAudioBufferListFrameCount(dst), dst->mNumberBuffers, dst->mBuffers[0].mNumberChannels, dst->mBuffers[0].mDataByteSize);
-    printf("obl frame count = %d mNumberBuffers = %d mBuffers[0].mNumberChannels = %d size = %d\n", MTAudioBufferListFrameCount(outputBufferList), outputBufferList->mNumberBuffers, outputBufferList->mBuffers[0].mNumberChannels, outputBufferList->mBuffers[0].mDataByteSize);
+    // XXX // printf("dst frame count = %d mNumberBuffers = %d mBuffers[0].mNumberChannels = %d size = %d\n", MTAudioBufferListFrameCount(dst), dst->mNumberBuffers, dst->mBuffers[0].mNumberChannels, dst->mBuffers[0].mDataByteSize);
+    // XXX // printf("obl frame count = %d mNumberBuffers = %d mBuffers[0].mNumberChannels = %d size = %d\n", MTAudioBufferListFrameCount(outputBufferList), outputBufferList->mNumberBuffers, outputBufferList->mBuffers[0].mNumberChannels, outputBufferList->mBuffers[0].mDataByteSize);
     
     UInt32 maxOutputBytes = MIN ( MTAudioBufferListFrameCount(dst), MTAudioBufferListFrameCount(outputBufferList) ) * outDescription.mBytesPerPacket;
 
-    printf("conversion of %d will yield %d (max = %d)\n", bytesAvailable, bytesAfterOutput, maxOutputBytes);
+    // XXX // printf("conversion of %d will yield %d (max = %d)\n", bytesAvailable, bytesAfterOutput, maxOutputBytes);
     
     UInt32 packetsToOutput = MIN( maxOutputBytes, bytesAfterOutput ) / outDescription.mBytesPerPacket;
     
-    printf("will be asking for %d packets -> %d bytes at (%d bytes packet)\n", packetsToOutput, packetsToOutput * outDescription.mBytesPerPacket, outDescription.mBytesPerPacket);
+    // XXX // printf("will be asking for %d packets -> %d bytes at (%d bytes packet)\n", packetsToOutput, packetsToOutput * outDescription.mBytesPerPacket, outDescription.mBytesPerPacket);
     
     // backing up output ABL
     UInt32 outFrameCount = MTAudioBufferListFrameCount(outputBufferList);
@@ -315,7 +315,7 @@ static OSStatus _FillComplexBufferProc (
         char errMsg[5];
         memcpy(errMsg, &err, sizeof(err));
         errMsg[4] = '\0';
-        printf("AudioConverterFillComplexBuffer err %d ('%s')\n", err, errMsg);
+        // XXX // printf("AudioConverterFillComplexBuffer err %d ('%s')\n", err, errMsg);
         floatFramesRead = 0;
     } else {
         /*
@@ -329,7 +329,7 @@ static OSStatus _FillComplexBufferProc (
              }
          }
          */
-        printf("-- real framesRead = %d\n", framesRead);
+        // XXX // printf("-- real framesRead = %d\n", framesRead);
         floatFramesRead = ((framesRead * outDescription.mBytesPerFrame) / outDescription.mChannelsPerFrame) / sizeof(Float32);
 /*
  if (outDescription.mBytesPerFrame == 8) {
@@ -342,7 +342,7 @@ static OSStatus _FillComplexBufferProc (
 //                period += inc;
 //            }
             for (i=0; i<floatFramesRead*2; i+=2) {
-                printf("%d %f %f\n", i, inPtr[i], inPtr[i+1]);
+                // XXX // printf("%d %f %f\n", i, inPtr[i], inPtr[i+1]);
                 outPtr[i] = inPtr[i];
                 outPtr[i+1] = inPtr[i+1];
             }
@@ -352,11 +352,11 @@ static OSStatus _FillComplexBufferProc (
 	}
     UInt32 newFrameCount =  MTAudioBufferListFrameCount(outputBufferList);
     if (newFrameCount != outFrameCount) {
-        printf("newFrameCount = %d outFrameCount = %d\n", newFrameCount, outFrameCount);
+        // XXX // printf("newFrameCount = %d outFrameCount = %d\n", newFrameCount, outFrameCount);
         memcpy(outputBufferList->mBuffers, bufBackup, numBuffers * sizeof(AudioBuffer));
     }
     free(bufBackup);
-    printf("-- floatFramesRead = %d\n", floatFramesRead);
+    // XXX // printf("-- floatFramesRead = %d\n", floatFramesRead);
     return floatFramesRead;
 }
 

@@ -62,13 +62,11 @@ static double _db_to_scalar ( Float32 decibels )
 // ------------------- ioTarget methods ---------------
 - (OSStatus) recordIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
-    /*
     unsigned framesQueued = [outConverter writeFromAudioBufferList:inInputData timestamp:inInputTime];
-    printf("queuedFramesToConverter = %d\n", framesQueued);
+    // XXX // printf("queuedFramesToConverter = %d\n", framesQueued);
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelectorOnMainThread:@selector(sendDataFromConverter:) withObject:nil waitUntilDone:NO];
     [pool release];
-    */
     
     return noErr;
 }
@@ -76,12 +74,11 @@ static double _db_to_scalar ( Float32 decibels )
 - (OSStatus) playbackIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
     unsigned framesRead = [inConverter readToAudioBufferList:outOutputData timestamp:inOutputTime];
-    printf("readFramesFromConverter = %d\n", framesRead);
+    // XXX // printf("readFramesFromConverter = %d\n", framesRead);
     
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelectorOnMainThread:@selector(flushDataForConverter:) withObject:nil waitUntilDone:NO];
     [pool release];
-
 	return noErr;
 }
 // ----------------------------------
@@ -120,7 +117,7 @@ static double _db_to_scalar ( Float32 decibels )
     unsigned inBufferSize = ceil ( inScale * [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE );
     if (inBuffer) MTAudioBufferListDispose(inBuffer);
     inBuffer = MTAudioBufferListNew(1, inBufferSize, NO);
-    printf("inBufferSize = %d\n", inBufferSize);
+    // XXX // printf("inBufferSize = %d\n", inBufferSize);
     
     AudioStreamBasicDescription shtoomDescription;
     shtoomDescription.mSampleRate = SHTOOM_FREQUENCY;
@@ -147,7 +144,7 @@ static double _db_to_scalar ( Float32 decibels )
     unsigned outBufferSize = ceil ( outScale * [inputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE );
     if (outBuffer) MTAudioBufferListDispose(outBuffer);
     outBuffer = MTAudioBufferListNew(1, outBufferSize, NO);
-    printf("outBufferSize = %d\n", outBufferSize);
+    // XXX // printf("outBufferSize = %d\n", outBufferSize);
     
     [outConverter release];
 	outConverter = [[MTConversionBuffer alloc]
@@ -205,7 +202,7 @@ static double _db_to_scalar ( Float32 decibels )
     while (1) {
         unsigned frames = [converter readToAudioBufferList:outBuffer timestamp:NULL];
         if (frames == 0) {
-            //printf("no frames!\n");
+            //// XXX // printf("no frames!\n");
             break;
         }
         NSMutableData *dataContainer = [NSMutableData dataWithBytes:buffer->mData length:(frames * sizeof(Float32))];
@@ -261,7 +258,7 @@ static double _db_to_scalar ( Float32 decibels )
     unsigned bytesRead = [converter writeFromAudioBufferList:&myList timestamp:NULL] * sizeof(Float32);
     //period += (incPeriod * bytesRead) / sizeof(SInt16);
     unsigned leftInBuffer = [allData length] - bytesRead;
-    printf("bytesRead = %d leftInBuffer = %d slop_bytes=%d\n", bytesRead, [allData length] - bytesRead, slop_bytes);
+    // XXX // printf("bytesRead = %d leftInBuffer = %d slop_bytes=%d\n", bytesRead, [allData length] - bytesRead, slop_bytes);
     if (leftInBuffer > 0) {
         [receiveQueue addObject:[NSData dataWithBytes:[allData bytes]+bytesRead length:leftInBuffer]];
     }
