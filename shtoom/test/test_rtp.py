@@ -57,7 +57,7 @@ class TestRTP(unittest.TestCase):
         ts = 12345678
         seq = 12345
         ssrc = 100001
-        packets = [ 
+        packets = [
             RTPPacket(PT_PCMU, ''.join([chr(x) for x in range(160)]), 0),
             RTPPacket(PT_GSM, '\0'*33, 0, 1),
             RTPPacket(PT_GSM, '\0'*33, 0, 0),
@@ -85,4 +85,3 @@ class TestRTP(unittest.TestCase):
         rtpmap = sdp.getMediaDescription('audio').rtpmap
         for pt, (entry, ptmarker) in rtpmap.items():
             a_(isinstance(ptmarker, PTMarker))
-

@@ -25,7 +25,7 @@ class EchoApp(VoiceApp):
     def __start__(self):
         print "voiceapp.__start__"
         return ( (CallStartedEvent, self.answerCall),
-                 #(Event,            self.unknownEvent), 
+                 #(Event,            self.unknownEvent),
                )
 
     def unknownEvent(self, event):
@@ -47,7 +47,7 @@ class EchoApp(VoiceApp):
         # Begin the call
         if self.announceFile:
             self.mediaPlay(self.announceFile)
-            return ( (MediaDoneEvent, self.beginEcho), 
+            return ( (MediaDoneEvent, self.beginEcho),
                      (CallEndedEvent,  self.allDone),
                    )
         else:
@@ -56,9 +56,9 @@ class EchoApp(VoiceApp):
     def beginEcho(self, event):
         from shtoom.doug.source import EchoSource
         self.mediaPlay([EchoSource(delay=1.0)])
-        return ( (CallEndedEvent, self.allDone), 
+        return ( (CallEndedEvent, self.allDone),
                    )
-    
+
     def allDone(self, event):
         self.returnResult('other end closed')
 
@@ -76,4 +76,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -2,7 +2,7 @@
 
 """ VoiceApp base class
 
-    This is just a first cut at the VoiceApp. Do NOT assume that 
+    This is just a first cut at the VoiceApp. Do NOT assume that
     the interfaces here won't be entirely rewritten in the future.
 
     In fact, ASSUME that they will be rewritten entirely. Repeatedly.
@@ -32,7 +32,7 @@ if numarray is not None:
         def __call__(self, samp):
             if self.prev is None:
                 self.prev = samp
-                return 
+                return
             nd = self.D.detect(self.prev+samp)
             if nd != self.digit:
                 if self.digit == '':
@@ -108,7 +108,7 @@ class VoiceApp(StateMachine):
             self._va_playNextItem()
 
     def va_startDTMFevent(self, dtmf):
-        c = self.__currentDTMFKey 
+        c = self.__currentDTMFKey
         if dtmf:
             if c is not dtmf:
                 self.va_stopDTMFevent(c)
@@ -126,7 +126,7 @@ class VoiceApp(StateMachine):
             if dtmf in ('#', '*'):
                 dtmf, self.__collectedDTMFKeys = self.__collectedDTMFKeys, ''
                 self._triggerEvent(DTMFReceivedEvent(dtmf))
-                
+
 
     def va_stopDTMFevent(self, dtmf):
         # For now, I only care about dtmf start events
@@ -156,12 +156,12 @@ class VoiceApp(StateMachine):
         self._triggerEvent(CallStartedEvent(inboundLeg))
 
     def va_callanswered(self, leg=None):
-        if leg is None: 
+        if leg is None:
             leg = self._inbound
         self._triggerEvent(CallAnsweredEvent(leg))
 
     def va_callrejected(self, leg=None):
-        if leg is None: 
+        if leg is None:
             leg = self._inbound
         self._triggerEvent(CallRejectedEvent(leg))
 
@@ -215,7 +215,7 @@ class VoiceApp(StateMachine):
 
     def va_hangupCall(self, cookie):
         self.__appl.dropCall(cookie)
-    
+
     def connectLeg(self, leg1, leg2=None):
         if leg2 is None:
             self._inbound = leg1
@@ -231,8 +231,7 @@ class VoiceApp(StateMachine):
             if cookie is None:
                 cookie = self.__cookie
             i = 0.2
-            reactor.callLater(i+n*(duration+delay), 
+            reactor.callLater(i+n*(duration+delay),
                 lambda k=key: self.__appl.startDTMF(cookie, k))
-            reactor.callLater(i+n*(duration+delay)+duration, 
+            reactor.callLater(i+n*(duration+delay)+duration,
                 lambda k=key: self.__appl.stopDTMF(cookie, k))
-

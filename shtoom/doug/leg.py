@@ -1,10 +1,10 @@
 # Copyright (C) 2004 Anthony Baxter
 
-""" 
+"""
     A Leg is a SIP connection from one UA to another UA. A typical
     voiceapp might have only one Leg (for the incoming SIP call),
-    it might have two (an incoming and an outgoing leg that are 
-    connected, or 'conferenced' together, for instance) or indeed 
+    it might have two (an incoming and an outgoing leg that are
+    connected, or 'conferenced' together, for instance) or indeed
     many legs (for some more exotic use-case).
 """
 
@@ -79,10 +79,10 @@ class Leg(object):
         else:
             log.msg("can't reject call %s, already answered/rejected"%(
                                                 self.cookie), system='doug')
-    
+
     def hangupCall(self):
         self._voiceapp.va_hangupCall(self._cookie)
 
     def sendDTMF(self, digits, duration=0.1, delay=0.05):
-        self._voiceapp.sendDTMF(digits, cookie=self._cookie, 
+        self._voiceapp.sendDTMF(digits, cookie=self._cookie,
                                 duration=duration, delay=delay)

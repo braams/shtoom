@@ -14,8 +14,8 @@ import sys, traceback
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 from shtoom.audio.fileaudio import getFileAudio
 
-nteMap = { 0: '0',  1: '1',  2: '2',  3: '3',  4: '4',  5: '5',  6: '6', 
-           7: '7',  8: '8',  9: '9', 10: '*', 11: '#', 12: 'A', 13: 'B', 
+nteMap = { 0: '0',  1: '1',  2: '2',  3: '3',  4: '4',  5: '5',  6: '6',
+           7: '7',  8: '8',  9: '9', 10: '*', 11: '#', 12: 'A', 13: 'B',
           14: 'C', 15: 'D', 16: 'flash' }
 
 class DougApplication(BaseApplication):
@@ -54,7 +54,7 @@ class DougApplication(BaseApplication):
         if vargs:
             kwargs = [x.split('=') for x in vargs.split(',') ]
             self._voiceappArgs = dict(kwargs)
-            
+
         register_uri = self.getPref('register_uri')
         if register_uri is not None:
             d = self.sip.register()
@@ -64,13 +64,13 @@ class DougApplication(BaseApplication):
     def initVoiceapp(self, callcookie):
         print "creating voiceapp", self._voiceappClass
         d = defer.Deferred()
-        d.addCallbacks(lambda x: self.acceptResults(callcookie,x), 
+        d.addCallbacks(lambda x: self.acceptResults(callcookie,x),
                        lambda x: self.acceptErrors(callcookie,x))
         try:
             v = self._voiceappClass(d, self, callcookie, **self._voiceappArgs)
             v.va_start()
         except:
-            ee,ev,et = sys.exc_info() 
+            ee,ev,et = sys.exc_info()
             print "voiceapp error", ee, ev, traceback.extract_tb(et)
             v = None
         if v:
@@ -101,8 +101,8 @@ class DougApplication(BaseApplication):
         else:
             cookie = call.cookie
         self._calls[cookie] = call
-        d = self._createRTP(cookie, 
-                            call.getLocalSIPAddress()[0], 
+        d = self._createRTP(cookie,
+                            call.getLocalSIPAddress()[0],
                             call.getSTUNState())
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
@@ -123,7 +123,7 @@ class DougApplication(BaseApplication):
     def rejectedCall(self, callcookie, reason):
         print "rejectedCall", callcookie, reason
         del self._calls[callcookie]
-        del self._voiceapps[callcookie] 
+        del self._voiceapps[callcookie]
         return reason
 
     def _createRTP(self, cookie, fromIP, withSTUN):
@@ -206,7 +206,7 @@ class DougApplication(BaseApplication):
 
     def placeCall(self, cookie, sipURL, fromURI=None):
         ncookie = self.getCookie()
-        self._voiceapps[ncookie] = self._voiceapps[cookie] 
+        self._voiceapps[ncookie] = self._voiceapps[cookie]
         print "connecting %s to %s"%(ncookie, cookie), self._voiceapps.keys()
         d = self.sip.placeCall(sipURL, fromURI, cookie=ncookie)
         d.addCallbacks(
@@ -274,4 +274,3 @@ class DougApplication(BaseApplication):
         rtp = self._rtp.get(cookie)
         if rtp:
             rtp.stopDTMF(digit)
-

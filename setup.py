@@ -8,7 +8,7 @@ try:
 except:
     py2exe = None
 
-from shtoom import __version__ 
+from shtoom import __version__
 
 class DependencyFailed(Exception): pass
 class VersionCheckFailed(DependencyFailed): pass
@@ -27,9 +27,9 @@ class VersionCheckFailed(DependencyFailed): pass
 #    raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
 
 if py2exe is not None:
-    addnl = { 'console':['scripts/shtoomphone.py'], 
+    addnl = { 'console':['scripts/shtoomphone.py'],
               'windows': [ { 'script':'script/shtoomphone.py',
-		             'icon_resources' : [( 1, 'shtoom.ico')] } ] }
+                             'icon_resources' : [( 1, 'shtoom.ico')] } ] }
 else:
     addnl = {}
 
@@ -46,9 +46,9 @@ setup(
                 'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
                 'shtoom.audio', 'shtoom.app', 'shtoom.doug' ],
-    requires = ( 'twisted', 'python-2.3' ), 
-    provides = ( 'shtoom-%s'%__version__, ), 
-    scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py', 
+    requires = ( 'twisted', 'python-2.3' ),
+    provides = ( 'shtoom-%s'%__version__, ),
+    scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py',
                'scripts/shmessage.py', 'scripts/shecho.py',
               ],
     classifiers = [

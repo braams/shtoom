@@ -50,4 +50,3 @@ class AppStartup(unittest.TestCase):
         p.boot(options=opts)
         ae(p.sipListener.port, p.getPref('listenport'))
         p.stopSIP()
-

@@ -23,7 +23,7 @@ class WxInjector(wxTimer):
         # Reschedule to be be called again
         self.Start(self.interval)
 
-           
+
 class AppProxy:
     def __init__(self, shtoomapp=None, wxapp=None):
         self.wxapp = wxapp
@@ -48,7 +48,7 @@ class WxProxy(AppProxy):
 
     def call(self, method, *args):
         self.evtlist.append((method, args))
-        
+
     def startUI(self):
         WxInjector(self.evtlist)
         self.wxapp.MainLoop()
@@ -94,7 +94,7 @@ class WxProxy(AppProxy):
 
 class ShtoomProxy(AppProxy):
     # Methods to forward onto the shtoom application from the wxapp
-    # getOptions, register, placeCall, dropCall, 
+    # getOptions, register, placeCall, dropCall,
 
     # TODO: callFromThread isn't applicable here - these are called from
     # the main thread. The twisted event loop (list) is thread safe anyway
@@ -106,7 +106,7 @@ class ShtoomProxy(AppProxy):
 
     def dropCall(self, cookie):
         reactor.callFromThread(self.shtoomapp.dropCall, cookie)
-    
+
     def register(self):
         reactor.callFromThread(self.shtoomapp.register)
 
@@ -130,7 +130,7 @@ def main(shtoomapp):
     from twisted.python import log, threadable
 
     # wxreactor sucks generally.
-    # wxsupport sucks on windows. 
+    # wxsupport sucks on windows.
     # lets give threading a go
 
     threadable.init(1)
@@ -139,9 +139,9 @@ def main(shtoomapp):
     appproxy = ShtoomProxy(wxproxy)
     wxapp.frame.connectApplication(appproxy)
 
-    # TODO: This style of logging isn't thread safe. Need to plugin 
+    # TODO: This style of logging isn't thread safe. Need to plugin
     # the logging into the WxInjector. i.e. the logger targets the
-    # WxInjector.evtlist 
+    # WxInjector.evtlist
     #log.startLogging(wxapp.frame.getLogger(), setStdout=False)
 
     return wxproxy

@@ -78,4 +78,3 @@ class StateMachineTest(unittest.TestCase):
         reactor.callLater(0, A._start)
         out = unittest.deferredError(d)
         out.trap(EventNotSpecifiedError)
-

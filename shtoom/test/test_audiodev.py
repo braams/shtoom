@@ -4,7 +4,7 @@
 
 from twisted.trial import unittest
 
-class _dummy: 
+class _dummy:
     pass
 
 from shtoom.audio.baseaudio import AudioDevice
@@ -52,4 +52,3 @@ class AudioDevsTest(unittest.TestCase):
         a_(m.audioLC is None)
         a_(m.playout is None)
         ae(dev.ops, ['openDev', 'close', 'reopen', 'write', 'close'])
-    

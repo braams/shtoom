@@ -2,7 +2,7 @@
 
 """
 RTCP packet encoding and decoding code. RTCP is a bit of a bitch - there's
-so many things you can stuff in a packet. 
+so many things you can stuff in a packet.
 
 Note that this code merely encodes and decodes the various formats - it does
 not attempt to do anything useful with the data. Nor is there code here (yet)
@@ -18,7 +18,7 @@ RTCP_PT_SDES = 202
 RTCP_PT_BYE = 203
 RTCP_PT_APP = 204
 rtcpPTdict = {RTCP_PT_SR: 'SR', RTCP_PT_RR: 'RR', RTCP_PT_SDES:'SDES', RTCP_PT_BYE:'BYE'}
-for k,v in rtcpPTdict.items(): 
+for k,v in rtcpPTdict.items():
     rtcpPTdict[v] = k
 
 RTCP_SDES_CNAME = 1
@@ -30,16 +30,16 @@ RTCP_SDES_TOOL = 6
 RTCP_SDES_NOTE = 7
 RTCP_SDES_PRIV = 8
 
-rtcpSDESdict = {RTCP_SDES_CNAME: 'CNAME', 
-                RTCP_SDES_NAME: 'NAME', 
-                RTCP_SDES_EMAIL: 'EMAIL', 
-                RTCP_SDES_PHONE: 'PHONE', 
-                RTCP_SDES_LOC: 'LOC', 
-                RTCP_SDES_TOOL: 'TOOL', 
-                RTCP_SDES_NOTE: 'NOTE', 
-                RTCP_SDES_PRIV: 'PRIV', 
+rtcpSDESdict = {RTCP_SDES_CNAME: 'CNAME',
+                RTCP_SDES_NAME: 'NAME',
+                RTCP_SDES_EMAIL: 'EMAIL',
+                RTCP_SDES_PHONE: 'PHONE',
+                RTCP_SDES_LOC: 'LOC',
+                RTCP_SDES_TOOL: 'TOOL',
+                RTCP_SDES_NOTE: 'NOTE',
+                RTCP_SDES_PRIV: 'PRIV',
                }
-for k,v in rtcpSDESdict.items(): 
+for k,v in rtcpSDESdict.items():
     rtcpSDESdict[v] = k
 
 
@@ -62,7 +62,7 @@ class RTCPPacket:
         else:
             self._ptcode = ptcode
         self._body = ''
-        if contents: 
+        if contents:
             self._contents = contents
         else:
             self._contents = None
@@ -131,7 +131,7 @@ class RTCPPacket:
             self._body = self._body[4:]
         if self._body:
             # A reason!
-            length = ord(self._body[0]) 
+            length = ord(self._body[0])
             reason = self._body[1:length+1]
             self._contents[1] = reason
             self._body = ''
@@ -154,7 +154,7 @@ class RTCPPacket:
         names = 'ntpHi', 'ntpLo', 'rtpTS', 'packets', 'octets'
         sender = dict(zip(names, bits))
         sender['ntpTS'] = (sender['ntpHi'] * 2**32) + sender['ntpLo']
-        del sender['ntpHi'], sender['ntpLo'] 
+        del sender['ntpHi'], sender['ntpLo']
         blocks = self._decodeRRSRReportBlocks()
         self._contents = [ssrc,sender,blocks]
 
@@ -177,7 +177,7 @@ class RTCPPacket:
             names = 'ssrc', 'lost', 'highest', 'jitter', 'lsr', 'dlsr'
             c = dict(zip(names,bits))
             c['fraclost'] = ((c['lost'] & 0xFF000000) >> 24)/256.0
-            c['packlost'] = (c['lost'] & 0x00FFFFFF) 
+            c['packlost'] = (c['lost'] & 0x00FFFFFF)
             del c['lost']
             blocks.append(c)
             self._body = self._body[24:]
@@ -192,7 +192,7 @@ class RTCPPacket:
         self._contents = [subtype,ssrc,name,value]
 
     def encode_APP(self):
-        subtype,ssrc,name,value = self._contents 
+        subtype,ssrc,name,value = self._contents
         packet = struct.pack('!BBHI',subtype|128, self._ptcode, 0, ssrc)
         packet = packet + name + value
         packet = self._padIfNeeded(packet)
@@ -252,7 +252,7 @@ class RTCPCompound:
 
     def __repr__(self):
         return "<RTCP Packet: (%s)>"%(', '.join([x.getPT() for x in self._rtcp]))
-            
+
 
 class RTCPProtocol(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
@@ -263,4 +263,3 @@ class RTCPProtocol(DatagramProtocol):
 
     def sendDatagram(self, packet):
         self.transport.write(packet)
-

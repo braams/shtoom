@@ -51,7 +51,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         EVT_BUTTON(self, self.BUTT_CALL, self.OnCall)
         EVT_TEXT_ENTER(self, self.COMBO_ADDRESS, self.PlaceCall)
         EVT_CLOSE(self, self.DoClose)
-        
+
         # Advanced mode - whether to display the dtmf buttons or not
         self.advanced_mode = True
         # Call mode - whether the call button places a call or hangs up
@@ -75,10 +75,10 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         # This also restricts the resizing of the window
         self.OnAdvanced(None)
 
-        # Hookup the error log 
+        # Hookup the error log
         # Calculate initial pos for the message log window
         posx, posy = self.GetPosition()
-        self.errorlog = LogFrameImpl(self, -1, "Message Log", 
+        self.errorlog = LogFrameImpl(self, -1, "Message Log",
             pos=(posx+sizex+5,posy))
         wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
 
@@ -109,11 +109,11 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
 
     def getCurrentAddress(self):
         return self.combo_address.GetValue()
-            
+
     def PlaceCall(self, event):
         sipURL = self.getCurrentAddress()
         if not sipURL.startswith('sip'):
-            dlg = wxMessageDialog(self, 
+            dlg = wxMessageDialog(self,
                 '%s is a invalid address. The address must begin with "sip".'%sipURL,
                 "Address error", wxOK)
             dlg.ShowModal()
@@ -129,7 +129,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
     def callConnected(self, cookie):
         self.updateCallButton(do_call=False)
         self.SetStatusText("Call connected")
-        # Save the address we connected to. We'll use this to 
+        # Save the address we connected to. We'll use this to
         # pre-populate the address combo on startup
         address = self.getCurrentAddress()
         if address not in self.address_history:
@@ -137,7 +137,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
 
     def callDisconnected(self, cookie, message=""):
         status = "Call disconnected"
-        if message: 
+        if message:
             status = "%s: %r"%(status, message)
         self.SetStatusText(status)
         self.updateCallButton(do_call=True)
@@ -145,7 +145,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
 
     def callFailed(self, cookie, message=""):
         status = "Call failed"
-        if message: 
+        if message:
             status = "%s: %r"%(status, message)
         self.SetStatusText(status)
         self.updateCallButton(do_call=True)
@@ -174,7 +174,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.errorlog.Show(True)
 
     def DoRegister(self, event):
-        dlg = wxMessageDialog(self, 
+        dlg = wxMessageDialog(self,
             'Re-register by entering new details in the identity preferences.\nContinue registering?',
             "Register", wxYES_NO|wxICON_QUESTION)
         accept = dlg.ShowModal()
@@ -222,7 +222,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         reactor.callFromThread(reactor.stop)
         self.logger.disable()
         self.Destroy()
-        
+
     def DoExit(self, event):
         self.Close(True)
 
@@ -278,7 +278,7 @@ class LogFrameImpl(LogFrame):
         EVT_BUTTON(self, self.BUTT_CLEAR, self.OnClear)
         EVT_BUTTON(self, self.BUTT_CLOSE, self.OnClose)
         EVT_CLOSE(self, self.OnClose)
-    
+
     def OnClear(self, event):
         self.text_errorlog.Clear()
 

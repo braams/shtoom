@@ -77,14 +77,14 @@ class PreferencesDialog:
                         entry.set_visibility(gtk.FALSE)
 
                     val = option.getValue()
-                    
+
                     if val and val is not NoDefaultOption:
                         entry.set_text(str(val))
 
                     self.tooltips.set_tip(entry, option.getDescription())
                     optBox.pack_end(entry, gtk.FALSE, gtk.TRUE)
-                    self.widgets.append((option.optionType, 
-                                         option.getName(), 
+                    self.widgets.append((option.optionType,
+                                         option.getName(),
                                          entry.get_text))
 
                 elif option.optionType == 'Choice':
@@ -105,8 +105,8 @@ class PreferencesDialog:
                     b = gtk.RadioButton(lb, 'default')
                     optBox.pack_end(b, gtk.FALSE, gtk.TRUE)
                     buttons.append((NoDefaultOption,b.get_active))
-                    self.widgets.append((option.optionType, 
-                                         option.getName(), 
+                    self.widgets.append((option.optionType,
+                                         option.getName(),
                                          buttons))
 
                 elif option.optionType == 'Boolean':
@@ -117,12 +117,11 @@ class PreferencesDialog:
                     else:
                         entry.set_active(gtk.FALSE)
                     optBox.pack_end(entry, gtk.FALSE, gtk.TRUE)
-                    self.widgets.append((option.optionType, 
-                                         option.getName(), 
+                    self.widgets.append((option.optionType,
+                                         option.getName(),
                                          entry.get_active))
                 else:
                     print "unknown option", option.optionType
 
                 tab.pack_start(optBox, gtk.FALSE, gtk.FALSE)
             notebook.append_page(tab, gtk.Label(group.getName()))
-

@@ -44,7 +44,7 @@ class BaseApplication:
         from shtoom import sip
         p = sip.SipPhone(self)
         self.sip = p
-        lport = self.getPref('listenport') 
+        lport = self.getPref('listenport')
         if lport is None:
             lport = 5060
         self.sipListener = reactor.listenUDP(lport, p)

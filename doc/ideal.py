@@ -1,10 +1,10 @@
 #
 # This is a test-bed for working out _how_ a VoiceApp would look.
-# 
+#
 # This is _one_ way of spelling it. A more sophisticated approach
 # would be to use PEAK. The PEAK docs make my brain hurt right now,
 # so I'm going to come back to that later.
-# 
+#
 
 from shtoom.doug import VoiceApp
 from shtoom.doug.events import *
@@ -18,9 +18,9 @@ class RecordingApp(VoiceApp):
     def __init__(self, **kw):
         self.__dict__.update(kw)
         if not self.announceFile:
-            raise ValueError, "must supply announceFile"        
+            raise ValueError, "must supply announceFile"
         if not self.menuFile:
-            raise ValueError, "must supply menuFile"        
+            raise ValueError, "must supply menuFile"
         super(RecordingApp, self).__init__(self, **kwargs)
 
     def __start__(self):
@@ -36,7 +36,7 @@ class RecordingApp(VoiceApp):
         # We want to receive the DTMF one keystroke at a time.
         self.dtmfMode(single=True)
         self.mediaPlay(self.announceFile)
-        return ( (MediaDoneEvent, self.recordDraft), 
+        return ( (MediaDoneEvent, self.recordDraft),
                  (CallDoneEvent,  self.discardDone),
                  (DTMFEvent,      self.recordDraft),
                  (Event,          self.unknownEvent), )
@@ -54,7 +54,7 @@ class RecordingApp(VoiceApp):
         self.mediaPlay(self.draftFile)
         return ( (MediaDoneEvent, self.playDraftMenu),
                  (CallDoneEvent,  self.saveDone),
-                 (DTMFEvent,      self.processDraftMenu), 
+                 (DTMFEvent,      self.processDraftMenu),
                  (Event,          self.unknownEvent), )
 
     def playDraftMenu(self, event):
@@ -85,4 +85,3 @@ class RecordingApp(VoiceApp):
     def discardDone(self, event):
         self.cleanUp()
         self.returnResult(None)
-

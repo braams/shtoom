@@ -1,10 +1,10 @@
 #
 # This is a test-bed for working out _how_ a VoiceApp would look.
-# 
+#
 # This is _one_ way of spelling it. A more sophisticated approach
 # would be to use PEAK. The PEAK docs make my brain hurt right now,
 # so I'm going to come back to that later.
-# 
+#
 
 # Hack hack hack.
 import sys, os
@@ -39,7 +39,7 @@ class PlayingApp(VoiceApp):
         self.__dict__.update(kwargs)
         self.leg = None
         if not self.callURL:
-            raise ValueError, "must supply callURL"        
+            raise ValueError, "must supply callURL"
         super(PlayingApp, self).__init__(*args, **kwargs)
 
     def __start__(self):
@@ -53,10 +53,10 @@ class PlayingApp(VoiceApp):
         self.timestats = [time.time()]
         self.placeCall(self.callURL, 'sip:testcall@ekit-inc.com')
         return ( (CallAnsweredEvent, self.callAnswered),
-                 (CallRejectedEvent, self.callFailed), 
+                 (CallRejectedEvent, self.callFailed),
                  (CallEndedEvent, self.callFailed),
                  (TimeoutEvent,      self.callTimedOut),
-                 (Event,             self.unknownEvent), 
+                 (Event,             self.unknownEvent),
                )
 
     def unknownEvent(self, event):
@@ -171,7 +171,7 @@ class MyDougApplication(DougApplication):
         fp.close()
         # Hack until dropCall returns a deferred.
         reactor.callLater(0.4, reactor.stop)
-        
+
     def acceptResults(self, cookie, results):
         from twisted.internet import reactor
         fp = open('calltiming.out','a')
@@ -198,4 +198,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

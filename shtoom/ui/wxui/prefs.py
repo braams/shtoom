@@ -14,7 +14,7 @@ class PreferencesDialog(wxDialog):
         wxDialog.__init__(self, None, -1, "Edit Preferences")
         self.prefs_notebook = wxNotebook(self, -1, style=0)
         self.prefs_save = wxButton(self, wxID_OK, "Save", style=wxBU_EXACTFIT)
-        self.prefs_cancel = wxButton(self, wxID_CANCEL, "Cancel", 
+        self.prefs_cancel = wxButton(self, wxID_CANCEL, "Cancel",
             style=wxBU_EXACTFIT)
         self.__set_properties()
         # end wxGlade
@@ -22,7 +22,7 @@ class PreferencesDialog(wxDialog):
         self.options = {}
 
         for group in self.opts:
-            # probably don't need to have this panel. 
+            # probably don't need to have this panel.
             nbpage = wxPanel(self.prefs_notebook, -1)
             nbsizer = wxFlexGridSizer(0, 2, 0, 0)
             nbsizer.AddGrowableCol(1)
@@ -53,12 +53,12 @@ class PreferencesDialog(wxDialog):
                 elif option.optionType == 'Choice':
                     choices = option.getChoices()
                     rbs = [c for c in option.getChoices()]
-                    edit = wxRadioBox(nbpage, -1, "", choices=rbs, 
+                    edit = wxRadioBox(nbpage, -1, "", choices=rbs,
                         majorDimension=1, style=wxRA_SPECIFY_ROWS)
                     if val is not NoDefaultOption:
                         print "val is ", val
                         edit.SetStringSelection(val)
-                    get = lambda e=edit: e.GetStringSelection() 
+                    get = lambda e=edit: e.GetStringSelection()
                 else:
                     raise ValueError, "Unknown option %s"%(option.optionType)
                 edit.SetToolTipString(option.getDescription())
@@ -67,7 +67,7 @@ class PreferencesDialog(wxDialog):
             self.prefs_notebook.AddPage(nbpage, groupname)
 
         self.__do_layout()
-            
+
     def __set_properties(self):
         # begin wxGlade: PreferencesDialog.__set_properties
         self.SetTitle("Edit Preferences")
@@ -96,5 +96,3 @@ class PreferencesDialog(wxDialog):
         app.updateOptions(out)
 
 # end of class PreferencesDialog
-
-

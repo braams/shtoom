@@ -34,9 +34,8 @@ def Device():
     global opened
     if opened is None:
         if app is not None:
-            opened = MediaLayer(AudioFromFiles(app.getPref('audio_infile'), 
+            opened = MediaLayer(AudioFromFiles(app.getPref('audio_infile'),
                                                app.getPref('audio_outfile')))
         else:
             raise ValueError("no __main__.app, can't use fileaudio")
     return opened
-

@@ -11,7 +11,7 @@ class OSSAudioDevice(baseaudio.AudioDevice):
         dev.speed(8000)
         dev.nonblock()
         ch = dev.channels(1)
-        if ch not in (1, 2): 
+        if ch not in (1, 2):
             raise ValueError("insane channel count %r"%(ch))
         self._channels = ch
         formats = listFormats(dev)

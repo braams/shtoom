@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 
 # Hack hack hack.
 import sys, os
@@ -25,7 +25,7 @@ class PlayingApp(VoiceApp):
     def __init__(self, *args, **kwargs):
         self.__dict__.update(kwargs)
         if not self.announceFile:
-            raise ValueError, "must supply announceFile"        
+            raise ValueError, "must supply announceFile"
         super(PlayingApp, self).__init__(*args, **kwargs)
 
     def __start__(self):
@@ -36,8 +36,8 @@ class PlayingApp(VoiceApp):
     def makeACall(self, event):
         self.placeCall(self.callURL, 'sip:testcall@divmod.com')
         return ( (CallAnsweredEvent, self.callAnswered),
-                 (CallRejectedEvent, self.callFailed), 
-                 (Event,            self.unknownEvent), 
+                 (CallRejectedEvent, self.callFailed),
+                 (Event,            self.unknownEvent),
                )
 
     def unknownEvent(self, event):
@@ -87,4 +87,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

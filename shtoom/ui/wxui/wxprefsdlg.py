@@ -39,5 +39,3 @@ class PreferencesDialog(wxDialog):
         # end wxGlade
 
 # end of class PreferencesDialog
-
-

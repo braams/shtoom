@@ -2,10 +2,10 @@
 
 '''SIP client code.'''
 
-# A Note For The Reader: This code in this module is _hairy_. It's also 
-# ugly, a mess and sorely in need of redesign and refactoring. Do _not_ 
+# A Note For The Reader: This code in this module is _hairy_. It's also
+# ugly, a mess and sorely in need of redesign and refactoring. Do _not_
 # try and use this to learn Python, or Twisted. Doing so _will_ void the
-# warranty on your brain. 
+# warranty on your brain.
 
 # And yes, a redesign (to make it unit testable, for one thing) is very
 # much planned and it is gradually being refactored.
@@ -41,7 +41,7 @@ def genStandardDate(t=None):
 
 def formatAddress(threetuple):
     """ Format a ( 'display name', URL, {params} ) correctly. Inverse of
-        twisted.protocols.sip.parseAddress() 
+        twisted.protocols.sip.parseAddress()
     """
     display, uri, params = threetuple
     params = ';'.join(['='.join(x) for x in params.items()])
@@ -78,10 +78,10 @@ class Address:
         tag += ('%04x'%(random.randint(0, 2**10)))[:4]
         return tag
 
-    def getDisplayName(self): 
+    def getDisplayName(self):
         return self._display
 
-    def getURI(self, parsed=True): 
+    def getURI(self, parsed=True):
         if parsed:
             return self._uri
         else:
@@ -91,7 +91,7 @@ class Address:
 
     def __str__(self):
         return formatAddress((self._display, self._uri, self._params))
-                
+
 class Dialog:
     _contact = None
 
@@ -148,7 +148,7 @@ class Dialog:
         self._contact = tpsip.URL(ip, username=username, port=port)
 
     def getContact(self):
-        return self._contact 
+        return self._contact
 
     def getCaller(self):
         return self._caller
@@ -233,7 +233,7 @@ class Call(object):
             print 'outboundProxyURI=' + outboundProxyURI
             self._outboundProxyURI = tpsip.parseURL(outboundProxyURI)
         if via is not None:
-	    remote = tpsip.URL(host=via.host, port=via.port)
+            remote = tpsip.URL(host=via.host, port=via.port)
         elif isinstance(uri, Address):
             remote = uri.getURI(parsed=True)
         else:
@@ -274,7 +274,7 @@ class Call(object):
         getPref = self.sip.app.getPref
         if getPref('localip') is not None or _CACHED_LOCAL_IP is not None:
             ip = getPref('localip') or _CACHED_LOCAL_IP
-            lport = getPref('listenport') 
+            lport = getPref('listenport')
             if lport is None:
                 lport = 5060
             locAddress = (ip, lport)
@@ -287,7 +287,7 @@ class Call(object):
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
-                lport = getPref('listenport') 
+                lport = getPref('listenport')
                 if lport is None:
                     lport = 5060
                 locAddress = (protocol.transport.getHost()[1], lport)
@@ -391,7 +391,7 @@ class Call(object):
                 else:
                     exc = CallFailed
                 d.errback(exc('%s: %s'%(message.code, message.phrase)))
-        self.sip.app.endCall(self.cookie, 
+        self.sip.app.endCall(self.cookie,
                              'other end sent\n%s'%message.toString())
 
 
@@ -593,7 +593,7 @@ class Call(object):
         self.setState('SENT_BYE')
 
     def sendCancel(self):
-        """ Sends a CANCEL message to kill a call that's not yet seen a 
+        """ Sends a CANCEL message to kill a call that's not yet seen a
             non-provisional response (i.e. a 1xx, but not a 2xx).
         """
         username = self.sip.app.getPref('username')
@@ -735,7 +735,7 @@ class Call(object):
         if message.code in ( 100, 180, 181, 182 ):
             return
         elif message.code == 183:
-            self.sip.app.debugMessage('Should handle early media here:\n' + message.toString())            
+            self.sip.app.debugMessage('Should handle early media here:\n' + message.toString())
         elif message.code == 200:
             if state == 'SENT_INVITE':
                 self.sip.app.debugMessage("Got Response 200\n")

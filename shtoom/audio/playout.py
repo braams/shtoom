@@ -5,7 +5,7 @@ class _Playout:
 
 class BrainDeadPlayout(_Playout):
     # We keep two packets of audio. self.b1 is the one "to be read"
-    # while self.b2 is the pending one. No notice is taken of the 
+    # while self.b2 is the pending one. No notice is taken of the
     # RTP timestamps, sequence numbers, or, really, anything else.
 
     def __init__(self):

@@ -167,7 +167,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
                 self.app.muteCall(self.cookie)
             else:
                 self.app.unmuteCall(self.cookie)
-            
+
 
     def shutdown(self):
         # XXX Hang up any calls

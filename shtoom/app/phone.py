@@ -72,7 +72,7 @@ class Phone(BaseApplication):
             reactor.run()
 
     def getAuth(self, method, realm):
-        self.ui.getString("Please enter user,passwd for %s at %s"%(method, 
+        self.ui.getString("Please enter user,passwd for %s at %s"%(method,
                                                                    realm))
 
     def acceptCall(self, call):
@@ -81,8 +81,8 @@ class Phone(BaseApplication):
             self.openAudioDevice()
         cookie = self.getCookie()
         self._calls[cookie] = call
-        d = self._createRTP(cookie, 
-                            call.getLocalSIPAddress()[0], 
+        d = self._createRTP(cookie,
+                            call.getLocalSIPAddress()[0],
                             call.getSTUNState())
         self.ui.callStarted(cookie)
         calltype = call.dialog.getDirection()

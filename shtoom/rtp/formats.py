@@ -17,7 +17,7 @@ class PTMarker:
         else:
             pt = str(self.pt)
         cname = self.__class__.__name__
-        return "<%s %s(%s)/%s/%s at %x>"%(cname, self.name, pt, 
+        return "<%s %s(%s)/%s/%s at %x>"%(cname, self.name, pt,
                                           self.clock, self.params, id(self))
 
 class AudioPTMarker(PTMarker):
@@ -124,4 +124,3 @@ for key,val in all.items():
         RTPDict[(val.name.lower(),val.clock,val.params or 1)] = val
 
 del all, key, val
-

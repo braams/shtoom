@@ -42,8 +42,8 @@ def parse_o(obj, o, value):
             obj._o_nettype, obj._o_addrfamily, obj._o_ipaddr ) = tuple(l)
 
 def unparse_o(obj, o):
-    return ['%s %s %s %s %s %s' % ( obj._o_username, obj._o_sessid, 
-                                    obj._o_version, obj._o_nettype, 
+    return ['%s %s %s %s %s %s' % ( obj._o_username, obj._o_sessid,
+                                    obj._o_version, obj._o_nettype,
                                     obj._o_addrfamily, obj._o_ipaddr )]
 
 def parse_a(obj, a, text):
@@ -64,7 +64,7 @@ def parse_a(obj, a, text):
         obj._a.setdefault(attr, OrderedDict())[int(payload)] = attrvalue
     else:
         obj._a.setdefault(attr, []).append(attrvalue)
-        
+
 def unparse_a(obj, k):
     out = []
     for (a,vs) in obj._a.items():
@@ -92,7 +92,7 @@ def parse_m(obj, m, value):
         obj.port = int(port)
 
 def unparse_m(obj, m):
-    return ['%s %s %s %s' % (obj.media, str(obj.port), obj.transport, 
+    return ['%s %s %s %s' % (obj.media, str(obj.port), obj.transport,
                             ' '.join(obj.formats))]
 
 parsers = [
@@ -150,7 +150,7 @@ class MediaDescription:
         self.keyManagement = None
         if text:
             parse_m(self, 'm', text)
-   
+
     def setFormats(self, formats):
         if self.media in ( 'audio', 'video'):
             for pt in formats:
@@ -164,7 +164,7 @@ class MediaDescription:
                         continue
                     self.addRtpMap(PT)
         self.formats = formats
-            
+
     def setMedia(self, media):
         self.media = media
     def setTransport(self, transport):
@@ -244,7 +244,7 @@ class SDP:
 
     def id(self):
         if not self._id:
-            self._id = (self._o_username, self._o_sessid, self.nettype, 
+            self._id = (self._o_username, self._o_sessid, self.nettype,
                         self.addrfamily, self.ipaddr)
         return self._id
 

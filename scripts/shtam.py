@@ -30,13 +30,13 @@ class VoicemailApp(VoiceApp):
 
     announceFile = 'voicemail.raw'
     # Maximum record time, in seconds
-    maxDuration = 300 
+    maxDuration = 300
     draftDir = '/tmp'
 
     def __start__(self):
         print "voiceapp.__start__"
         return ( (CallStartedEvent, self.answerCall),
-                 #(Event,            self.unknownEvent), 
+                 #(Event,            self.unknownEvent),
                )
 
     def unknownEvent(self, event):
@@ -82,18 +82,18 @@ class VoicemailApp(VoiceApp):
             self.mediaPlay(userann)
             announce = True
         if announce:
-            return ( (MediaDoneEvent, self.beginRecording), 
+            return ( (MediaDoneEvent, self.beginRecording),
                      (CallEndedEvent,  self.allDone),
                    )
         else:
             return self.beginRecording(event=None)
 
     def beginRecording(self, event):
-        self.draftFile = os.path.join(self.draftDir, 
+        self.draftFile = os.path.join(self.draftDir,
                                 'vmdraft%s.raw'%draftTemp(self.destination))
         self.recordingTimeout = self.setTimer(self.maxDuration)
         self.mediaRecord(self.draftFile)
-        return ( (CallEndedEvent, self.recordingDone), 
+        return ( (CallEndedEvent, self.recordingDone),
                  (TimeoutEvent, self.recordingTooLong),
                )
 
@@ -106,7 +106,7 @@ class VoicemailApp(VoiceApp):
     def recordingDone(self, event):
         # Sweet. Recording is in self.draftFile, destination is self.destination
         self.returnResult((self.destination, self.sender, self.draftFile))
-    
+
     def allDone(self, event):
         self.returnResult('other end closed without leaving a message')
 
@@ -118,7 +118,7 @@ def encodeAudio(infp, dest):
     fp.setparams((1,2,8000,0,'NONE','NONE'))
     fp.writeframes(infp.read())
     fp.close()
-    return draft 
+    return draft
 
 def sendVoicemail(dest, sender, draftfile):
     import smtplib
@@ -161,4 +161,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

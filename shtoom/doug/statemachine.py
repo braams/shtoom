@@ -2,7 +2,7 @@
 
 """ VoiceApp base class
 
-    This is just a first cut at the VoiceApp. Do NOT assume that 
+    This is just a first cut at the VoiceApp. Do NOT assume that
     the interfaces here won't be entirely rewritten in the future.
 
     In fact, ASSUME that they will be rewritten entirely. Repeatedly.
@@ -70,7 +70,7 @@ class StateMachine(object):
         else:
             em = callable()
         if self._doneDeferred is None:
-            # We're done. 
+            # We're done.
             self._curEvents = ()
             self._curState = '<done>'
         else:
@@ -89,4 +89,3 @@ class StateMachine(object):
 
     def __start__(self):
         raise NotImplementedError
-

@@ -29,7 +29,7 @@ class Option(object):
         self._shortopt = shortopt
 
     def getValue(self):
-        if (self._value is NoDefaultOption and 
+        if (self._value is NoDefaultOption and
             self._default is not NoDefaultOption):
             return self._default
         else:

@@ -23,13 +23,13 @@ class RecordingApp(VoiceApp):
     def __init__(self, *args, **kwargs):
         self.__dict__.update(kwargs)
         if not self.announceFile:
-            raise ValueError, "must supply announceFile"        
+            raise ValueError, "must supply announceFile"
         super(RecordingApp, self).__init__(*args, **kwargs)
 
     def __start__(self):
         print "voiceapp.__start__"
         return ( (CallStartedEvent, self.answerCall),
-                 #(Event,            self.unknownEvent), 
+                 #(Event,            self.unknownEvent),
                )
 
     def unknownEvent(self, event):
@@ -54,17 +54,17 @@ class RecordingApp(VoiceApp):
         # We want to receive the DTMF one keystroke at a time.
         self.dtmfMode(single=True)
         self.mediaPlay(self.announceFile)
-        return ( (MediaDoneEvent, self.waitForAKey), 
+        return ( (MediaDoneEvent, self.waitForAKey),
                  (CallEndedEvent,  self.allDone),
                  (DTMFReceivedEvent,      self.gotAKey),
-                 #(Event,          self.unknownEvent), 
+                 #(Event,          self.unknownEvent),
                )
 
     def waitForAKey(self, event):
         return ( (CallEndedEvent, self.allDone),
                  (MediaDoneEvent, IGNORE_EVENT),
                  (DTMFReceivedEvent, self.gotAKey),
-                # (Event,     self.unknownEvent), 
+                # (Event,     self.unknownEvent),
                )
 
     def gotAKey(self, event):
@@ -78,30 +78,30 @@ class RecordingApp(VoiceApp):
             if event.digits == '2':
                 from shtoom.doug.source import EchoSource
                 self.mediaPlay([EchoSource(delay=1.0)])
-                return ( (DTMFReceivedEvent, self.echoDone), 
-                         (CallEndedEvent, self.allDone), 
+                return ( (DTMFReceivedEvent, self.echoDone),
+                         (CallEndedEvent, self.allDone),
                        )
             if event.digits == '5':
                 self._recordT = self.setTimer(10.0)
                 self.mediaRecord(self.testRecordingFile)
-                return ( (DTMFReceivedEvent, self.recordingDone), 
+                return ( (DTMFReceivedEvent, self.recordingDone),
                          (TimeoutEvent, self.recordingDone),
-                         (CallEndedEvent, self.allDone), 
+                         (CallEndedEvent, self.allDone),
                        )
         elif event.digits == '#':
             self.mediaPlay('tmp/goodbye.raw')
             return ( (CallEndedEvent, self.allDone),
                      (MediaDoneEvent, self.endCall),
-                     (Event,     IGNORE_EVENT), 
+                     (Event,     IGNORE_EVENT),
                    )
-        else: 
+        else:
             print "unknown key %r"%(event.digits)
         return ( (CallEndedEvent, self.allDone),
                  (MediaDoneEvent, IGNORE_EVENT),
                  (DTMFReceivedEvent, self.gotAKey),
-                 (Event,     IGNORE_EVENT), 
+                 (Event,     IGNORE_EVENT),
                )
-    
+
     def echoDone(self, event):
         self.mediaStop()
         return self.waitForAKey(event=None)
@@ -131,5 +131,3 @@ srv.startService()
 app = srv.app
 #app.boot()
 #app.start()
-
-

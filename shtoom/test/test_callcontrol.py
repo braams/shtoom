@@ -7,37 +7,37 @@ TDEBUG=False
 
 callFlowOutboundHorror = """
 For an outbound call:
-  UI calls app.placeCall(), which calls sip.SIP.placeCall(), which 
-  returns a deferred (compDef). The UI attaches cb_callStarted and 
+  UI calls app.placeCall(), which calls sip.SIP.placeCall(), which
+  returns a deferred (compDef). The UI attaches cb_callStarted and
   cb_callFailed to this.
   compDef is passed off to the newly created sip.Call() object.
-  The new Call object calls app.acceptCall() with a calltype of 
-  'outbound'. This returns a deferred (generally, triggered 
-  immediately) with the new 'cookie' for the call. This deferred 
+  The new Call object calls app.acceptCall() with a calltype of
+  'outbound'. This returns a deferred (generally, triggered
+  immediately) with the new 'cookie' for the call. This deferred
   triggers Call.sendInvite().
   Call.sendInvite() calls app.getSDP(cookie) to get the SDP of the call.
   If the call fails or is rejected, the compDef.errback() is called.
-  No method of the app gets notified of this. Oops. 
-  If the call succeeds, app.startCall() is called, and passed the 
+  No method of the app gets notified of this. Oops.
+  If the call succeeds, app.startCall() is called, and passed the
   callcookie, the remote end's RTP (host,port), and compDef.callback
-  This then starts RTP and triggers the compDef callback with the 
+  This then starts RTP and triggers the compDef callback with the
   cookie.
 
   To Do:
-  app.startCall() should be attached to the deferred returned by 
-  SIP.placeCall(). This should be passed the Call object on success, 
-  startCall should then return defer.succeed(callcookie) which will 
+  app.startCall() should be attached to the deferred returned by
+  SIP.placeCall(). This should be passed the Call object on success,
+  startCall should then return defer.succeed(callcookie) which will
   be passed on to the UI.
 """
 
 callFlowInboundHorror = """
-  An invite message is received by sip.SIP(). This creates a new 
+  An invite message is received by sip.SIP(). This creates a new
   deferred (compDef) and creates a sip.Call() object, passing in
   compDef. It then calls Call.startInboundCall(), and here is where
   the horror begins.
 
   Call.setupLocalSIP() returns a deferred. We chain some callbacks on to
-  this:  
+  this:
      Call.recvInvite()
      app.acceptCall(), which itself returns a deferred
      (Call.acceptedCall(), Call.rejectedCall())
@@ -46,7 +46,7 @@ callFlowInboundHorror = """
 class TestAudio:
     def __init__(self):
         self.actions = []
-    def selectDefaultFormat(self, fmt): 
+    def selectDefaultFormat(self, fmt):
         self.actions.append('select')
         if TDEBUG: print "selecting fake audio format"
 
@@ -102,20 +102,20 @@ class TestUI:
     def incomingCall(self, description, cookie, defsetup):
         if TDEBUG: print "incoming"
         self.actions.append(('incoming',cookie))
-        defsetup.addCallbacks(self.cb_callConnected, 
+        defsetup.addCallbacks(self.cb_callConnected,
                        self.cb_callFailed).addErrback(log.err)
         defsetup.addCallback(lambda x: cookie)
 
     def fakeCall(self):
         if TDEBUG: print "placing a call"
         d = self.app.placeCall('sip:foo@bar')
-        d.addCallbacks(self.cb_callConnected, 
+        d.addCallbacks(self.cb_callConnected,
                        self.cb_callFailed).addErrback(log.err)
 
     def dropCall(self):
         self.actions.append(('drop',self.cookie))
         self.app.dropCall(self.cookie)
-        
+
 
 class TestCall:
     "A fake Call object"
@@ -126,7 +126,7 @@ class TestCall:
     def getLocalSIPAddress(self):
         return ( '127.0.0.1', 5060)
 
-    def getSTUNState(self): 
+    def getSTUNState(self):
         return False
 
     def startFakeInbound(self):
@@ -134,7 +134,7 @@ class TestCall:
         self.dialog = Dialog()
         self.dialog.setDirection(inbound=True)
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self.acceptedFakeCall, 
+        d.addCallbacks(self.acceptedFakeCall,
                        self.rejectedFakeCall).addErrback(log.err)
 
     def startFakeOutbound(self, uri):
@@ -142,7 +142,7 @@ class TestCall:
         self.dialog = Dialog()
         self.dialog.setDirection(outbound=True)
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self.acceptedFakeCall, 
+        d.addCallbacks(self.acceptedFakeCall,
                        self.rejectedFakeCall).addErrback(log.err)
 
     def acceptedFakeCall(self, cookie):
@@ -228,7 +228,7 @@ class TestCallControl(unittest.TestCase):
         p = Phone(ui=ui, audio=au)
         p._rtpProtocolClass = TestRTP
         ui.connectApplication(p)
-        p.connectSIP = lambda x=None: None 
+        p.connectSIP = lambda x=None: None
         p._startReactor = False
         p.boot()
         p.sip = TestSip(p)
@@ -262,7 +262,7 @@ class TestCallControl(unittest.TestCase):
         ui.connectApplication(p)
         testdef = ui.compdef = defer.Deferred()
         reactor.callLater(0, ui.fakeCall)
-        p.connectSIP = lambda x=None: None 
+        p.connectSIP = lambda x=None: None
         p.boot()
         p.sip = TestSip(p)
         reactor.callLater(0.3, lambda : p.sip.dropCall(ui.cookie))
@@ -288,7 +288,7 @@ class TestCallControl(unittest.TestCase):
         p._rtpProtocolClass = TestRTP
         ui.connectApplication(p)
         testdef = ui.compdef = defer.Deferred()
-        p.connectSIP = lambda x=None: None 
+        p.connectSIP = lambda x=None: None
         p.boot()
         p.sip = TestSip(p)
         d =  p.sip.fakeInbound()
@@ -305,4 +305,3 @@ class TestCallControl(unittest.TestCase):
         actions = [x[0] for x in actions]
         # XXX no connected??
         self.assertEquals(actions, ['start', 'incoming', 'connected', 'disconnected'])
-        

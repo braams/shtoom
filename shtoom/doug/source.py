@@ -36,7 +36,7 @@ class SilenceSource(Source):
         return False
 
     def close(self):
-        pass # noop - you cannot close what does not live! 
+        pass # noop - you cannot close what does not live!
 
     def read(self):
         return ''
@@ -46,10 +46,10 @@ class SilenceSource(Source):
 
 
 class EchoSource(Source):
-    """ An EchoSource just repeats back whatever you send it. An optional 
-        'delay' argument to the constructor specifies a delay - the 
+    """ An EchoSource just repeats back whatever you send it. An optional
+        'delay' argument to the constructor specifies a delay - the
         EchoSource will buffer that many seconds of audio before returning
-        anything. 
+        anything.
     """
 
     def __init__(self, delay=0.0):
@@ -126,4 +126,3 @@ def convertToSource(thing, mode='r'):
     else:
         raise ValueError('source must be filename or source, not %r'%(type(thing)))
     return FileSource(fp, mode)
-

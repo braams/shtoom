@@ -12,4 +12,3 @@ class DougService:
 
     def stopService(self):
         self.app.shutdown()
-

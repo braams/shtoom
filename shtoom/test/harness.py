@@ -15,7 +15,7 @@ class TestCall:
     def getLocalSIPAddress(self):
         return ( '127.0.0.1', 5060)
 
-    def getSTUNState(self): 
+    def getSTUNState(self):
         return False
 
     def startFakeInbound(self):
@@ -23,7 +23,7 @@ class TestCall:
         self.dialog = Dialog()
         self.dialog.setDirection(inbound=True)
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self.acceptedFakeCall, 
+        d.addCallbacks(self.acceptedFakeCall,
                        self.rejectedFakeCall).addErrback(log.err)
 
     def startFakeOutbound(self, uri):
@@ -31,7 +31,7 @@ class TestCall:
         self.dialog = Dialog()
         self.dialog.setDirection(outbound=True)
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self.acceptedFakeCall, 
+        d.addCallbacks(self.acceptedFakeCall,
                        self.rejectedFakeCall).addErrback(log.err)
 
     def acceptedFakeCall(self, cookie):
@@ -89,7 +89,7 @@ class TestSip:
                 else:
                     print "new incoming call starting"
                     self.fakeInbound()
-        
+
 
     def callEndedRestartChecking(self):
         from twisted.internet import reactor
@@ -153,7 +153,7 @@ class EchoRTP:
         self.echo = self.app.giveRTP(self.cookie)
         if self.echo is not None:
             packet = self.echo
-            reactor.callLater(0, lambda : self.app.receiveRTP(self.cookie, 
+            reactor.callLater(0, lambda : self.app.receiveRTP(self.cookie,
                                                               packet))
 
 def main():

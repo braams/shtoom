@@ -8,12 +8,12 @@ from time import time
 
 class TestTimer(wxTimer):
     def __init__(self):
-        wxTimer.__init__(self) 
-        self.Start(1) 
+        wxTimer.__init__(self)
+        self.Start(1)
         self.count = 0
         self.startTime = time()
- 
-    def Notify(self): 
+
+    def Notify(self):
         delta = time() - self.startTime
         if delta >= 1.0 and delta < 2.0:
             self.count += 1
@@ -21,7 +21,7 @@ class TestTimer(wxTimer):
             print "wxTimer got %s in 1s"%self.count
             self.startTime = time()
             self.count = 0
-            
+
 
 class ShtoomApplication(wxApp):
     def OnInit(self):

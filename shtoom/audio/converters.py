@@ -143,7 +143,7 @@ class Codecker:
             self.codecs[PT_PCMA] = AlawCodec()
         if codecs.gsm is not None:
             self.codecs[PT_GSM] = GSMCodec()
-        if codecs.speex is not None: 
+        if codecs.speex is not None:
             self.codecs[PT_SPEEX] = SpeexCodec()
         if codecs.dvi4 is not None:
             self.codecs[PT_DVI4] = DVI4Codec()
@@ -240,7 +240,7 @@ class DougConverter(MediaLayer):
     "Specialised converter for Doug."
     # XXX should be refactored away to just use a Codecker directly
     def __init__(self, defaultFormat=PT_PCMU, *args, **kwargs):
-        MediaLayer.__init__(self, defaultFormat=defaultFormat, 
+        MediaLayer.__init__(self, defaultFormat=defaultFormat,
                             *args, **kwargs)
         self.convertOutbound = self.codecker.encode
         self.convertInbound = self.codecker.decode

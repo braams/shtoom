@@ -44,5 +44,3 @@ class BrainDeadPlayoutTests(unittest.TestCase):
         ae(p.read(), '')
         ae(p.read(), '2')
         ae(p.read(), '')
-        
-

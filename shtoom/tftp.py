@@ -87,7 +87,7 @@ class TftpProtocol(DatagramProtocol, object):
         remhost, rempath = remfile.split(':',1)
         resdef = reactor.resolve(remhost)
         self.retdef = defer.Deferred()
-        resdef.addCallbacks(lambda x: self._sendRRQ(x,rempath), 
+        resdef.addCallbacks(lambda x: self._sendRRQ(x,rempath),
                             self.retdef.errback)
         return self.retdef
 

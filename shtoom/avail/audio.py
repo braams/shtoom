@@ -29,7 +29,7 @@ if fastaudio is not None:
     from shtoom.audio import fast as fastaudio
 else:
     fastaudio = None
-    
+
 
 try:
     import coreaudio
@@ -55,4 +55,3 @@ def listAudio():
         elif name.startswith('_'):
             del all[name]
     return all.keys()
-

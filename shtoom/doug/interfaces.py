@@ -2,7 +2,7 @@
 
 """ VoiceApp Interface
 
-    This is just a first cut at the VoiceApp. Do NOT assume that 
+    This is just a first cut at the VoiceApp. Do NOT assume that
     the interfaces here won't be entirely rewritten in the future.
 
     In fact, ASSUME that they will be rewritten entirely. Repeatedly.
@@ -12,8 +12,8 @@
 class IVoiceApp:
 
     def mediaPlay(self, playlist):
-        """ Play one or more audio objects. 'playlist' is a sequence of 
-            either filenames or open file-like objects - they should 
+        """ Play one or more audio objects. 'playlist' is a sequence of
+            either filenames or open file-like objects - they should
             support 'read()' and 'close()'.
 
             If the voiceapp is currently playing any audio, the new
@@ -26,17 +26,17 @@ class IVoiceApp:
 
     def mediaRecord(self, destination):
         """ Record audio to a destination. 'destination' is either a
-            filename or an open file-like object - the latter should 
+            filename or an open file-like object - the latter should
             support 'write()' and 'close()'
 
-            Calling this when we're already recording is an error, 
+            Calling this when we're already recording is an error,
             call mediaStop first
 
             when completed, the file will be closed
         """
 
     def mediaStop(self):
-        """ Stop any mediaPlay or mediaRecord that's currently running. 
+        """ Stop any mediaPlay or mediaRecord that's currently running.
             Calling this when neither are running is a no-op.
         """
 
@@ -83,16 +83,15 @@ class ISource:
     def isRecording(self):
         """ Returns True if the voiceapp is a recording source
         """
-        
+
     def close(self):
-        """ close the source 
+        """ close the source
         """
 
     def read(self):
-        """ read a packet of audio from the source 
+        """ read a packet of audio from the source
         """
 
     def write(self, bytes):
         """ write a packet of audio to the source
         """
-

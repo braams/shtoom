@@ -75,7 +75,7 @@ class OSXAudio(object):
     def toPCMString(self, buffer):
         b = buffer * self.SCALE - self.SCALE/2
         b = b.astype(Int16)
-        # Damn. Endianness?  
+        # Damn. Endianness?
         b = b.tostring()
         return b
 

@@ -25,10 +25,10 @@ class RTPPacket:
         return "<RTPPacket containing %r at %x>"%(self.pt, id(self))
 
 
-# XXX Note that the MediaLayer will create it's own RTPPackets - this is 
+# XXX Note that the MediaLayer will create it's own RTPPackets - this is
 # purely for packets coming off the network.
 class RTPParser:
-    """ An RTPParser creates RTPPacket objects from a bytestring. It is 
+    """ An RTPParser creates RTPPacket objects from a bytestring. It is
         created with a mapping of RTP PT bytes to PT markers"""
     def __init__(self, ptdict):
         self.ptdict = ptdict
@@ -127,4 +127,3 @@ class NTE:
 
     def __repr__(self):
         return '<NTE %s%s>'%(self.key, self.ending and ' (ending)' or '')
-

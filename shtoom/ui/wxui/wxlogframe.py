@@ -41,5 +41,3 @@ class LogFrame(wx.Frame):
         # end wxGlade
 
 # end of class LogFrame
-
-

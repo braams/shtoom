@@ -27,13 +27,13 @@ class ConferencingApp(VoiceApp):
         self.conf = None
         self.__dict__.update(kwargs)
         if not self.announceFile:
-            raise ValueError, "must supply announceFile"        
+            raise ValueError, "must supply announceFile"
         super(ConferencingApp, self).__init__(*args, **kwargs)
 
     def __start__(self):
         print "voiceapp.__start__"
         return ( (CallStartedEvent, self.answerCall),
-                 #(Event,            self.unknownEvent), 
+                 #(Event,            self.unknownEvent),
                )
 
     def unknownEvent(self, event):
@@ -60,10 +60,10 @@ class ConferencingApp(VoiceApp):
         # We want to receive the DTMF one keystroke at a time.
         self.dtmfMode(single=True)
         self.mediaPlay(self.announceFile)
-        return ( (MediaDoneEvent, self.startConference), 
+        return ( (MediaDoneEvent, self.startConference),
                  (CallEndedEvent,  self.allDone),
                  (DTMFReceivedEvent,      self.startConference),
-                 #(Event,          self.unknownEvent), 
+                 #(Event,          self.unknownEvent),
                )
 
     def startConference(self, event):
@@ -71,10 +71,10 @@ class ConferencingApp(VoiceApp):
         self.mediaStop()
         self.conf = newConferenceMember(self.roomname, self.leg)
         self.mediaPlay([self.conf])
-        return ( (MediaDoneEvent, self.startConference), 
+        return ( (MediaDoneEvent, self.startConference),
                  (CallEndedEvent,  self.allDone),
                  (DTMFReceivedEvent,      IGNORE_EVENT),
-                 #(Event,          self.unknownEvent), 
+                 #(Event,          self.unknownEvent),
                )
 
 
@@ -93,5 +93,3 @@ srv.startService()
 app = srv.app
 #app.boot()
 #app.start()
-
-

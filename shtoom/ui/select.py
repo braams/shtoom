@@ -73,7 +73,7 @@ def findUserInterface(application, prefui):
             ui = tryTextInterface(application)
     if ui is not None:
         return ui
-    for attempt in ( tryQtInterface, tryGnomeInterface, tryWxInterface, 
+    for attempt in ( tryQtInterface, tryGnomeInterface, tryWxInterface,
                     tryTkInterface, tryTextInterface, ):
         ui = attempt(application)
         if ui is not None:

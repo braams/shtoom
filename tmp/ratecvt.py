@@ -3,7 +3,7 @@
 """
 import numarray, ossaudiodev, time, audioop
 
-# This generates a sine wave in the same format as Donovan's 
+# This generates a sine wave in the same format as Donovan's
 # coreaudio module's format
 
 HZ = 44100
@@ -12,7 +12,7 @@ SAMPLESIZE = 1024
 
 class SineGenerator:
     freq = 440.0
-    offset = 0 
+    offset = 0
 
     def callback(self, buffer):
         from math import sin
@@ -25,8 +25,8 @@ class SineGenerator:
             buffer[2*frame+1] = v
 
 class CoreAudioConverter:
-    """ converts from mac format (an array of 32-bit stereo float values(!)) 
-        to signed little endian 16 bit mono 
+    """ converts from mac format (an array of 32-bit stereo float values(!))
+        to signed little endian 16 bit mono
     """
     tostate = None
     fromstate = None
@@ -34,8 +34,8 @@ class CoreAudioConverter:
     def toStdFmt(self, buffer):
         b = buffer * self.SCALE - self.SCALE/2
         b = b.astype(numarray.Int16)
-        # Damn. Endianness?  
-        b = b.tostring() 
+        # Damn. Endianness?
+        b = b.tostring()
         b, self.tostate = audioop.ratecv(b, 2, 2, HZ, OUTHZ, self.tostate)
         b = audioop.tomono(b, 2, 1, 1)
         return b
@@ -48,7 +48,7 @@ class CoreAudioConverter:
         b = b.astype(Float32)
         b = ( b + 32768/2 ) / self.SCALE
         return b
-        
+
 
 
 def main():

@@ -52,7 +52,7 @@ class SDPTests(unittest.TestCase):
         audio3 = sdp3.getMediaDescription('audio')
         ae(audio1.formats, audio3.formats)
         ae(audio1.rtpmap.keys(), [3,])
-    
+
     def testComplexIntersectSDP(self):
         from shtoom.sdp import SDP
         from shtoom.rtp.formats import PT_SPEEX, PT_SPEEX_16K, PT_GSM, PT_PCMU
@@ -193,4 +193,3 @@ a=rtpmap:101 speex/8000\r
 a=rtpmap:102 speex/16000\r
 m=video 51372 RTP/AVP 31\r
 """
-

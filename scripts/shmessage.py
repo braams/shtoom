@@ -1,7 +1,7 @@
 #
 # Hack hack hack.
 # This thing allows the script to be run from a subdirectory of the
-# source code without having to explicitly set the PYTHONPATH or 
+# source code without having to explicitly set the PYTHONPATH or
 # install the shtoom code.
 import sys, os
 f = sys.path.pop(0)
@@ -23,9 +23,9 @@ from twisted.python import log
 
 class MessageApp(VoiceApp):
 
-    # Set the announceFile. This can also be set with the 
+    # Set the announceFile. This can also be set with the
     # option 'dougargs=announceFile=foobar.raw'. As with all
-    # files in doug, this should be 8KHz 16 bit linear PCM 
+    # files in doug, this should be 8KHz 16 bit linear PCM
     # audio.
     announceFile = None
 
@@ -33,9 +33,9 @@ class MessageApp(VoiceApp):
         self.__dict__.update(kwargs)
         super(MessageApp, self).__init__(*args, **kwargs)
 
-    # The __start__ method is the only *required* method for a 
+    # The __start__ method is the only *required* method for a
     # VoiceApp. It's called to boot the app. As with all VoiceApp
-    # methods, it returns a list of two-tuples. The two-tuples 
+    # methods, it returns a list of two-tuples. The two-tuples
     # are (event, handler). Note that the events are in a hierarchy,
     # rooted at Event.
     def __start__(self):
@@ -51,7 +51,7 @@ class MessageApp(VoiceApp):
         return ()
 
     # When a call comes in, this method will be called - we defined
-    # this back in the __start__ method, above. 
+    # this back in the __start__ method, above.
     def answerCall(self, event):
         # A CallStarted event has a leg associated with it - this is
         # the leg that represents the incoming call.
@@ -64,7 +64,7 @@ class MessageApp(VoiceApp):
         username = self.leg.getDialog().getCallee().getURI().username
         if username == 'nope':
             # To refuse to accept the call, call the leg.rejectCall method,
-            # passing an exception that explains why. 
+            # passing an exception that explains why.
             self.leg.rejectCall(CallRejected('go away'))
         else:
             # Otherwise, we accept the call.
@@ -81,19 +81,19 @@ class MessageApp(VoiceApp):
         # more state setting. When the queue of media is finished,
         # end the call. If the other end hangs up, go to the end
         # of the app.
-        return ( (MediaDoneEvent, self.endCall), 
+        return ( (MediaDoneEvent, self.endCall),
                  (CallEndedEvent,  self.allDone),
                )
 
     def endCall(self, event):
         # The media is finished. Drop the call.
         self.leg.hangupCall()
-        return ( (CallEndedEvent, self.allDone), 
+        return ( (CallEndedEvent, self.allDone),
                )
-    
+
     def allDone(self, event):
         # We're finished. Use the returnResult to pass the result
-        # back to the DougApplication that is the parent of this 
+        # back to the DougApplication that is the parent of this
         # VoiceApp. We could also use returnError if something went
         # wrong.
         self.returnResult('other end closed')
@@ -110,4 +110,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

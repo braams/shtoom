@@ -6,4 +6,3 @@ def _removeImport(mod):
     if sys.version_info < (2,4):
         if mod in sys.modules:
             del sys.modules[mod]
-

@@ -15,7 +15,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.cookie = False
         self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"))
         self.xml.signal_autoconnect(self)
-        self.xml.get_widget("callwindow").connect("destroy", 
+        self.xml.get_widget("callwindow").connect("destroy",
                                                 lambda w: reactor.stop())
         self.address = self.xml.get_widget("address")
         self.address.set_value_in_list(False, False)
@@ -31,7 +31,7 @@ class ShtoomWindow(ShtoomBaseUI):
         #h = self.xml.get_widget('hbox2')
         #h.hide()
 
-    def getLogger(self): 
+    def getLogger(self):
         return self.logger
 
     # GUI callbacks
@@ -243,7 +243,7 @@ class ShtoomWindow(ShtoomBaseUI):
             window.resize(w, h-wh)
             window.show_all()
             del self.debugview
-            
+
 
 class DebugTextView:
     MAXLINES = 1000
@@ -264,12 +264,12 @@ class DebugTextView:
         b.insert(b.get_end_iter(), text)
         lines = b.get_line_count()
         if lines > self.MAXLINES:
-            b.delete(b.get_start_iter(), 
+            b.delete(b.get_start_iter(),
                      b.get_iter_at_line_offset(self.DELETECHUNK,0))
         if self.scroll is not None:
             adj = self.scroll.get_vadjustment()
             adj.set_value(adj.upper)
-            
+
 
     def flush(self):
         pass

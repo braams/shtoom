@@ -10,4 +10,3 @@ class ShtoomBaseUI:
 
     def connectApplication(self, application):
         self.app = application
-

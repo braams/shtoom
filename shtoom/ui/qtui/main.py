@@ -31,7 +31,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
 
     def _createCallTab(self, desc):
         self._tabcount = self._tabcount + 1
-        tab = QWidget(self.callSelectionTab, 
+        tab = QWidget(self.callSelectionTab,
                             "tab%d"%self._tabcount)
         self.callSelectionTab.insertTab(tab, QString(desc))
         return tab
@@ -99,14 +99,14 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
-        tab = self._connectedCalls[cookie] 
+        tab = self._connectedCalls[cookie]
         print "removing tab", tab
         self.callSelectionTab.showPage(self._newCallTab)
         self.callSelectionTab.changeTab(tab, QString('closing'))
         self.callSelectionTab.removePage(tab)
-        del self._connectedCalls[cookie] 
-        del self._connectedURLs[cookie] 
-        del self._connectedCalls[tab] 
+        del self._connectedCalls[cookie]
+        del self._connectedURLs[cookie]
+        del self._connectedCalls[tab]
 
     def setAudioSource(self, fn):
         self.audiosource = fn
@@ -255,7 +255,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         if val:
             self._muted = True
         else:
-            self._muted = False 
+            self._muted = False
         if self.cookie is not None:
             if val:
                 self.app.muteCall(self.cookie)

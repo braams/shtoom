@@ -13,14 +13,14 @@ class Recorder:
         self._dev = dev
         self._play = play
         self._outfp = outfp
-	import sys
+        import sys
         if '-q' in sys.argv:
             self.quiet = True
         else:
             self.quiet = False
 
     def analyse(self, samples):
-        if self.quiet: 
+        if self.quiet:
             return
         sampcount = len(samples)
         abssamp = [ abs(x) for x in samples ]
@@ -32,7 +32,7 @@ class Recorder:
         var = reduce(lambda x,y: x+(y*y), deviations)/float(sampcount - 1)
         std = math.sqrt(var)
         #print "Mean % 5d  RMS % 5d STD % 3d"%(mean,rms,std)
-        return 
+        return
 
     def sample(self, *args):
         try:

@@ -90,7 +90,7 @@ itter': 0L, 'fraclost': 0.765625, 'packlost': 4576392L, 'dlsr': 32960L, 'lsr': 2
 0\x18\x00\x01\x03\xf2\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00'>
 RTCP: <RTCP SDES [(488974842L, [('CNAME', '0.0.0@192.168.41.250'), ('NAME', 'Cisco IOS, VoIP Gateway'), ('TOOL', 'Cisco IOS, VoIP Gate
 way')])]  '\x00'>
-received RTCP from ('192.168.41.250', 18735) (136 bytes): 
+received RTCP from ('192.168.41.250', 18735) (136 bytes):
     81c8000c 1d2529fa
     c445d48f 75f814be
     00000000 000001fc
@@ -118,7 +118,7 @@ itter': 0L, 'fraclost': 0.765625, 'packlost': 4576399L, 'dlsr': 81280L, 'lsr': 5
 0\x18\x00\x01\x05J\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00'>
 RTCP: <RTCP SDES [(488974842L, [('CNAME', '0.0.0@192.168.41.250'), ('NAME', 'Cisco IOS, VoIP Gateway'), ('TOOL', 'Cisco IOS, VoIP Gate
 way')])]  '\x00'>
-received RTCP from ('192.168.41.250', 18735) (136 bytes): 
+received RTCP from ('192.168.41.250', 18735) (136 bytes):
     81c8000c 1d2529fa
     c445d494 5be21dde
     00000000 000002d4

@@ -87,7 +87,7 @@ class OptionsTests(unittest.TestCase):
             s2.setValue('hello')
         cfg = _getConfigParsed(all)
         ae(cfg.sections(), ['group'])
-        opts = cfg.options('group') 
+        opts = cfg.options('group')
         opts.sort()
         ae(opts, ['optionb'])
         ae(cfg.get('group', 'optionb'), 'hello')
@@ -99,7 +99,7 @@ class OptionsTests(unittest.TestCase):
 
         all.setValue('optionb', 'dosave')
         cfg = _getConfigParsed(all)
-        opts = cfg.options('group') 
+        opts = cfg.options('group')
         opts.sort()
         ae(opts, ['optiona','optionb'])
         ae(cfg.get('group', 'optionb'), 'dosave')

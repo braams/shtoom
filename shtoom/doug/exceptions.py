@@ -6,5 +6,3 @@ class EventNotSpecifiedError(StateMachineError):
     pass
 class NonEventError(StateMachineError):
     pass
-
-

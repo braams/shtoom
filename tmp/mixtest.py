@@ -31,16 +31,16 @@ class Recorder:
         divsamples = []
         for sample in samples:
             divsample = [ x/divider for x in sample ]
-            divsamples.append(divsample) 
+            divsamples.append(divsample)
         t4 = time()
         ds = map(None, *divsamples)
         out = map(sum, ds)
         t4 = time()
-        print "time %.2f: ctor %.2f pow %.2f combin %.2f"%( 
-                        (t4-t1) * 1000, 
-                        (t2-t1) * 1000, 
-                        (t3-t2) * 1000, 
-                        (t4-t3) * 1000, 
+        print "time %.2f: ctor %.2f pow %.2f combin %.2f"%(
+                        (t4-t1) * 1000,
+                        (t2-t1) * 1000,
+                        (t3-t2) * 1000,
+                        (t4-t3) * 1000,
                              )
         out = struct.pack('160h', *out)
         return out
@@ -66,17 +66,17 @@ class Recorder:
         divsamples = []
         for sample in samples:
             divsample = [ x/divider for x in sample ]
-            divsamples.append(divsample) 
+            divsamples.append(divsample)
         t4 = time()
         ds = map(None, *divsamples)
         out = map(sum, ds)
         t5 = time()
-        print "time %.2f: ctor %.2f pow %.2f div %.2f add %.2f"%( 
-                        (t5-t1) * 1000, 
-                        (t2-t1) * 1000, 
-                        (t3-t2) * 1000, 
-                        (t4-t3) * 1000, 
-                        (t5-t4) * 1000, 
+        print "time %.2f: ctor %.2f pow %.2f div %.2f add %.2f"%(
+                        (t5-t1) * 1000,
+                        (t2-t1) * 1000,
+                        (t3-t2) * 1000,
+                        (t4-t3) * 1000,
+                        (t5-t4) * 1000,
                              )
         out = struct.pack('160h', *out)
         return out
@@ -106,17 +106,17 @@ class Recorder:
         divsamples = []
         for sample in samples:
             divsample = [ x/divider for x in sample ]
-            divsamples.append(divsample) 
+            divsamples.append(divsample)
         t4 = time()
         ds = map(None, *divsamples)
         out = map(sum, ds)
         t5 = time()
-        print "time %.2f: ctor %.2f pow %.2f div %.2f add %.2f"%( 
-                        (t5-t1) * 1000, 
-                        (t2-t1) * 1000, 
-                        (t3-t2) * 1000, 
-                        (t4-t3) * 1000, 
-                        (t5-t4) * 1000, 
+        print "time %.2f: ctor %.2f pow %.2f div %.2f add %.2f"%(
+                        (t5-t1) * 1000,
+                        (t2-t1) * 1000,
+                        (t3-t2) * 1000,
+                        (t4-t3) * 1000,
+                        (t5-t4) * 1000,
                              )
         out = struct.pack('160h', *out)
         return out
@@ -129,7 +129,7 @@ class Recorder:
         ms = add.reduce(s)/160
         rms = math.sqrt(ms)
         return rms, id(sample), sample
-        
+
     def mixNumeric(self, samples, time=time.time):
         from numarray import add, array, Int16, fromstring
         divider = min(len(samples), 4)
@@ -146,12 +146,12 @@ class Recorder:
         t4 = time()
         out = reduce(add, divsamples)
         t5 = time()
-        print "time %.2f: ctor %.2f pow %.2f div %.2f add %.2f"%( 
-                        (t5-t1) * 1000, 
-                        (t2-t1) * 1000, 
-                        (t3-t2) * 1000, 
-                        (t4-t3) * 1000, 
-                        (t5-t4) * 1000, 
+        print "time %.2f: ctor %.2f pow %.2f div %.2f add %.2f"%(
+                        (t5-t1) * 1000,
+                        (t2-t1) * 1000,
+                        (t3-t2) * 1000,
+                        (t4-t3) * 1000,
+                        (t5-t4) * 1000,
                     )
         return out.tostring()
 
@@ -166,11 +166,11 @@ class Recorder:
         t3 = time()
         out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
         t4 = time()
-        print "time %.2f: pow %.2f div %.2f add %.2f"%( 
-                        (t4-t1) * 1000, 
-                        (t2-t1) * 1000, 
-                        (t3-t2) * 1000, 
-                        (t4-t3) * 1000, 
+        print "time %.2f: pow %.2f div %.2f add %.2f"%(
+                        (t4-t1) * 1000,
+                        (t2-t1) * 1000,
+                        (t3-t2) * 1000,
+                        (t4-t3) * 1000,
                     )
         return out
 
@@ -184,7 +184,7 @@ class Recorder:
                 return
             if len(indata) != 320:
                 print "discarding short (%d) packet"%(len(indata))
-                return 
+                return
         samples = [ x.read(320) for x in self.mixins ]
         if self._outfp is not None:
             samples.append(indata)

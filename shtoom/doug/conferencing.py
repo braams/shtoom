@@ -49,19 +49,19 @@ class ConfSource(Source):
             self.app._va_sourceDone(self)
 
     def __repr__(self):
-        return "<ConferenceUser %s in room %s (at %s)>"%(self._user, 
+        return "<ConferenceUser %s in room %s (at %s)>"%(self._user,
                             self._room.getName(), hex(id(self)))
 
 
 class Room:
-    """A room is a conference. Everyone in the room hears everyone else 
+    """A room is a conference. Everyone in the room hears everyone else
        (well, kinda)
     """
 
-    # Theory of operation. Rather than rely on the individual sources 
-    # timer loops (which would be, well, horrid), we trigger off our 
-    # own timer. 
-    # This means we don't have to worry about the end systems not 
+    # Theory of operation. Rather than rely on the individual sources
+    # timer loops (which would be, well, horrid), we trigger off our
+    # own timer.
+    # This means we don't have to worry about the end systems not
     # contributing during a window.
     _open = False
 
@@ -144,7 +144,7 @@ class Room:
         audioIn, self._audioIn = self._audioIn, {}
         if len(self._members) < 2:
             self._audioOutDefault = ''
-            return 
+            return
         samples = audioIn.items()
         power = [ (audioop.rms(x[1],2),x[1], x[0]) for x in samples ]
         power.sort(); power.reverse()
@@ -164,8 +164,8 @@ class Room:
         for p,sample,speaker in power:
             allsamples[speaker] = p, sample
         for s in speakers:
-            # For each, take the set of (other speakers), grab the 
-            # top N speakers, and combine them. Add to the _audioOut 
+            # For each, take the set of (other speakers), grab the
+            # top N speakers, and combine them. Add to the _audioOut
             # dictionary.
             all = allsamples.copy()
             del all[s]
@@ -186,13 +186,12 @@ _StickyRoomNames = {}
 def removeRoom(roomname):
     global _RegisterOfAllRooms
     if roomname in _RegisterOfAllRooms and roomname not in _StickyRoomNames:
-        del _RegisterOfAllRooms[roomname] 
+        del _RegisterOfAllRooms[roomname]
 
 def newConferenceMember(roomname, leg):
     global _RegisterOfAllRooms
 
     if not roomname in _RegisterOfAllRooms:
         _RegisterOfAllRooms[roomname] = Room(roomname)
-    room = _RegisterOfAllRooms[roomname] 
+    room = _RegisterOfAllRooms[roomname]
     return ConfSource(room, leg)
-

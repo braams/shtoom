@@ -46,7 +46,7 @@ class RTPProtocol(DatagramProtocol):
 
     def getSDP(self, othersdp=None):
         sdp = SDPGenerator().getSDP(self)
-        if othersdp: 
+        if othersdp:
             sdp.intersect(othersdp)
         self.setSDP(sdp)
         return sdp
@@ -84,8 +84,8 @@ class RTPProtocol(DatagramProtocol):
         # RTP port must be even, RTCP must be odd
         # We select a RTP port at random, and try to get a pair of ports
         # next to each other. What fun!
-        # Note that it's kinda pointless when we're behind a NAT that 
-        # rewrites ports. We can at least send RTCP out in that case, 
+        # Note that it's kinda pointless when we're behind a NAT that
+        # rewrites ports. We can at least send RTCP out in that case,
         # but there's no way we'll get any back.
         rtpPort = self.app.getPref('force_rtp_port')
         if not rtpPort:
@@ -172,7 +172,7 @@ class RTPProtocol(DatagramProtocol):
             # to get a working rtp port (an even port number is required).
             elif ((rtp[1] % 2) != 0):
                 log.msg("stun: unusable RTP/RTCP ports %r, retry #%d"%
-                                            (results, self._stunAttempts), 
+                                            (results, self._stunAttempts),
                                             system='rtp')
                 # XXX close connection, try again, tell user
                 if self._stunAttempts > 8:
@@ -234,7 +234,7 @@ class RTPProtocol(DatagramProtocol):
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
-        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest), 
+        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest),
                                                                 system='rtp')
         if RTP_PT_CN is not None:
             cnpt = RTP_PT_CN
@@ -248,7 +248,7 @@ class RTPProtocol(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
         if self.rtpParser is None:
             log.msg("early(?) rtp packet, no rtpParser available")
-            return 
+            return
         packet = self.rtpParser.fromnet(datagram, addr)
         self.app.receiveRTP(self.cookie, packet)
 
@@ -290,7 +290,7 @@ class RTPProtocol(DatagramProtocol):
         print "stopSending", digit
         if self._pendingDTMF[-1].getKey() == digit:
             self._pendingDTMF[-1].end()
-        
+
     def genRandom(self, bits):
         """Generate up to 128 bits of randomness."""
         if os.path.exists("/dev/urandom"):
@@ -312,7 +312,7 @@ class RTPProtocol(DatagramProtocol):
         self.ts += 160
         self.packets += 1
         # We need to keep track of whether we were in silence mode or not -
-        # when we go from silent->talking, set the marker bit. Other end 
+        # when we go from silent->talking, set the marker bit. Other end
         # can use this as an excuse to adjust playout buffer.
         if self.sample is not None:
             packet = self.sample
@@ -348,4 +348,3 @@ class RTPProtocol(DatagramProtocol):
 
         if self.ts >= TWO_TO_THE_32ND:
             self.ts = self.ts - TWO_TO_THE_32ND
-

@@ -12,7 +12,7 @@ class ShtoomMainFrame(wx.Frame):
         self.panel_3 = wx.Panel(self.advanced, -1, style=wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL)
         self.panel_1 = wx.Panel(self, -1)
         self.panel_2 = wx.Panel(self, -1)
-        
+
         # Menu Bar
         self.shtoom_frame_menubar = wx.MenuBar()
         self.SetMenuBar(self.shtoom_frame_menubar)
@@ -119,5 +119,3 @@ class ShtoomMainFrame(wx.Frame):
         # end wxGlade
 
 # end of class ShtoomMainFrame
-
-

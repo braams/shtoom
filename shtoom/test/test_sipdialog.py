@@ -34,4 +34,3 @@ class DialogTests(unittest.TestCase):
         d.setDirection(outbound=True)
         ae(d.getLocalTag(), Addr1)
         ae(d.getRemoteTag(), Addr2)
-

@@ -8,9 +8,9 @@ from shtoom.exceptions import CallRejected
 #class AuthDialog(Dialog):
 #
 #    def __init__(self, prompt, parent):
-#        
+#
 #        Dialog.__init(self, parent, 'Authentication Required')
-        
+
 from shtoom.ui.logo import b64logo
 
 class ShtoomMainWindow(ShtoomBaseUI):
@@ -38,14 +38,14 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._top3 = Frame(self._top1)
         self._callButton = Button(self._top3, text="Call",
                                   command=self.callButton_clicked)
-        self._callButton.grid(row=1, column=1, sticky=NW) 
+        self._callButton.grid(row=1, column=1, sticky=NW)
         self._hangupButton = Button(self._top3, text="Hang up",
                                     command=self.hangupButton_clicked,
                                     state=DISABLED)
-        self._hangupButton.grid(row=1, column=2, sticky=NW) 
+        self._hangupButton.grid(row=1, column=2, sticky=NW)
         self._registerButton = Button(self._top3, text="Register",
                                   command=self.registerButton_clicked)
-        self._registerButton.grid(row=1, column=3, sticky=NW) 
+        self._registerButton.grid(row=1, column=3, sticky=NW)
         self._top3.grid(row=2,column=1,columnspan=2, sticky=NW)
         self._statusF = Frame(self._top1)
         self._statusL = Label(self._statusF, text="Status:")
@@ -57,9 +57,9 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._top2 = Frame(self.main)
         self._buttonF = Frame(self._top2)
         self._dtmfbuttons = {}
-        for row, dtmfs in enumerate(( ( '1', '2', '3' ), 
-                                      ( '4', '5', '6' ), 
-                                      ( '7', '8', '9' ), 
+        for row, dtmfs in enumerate(( ( '1', '2', '3' ),
+                                      ( '4', '5', '6' ),
+                                      ( '7', '8', '9' ),
                                       ( '*', '0', '#' ))):
             for col, dtmf in enumerate(dtmfs):
                 button = Button(self._buttonF, text=dtmf, padx=4, pady=2)
@@ -71,7 +71,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._debugText = Text(self._top2, width=72, height=7, wrap='char')
         self._debugText.grid(row=1,column=2, sticky=NW)
         self._top2.grid(row=3,column=1, columnspan=6,sticky=NW)
-        
+
 
     def startDTMF(self, key):
         if self.cookie:
@@ -112,7 +112,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
 
     def callDisconnected(self, cookie, message):
         status = "Call disconnected"
-        if message: 
+        if message:
             status = "%s: %r"%(status, message)
         self.statusMessage(status)
         self._hangupButton.config(state=DISABLED)
@@ -181,4 +181,3 @@ class Logger:
     def write(self, text):
         self._t.insert('end', text+'\n')
         self._t.yview('end')
-
