@@ -4,6 +4,7 @@ Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
     - deal with stupid devices that only work in stereo
+    - -p0 should mean 'listen on any random port', not 'default'
     - doug: use dropCall()'s deferred to generate correct events
     - doug: implement a leg.hangup() method (and it's events)
     - doug: implement leg bridging (inbound and outbound)
