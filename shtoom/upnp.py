@@ -171,10 +171,11 @@ class UPnPProtocol(DatagramProtocol, object):
     def handleIGDeviceResponse(self, body, loc):
         log.msg("got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
+            log.msg("already found UPnP, discarding duplicate response", 
+                                                                system="UPnP")
             # We already got a working one - ignore this one
             return
         data = body.read()
-        #open('netgear.xml','w').write(data)
         bs = BeautifulSoap(data)
         manufacturer = bs.first('manufacturer')
         if manufacturer and manufacturer.contents:
@@ -189,7 +190,7 @@ class UPnPProtocol(DatagramProtocol, object):
             self.urlbase = str(urlbase.contents[0])
             log.msg("upnp urlbase is %s"%(self.urlbase), system='UPnP')
         else:
-            log.err("upnp response has no urlbase, falling back to %s"%(loc,), system='UPnP')
+            log.msg("upnp response has no urlbase, falling back to %s"%(loc,), system='UPnP')
             self.urlbase = loc
 
         wanservices = bs.fetch('service', 
