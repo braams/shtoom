@@ -16,7 +16,6 @@ from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtoco
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.protocols import sip as tpsip
-from rtp import RTPProtocol
 
 import shtoom
 from shtoom import __version__ as ShtoomVersion
