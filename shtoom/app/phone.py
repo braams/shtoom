@@ -3,8 +3,8 @@
 
 # The Phone app.
 
-from interfaces import IPhoneApplication
-from base import BaseApplication
+from shtoom.app.interfaces import Application
+from shtoom.app.base import BaseApplication
 from twisted.internet import reactor, defer
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
@@ -12,7 +12,7 @@ from shtoom.audio import getAudioDevice
 from shtoom.rtp import RTPProtocol
 
 class Phone(BaseApplication):
-    __implements__ = ( IPhoneApplication, )
+    __implements__ = ( Application, )
 
     def __init__(self):
         from shtoom.ui.select import findUserInterface
