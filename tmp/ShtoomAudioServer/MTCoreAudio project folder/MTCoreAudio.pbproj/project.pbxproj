@@ -1,0 +1,917 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 39;
+	objects = {
+		014CEA440018CDF011CA2923 = {
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OPTIMIZATION_CFLAGS = "-O0";
+				ZERO_LINK = YES;
+			};
+			isa = PBXBuildStyle;
+			name = Development;
+		};
+		014CEA450018CDF011CA2923 = {
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				PREBINDING = YES;
+				ZERO_LINK = NO;
+			};
+			isa = PBXBuildStyle;
+			name = Deployment;
+		};
+//010
+//011
+//012
+//013
+//014
+//030
+//031
+//032
+//033
+//034
+		034768DFFF38A50411DB9C8B = {
+			children = (
+				4C6CB404054DF62C0017AA37,
+			);
+			isa = PBXGroup;
+			name = Products;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//030
+//031
+//032
+//033
+//034
+//080
+//081
+//082
+//083
+//084
+		0867D690FE84028FC02AAC07 = {
+			buildSettings = {
+			};
+			buildStyles = (
+				014CEA440018CDF011CA2923,
+				014CEA450018CDF011CA2923,
+			);
+			hasScannedForEncodings = 1;
+			isa = PBXProject;
+			mainGroup = 0867D691FE84028FC02AAC07;
+			productRefGroup = 034768DFFF38A50411DB9C8B;
+			projectDirPath = "";
+			targets = (
+				4C6CB3E0054DF62C0017AA37,
+			);
+		};
+		0867D691FE84028FC02AAC07 = {
+			children = (
+				EEBB767201E849EC00543B42,
+				4C5C03DD04C6514500543B42,
+				EEE71E6901E7DCE300543B42,
+				08FB77AEFE84172EC02AAC07,
+				089C1665FE841158C02AAC07,
+				4C59E4EA056DC7AA00D501EC,
+				0867D69AFE84028FC02AAC07,
+				034768DFFF38A50411DB9C8B,
+			);
+			isa = PBXGroup;
+			name = MTCoreAudio;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 = {
+			children = (
+				1058C7B0FEA5585E11CA2CBB,
+				1058C7B2FEA5585E11CA2CBB,
+			);
+			isa = PBXGroup;
+			name = "External Frameworks and Libraries";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		0867D69BFE84028FC02AAC07 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		0867D6A5FE840307C02AAC07 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = AppKit.framework;
+			path = /System/Library/Frameworks/AppKit.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		089C1665FE841158C02AAC07 = {
+			children = (
+				089C1666FE841158C02AAC07,
+				4CB5AFA1056D9DEE00054BE0,
+			);
+			isa = PBXGroup;
+			name = Resources;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		089C1666FE841158C02AAC07 = {
+			children = (
+				089C1667FE841158C02AAC07,
+			);
+			isa = PBXVariantGroup;
+			name = InfoPlist.strings;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		089C1667FE841158C02AAC07 = {
+			fileEncoding = 10;
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.strings;
+			name = English;
+			path = English.lproj/InfoPlist.strings;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 = {
+			children = (
+				EE975AB601D4857C00543B42,
+				EE988A2B01E522B800543B42,
+				EE975AB201D4857C00543B42,
+				EE30F1CC034C28BD00543B42,
+				EE975AB301D4857C00543B42,
+				EE63C732034BBB4500543B42,
+				EE63C733034BBB4500543B42,
+				EE975AB401D4857C00543B42,
+				EE975AB501D4857C00543B42,
+				EE988A2701E521E200543B42,
+				EE988A2801E521E200543B42,
+				4C384F5E060FE9B200FE1E9F,
+				4C384F5F060FE9B200FE1E9F,
+				EE0A5F5801DC711E00543B42,
+				EE0A5F5901DC711E00543B42,
+				4CFE9C0C061B98BC002AE79E,
+				4CFE9C0D061B98BC002AE79E,
+				4C07E0E1061E55C60043D066,
+				4C07E0E2061E55C60043D066,
+			);
+			isa = PBXGroup;
+			name = Classes;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//080
+//081
+//082
+//083
+//084
+//100
+//101
+//102
+//103
+//104
+		1058C7B0FEA5585E11CA2CBB = {
+			children = (
+				EE975ABC01D4864100543B42,
+				EE975AC701D489C900543B42,
+				EEE25B6D034F776D00543B42,
+			);
+			isa = PBXGroup;
+			name = "Linked Frameworks";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB = {
+			children = (
+				0867D69BFE84028FC02AAC07,
+				0867D6A5FE840307C02AAC07,
+			);
+			isa = PBXGroup;
+			name = "Other Frameworks";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+//100
+//101
+//102
+//103
+//104
+//4C0
+//4C1
+//4C2
+//4C3
+//4C4
+		4C07E0E1061E55C60043D066 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTAudioBufferListUtils.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C07E0E2061E55C60043D066 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTAudioBufferListUtils.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C07E0E3061E55C60043D066 = {
+			fileRef = 4C07E0E1061E55C60043D066;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C07E0E4061E55C60043D066 = {
+			fileRef = 4C07E0E2061E55C60043D066;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C0A94980620BBEA00B0FC0C = {
+			fileRef = 4C6747B706154BF70040D03A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C0A94990620BBEA00B0FC0C = {
+			fileRef = 4C6747D706156A010040D03A;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C0A949A0620BBEA00B0FC0C = {
+			fileRef = 4CC97F7E061D1D6200AA0B85;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C0A949B0620BBEA00B0FC0C = {
+			fileRef = 4CC97FA2061D667900AA0B85;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C384F5E060FE9B200FE1E9F = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTBuffer.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C384F5F060FE9B200FE1E9F = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTBuffer.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C384F60060FE9B200FE1E9F = {
+			fileRef = 4C384F5E060FE9B200FE1E9F;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C384F61060FE9B200FE1E9F = {
+			fileRef = 4C384F5F060FE9B200FE1E9F;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C59E4EA056DC7AA00D501EC = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist;
+			path = Info.plist;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C5C03DD04C6514500543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text;
+			path = "Release Notes.txt";
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C6747B706154BF70040D03A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTBuffer.html;
+			path = Documentation/MTBuffer.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C6747D706156A010040D03A = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTByteBuffer.html;
+			path = Documentation/MTByteBuffer.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4C6CB3E0054DF62C0017AA37 = {
+			buildPhases = (
+				4C6CB3E1054DF62C0017AA37,
+				4C6CB3EB054DF62C0017AA37,
+				4C6CB3EE054DF62C0017AA37,
+				4C6CB3F5054DF62C0017AA37,
+				4C6CB3F9054DF62C0017AA37,
+				4C6CB3FA054DF62C0017AA37,
+				4C6CB400054DF62C0017AA37,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = "";
+				FRAMEWORK_VERSION = B;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = NO;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = "";
+				OTHER_LDFLAGS = "-seg1addr 0xB0000000";
+				PREBINDING = YES;
+				PRODUCT_NAME = MTCoreAudio;
+				SECTORDER_FLAGS = "";
+				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = "-Wmost";
+				WRAPPER_EXTENSION = framework;
+			};
+			dependencies = (
+			);
+			isa = PBXNativeTarget;
+			name = MTCoreAudio;
+			productInstallPath = "@executable_path/../Frameworks";
+			productName = MTCoreAudio;
+			productReference = 4C6CB404054DF62C0017AA37;
+			productType = "com.apple.product-type.framework";
+		};
+		4C6CB3E1054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			files = (
+				4C6CB3E2054DF62C0017AA37,
+				4C6CB3E3054DF62C0017AA37,
+				4C6CB3E4054DF62C0017AA37,
+				4C6CB3E5054DF62C0017AA37,
+				4C6CB3E6054DF62C0017AA37,
+				4C6CB3E7054DF62C0017AA37,
+				4C6CB3E9054DF62C0017AA37,
+				4C6CB3EA054DF62C0017AA37,
+				4C384F60060FE9B200FE1E9F,
+				4CFE9C0E061B98BC002AE79E,
+				4C07E0E3061E55C60043D066,
+			);
+			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB3E2054DF62C0017AA37 = {
+			fileRef = EE975AB201D4857C00543B42;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C6CB3E3054DF62C0017AA37 = {
+			fileRef = EE975AB401D4857C00543B42;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C6CB3E4054DF62C0017AA37 = {
+			fileRef = EE975AB601D4857C00543B42;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C6CB3E5054DF62C0017AA37 = {
+			fileRef = EE0A5F5801DC711E00543B42;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C6CB3E6054DF62C0017AA37 = {
+			fileRef = EE988A2701E521E200543B42;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C6CB3E7054DF62C0017AA37 = {
+			fileRef = EE988A2B01E522B800543B42;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4C6CB3E9054DF62C0017AA37 = {
+			fileRef = EE30F1CC034C28BD00543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3EA054DF62C0017AA37 = {
+			fileRef = EE63C732034BBB4500543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3EB054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			files = (
+				4C6CB3EC054DF62C0017AA37,
+				4C6CB3ED054DF62C0017AA37,
+				4CB5AFA3056D9DEE00054BE0,
+			);
+			isa = PBXResourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB3EC054DF62C0017AA37 = {
+			fileRef = 089C1666FE841158C02AAC07;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3ED054DF62C0017AA37 = {
+			fileRef = 4C5C03DD04C6514500543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3EE054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			files = (
+				4C6CB3EF054DF62C0017AA37,
+				4C6CB3F0054DF62C0017AA37,
+				4C6CB3F1054DF62C0017AA37,
+				4C6CB3F2054DF62C0017AA37,
+				4C6CB3F3054DF62C0017AA37,
+				4C384F61060FE9B200FE1E9F,
+				4CFE9C0F061B98BC002AE79E,
+				4C07E0E4061E55C60043D066,
+			);
+			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB3EF054DF62C0017AA37 = {
+			fileRef = EE975AB301D4857C00543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F0054DF62C0017AA37 = {
+			fileRef = EE975AB501D4857C00543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F1054DF62C0017AA37 = {
+			fileRef = EE0A5F5901DC711E00543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F2054DF62C0017AA37 = {
+			fileRef = EE988A2801E521E200543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F3054DF62C0017AA37 = {
+			fileRef = EE63C733034BBB4500543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F5054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			files = (
+				4C6CB3F6054DF62C0017AA37,
+				4C6CB3F7054DF62C0017AA37,
+				4C6CB3F8054DF62C0017AA37,
+			);
+			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB3F6054DF62C0017AA37 = {
+			fileRef = EE975ABC01D4864100543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F7054DF62C0017AA37 = {
+			fileRef = EE975AC701D489C900543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F8054DF62C0017AA37 = {
+			fileRef = EEE25B6D034F776D00543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3F9054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB3FA054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			dstPath = Documentation;
+			dstSubfolderSpec = 1;
+			files = (
+				4C6CB3FB054DF62C0017AA37,
+				4C6CB3FC054DF62C0017AA37,
+				4C6CB3FD054DF62C0017AA37,
+				4C6CB3FE054DF62C0017AA37,
+				4C6CB3FF054DF62C0017AA37,
+				4C0A94980620BBEA00B0FC0C,
+				4C0A94990620BBEA00B0FC0C,
+				4C0A949A0620BBEA00B0FC0C,
+				4C0A949B0620BBEA00B0FC0C,
+			);
+			isa = PBXCopyFilesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB3FB054DF62C0017AA37 = {
+			fileRef = EEF187F901E7E27100543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3FC054DF62C0017AA37 = {
+			fileRef = EEF187FA01E7E27100543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3FD054DF62C0017AA37 = {
+			fileRef = EEF187FB01E7E27100543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3FE054DF62C0017AA37 = {
+			fileRef = EEF187FC01E7E27100543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB3FF054DF62C0017AA37 = {
+			fileRef = EEF187FD01E7E27100543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB400054DF62C0017AA37 = {
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 1;
+			files = (
+				4C6CB401054DF62C0017AA37,
+			);
+			isa = PBXCopyFilesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C6CB401054DF62C0017AA37 = {
+			fileRef = EEBB767201E849EC00543B42;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4C6CB404054DF62C0017AA37 = {
+			explicitFileType = wrapper.framework;
+			includeInIndex = 0;
+			isa = PBXFileReference;
+			path = MTCoreAudio.framework;
+			refType = 3;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4CB5AF9C056D9DE300054BE0 = {
+			fileEncoding = 10;
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.strings;
+			name = English;
+			path = English.lproj/StreamDescription.strings;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4CB5AFA1056D9DEE00054BE0 = {
+			children = (
+				4CB5AF9C056D9DE300054BE0,
+			);
+			isa = PBXVariantGroup;
+			name = StreamDescription.strings;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4CB5AFA3056D9DEE00054BE0 = {
+			fileRef = 4CB5AFA1056D9DEE00054BE0;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		4CC97F7E061D1D6200AA0B85 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTAudioBuffer.html;
+			path = Documentation/MTAudioBuffer.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4CC97FA2061D667900AA0B85 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTAudioBufferListUtils.html;
+			path = Documentation/MTAudioBufferListUtils.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4CFE9C0C061B98BC002AE79E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTAudioBuffer.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4CFE9C0D061B98BC002AE79E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTAudioBuffer.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		4CFE9C0E061B98BC002AE79E = {
+			fileRef = 4CFE9C0C061B98BC002AE79E;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Public,
+				);
+			};
+		};
+		4CFE9C0F061B98BC002AE79E = {
+			fileRef = 4CFE9C0D061B98BC002AE79E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+//4C0
+//4C1
+//4C2
+//4C3
+//4C4
+//EE0
+//EE1
+//EE2
+//EE3
+//EE4
+		EE0A5F5801DC711E00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTByteBuffer.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE0A5F5901DC711E00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTByteBuffer.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE30F1CC034C28BD00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudioDevicePrivateAdditions.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE63C732034BBB4500543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudioIOProcMux.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE63C733034BBB4500543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTCoreAudioIOProcMux.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE975AB201D4857C00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudioDevice.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE975AB301D4857C00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTCoreAudioDevice.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE975AB401D4857C00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudioStreamDescription.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE975AB501D4857C00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTCoreAudioStreamDescription.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE975AB601D4857C00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudio.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE975ABC01D4864100543B42 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = CoreAudio.framework;
+			path = /System/Library/Frameworks/CoreAudio.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		EE975AC701D489C900543B42 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = Foundation.framework;
+			path = /System/Library/Frameworks/Foundation.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		EE988A2701E521E200543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudioStream.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE988A2801E521E200543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = MTCoreAudioStream.m;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EE988A2B01E522B800543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = MTCoreAudioTypes.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEBB767201E849EC00543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text;
+			path = License.txt;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEE25B6D034F776D00543B42 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = vecLib.framework;
+			path = /System/Library/Frameworks/vecLib.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		EEE71E6901E7DCE300543B42 = {
+			children = (
+				EEF187F901E7E27100543B42,
+				EEF187FA01E7E27100543B42,
+				EEF187FB01E7E27100543B42,
+				EEF187FC01E7E27100543B42,
+				EEF187FD01E7E27100543B42,
+				4C6747B706154BF70040D03A,
+				4C6747D706156A010040D03A,
+				4CC97F7E061D1D6200AA0B85,
+				4CC97FA2061D667900AA0B85,
+			);
+			isa = PBXGroup;
+			name = Documentation;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEF187F901E7E27100543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = index.html;
+			path = Documentation/index.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEF187FA01E7E27100543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTCoreAudioConstantsAndTypes.html;
+			path = Documentation/MTCoreAudioConstantsAndTypes.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEF187FB01E7E27100543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTCoreAudioDevice.html;
+			path = Documentation/MTCoreAudioDevice.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEF187FC01E7E27100543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTCoreAudioStream.html;
+			path = Documentation/MTCoreAudioStream.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		EEF187FD01E7E27100543B42 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			lastKnownFileType = text.html.documentation;
+			name = MTCoreAudioStreamDescription.html;
+			path = Documentation/MTCoreAudioStreamDescription.html;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+	};
+	rootObject = 0867D690FE84028FC02AAC07;
+}
