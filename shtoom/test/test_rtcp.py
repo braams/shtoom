@@ -30,7 +30,7 @@ class RTCPdecodeCase(unittest.TestCase):
         ae(bye.getPT(), 'BYE')
         ae(bye.getContents(), [[1000001, 10000002], 'just because'])
 
-    def testSimpleRTCP(self):
+    def testSDESdecode(self):
         testpacket = '\x81\xca\x00\x07\x03\xe2)\xfa\x01\x140.0.0@192.168.41.250\x00\x00'
         from shtoom.rtcp import RTCPCompound
 
@@ -41,6 +41,7 @@ class RTCPdecodeCase(unittest.TestCase):
         ae(sdes.getPT(), 'SDES')
         # Check there was nothing left over
         ae(sdes._body, '')
+        ae(sdes.encode(), testpacket)
 
     def testCompoundRTCP(self):
         testpacket = '\x81\xc9\x00\x07\x03\xe2)\xfa\xb5\x96\x9d\xdd\x06\x00\x00\x18\x00\x00\xdd8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x81\xca\x00\x07\x03\xe2)\xfa\x01\x140.0.0@192.168.41.250\x00\x00\x81\xcb\x00\x01\x03\xe2)\xfa'
@@ -57,4 +58,5 @@ class RTCPdecodeCase(unittest.TestCase):
         ae(rr._body, '')
         ae(sdes._body, '')
         ae(bye._body, '')
+        ae(repr(R), '<RTCP Packet: (RR, SDES, BYE)>')
 

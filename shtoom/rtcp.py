@@ -1,22 +1,16 @@
 # Copyright (C) 2004 Anthony Baxter
 
+"""
+RTCP packet encoding and decoding code. RTCP is a bit of a bitch - there's
+so many things you can stuff in a packet. 
+
+Note that this code merely encodes and decodes the various formats - it does
+not attempt to do anything useful with the data. Nor is there code here (yet)
+to generate RR or SR packets from the RTP stack. Soon.
+"""
+
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
-
-# Placeholder until I get time to integrate old rtcp code into new
-# codebase
-
-# got RTCP from ('192.168.41.250', 18867) (72 bytes): 
-#    81c90007 261a29fa
-#    03cfe121 06000018
-#    000018b7 00000000
-#    00000000 00000000
-#    81ca0007 261a29fa
-#    0114302e 302e3040
-#    3139322e 3136382e
-#    34312e32 35300000
-#    81cb0001 261a29fa
-#    00000000 00000000
 
 RTCP_PT_SR = 200
 RTCP_PT_RR = 201
@@ -35,6 +29,7 @@ RTCP_SDES_LOC = 5
 RTCP_SDES_TOOL = 6
 RTCP_SDES_NOTE = 7
 RTCP_SDES_PRIV = 8
+
 rtcpSDESdict = {RTCP_SDES_CNAME: 'CNAME', 
                 RTCP_SDES_NAME: 'NAME', 
                 RTCP_SDES_EMAIL: 'EMAIL', 
@@ -87,6 +82,17 @@ class RTCPPacket:
         out = getattr(self, 'encode_%s'%self._pt)()
         return out
 
+    def _padIfNeeded(self, packet):
+        if len(packet)%4:
+            pad = '\0' * (4-(len(packet)%4))
+            packet += pad
+        return packet
+
+    def _patchLengthHeader(self, packet):
+        length = (len(packet)/4) - 1
+        packet = packet[:2] + struct.pack('!H', length) + packet[4:]
+        return packet
+
     def decode_SDES(self):
         for i in range(self._count):
             self._contents = []
@@ -106,7 +112,16 @@ class RTCPPacket:
                     break
 
     def encode_SDES(self):
-        return ''
+        blocks = self._contents
+        packet = struct.pack('!BBH',len(blocks)|128, self._ptcode, 0)
+        for ssrc,items in blocks:
+            packet += struct.pack('!I', ssrc)
+            for sdes, value in items:
+                sdescode = rtcpSDESdict[sdes]
+                packet += struct.pack('!BB', sdescode, len(value)) + value
+            packet = self._padIfNeeded(packet)
+        packet = self._patchLengthHeader(packet)
+        return packet
 
     def decode_BYE(self):
         self._contents = [[],'']
@@ -128,11 +143,8 @@ class RTCPPacket:
             packet = packet + struct.pack('!I', ssrc)
         if reason:
             packet = packet + chr(len(reason)) + reason
-        if len(packet)%4:
-            pad = '\0' * (4-(len(packet)%4))
-            packet += pad
-        length = (len(packet)/4) - 1
-        packet = packet[:2] + struct.pack('!H', length) + packet[4:]
+        packet = self._padIfNeeded(packet)
+        packet = self._patchLengthHeader(packet)
         return packet
 
     def decode_SR(self):
@@ -180,12 +192,25 @@ class RTCPPacket:
         self._contents = [subtype,ssrc,name,value]
 
     def encode_APP(self):
-        return ''
+        subtype,ssrc,name,value = self._contents 
+        packet = struct.pack('!BBHI',subtype|128, self._ptcode, 0, ssrc)
+        packet = packet + name + value
+        packet = self._padIfNeeded(packet)
+        packet = self._patchLengthHeader(packet)
+        return packet
 
+    # We can at least roundtrip unknown RTCP PTs
     def decode_UNKNOWN(self):
-        self._contents = self._body
+        self._contents = (self._count, self._body)
         self._body = ''
 
+    def encode_UKNOWN(self):
+        count, body = self._contents
+        packet = struct.pack('!BBH',count|128, self._ptcode, 0)
+        packet = packet + body
+        packet = self._padIfNeeded(packet)
+        packet = self._patchLengthHeader(packet)
+        return packet
 
     def __repr__(self):
         if self._body:
@@ -224,12 +249,18 @@ class RTCPCompound:
 
     def __getitem__(self, i):
         return self._rtcp[i]
+
+    def __repr__(self):
+        return "<RTCP Packet: (%s)>"%(', '.join([x.getPT() for x in self._rtcp]))
             
 
 class RTCPProtocol(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
-        print "got RTCP from %r (%d bytes): \n%s"%(addr, len(datagram), hexrepr(datagram))
-        
+        print "received RTCP from %r (%d bytes): \n%s"%(addr, len(datagram), hexrepr(datagram))
+        packet = RTCPCompound(datagram)
+        for rtcp in packet:
+            print "RTCP:", rtcp
 
     def sendDatagram(self, packet):
         self.transport.write(packet)
+
