@@ -83,6 +83,11 @@ Optional:
         in the DEBUGGING.txt file for more.
         svn://divmod.org/svn/Shtoom/trunk/audio/pyalsaaudio
 
+    numarray
+        Numarray is required if you want Doug to be able to do inband
+        DTMF detection. If you don't know what this means, you probably
+        don't care.
+
     CocoaShtoom
 
 Audio
