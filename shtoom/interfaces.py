@@ -138,8 +138,9 @@ class NATMapper(Interface):
 
     def info(self, port):
         """ Returns an IPv4Address of a mapped Port. .map() should have 
-            been called with this Port object first - otherwise a ValueError 
-            will be raised.
+            been called with this Port object first and the resulting deferred
+            is required to have been triggered - otherwise a ValueError will be
+            raised.
         """
 
     def unmap(self, port):
