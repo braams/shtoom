@@ -12,7 +12,8 @@ remind me. <wink>
     Albert Huang - debugging of stereo devices
     Lars Immisch - bug fixes
     Glyph Lefkowitz - debugging
+    Zooko O'Whielacronx - bug fixes
     Allen Short - debugging, advice, maintenance of the hosting
     Itamar Shtull-Trauring - original Gtk UI, many bugfixes
-    Zooko O'Whielacronx - bug fixes
+    Casper Wilstrup - ALSA interface, new playout code, bugfixes
 
