@@ -65,16 +65,23 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         deferred = self.app.placeCall(self.sipURL)
         deferred.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
 
+    def callStarted(self, cookie):
+        self._cookie = cookie
+        log.msg("Call to %s STARTED"%(self.sipURL))
+
     def callConnected(self, cookie):
         log.msg("Call to %s CONNECTED"%(self.sipURL))
 
-    def callDisconnected(self, call):
+    def callFailed(self, e, message=None):
+        log.msg("Call to %s FAILED: %r"%(self.sipURL, e))
+
+    def callDisconnected(self, cookie, message):
         log.msg("Call to %s DISCONNECTED"%(self.sipURL))
+        self._cookie = None
 
     def cmd_hangup(self, line):
         if self._cookie is not None:
             self.app.dropCall(self._cookie)
-            self._cookie = None
         else:
             self.transport.write("error: no active call\n")
 
@@ -87,7 +94,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             return
         self._cookie, resp, setup = self._pending
         self._pending = None
-        setup.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
+        setup.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
         resp.callback('yes')
 
     def cmd_reject(self, line):
