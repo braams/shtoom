@@ -47,7 +47,7 @@ setup(
     url = 'http://shtoom.divmod.org/',
     packages = ['shtoom', 'shtoom.address', 'shtoom.multicast', 'shtoom.avail',
                 'shtoom.ui', 'shtoom.rtp', 'shtoom.ui.qtui',
-                'shtoom.ui.gnomeui', 'shtoom.ui.qtui',
+                'shtoom.ui.gnomeui', 'shtoom.ui.qtui', 'shtoom.ui.webui',
                 'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
                 'shtoom.audio', 'shtoom.app', 'shtoom.doug', 'shtoom.compat' ],
