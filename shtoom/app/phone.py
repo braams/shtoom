@@ -27,6 +27,9 @@ class Phone(BaseApplication):
         self._muted = False
         self._rtpProtocolClass = None
 
+    def needsThreadedUI(self):
+        return self.ui.threadedUI
+
     def boot(self, options=None):
         from shtoom.ui.select import findUserInterface
 
@@ -47,8 +50,18 @@ class Phone(BaseApplication):
     def start(self):
         "Start the application."
         from twisted.internet import reactor
+
         self.register()
-        reactor.run()
+        if self.needsThreadedUI():
+            from twisted.python import threadable
+            import threading
+            threadable.init(1)
+            t = threading.Thread(target=reactor.run, kwargs={
+                                'installSignalHandlers':0} )
+            t.start()
+            self.ui.startUI()
+        else:
+            reactor.run()
 
     def getAuth(self, method, realm):
         self.ui.getString("Please enter user,passwd for %s at %s"%(method, 

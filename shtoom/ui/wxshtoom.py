@@ -37,6 +37,12 @@ class WxProxy(AppProxy):
     # Methods to forward onto the wx app
     # We may need to put these on the wx event loop if things aren't
     # thread safe
+
+    threadedUI = True
+
+    def startUI(self):
+        self.wxapp.MainLoop()
+
     def connectApplication(self, *args):
         self.wxapp.frame.connectApplication(*args)
     def resourceUsage(self, *args):
@@ -100,7 +106,7 @@ def main(shtoomapp):
     wxapp.frame.connectApplication(appproxy)
     log.startLogging(wxapp.frame.getLogger(), setStdout=False)
 
-    reactor.callInThread(wxapp.MainLoop)
+    #reactor.callInThread(wxapp.MainLoop)
 
     return wxproxy
 
