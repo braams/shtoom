@@ -529,6 +529,7 @@ class Registration(Call):
         self.cseq = random.randint(1000,5000)
         self.nonce_count = 0
         self.cancel_trigger = None
+        self.register_attempts = 0
 
     def startRegistration(self):
         import copy
@@ -577,6 +578,11 @@ class Registration(Call):
     def recvResponse(self, message):
         state = self.getState()
         if message.code in ( 401, ):
+            self.register_attempts += 1
+            if self.register_attempts > 5:
+                print "REGISTRATION FAILED"
+                self.setState('FAILED')
+                return
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
                 a = message.headers.get('www-authenticate')
                 if a:
@@ -588,6 +594,11 @@ class Registration(Call):
             else:
                 print "Unknown state '%s' for a 401"%(state)
         elif message.code in ( 407, ):
+            self.register_attempts += 1
+            if self.register_attempts > 5:
+                print "REGISTRATION FAILED"
+                self.setState('FAILED')
+                return
             # XXX todo handle proxy-auth
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
                 auth = self.calcAuth(message.headers['proxy-authenticate'][0])
@@ -596,6 +607,7 @@ class Registration(Call):
                 print "Unknown state '%s' for a 401"%(state)
         elif message.code in ( 200, ):
             # Woo. registration succeeded.
+            self.register_attempts = 0
             if state == 'SENT_REGISTER':
                 self.setState('REGISTERED')
                 reactor.callLater(840, self.sendRegistration)
