@@ -32,6 +32,8 @@ def genStandardDate(t=None):
 class Call(object):
     '''State machine for a phone call.'''
 
+    cookie = _callID = uri = None
+    sip = None
     def __init__(self, phone, deferred, uri=None, callid=None):
         self.sip = phone
         self.compDef = deferred

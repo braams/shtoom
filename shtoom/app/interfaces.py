@@ -1,12 +1,12 @@
 # Copyright (C) 2004 Anthony Baxter
 # This file is necessary to make this directory a package
 
-class IApplication:
+from twisted.python.components import Interface
 
-    def __init__(self):
-        """ Create the application. The application should create the SIP
-            listener and any user interface that's needed.
-        """
+class ApplicationSIPInterface(Interface):
+    """This interface describes the interface to the Application that 
+       the SIP layer uses.
+    """
 
     def acceptCall(self, **calldesc):
         """ Setup a new call. 
@@ -30,6 +30,11 @@ class IApplication:
         """ Other end has terminated the call.
         """
 
+class ApplicationRTPInterface(Interface):
+    """This interface describes the interface that an RTP implementation
+       uses to talk to the Application instance
+    """
+
     def receiveRTP(self, callcookie, payloadType, payloadData):
         """ Pass an RTP packet that was received from the network to the
             application. This might be audio, comfort noise (CN), an NTE
@@ -41,22 +46,36 @@ class IApplication:
             of (payloadType, payloadData)
         """
 
-class IPhoneApplication(IApplication):
-    """ A Phone Application """
+class ApplicationUIInterface(Interface):
+    """ This interface describes the interface that the UI can use
+        to communicate with the Application.
+    """
 
     def placeCall(self, sipURL):
-        """ Place a call. returns a callid (a string) and a deferred.
-            Deferred callback triggered when call is connected, errback
-            on call failure. Use the callid to communicate with the 
-            application about the call.
+        """ Place a call. returns a a deferred. The deferred's callback
+            will be passed a call cookie when the call is setup. The 
+            UI should use the call cookie in all future communications 
+            with the Application to indicate which call it is handling.
+            The deferred's errback will be called if the call setup fails.
         """
 
-    def dropCall(self, callid):
-        """ Drop call identified by callid. """
+    def dropCall(self, cookie):
+        """ Drop call identified by the call cookie. """
 
-    def startDTMF(self, callid, digit):
+    def startDTMF(self, cookie, digit):
         """ Start sending DTMF digit 'digit' """
 
-    def stopDTMF(self, callid, digit):
+    def stopDTMF(self, cookie, digit):
         """ Stop sending DTMF digit 'digit' """
+
+
+class Application(ApplicationSIPInterface, 
+                  ApplicationRTPInterface, 
+                  ApplicationUIInterface):
+
+    def __init__(self):
+        """ Create the application. The application should create the SIP
+            listener and any user interface that's needed.
+        """
+
 
