@@ -1,3 +1,5 @@
+Mac installer: bundlebuilder
+Windows installer: Innoconda
 
 Before 0.2:
     - Break out the application layer beneath the RTP lib
