@@ -5,6 +5,8 @@ Linux installer: rpmbuilder??, deb?
       http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
 
 Definite before 0.3:
+    - documentation, documentation, documentation
+    - deal with stupid devices that only work in stereo
     - sip: dropCall() must return a deferred
     - doug: implement a leg.hangup() method (and it's events)
     - doug: implement leg connection (inbound and outbound)
@@ -21,8 +23,11 @@ Definite before 0.3:
     - stun: timeout the STUN call, generate a nice error
 
 Maybe before 0.3:
+    - doug: more detailed involvement with call establishment (e.g. for auth)
+    - a basic preferences object
+    - redo Qt UI from scratch to not suck - use a layout widget, for one.
     - rport - do the right thing with it (ie generate received & rport for it)
-      draft-ietf-sip-nat-02.txt is the relevant RFC
+      draft-ietf-sip-nat-02.txt is the relevant I-D
     - Investigate http://respyre.org/pyalsa.html for the fixing of mixer
       settings
     - sip: retransmit and timeout of BYE
@@ -34,7 +39,8 @@ Maybe before 0.3:
       properly.
     - options: default some useful stuff
     - options: allow a sequence type. Multiple registrations, save call 
-      history
+      history. Need an 'object' type as well (e.g. for expressing "sequence
+      of registrations")
     - options: email_address must die, and now, in favour of 'AOR'. Use 
       'username'@'registerserver'? What to use if no register server?
     - ui(all): keybindings for DTMF. When a call is in progress, disable the
