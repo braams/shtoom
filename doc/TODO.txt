@@ -5,6 +5,7 @@ Linux installer: rpmbuilder??, deb?
       http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
 
 Definite before 0.3:
+    - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
     - ui(gnome): a new Gtk UI - Nafai
         - Re-hookup the debugging log to the GUI for all GUIs - 
