@@ -30,7 +30,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def incomingCall(self, description, cookie, defsetup):
         defresp = defer.Deferred()
-        self._pending = ( cookie, defresp )
+        self._pending = ( cookie, defresp, defsetup )
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
         defsetup.addCallback(lambda x: defresp)
@@ -71,7 +71,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def callStarted(self, cookie):
         self._cookie = cookie
-        log.msg("Call to %s STARTED"%(self.sipURL), system='ui')
+        log.msg("Call %s STARTED"%(self._cookie), system='ui')
 
     def callConnected(self, cookie):
         log.msg("Call to %s CONNECTED"%(self.sipURL), system='ui')
