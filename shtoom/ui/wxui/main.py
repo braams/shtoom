@@ -158,7 +158,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.cookie = False
 
     def incomingCall(self, description, cookie, defsetup):
-        from shtoom.exception import CallRejected
+        from shtoom.exceptions import CallRejected
         dlg = wxMessageDialog(self, 'Incoming Call: %s\nAnswer?'%description,
             "Shtoom Call", wxYES_NO|wxICON_QUESTION)
         accept = dlg.ShowModal()
