@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.13 2003/11/16 16:02:06 itamar Exp $
+# $Id: rtp.py,v 1.14 2003/11/16 16:04:28 itamar Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -23,15 +23,6 @@ from twisted.internet.protocol import DatagramProtocol
 
 from shtoom.audio import getAudioDevice
 
-
-# XXX anthony, suggested strategies to try:
-# 1. without itimer, using LoopingCall for sending packets,
-#    don't use doRead hack. This should wake reactor often
-#    enough that it should be fine. Perhaps add another LoopingCall
-#    with slightly  higher resolution that does nothing, just
-#    wakes reactor.
-# 2. with itimer... have the itimer do a reactor.wakeUp() every 10ms,
-#    and using LoopingCall to schedule writes.
 
 class LoopingCall:
     """Move into twisted if this helps."""
@@ -171,7 +162,6 @@ class RTPProtocol(DatagramProtocol):
         self.LC = LoopingCall(self.nextpacket)
         self.LC.loop(0.020)
         if self.use_setitimer:
-            import itimer 
             signal.signal(signal.SIGALRM, self.reactorWakeUp)
             itimer.setitimer(itimer.ITIMER_REAL, 0.009, 0.009)
 
@@ -236,7 +226,6 @@ class RTPProtocol(DatagramProtocol):
         if self.Done:
             self.LC.stop()
             if self.use_setitimer:
-                import itimer
                 itimer.setitimer(itimer.ITIMER_REAL, 0.0, 0.0)
             if self._cbDone:
                 self._cbDone()
@@ -267,12 +256,6 @@ class RTPProtocol(DatagramProtocol):
                 self.sample = self.infp.read(160)
         except IOError:
             pass
-
-        # We do the select ourself, to stop the UDP listener and the 
-        # timer loop from tripping over each other. Kinda sucky.
-        #r, ignored, ignored = Select([self.rtpListener], [], [], 0.0)
-        #if r:
-            #r[0].doRead()
         
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
