@@ -22,6 +22,7 @@ class FastAudioDevice(baseaudio.AudioDevice):
     __implements__ = (interfaces.IAudio,)
 
     _rdev = None
+    dev = None
 
     def openDev(self):
         if self._rdev is None:
@@ -30,7 +31,10 @@ class FastAudioDevice(baseaudio.AudioDevice):
             self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1,
                                                            'int16', 160, 2))
         self._rdev.open()
-        self.dev = MultipleConv(self._rdev)
+	if self.dev is None:
+	    self.dev = MultipleConv(self._rdev)
+	else: 
+	    self.dev.setDevice(self._rdev)
 
 
 class FastAudioWrapper(object):
