@@ -15,15 +15,22 @@ class ShtoomWindow(ShtoomBaseUI):
         self.cookie = False
         self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"))
         self.xml.signal_autoconnect(self)
-        self.xml.get_widget("callwindow").connect("destroy", lambda w: reactor.stop())
+        self.xml.get_widget("callwindow").connect("destroy", 
+                                                lambda w: reactor.stop())
         self.address = self.xml.get_widget("address")
         self.address.set_value_in_list(False, False)
         self.callButton = self.xml.get_widget("call")
         self.hangupButton = self.xml.get_widget("hangup")
         self.hangupButton.set_sensitive(0)
-        self.status = self.xml.get_widget("appbar").get_children()[0].get_children()[0]
+        self.status = self.xml.get_widget("appbar").get_children()[0
+                                                            ].get_children()[0]
         self.acceptDialog = self.xml.get_widget("acceptdialog")
         self.incoming = []
+
+        self.logger = DebugTextView()
+
+    def getLogger(self): 
+        return self.logger
 
     # GUI callbacks
     def on_call_clicked(self, w):
@@ -37,7 +44,8 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(0)
         self.address.set_sensitive(0)
         deferred = self.app.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
+        deferred.addCallbacks(self.callConnected, self.callFailed
+                                                        ).addErrback(log.err)
 
     def on_hangup_clicked(self, w):
         self.app.dropCall(self.cookie)
@@ -206,6 +214,67 @@ class ShtoomWindow(ShtoomBaseUI):
 
     def save_preferences(self, options):
         self.app.updateOptions(options)
+
+    def constrain_debug_widget(self, widget, event):
+        appbar = self.xml.get_widget("appbar")
+        x,y,aw,ah = appbar.get_allocation()
+        x,y,w,h = widget.get_allocation()
+        print "constraining", w, h, aw, 100
+        widget.set_size(aw, 100)
+        
+
+    def on_debugButton_clicked(self, widget):
+        if not hasattr(self, 'debugview'):
+            self.debugview = gtk.HBox()
+            layout = gtk.Layout()
+            self.debugview.pack_start(layout, expand=gtk.TRUE, fill=gtk.TRUE)
+            layout.set_size(255,200)
+            #layout.connect("size-allocate", self.constrain_debug_widget)
+            self.debugtext = gtk.TextView(self.logger.buffer)
+            self.debugtext.set_wrap_mode(gtk.WRAP_CHAR)
+            self.debugvscroll = gtk.VScrollbar(None)
+            self.debugview.pack_start(self.debugvscroll, 
+                                        fill=gtk.TRUE, expand=gtk.FALSE)
+            vadjust = layout.get_vadjustment()
+            self.debugvscroll.set_adjustment(vadjust)
+            layout.put(self.debugtext,10,0)
+            self.debugview.show_all()
+            vbox = self.xml.get_widget("vbox2")
+            vbox.pack_start(self.debugview, expand=gtk.TRUE, fill=gtk.TRUE)
+            vbox.reorder_child(self.debugview, -2)
+            vbox.show_all()
+            window = self.xml.get_widget("callwindow")
+            x,y,w,h = window.get_allocation()
+            window.resize(w, h+100)
+            window.show_all()
+        else:
+            x,y,ww,wh = self.debugview.get_allocation()
+            vbox = self.xml.get_widget("vbox2")
+            vbox.remove(self.debugview)
+            window = self.xml.get_widget("callwindow")
+            x,y,w,h = window.get_allocation()
+            window.resize(w, h-wh)
+            window.show_all()
+            del self.debugview
+            
+
+class DebugTextView:
+    MAXLINES = 1000
+    DELETECHUNK = 100
+
+    def __init__(self):
+        self.buffer = gtk.TextBuffer()
+
+    def write(self, text):
+        b = self.buffer
+        b.insert(b.get_end_iter(), text+'\n')
+        lines = b.get_line_count()
+        if lines > self.MAXLINES:
+            b.delete(b.get_start_iter(), 
+                     b.get_iter_at_line_offset(self.DELETECHUNK,0))
+
+    def flush(self):
+        pass
 
 class Incoming:
 

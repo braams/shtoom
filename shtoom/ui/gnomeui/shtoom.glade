@@ -203,7 +203,7 @@
 	</widget>
 	<packing>
 	  <property name="padding">5</property>
-	  <property name="expand">True</property>
+	  <property name="expand">False</property>
 	  <property name="fill">True</property>
 	</packing>
       </child>
@@ -649,7 +649,7 @@
 	</widget>
 	<packing>
 	  <property name="padding">2</property>
-	  <property name="expand">True</property>
+	  <property name="expand">False</property>
 	  <property name="fill">False</property>
 	</packing>
       </child>
