@@ -7,6 +7,17 @@ apologise - many of these problems are a source of some
 frustration and annoyance to me, so this venting is probably
 healthy for me <wink>
 
+Testing
+-------
+
+Some test addresses to try calling:
+
+  sip:613@fwd.pulver.com -- An echo test
+
+  sip:testcall@divmod.com -- Plays a short audio file to you
+
+  sip:echotest@divmod.com -- Another echo test
+  
 
 Firewalls
 ---------
@@ -96,5 +107,14 @@ the control panel. There's also some environment variables you can
 set to choose a different device:
 
   XXX TODO.
+
+
+Unsorted Notes
+--------------
+
+exarkun reports, on selecting the correct sound driver under ALSA:
+my card is "ALi Corporation M5451".  w/ oss, it was using the trident 
+driver.  There is also an alsa driver for trident cards, but it does 
+not work.  The "ALi M5451" alsa driver does, though. 
 
 
