@@ -13,6 +13,25 @@ So, for instance, we'd register an IPreferencesStorage object that knows how to
 save and restore preferences. We can then slot in a replacement and have it
 Just Work. 
 
+Already, we have the following objects that are suitable for this sort of
+registration:
+
+    * == more than one, already
+    ! == will be more than one
+    ? == might be more than one
+
+    PreferencesStorage! 
+    Phone* -- s.app.phone, s.app.doug
+    SIP* -- real one, test harness one
+    RTP? -- e.g. RTP, SRTP
+    AudioCodec* -- ulaw, alaw, gsm, speex
+    UserInterface* -- lots
+    AddressBook! -- LDAP, Outlook, KDE, GNOME, ...
+    NATMapper* -- STUN, UPnP, TURN?
+    CredentialsStore! -- Add a more secure store 
+    AudioPlayout* -- Several already implemented
+
+
 Rough API:
 
     from shtoom.components import getThingy, getAllThingys, registerThingy
@@ -24,4 +43,4 @@ Rough API:
     saver = getThingy(IPreferencesSaver)
     saver.updatePreferences(...)
 
-
+See also: PEP 246
