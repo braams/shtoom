@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Tue Mar 2 22:31:05 2004
+# Created: Mon May 3 23:26:47 2004
 #      by: The PyQt User Interface Compiler (pyuic) 3.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,18 +21,11 @@ class ShtoomMainWindow(QMainWindow):
 
         self.setCentralWidget(QWidget(self,"qt_central_widget"))
 
-        self.textLabel1 = QLabel(self.centralWidget(),"textLabel1")
-        self.textLabel1.setProperty("geometry",QVariant(QRect(10,20,40,30)))
+        self.tabWidget3 = QTabWidget(self.centralWidget(),"tabWidget3")
+        self.tabWidget3.setProperty("geometry",QVariant(QRect(0,2,423,160)))
 
-        self.callButton = QPushButton(self.centralWidget(),"callButton")
-        self.callButton.setProperty("geometry",QVariant(QRect(50,60,80,30)))
-
-        self.hangupButton = QPushButton(self.centralWidget(),"hangupButton")
-        self.hangupButton.setProperty("enabled",QVariant(QVariant(0,0)))
-        self.hangupButton.setProperty("geometry",QVariant(QRect(140,60,80,30)))
-
-        self.pushButton17 = QPushButton(self.centralWidget(),"pushButton17")
-        self.pushButton17.setProperty("geometry",QVariant(QRect(230,60,80,31)))
+        self.tab = QWidget(self.tabWidget3,"tab")
+        self.tabWidget3.insertTab(self.tab,QString(""))
 
         self.textLabel4 = QLabel(self.centralWidget(),"textLabel4")
         self.textLabel4.setProperty("geometry",QVariant(QRect(10,120,41,20)))
@@ -49,17 +42,6 @@ class ShtoomMainWindow(QMainWindow):
         statusLabel_font.setFamily("Sans Serif")
         self.statusLabel.setFont(statusLabel_font)
         self.statusLabel.setProperty("alignment",QVariant(QLabel.AlignBottom))
-
-        self.lookupAddressButton = QPushButton(self.centralWidget(),"lookupAddressButton")
-        self.lookupAddressButton.setProperty("geometry",QVariant(QRect(320,20,31,31)))
-
-        self.addressComboBox = QComboBox(0,self.centralWidget(),"addressComboBox")
-        self.addressComboBox.setProperty("geometry",QVariant(QRect(50,20,260,31)))
-        self.addressComboBox.setProperty("editable",QVariant(QVariant(1,0)))
-        self.addressComboBox.setProperty("sizeLimit",QVariant(20))
-        self.addressComboBox.setProperty("insertionPolicy",QVariant(QComboBox.AtTop))
-        self.addressComboBox.setProperty("autoCompletion",QVariant(QVariant(1,0)))
-        self.addressComboBox.setProperty("duplicatesEnabled",QVariant(QVariant(0,0)))
 
         self.pixmapLogo = QLabel(self.centralWidget(),"pixmapLogo")
         self.pixmapLogo.setProperty("geometry",QVariant(QRect(360,20,50,30)))
@@ -157,6 +139,27 @@ class ShtoomMainWindow(QMainWindow):
         self.clearButton = QPushButton(self.centralWidget(),"clearButton")
         self.clearButton.setProperty("geometry",QVariant(QRect(10,300,71,31)))
 
+        self.pushButton17 = QPushButton(self.centralWidget(),"pushButton17")
+        self.pushButton17.setProperty("geometry",QVariant(QRect(230,80,80,31)))
+
+        self.callButton = QPushButton(self.centralWidget(),"callButton")
+        self.callButton.setProperty("geometry",QVariant(QRect(50,80,80,30)))
+
+        self.hangupButton = QPushButton(self.centralWidget(),"hangupButton")
+        self.hangupButton.setProperty("enabled",QVariant(QVariant(0,0)))
+        self.hangupButton.setProperty("geometry",QVariant(QRect(140,80,80,30)))
+
+        self.textLabel1 = QLabel(self.centralWidget(),"textLabel1")
+        self.textLabel1.setProperty("geometry",QVariant(QRect(10,40,40,30)))
+
+        self.addressComboBox = QComboBox(0,self.centralWidget(),"addressComboBox")
+        self.addressComboBox.setProperty("geometry",QVariant(QRect(50,40,260,31)))
+        self.addressComboBox.setProperty("editable",QVariant(QVariant(1,0)))
+        self.addressComboBox.setProperty("sizeLimit",QVariant(20))
+        self.addressComboBox.setProperty("insertionPolicy",QVariant(QComboBox.AtTop))
+        self.addressComboBox.setProperty("autoCompletion",QVariant(QVariant(1,0)))
+        self.addressComboBox.setProperty("duplicatesEnabled",QVariant(QVariant(0,0)))
+
         self.fileNewAction = QAction(self,"fileNewAction")
         self.fileNewAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileOpenAction = QAction(self,"fileOpenAction")
@@ -210,7 +213,6 @@ class ShtoomMainWindow(QMainWindow):
         self.connect(self.helpIndexAction,SIGNAL("activated()"),self.helpIndex)
         self.connect(self.helpContentsAction,SIGNAL("activated()"),self.helpContents)
         self.connect(self.helpAboutAction,SIGNAL("activated()"),self.helpAbout)
-        self.connect(self.lookupAddressButton,SIGNAL("clicked()"),self.lookupAddressButton_clicked)
         self.connect(self.callButton,SIGNAL("clicked()"),self.callButton_clicked)
         self.connect(self.hangupButton,SIGNAL("clicked()"),self.hangupButton_clicked)
         self.connect(self.clearButton,SIGNAL("clicked()"),self.clearButton_clicked)
@@ -241,13 +243,9 @@ class ShtoomMainWindow(QMainWindow):
 
     def languageChange(self):
         self.setProperty("caption",QVariant(self.__tr("Shtoom - Qt UI")))
-        self.textLabel1.setProperty("text",QVariant(self.__tr("Call:")))
-        self.callButton.setProperty("text",QVariant(self.__tr("Call")))
-        self.hangupButton.setProperty("text",QVariant(self.__tr("Hang Up")))
-        self.pushButton17.setProperty("text",QVariant(self.__tr("Register")))
+        self.tabWidget3.changeTab(self.tab,self.__tr("New Call"))
         self.textLabel4.setProperty("text",QVariant(self.__tr("Status")))
         self.statusLabel.setProperty("text",QVariant(QString.null))
-        self.lookupAddressButton.setProperty("text",QVariant(QString.null))
         QToolTip.add(self.debuggingTextEdit,self.__tr("Debugging Messages"))
         self.dtmfButton6.setProperty("text",QVariant(self.__tr("6")))
         self.dtmfButton1.setProperty("text",QVariant(self.__tr("1")))
@@ -263,6 +261,10 @@ class ShtoomMainWindow(QMainWindow):
         self.dtmfButton3.setProperty("text",QVariant(self.__tr("3")))
         self.appVersion.setProperty("text",QVariant(self.__tr("Shtoom")))
         self.clearButton.setProperty("text",QVariant(self.__tr("Clear")))
+        self.pushButton17.setProperty("text",QVariant(self.__tr("Register")))
+        self.callButton.setProperty("text",QVariant(self.__tr("Call")))
+        self.hangupButton.setProperty("text",QVariant(self.__tr("Hang Up")))
+        self.textLabel1.setProperty("text",QVariant(self.__tr("Call:")))
         self.fileNewAction.setProperty("text",QVariant(self.__tr("New")))
         self.fileNewAction.setProperty("menuText",QVariant(self.__tr("&New")))
         self.fileNewAction.setProperty("accel",QVariant(self.__tr("Ctrl+N")))
