@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.14 2003/11/16 16:04:28 itamar Exp $
+# $Id: rtp.py,v 1.15 2003/11/16 17:42:41 itamar Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -212,14 +212,14 @@ class RTPProtocol(DatagramProtocol):
 
     def genRandom(self, bits):
         """Generate up to 128 bits of randomness."""
-        m = md5.new()
         if os.path.exists("/dev/urandom"):
-            m.update(open('/dev/urandom').read(16))
+            hex = open('/dev/urandom').read(16).encode("hex")
         else:
+            m = md5.new()
             m.update(str(time()))
             m.update(str(random.random()))
             m.update(str(id(self.dest)))
-        hex = m.hexdigest()
+            hex = m.hexdigest()
         return int(hex[:bits//4],16)
 
     def nextpacket(self, n=None, f=None, pack=struct.pack):
