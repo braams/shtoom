@@ -14,13 +14,14 @@ from shtoom.audio import getAudioDevice
 class Phone(BaseApplication):
     __implements__ = ( Application, )
 
-    def __init__(self, ui=None, prefs=None):
+    def __init__(self, ui=None, audio=None, prefs=None):
         from shtoom.ui.select import findUserInterface
         self.connectPrefs(prefs)
         if ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
         else:
             self.ui = ui
+        self._audio = audio
         BaseApplication.__init__(self, prefs=prefs)
         # Mapping from callcookies to rtp object
         self._rtp = {}
@@ -123,15 +124,16 @@ class Phone(BaseApplication):
         self.ui.callDisconnected(callcookie, reason)
 
     def openAudioDevice(self):
-        audioPref = self.getPref('audio')
-        audio_in = self.getPref('audio_infile')
-        audio_out = self.getPref('audio_outfile')
-        if audio_in and audio_out:
-            aF = ( audio_in, audio_out )
-        else:
-            aF = None
-        self._audio = getAudioDevice('rw', audioPref, aF)
-        self._audio.close()
+        if self._audio is None:
+            audioPref = self.getPref('audio')
+            audio_in = self.getPref('audio_infile')
+            audio_out = self.getPref('audio_outfile')
+            if audio_in and audio_out:
+                aF = ( audio_in, audio_out )
+            else:
+                aF = None
+            self._audio = getAudioDevice('rw', audioPref, aF)
+            self._audio.close()
 
     def closeAudioDevice(self):
         self._audio.close()
