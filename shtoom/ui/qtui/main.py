@@ -23,7 +23,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.pixmapLogo.setPixmap(QPixmap(QByteArray(logoGif)))
         self._currentTab = self.tab1
         self._newCallTab = self.tab1
+        self._newCallURL = None
         self._connectedCalls = {}
+        self._connectedURLs = {}
         del self.tab1
 
     def _makeNewCallTab(self):
@@ -32,6 +34,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
                             "tab%d"%self._tabcount)
         self.callSelectionTab.insertTab(tab, QString("New Call"))
         self._newCallTab = tab
+        self._newCallURL = None
 
     def debugMessage(self, message):
         log.msg(message)
@@ -55,6 +58,8 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         sipURL = str(self.addressComboBox.currentText())
         if not sipURL.startswith('sip:'):
             sipURL = 'sip:'+ sipURL
+        self.addressComboBox.insertItem(QString(sipURL))
+        self._newCallURL = sipURL
         self.callSelectionTab.setTabToolTip(self._newCallTab, QString(sipURL))
         self.callButton.setEnabled(False)
         defer = self.app.placeCall(sipURL)
@@ -68,6 +73,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.callSelectionTab.changeTab(self._newCallTab, QString(cookie))
         self._connectedCalls[cookie] = self._newCallTab
         self._connectedCalls[self._newCallTab] = cookie
+        self._connectedURLs[cookie] = self._newCallURL
         self._makeNewCallTab()
 
     def callFailed(self, e, message=None):
@@ -94,6 +100,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.callSelectionTab.changeTab(tab, QString('closing'))
         self.callSelectionTab.removePage(tab)
         del self._connectedCalls[cookie] 
+        del self._connectedURLs[cookie] 
         del self._connectedCalls[tab] 
 
     def setAudioSource(self, fn):
@@ -136,6 +143,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         if accept == 0:
             self.cookie = cookie
             self.callButton.setEnabled(False)
+            self.addressComboBox.setEnabled(False)
             defresp.callback(cookie)
         else:
             defresp.errback(CallRejected)
@@ -252,8 +260,16 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         if cookie:
             print "switching to", cookie
             self.app.switchCallAudio(cookie)
+            url = self._connectedURLs[cookie]
+            self.addressComboBox.setCurrentText(QString(url))
+            self.addressComboBox.setEnabled(False)
+            self.callButton.setEnabled(False)
+            self.hangupButton.setEnabled(True)
         elif tab == self._newCallTab:
             print "selected 'new call' tab"
+            self.addressComboBox.setEnabled(True)
+            self.callButton.setEnabled(True)
+            self.hangupButton.setEnabled(False)
         else:
             print "ERROR, no widget %r, have %r"%(tab, self._connectedCalls)
 
