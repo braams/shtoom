@@ -1,5 +1,10 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
+0.3:
+  - A major refactoring of the use of deferreds mean that things actually
+    work a lot more sanely now. I'm chaining deferreds and using them to
+    return data in a more orderly fashion now. 
+
 0.2: 
   - RTP now uses a ConnectedDatagramProtocol. This allows for the
     detection of the other end going away abruptly. Still needs more
