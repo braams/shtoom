@@ -19,6 +19,11 @@ from shtoom import prefs
 def genCallId():
     return 400000000 + random.randint(0,2000000)
 
+def genStandardDate(t=None):
+    import time
+    if t is None:
+        t = time.gmtime()
+    return time.strftime("%a, %d %b %Y %H:%M:%S GMT", t)
 
 class Call(object):
     """State machine for a phone call."""
@@ -26,23 +31,36 @@ class Call(object):
     def __init__(self, phone, deferred, to=None, callid=None):
         self.phone = phone
         self.compDef = deferred
+        self._callID = None
+        if to:
+            self.uri = to
+        else:
+            self.uri = None
+        if callid:
+            self.setCallID(callid)
         self.state = 'NEW'
         self.cseq = random.randint(1000,5000)
         self.rtp = None
         if to:
-            self.url = tpsip.parseURL(to)
-            ip = self.setLocalIP(dest=(self.url.host, self.url.port or 5060))
+            self.setupLocalSIP(to)
+
+    def setupLocalSIP(self, uri=None, via=None):
+        if not via:
+            self.remote = tpsip.parseURL(uri)
         else:
-            self.url = None
-        if ip:
-            self.setCallID(callid)
-            self.state = 'NONE'
+            self.remote = via
+        ip = self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
+        if not ip:
+            self.abortCall()
+        else:
+            if not self._callID:
+                self.setCallID()
 
     def abortCall(self):
         # Bail out.
         self.state = 'ABORTED'
 
-    def setCallID(self, callid):
+    def setCallID(self, callid=None):
         if callid:
             self._callID = callid
         else:
@@ -96,7 +114,7 @@ class Call(object):
         return (self._localIP, prefs.localport or 5060)
 
     def getRemoteSIPAddress(self):
-        return (self.url.host, (self.url.port or 5060))
+        return (self.remote.host, (self.remote.port or 5060))
 
     def setupRTP(self):
         self.rtp = RTPProtocol()
@@ -105,37 +123,74 @@ class Call(object):
     def teardownRTP(self):
         self.rtp.stopSendingAndReceiving()
 
-    def recvInvite(self, invite):
-        self._invite = invite
-        trying = tpsip.Response(100)
-        invite.addHeader('via', 'SIP/2.0/UDP %s;rport'%(
-                                    self.getLocalSIPAddress()[0]))
-        invite.addHeader('from', message.headers['from'])
-        invite.addHeader('to', message.headers['to'])
-        invite.addHeader('call-id', message.headers['call-id'])
-        invite.addHeader('cseq', message.headers['cseq'])
-        invite.addHeader('server', 'Shtoom/0.1')
-        invite.addHeader('content-length', 0)
-        
+    def acceptCall(self, message=None):
+        ''' Accept currently pending call.
+        '''
+        self.setupRTP()
+        self.sendResponse(self._invite, 200)
+        self.setState('INVITE_OK')
 
-    def sendInvite(self, toAddr):
+    def rejectCall(self, message=None):
+        ''' Accept currently pending call.
+        '''
+        self.sendResponse(self._invite, 603)
+        self.setState('ABORTED')
+        self.compDef.errback('rejected')
+
+    def sendResponse(self, message, code):
+        ''' Send a '200 OK' to a message 
+        '''
+        from shtoom.multicast.SDP import SDP
+        if message.method == 'INVITE' and code == 200:
+            sdp = self.genStandardSDP()
+            othersdp = SDP(message.body)
+            print sdp.rtpmap
+            sdp.intersect(othersdp)
+            print sdp.rtpmap
+            if not sdp.rtpmap:
+                self.sendResponse(message, 406)
+                self.setState('ABORTED')
+                return
+        resp = tpsip.Response(code) 
+        # XXXXXXX add a branch= ...
+        via = tpsip.parseViaHeader(message.headers['via'][0])
+        branch = via.branch
+        if branch:
+            branch = ';branch=%s'%branch
+        else:
+            branch = ''
+        resp.addHeader('via', 'SIP/2.0/UDP %s:%s%s'%(
+                                    self.getLocalSIPAddress()+(branch,)))
+        resp.addHeader('from', message.headers['from'][0])
+        toaddr = message.headers['to'][0]
+        toname,touri,toparams = tpsip.parseAddress(toaddr)
+        if not toparams.has_key('tag'):
+            toaddr = "%s;tag=%s"%(toaddr, self.getTag())
+        resp.addHeader('to', toaddr)
+        resp.addHeader('date', genStandardDate())
+        resp.addHeader('call-id', message.headers['call-id'][0])
+        resp.addHeader('server', 'Shtoom/0.1')
+        resp.addHeader('cseq', message.headers['cseq'][0])
+        if message.method == 'INVITE' and code == 200:
+            resp.addHeader('contact', message.headers['to'][0])
+            # We include SDP here
+            resp.addHeader('content-type', 'application/sdp')
+            sdp = sdp.show()
+            resp.addHeader('content-length', len(sdp))
+            resp.bodyDataReceived(sdp)
+        else:
+            resp.addHeader('content-length', 0)
+        resp.creationFinished()
+        try:
+            self.phone.transport.write(resp.toString(), self.getRemoteSIPAddress())
+            print "Response sent", resp.toString()
+        except (socket.error, socket.gaierror):
+            e,v,t = sys.exc_info()
+            #self.compDef.errback(e(v))
+            self.setState('ABORTED')
+        
+    def genStandardSDP(self):
         from multicast.SDP import SimpleSDP, SDP
-        self.setLocalIP(dest=(self.url.host, self.url.port or 5060))
-        invite = tpsip.Request('INVITE', str(self.url))
-        # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
-                                                self.getLocalSIPAddress())
-        invite.addHeader('cseq', '%s INVITE'%self.getCSeq(incr=1))
-        invite.addHeader('to', str(self.url))
-        invite.addHeader('content-type', 'application/sdp')
-        invite.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            prefs.username, prefs.email_address, self.getTag()))
-        invite.addHeader('call-id', self.getCallID())
-        invite.addHeader('subject', 'sip%s'%(prefs.email_address))
-        invite.addHeader('user-agent', 'Shtoom/0.0')
-        lhost, lport = self.getLocalSIPAddress()
-        invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
-                                prefs.username, lhost, lport))
         s = SimpleSDP()
         s.setPacketSize(160)
         s.setServerIP(self.getLocalSIPAddress()[0])
@@ -146,18 +201,63 @@ class Call(object):
         #s.addRtpMap('DVI4', 16000)
         #s.addRtpMap('speex', 8000, payload=110)
         #s.addRtpMap('speex', 16000, payload=111)
+        return s
+
+
+    def recvInvite(self, invite):
+        ''' Received an INVITE from another UA. If we're already on a 
+            call, it's an attempt to modify - send a 488 in this case.
+        '''
+        # XXX if self.getState() is not 'NEW', send a 488
+        self._invite = invite
+        via = tpsip.parseViaHeader(self._invite.headers['via'][0])
+        contact = invite.headers['contact']
+        if type(contact) is list:
+            contact = contact[0]
+        self.contact = contact
+        self.to = invite.headers['from'][0]
+        self.setupLocalSIP(via=via)
+        self.sendResponse(invite, 180)
+        if self.getState() != 'ABORTED':
+            self.setState('SENT_RINGING')
+
+
+    def sendInvite(self, toAddr):
+        from multicast.SDP import SimpleSDP, SDP
+        #self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
+        invite = tpsip.Request('INVITE', str(self.remote))
+        # XXX refactor all the common headers and the like
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
+                                                self.getLocalSIPAddress())
+        invite.addHeader('cseq', '%s INVITE'%self.getCSeq(incr=1))
+        invite.addHeader('to', str(self.uri))
+        invite.addHeader('content-type', 'application/sdp')
+        invite.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
+                            prefs.username, prefs.email_address, self.getTag()))
+        invite.addHeader('call-id', self.getCallID())
+        invite.addHeader('subject', 'sip: %s'%(prefs.email_address))
+        invite.addHeader('user-agent', 'Shtoom/0.0')
+        lhost, lport = self.getLocalSIPAddress()
+        invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
+                                prefs.username, lhost, lport))
+        s = self.genStandardSDP()
         sdp = s.show()
         invite.addHeader('content-length', len(sdp))
         invite.bodyDataReceived(sdp)
         invite.creationFinished()
         try:
             self.phone.transport.write(invite.toString(), self.getRemoteSIPAddress())
+            print "Invite sent", invite.toString()
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             self.compDef.errback(e(v))
             self.setState('ABORTED')
         else:
             self.setState('SENT_INVITE')
+
+    def extractURI(self, val):
+        name,uri,params = tpsip.parseAddress(val)
+        return uri.toString()
 
     def sendAck(self, okmessage, startRTP=0):
         from multicast.SDP import SDP
@@ -166,19 +266,17 @@ class Call(object):
         contact = okmessage.headers['contact']
         if type(contact) is list:
             contact = contact[0]
-        if contact.startswith('<') and contact.endswith('>'):
-            contact = contact[1:-1]
         self.contact = contact
         to = okmessage.headers['to']
         if type(to) is list:
             to = to[0]
-        self.to = to
+        self.to = self.extractURI(to)
+        uri = tpsip.parseURL(self.uri)
 
         # XXX Check the OK response's SDP, find what codec we 
         # should be using
 
-        url = tpsip.parseURL(to)
-        ack = tpsip.Request('ACK', contact)
+        ack = tpsip.Request('ACK', self.to)
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
@@ -194,12 +292,13 @@ class Call(object):
         if hasattr(self, 'compDef'):
             self.compDef.callback(self)
             del self.compDef
-        self.phone.transport.write(ack.toString(), (url.host, (url.port or 5060)))
-        self.setState('SENT_ACK')
+        self.phone.transport.write(ack.toString(), (uri.host, (uri.port or 5060)))
+        self.setState('CONNECTED')
 
     def sendBye(self):
-        url = tpsip.parseURL(self.to)
-        bye = tpsip.Request('BYE', self.contact)
+        dest = self.extractURI(self.contact)
+        uri = tpsip.parseURL(dest)
+        bye = tpsip.Request('BYE', dest)
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
@@ -210,7 +309,7 @@ class Call(object):
         bye.addHeader('user-agent', 'Shtoom/0.1')
         bye.addHeader('content-length', 0)
         bye.creationFinished()
-        bye, dest = bye.toString(), (url.host, (url.port or 5060))
+        bye, dest = bye.toString(), (uri.host, (uri.port or 5060))
         self.phone.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
@@ -224,7 +323,7 @@ class Call(object):
         ''' An in-progress call got a BYE from the other end. Hang up
             call, send a 200.
         '''
-        pass
+        self.sendResponse(message, 200)
 
     def recvCancel(self, message):
         ''' The remote UAC changed it's mind about the new call and 
@@ -235,12 +334,13 @@ class Call(object):
         ''' The remote UAC has ACKed our response to their INVITE. 
             Start sending and receiving audio.
         '''
-
-    def recvInvite(self, message):
-        ''' An newly-created call got an INVITE from another UAC. Notify
-            the UI layer, send a 180 (Ringing) response.
-        '''
-        pass
+        from shtoom.multicast.SDP import SDP
+        sdp = SDP(self._invite.body)
+        self.setState('CONNECTED')
+        if hasattr(self, 'compDef'):
+            self.rtp.startSendingAndReceiving((sdp.ipaddr,sdp.port))
+            deferred, self.compDef = self.compDef, None
+            deferred.callback('connected')
 
     def recvOptions(self, message):
         ''' Received an OPTIONS request from a remote UA.
@@ -262,6 +362,7 @@ class SipPhone(DatagramProtocol, object):
     def _newCallObject(self, deferred, to=None, callid=None):
         call = Call(self, deferred, to=to, callid=callid)
         if call.getState() != 'ABORTED':
+            print "XXX", call.getCallID()
             self._calls[call.getCallID()] = call
             return call
 
@@ -279,21 +380,21 @@ class SipPhone(DatagramProtocol, object):
             callid = callid[1:-1]
         del self._calls[callid] 
         
-    def placeCall(self, url):
+    def placeCall(self, uri):
         """Place a call.
 
-        url should be a string, an address of the person we are calling,
+        uri should be a string, an address of the person we are calling,
         e.g. 'sip:foo@example.com'.
 
         Returns a Call object and a Deferred
         """
         self.ui.debugMessage("placeCall starting")
         _d = defer.Deferred()
-        call = self._newCallObject(_d, to=url)
+        call = self._newCallObject(_d, to=uri)
         if call is None:
             return '', _d
         call.setupRTP()
-        invite = call.sendInvite(url)
+        invite = call.sendInvite(uri)
         # Set up a callLater in case we don't get a response, for a retransmit
         # Set up a timeout for the call completion
         return call, _d
@@ -302,9 +403,10 @@ class SipPhone(DatagramProtocol, object):
         """Drop call """
         # XXX return a deferred.
         state = call.getState()
+        print "looking for state %s"%state
         if state == 'NONE':
             self.ui.debugMessage("no call to drop")
-        elif state in ( 'SENT_ACK', ):
+        elif state in ( 'CONNECTED', ):
             call.sendBye()
         elif state in ( 'SENT_INVITE', ):
             call.sendCancel()
@@ -347,32 +449,43 @@ class SipPhone(DatagramProtocol, object):
         call = self._getCallObject(callid)
         if message.response and not call:
             self.ui.debugMessage("SIP response refers to unknown call %s %r"%(
-                                                    callid, self.calls.keys()))
+                                                    callid, self._calls.keys()))
             return
         if message.request and message.method.lower() != 'invite' and not call:
             self.ui.debugMessage("SIP request refers to unknown call %s %r"%(
-                                                    callid, self.calls.keys()))
+                                                    callid, self._calls.keys()))
             return
         if message.request:
             print "handling request", message.method
             if not call:
                 # We must have received an INVITE here. Handle it, reply with
-                # a 200 OK, including an SDP message body
-                callid = message.headers['call-id']
+                # a 180 Ringing.
+                callid = message.headers['call-id'][0]
                 defaccept = defer.Deferred()
                 defsetup = defer.Deferred()
                 call = self._newCallObject(defsetup, callid=callid)
-                trying, dest = call.recvInvite(message)
-                self.transport.write(trying, dest)
-                defaccept.addCallbacks(self.acceptCall, self.rejectCall)
-                self.ui.incomingCall(message.headers['subject'], callid, 
-                                                        defaccept, defsetup)
-                # Send back a TRYING response
+                call.recvInvite(message)
+                defaccept.addCallbacks(call.acceptCall, call.rejectCall)
+                if message.headers.has_key('subject'):
+                    subj = message.headers['subject'][0]
+                else:
+                    name,uri,params =  tpsip.parseAddress(message.headers['from'][0])
+                    subj = "From: %s %s" %(name,uri)
+                self.ui.incomingCall(subj, call, defaccept, defsetup)
             else:
                 if message.method == 'BYE':
                     # Aw. Other end goes away :-(
+                    self.ui.statusMessage("received BYE")
                     # Drop the call, send a 200.
-                    pass
+                    call.recvBye(message)
+                    call.teardownRTP()
+                    self.ui.callDisconnected(call)
+                    self._delCallObject(callid)
+                elif message.method == 'INVITE':
+                    # modify dialog
+                    call.recvInvite(message)
+                elif message.method == 'ACK':
+                    call.recvAck(message)
                 
 
         elif message.response:
@@ -384,7 +497,7 @@ class SipPhone(DatagramProtocol, object):
                 if state == 'SENT_INVITE':
                     self.ui.debugMessage(message.body)
                     call.sendAck(message, startRTP=1)
-                elif state == 'SENT_ACK':
+                elif state == 'CONNECTED':
                     self.ui.debugMessage('Got duplicate OK to our ACK')
                     call.sendAck(message)
                 elif state == 'SENT_BYE':
@@ -394,6 +507,18 @@ class SipPhone(DatagramProtocol, object):
                     self.ui.statusMessage("idle")
                 else:
                     self.ui.debugMessage('Got OK in unexpected state %s'%state)
+            elif message.code - (message.code%100) == 400:
+                self.ui.debugMessage(message.toString())
+                self.ui.callDisconnected(call)
+                pass
+            elif message.code - (message.code%100) == 500:
+                self.ui.debugMessage(message.toString())
+                self.ui.callDisconnected(call)
+                pass
+            elif message.code - (message.code%100) == 600:
+                self.ui.debugMessage(message.toString())
+                self.ui.callDisconnected(call)
+                pass
             else:
                 self.ui.debugMessage(message.toString())
 
