@@ -1,5 +1,6 @@
 
 Before 0.2:
+    - Break out the application layer beneath the RTP lib
     - Fix the fastaudio windows distribution - it needs to include the 
       libsndfile.dll file. I might need to switch to using Inno Setup -
       but how does Inno Setup know where to install the executable? How
@@ -16,12 +17,10 @@ Before 0.2:
     - EsounD support for Gnome, aRts for KDE?
       Note that aRts (and, I suspect, esd) only handle playing of audio,
       not the recording of audio.
-    - UPnP support in order to bust out of NAT. Anthony now has a Netgear
-      that supports UPnP (Thanks, divmod!) Specs are available from
-      http://www.upnp.org/resources/documents.asp
-      See also http://icepick.info/index.php?p=175
-      UPnP could be used just for the SIP port, then STUN for the RTP/RTCP,
-      or else use UPnP for all 3.
+    - UPnP: Hookup the discovery code in shtoom.upnp
+    - UPnP: Finish forwardPort and cancelForwardPort. I need a SOAP client
+      lib. Annoyingly, it doesn't seem like responses include some sort 
+      of response cookie to indicate which query it is for.
     - Handle more of SIP 
         - Lookup servers/proxies using multicast, SRV
         - redirects, auth
