@@ -1,5 +1,5 @@
 
-# Copyright (C) 2003 Anthony Baxter
+# Copyright (C) 2004 Anthony Baxter
 
 from distutils.core import setup
 
@@ -20,7 +20,10 @@ setup(
     author_email = "anthony@interlink.com.au",
     url = 'http://sourceforge.net/projects/shtoom/',
     packages = ['shtoom', 'shtoom/multicast', 
-                'shtoom/ui', 'shtoom/ui/qtui'],
+                'shtoom/ui', 'shtoom/ui/qtui',
+                'shtoom/ui/gnomeui', 'shtoom/ui/qtui',
+                'shtoom/ui/textui', 'shtoom/ui/tkui',
+                'shtoom/audio', ],
     scripts = ['shtoom.py'],
     classifiers = [
        'Development Status :: 3 - Alpha',
