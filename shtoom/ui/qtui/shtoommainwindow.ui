@@ -568,8 +568,8 @@
             <rect>
                 <x>420</x>
                 <y>16</y>
-                <width>51</width>
-                <height>51</height>
+                <width>50</width>
+                <height>30</height>
             </rect>
         </property>
         <property name="pixmap">
