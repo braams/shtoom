@@ -14,9 +14,7 @@ Some test addresses to try calling:
 
   sip:613@fwd.pulver.com -- An echo test
 
-  sip:testcall@divmod.com -- Plays a short audio file to you
-
-  sip:echotest@divmod.com -- Another echo test
+  sip:echotest@divmod.org:5065 -- Another echo test
   
 See also the section later titled "Test Harness"
 
