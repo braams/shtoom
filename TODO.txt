@@ -1,0 +1,25 @@
+Blow away current UI, replace
+
+Replace shtoom/multicast package with something that doesn't suck
+
+Handle rest of SIP 
+
+Integrate existing RTCP code
+
+Codec switchability
+
+Statistics display
+
+Preferences storage
+
+Make interface for audio source(s)
+Maybe use http://www.portaudio.com/ 
+(python interface at http://www.freenet.org.nz/python/pyPortAudio )
+
+New codec support: 
+http://www.freenet.org.nz/python/pySpeex/
+GSM?
+G723?
+iLBC?
+
+
