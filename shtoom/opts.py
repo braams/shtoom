@@ -18,12 +18,13 @@ def buildOptions(app):
     app.appSpecificOptions(opts)
 
     network = OptionGroup('network', 'Network Settings')
-    network.addOption(StringOption('localip','use LOCALIP for local ip address'))
-    network.addOption(NumberOption('listenport','use PORT for sip listener',
+    network.addOption(StringOption('localip','listen on this local ip address'))
+    network.addOption(NumberOption('listenport','run the sip listener on this port',
                                     shortopt='p'))
-    network.addOption(ChoiceOption('stun_policy','STUN policy', 'rfc1918', 
+    #network.addOption(StringOption('outbound_proxy','use this outbound proxy to make calls'))
+    network.addOption(ChoiceOption('stun_policy','When should STUN be used?', 'rfc1918', 
                                     choices=['never','always','rfc1918']))
-    network.addOption(BooleanOption('use_upnp','Use UPnP', False))
+    network.addOption(BooleanOption('use_upnp','Use UPnP to punch holes in firewalls', False))
     opts.addGroup(network)
 
     identity = OptionGroup('identity', 'Identity Settings')
@@ -34,9 +35,9 @@ def buildOptions(app):
     register = OptionGroup('register', 'Registration')
     register.addOption(StringOption('register_uri',
                         'URI of registration server (e.g. sip:divmod.com:5060)'))
-    register.addOption(StringOption('register_user','Username to register with'))
-    register.addOption(StringOption('register_authuser','Username to auth with'))
-    register.addOption(StringOption('register_authpasswd','Username to auth with'))
+    register.addOption(StringOption('register_user','Username to register'))
+    register.addOption(StringOption('register_authuser','Username to use for auth'))
+    register.addOption(StringOption('register_authpasswd','Passwd to use for auth'))
     opts.addGroup(register)
 
     debug = OptionGroup('debug', 'Debugging', gui=False)
