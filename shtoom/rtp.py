@@ -187,6 +187,9 @@ class RTPProtocol(DatagramProtocol):
             # barf out.
             log.msg("uh oh, stun failed %r"%(results), system='rtp')
         else:
+            # a=RTCP might help for wacked out RTCP/RTP pairings
+            # format is something like "a=RTCP:AUDIO 16387"
+            # See RFC 3605
             code1, rtp = rtpres
             code2, rtcp = rtcpres
             if rtp[0] != rtcp[0]:

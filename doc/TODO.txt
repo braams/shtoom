@@ -24,6 +24,7 @@ Maybe before 0.3:
     - sip/call: the state should become an object, encapsulating the current 
       state, and the state machine. This makes it _much_ easier to handle 
       retransmits and the like.
+    - RTCP + NAT == RFC 3605
 
 Not before 0.3:
     - ui(qt): finish multiple Call UI, including new tab for incoming call
