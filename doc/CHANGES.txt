@@ -1,6 +1,8 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - There's a new test harness for testing the phone's inbound and
+    outbound call. See DEBUGGING.txt for more.
   - There's now some rough code in doug for detecting inband DTMF
     (aka the little beepy noises). Thank you _very_ much cisco for
     not generating oob dtmf events.

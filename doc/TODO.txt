@@ -1,5 +1,5 @@
 Mac installer: bundlebuilder
-Windows installer: Innoconda, py2exe
+Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net
 Linux installer: rpmbuilder??, deb?
 
       http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
