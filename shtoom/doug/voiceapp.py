@@ -24,6 +24,7 @@ class VoiceApp(StateMachine):
         self.__connected = None
         self.__currentDTMFKey = None
         self.__collectedDTMFKeys = ''
+        self.__dtmfSingleMode = True
         self.__silenceSource = SilenceSource()
         self._legConnect(self.__silenceSource)
         self.__converter = DougConverter()
@@ -43,23 +44,27 @@ class VoiceApp(StateMachine):
             old.app = None
         return old
 
-    def _playNextItem(self):
+    def _va_playNextItem(self):
         if not self.__playoutList:
-            self._legConnect(self.__silenceSource)
-            self._triggerEvent(MediaPlayContentDoneEvent)
+            last = self._legConnect(self.__silenceSource)
+            self._triggerEvent(MediaPlayContentDoneEvent(last))
         else:
             next = self.__playoutList.pop(0)
             next = convertToSource(next, 'r')
             self._legConnect(next)
 
-    def _maybeStartPlaying(self):
+    def _va_maybeStartPlaying(self):
         # If we're not already playing, switch out the silence
         if self.__connected is self.__silenceSource:
-            self._playNextItem()
+            self._va_playNextItem()
+
+    def _va_sourceDone(self, source):
+        if self.__connected is source:
+            self._va_playNextItem()
 
     def va_startDTMFevent(self, dtmf):
         c = self.__currentDTMFKey 
-        if c:
+        if dtmf:
             if c is not dtmf:
                 self.va_stopDTMFevent(c)
                 self.__currentDTMFKey = dtmf
@@ -67,7 +72,6 @@ class VoiceApp(StateMachine):
             else:
                 # repeat
                 pass
-           
 
     def _inboundDTMFKeyPress(self, dtmf):
         if self.__dtmfSingleMode:
@@ -81,7 +85,8 @@ class VoiceApp(StateMachine):
 
     def va_stopDTMFevent(self, dtmf):
         # For now, I only care about dtmf start events
-        pass
+        if dtmf == self.__currentDTMFKey:
+            self.__currentDTMFKey = None
 
     def va_giveRTP(self):
         # returns (format, RTP)
@@ -110,7 +115,7 @@ class VoiceApp(StateMachine):
         if isinstance(playlist, basestring):
             playlist = [playlist]
         self.__playoutList.extend(playlist)
-        self._maybeStartPlaying()
+        self._va_maybeStartPlaying()
 
     def mediaRecord(self, dest):
         dest = convertToSource(dest, 'w')
