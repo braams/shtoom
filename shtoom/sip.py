@@ -35,6 +35,7 @@ class Call(object):
         self.uri = None
         self.state = 'NEW'
         self.rtp = None
+        self._needSTUN = False
 
         if uri:
             self.uri = uri
@@ -43,10 +44,11 @@ class Call(object):
         self.cseq = random.randint(1000,5000)
 
     def setupLocalSIP(self, uri=None, via=None):
-        ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL (for outbound calls) or 
-            a t.p.sip.Via object (for inbound calls).
+        ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL 
+	    (for outbound calls) or a t.p.sip.Via object (for inbound calls).
 
-            returns a Deferred.
+            returns a Deferred that will be triggered when the local SIP
+	    end is setup
         '''
         if not via:
             self.remote = uri
@@ -79,9 +81,9 @@ class Call(object):
         return self._tag
 
     def setLocalIP(self, dest):
-        ''' Try and determine the local IP address to use. We do a connect_ex
-            in the (faint?) hope that on a machine with multiple interfaces,
-            we'll get the right one
+        ''' Try and determine the local IP address to use. We use a 
+            ConnectedDatagramProtocol in the (faint?) hope that on a machine 
+            with multiple interfaces, we'll get the right one
         '''
         # XXX Allow over-riding
         from shtoom.stun import StunHook, getPolicy
@@ -97,17 +99,20 @@ class Call(object):
                 locAddress = protocol.transport.getHost()[1:3]
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
-                log.msg("discovered local address %r, remote %r"%(locAddress, remAddress))
+                log.msg("discovered local address %r, remote %r"%(locAddress, 
+								  remAddress))
             else:
                 self.compDef.errback(ValueError("couldn't connect to %s"%(
                                             host)))
                 self.abortCall()
                 return None
         if getPolicy().checkStun(locAddress[0], remAddress[0]):
+            self._needSTUN = True
             log.msg("stun policy says yes, use STUN")
-            SH = StunHook(self.phone)
-            deferred = SH.discoverStun()
+            deferred = defer.Deferred()
             deferred.addCallback(self.setStunnedLocalIP)
+            SH = StunHook(self.phone)
+            deferred = SH.discoverStun(deferred)
         else:
             self._localIP, self._localPort = locAddress
             if not self._callID:
@@ -138,9 +143,14 @@ class Call(object):
     def getRemoteSIPAddress(self):
         return (self.remote.host, (self.remote.port or 5060))
 
-    def setupRTP(self):
+    def setupRTP(self, cb):
+        ''' Create local RTP socket. At this point, we have already set up
+            the local SIP socket, so we can cheat a bit for STUN &c 
+        '''
         self.rtp = RTPProtocol()
-        self._lrtpPort, self._lrtcpPort = self.rtp.createRTPSocket()
+        d = self.rtp.createRTPSocket(self.getLocalSIPAddress()[0], 
+                                     self._needSTUN)
+        d.addCallback(cb)
 
     def teardownRTP(self):
         self.rtp.stopSendingAndReceiving()
@@ -148,7 +158,9 @@ class Call(object):
     def acceptCall(self, message=None):
         ''' Accept currently pending call.
         '''
-        self.setupRTP()
+        self.setupRTP(cb=lambda x:self.acceptedCall())
+
+    def acceptedCall(self):
         self.sendResponse(self._invite, 200)
         self.setState('INVITE_OK')
 
@@ -160,12 +172,12 @@ class Call(object):
         self.compDef.errback('rejected')
 
     def sendResponse(self, message, code):
-        ''' Send a response to a message. message is the response body, code is the response code (e.g.
-            200 for OK)
+        ''' Send a response to a message. message is the response body, 
+	    code is the response code (e.g.  200 for OK)
         '''
         from shtoom.multicast.SDP import SDP
         if message.method == 'INVITE' and code == 200:
-            sdp = self.genStandardSDP()
+            sdp = self.rtp.getSDP()
             othersdp = SDP(message.body)
             print sdp.rtpmap
             sdp.intersect(othersdp)
@@ -212,20 +224,15 @@ class Call(object):
             #self.compDef.errback(e(v))
             self.setState('ABORTED')
         
-    def genStandardSDP(self):
-        from multicast.SDP import SimpleSDP, SDP
-        s = SimpleSDP()
-        s.setPacketSize(160)
-        s.setServerIP(self.getLocalSIPAddress()[0])
-        s.setLocalPort(self._lrtpPort)
-        s.addRtpMap('PCMU', 8000) # G711 ulaw
-        #s.addRtpMap('GSM', 8000)
-        #s.addRtpMap('DVI4', 8000)
-        #s.addRtpMap('DVI4', 16000)
-        #s.addRtpMap('speex', 8000, payload=110)
-        #s.addRtpMap('speex', 16000, payload=111)
-        return s
+    def startOutboundCall(self, toAddr):
+        uri = uri=tpsip.parseURL(toAddr)
+        d = self.setupLocalSIP(uri=uri)
+        d.addCallback(lambda x:self.startSendInvite(toAddr, init=1))
 
+    def startInboundCall(self, invite):
+        via = tpsip.parseViaHeader(invite.headers['via'][0])
+        d = self.setupLocalSIP(via=via)
+        d.addCallback(lambda x:self.recvInvite(invite))
 
     def recvInvite(self, invite):
         ''' Received an INVITE from another UA. If we're already on a 
@@ -242,19 +249,13 @@ class Call(object):
         if self.getState() != 'ABORTED':
             self.setState('SENT_RINGING')
 
-    def startOutboundCall(self, toAddr):
-        d = self.setupLocalSIP(uri=tpsip.parseURL(toAddr))
-        d.addCallback(lambda x:self.sendInvite(toAddr, init=1))
-
-    def startInboundCall(self, invite):
-        via = tpsip.parseViaHeader(invite.headers['via'][0])
-        d = self.setupLocalSIP(via=via)
-        d.addCallback(lambda x:self.recvInvite(invite))
+    def startSendInvite(self, toAddr, init=0):
+        if init:
+            self.setupRTP(cb=lambda x:self.sendInvite(toAddr, init))
+        else:
+            self.sendInvite(toAddr, init=0)
 
     def sendInvite(self, toAddr, init=0):
-        from multicast.SDP import SimpleSDP, SDP
-        if init:
-            self.setupRTP()
         invite = tpsip.Request('INVITE', str(self.remote))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
@@ -270,7 +271,7 @@ class Call(object):
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
                                 prefs.username, lhost, lport))
-        s = self.genStandardSDP()
+        s = self.rtp.getSDP()
         sdp = s.show()
         invite.addHeader('content-length', len(sdp))
         invite.bodyDataReceived(sdp)
@@ -290,7 +291,7 @@ class Call(object):
         return uri.toString()
 
     def sendAck(self, okmessage, startRTP=0):
-        from multicast.SDP import SDP
+        from shtoom.multicast.SDP import SDP
         sdp = SDP(okmessage.body)
         log.msg("RTP server:port is %s:%s"%(sdp.ipaddr, sdp.port))
         contact = okmessage.headers['contact']

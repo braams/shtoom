@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.20 2003/11/21 01:39:12 anthonybaxter Exp $
+# $Id: rtp.py,v 1.21 2003/12/17 13:48:15 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -18,7 +18,7 @@ try:
 except ImportError:
     itimer = None
 
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
 
 from shtoom.audio import getAudioDevice
@@ -75,16 +75,20 @@ class RTPProtocol(DatagramProtocol):
     statsOut = []
     expected_PT = rtpPTDict[('PCMU', 8000, 1)]
 
-    def createRTPSocket(self):
-        """Start listening on UDP ports for RTP and RTCP.
+    def createRTPSocket(self, locIP, needSTUN=False):
+        """ Start listening on UDP ports for RTP and RTCP.
 
-        Return (rtpPortNo, rtcpPortNo).
+	    Returns a Deferred, which is triggered when the sockets are 
+	    connected, and any STUN has been completed. The deferred 
+	    callback will be passed (extIP, extPort).
         """
         from twisted.internet.error import CannotListenError
         import rtcp
         self.RTCP = rtcp.RTCPProtocol()
 
         # RTP port must be even, RTCP must be odd
+        # We select a RTP port at random, and try to get a pair of ports
+        # next to each other. What fun!
         rtpPort = 30000 + random.randint(0, 20000)
         if (rtpPort % 2) == 1:
             rtpPort += 1
@@ -96,12 +100,12 @@ class RTPProtocol(DatagramProtocol):
                 continue
             else:
                 break
-        
         rtcpPort = rtpPort + 1
         while True:
             try:
                 self.rtcpListener = reactor.listenUDP(rtcpPort, self.RTCP)
             except CannotListenError:
+                # Not quite right - if it fails, re-do the RTP listen
                 self.rtpListener.stopListening()
                 rtpPort = rtpPort + 2
                 rtcpPort = rtpPort + 1
@@ -109,7 +113,85 @@ class RTPProtocol(DatagramProtocol):
             else:
                 break
         #self.rtpListener.stopReading()
-        return (rtpPort, rtcpPort)
+        if needSTUN is False:
+            # The pain can stop right here
+            self._extRTPPort = rtpPort
+            self._extIP = locIP
+            d = defer.Deferred()
+            d.callback((locIP, rtpPort))
+        else:
+            # If the NAT is doing port translation as well, we will just 
+            # have to try STUN and hope that the RTP/RTCP ports are on
+            # adjacent port numbers. Please, someone make the pain stop.
+            d = defer.Deferred()
+            self.discoverStun(d)
+	return d
+
+    def getVisibleAddress(self):
+	''' returns the local IP address used for RTP (as visible from the
+	    outside world if STUN applies) as ( 'w.x.y.z', rtpPort)
+	'''
+        return (self._extIP, self._extRTPPort)
+
+    def discoverStun(self, deferred):
+	''' Uses STUN to discover the external address for the RTP/RTCP
+            ports. deferred is a Deferred to be triggered when STUN is 
+            complete.
+	'''
+        # See above comment about port translation.
+        # We have to do STUN for both RTP and RTCP, and hope we get a sane
+        # answer.
+        from shtoom.stun import StunHook
+        self._stunCompleteDef = deferred
+        rtpDef = defer.Deferred()
+        rtcpDef = defer.Deferred()
+        stunrtp = StunHook(self)
+        stunrtcp = StunHook(self.RTCP)
+        dl = defer.DeferredList([rtpDef, rtcpDef])
+        dl.addCallback(self.setStunnedAddress)
+        stunrtp.discoverStun(rtpDef)
+        stunrtcp.discoverStun(rtcpDef)
+
+    def setStunnedAddress(self, results):
+        ''' Handle results of the rtp/rtcp STUN. We have to check that 
+            the results have the same IP and usable port numbers
+        '''
+        print "got STUN back!", results
+        rtpres, rtcpres = results
+        if rtpres[0] != defer.SUCCESS or rtcpres[0] != defer.SUCCESS:
+            # barf out.
+            print "uh oh, stun failed", results
+        else:    
+            code1, rtp = rtpres
+            code2, rtcp = rtcpres
+            if rtp[0] != rtcp[0]:
+                print "stun gave different IPs for rtp and rtcp", results
+            elif (rtp[1] != (rtcp[1] - 1) ) or ( (rtp[1] % 2) != 0 ):
+                print "stun showed unusable rtp/rtcp ports", results
+            else:
+                # phew. working NAT
+                print "discovered sane NAT for RTP/RTCP"
+                self._extIP, self._extRTPPort = rtp
+                d = self._stunCompleteDef 
+                del self._stunCompleteDef 
+                d.callback(rtp)
+
+    def getSDP(self):
+        from multicast.SDP import SimpleSDP
+        s = SimpleSDP()
+        s.setPacketSize(160)
+	addr = self.getVisibleAddress()
+        print "addr = ", addr
+        s.setServerIP(addr[0])
+        s.setLocalPort(addr[1])
+        s.addRtpMap('PCMU', 8000) # G711 ulaw
+        #s.addRtpMap('GSM', 8000)
+        #s.addRtpMap('DVI4', 8000)
+        #s.addRtpMap('DVI4', 16000)
+        #s.addRtpMap('speex', 8000, payload=110)
+        #s.addRtpMap('speex', 16000, payload=111)
+        return s
+
 
     def whenDone(self, cbDone):
         self._cbDone = cbDone
@@ -276,3 +358,5 @@ class RTPProtocol(DatagramProtocol):
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
+
+
