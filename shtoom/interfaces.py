@@ -19,6 +19,11 @@ class UI(Interface):
             previous status message.
         """
 
+    def getString(self, message):
+        """ Prompt the user for information, with the prompt 'message'
+            returns a Deferred
+        """
+
     def callConnected(self, cookie):
         """ The call identified by 'cookie' has been connected
         """
