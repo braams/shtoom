@@ -2,7 +2,7 @@
 
 '''SIP client code.'''
 
-from interfaces import ISipPhone
+from interfaces import SIP as ISip
 
 from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
 from twisted.internet import defer
@@ -30,7 +30,7 @@ def genStandardDate(t=None):
     return time.strftime("%a, %d %b %Y %H:%M:%S GMT", t)
 
 class Call(object):
-    '''State machine for a phone call.'''
+    '''State machine for a phone call (inbound or outbound).'''
 
     cookie = _callID = uri = None
     sip = None
@@ -41,7 +41,6 @@ class Call(object):
         self.uri = None
         self.state = 'NEW'
         self._needSTUN = False
-
         if uri:
             self.uri = uri
         if callid:
@@ -218,7 +217,7 @@ class Call(object):
             self.setState('ABORTED')
 
     def startOutboundCall(self, toAddr):
-        uri = uri=tpsip.parseURL(toAddr)
+        uri = tpsip.parseURL(toAddr)
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)).addErrback(log.err)
 
@@ -418,15 +417,185 @@ class Call(object):
             self.sendCancel()
             self.setState('SENT_CANCEL')
 
+    def recvResponse(self, message):
+        if message.code in ( 100, 180, 181, 182 ):
+            return
+        elif message.code == 200:
+            state = self.getState()
+            if state == 'SENT_INVITE':
+                self.phone.app.debugMessage(message.body)
+                self.sendAck(message, startRTP=1)
+            elif state == 'CONNECTED':
+                self.phone.app.debugMessage('Got duplicate OK to our ACK')
+                self.sendAck(message)
+            elif state == 'SENT_BYE':
+                self.phone.app.endCall(call.cookie)
+                self.phone._delCallObject(self.getCallID())
+                self.phone.app.debugMessage("Hung up on call %s"%callid)
+                self.phone.app.statusMessage("idle")
+            else:
+                self.phone.app.debugMessage('Got OK in unexpected state %s'%state)
+        elif message.code - (message.code%100) == 400:
+            # XXX Auth failure (401)
+            self.phone.app.debugMessage(message.toString())
+            self.phone.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.phone._delCallObject(self.getCallID())
+        elif message.code - (message.code%100) == 500:
+            self.phone.app.debugMessage(message.toString())
+            self.phone.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.phone._delCallObject(self.getCallID())
+        elif message.code - (message.code%100) == 600:
+            self.phone.app.debugMessage(message.toString())
+            self.phone.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.phone._delCallObject(self.getCallID())
+        else:
+            self.phone.app.debugMessage(message.toString())
+
+class Registration(Call):
+    "State machine for registering with a server."
+
+    def __init__(self, phone, deferred):
+        self.sip = phone
+        self.compDef = deferred
+        self.regServer = None
+        self.regAOR = None
+        self.authCred = None
+        self.state = 'NEW'
+        self._needSTUN = False
+        self.cseq = random.randint(1000,5000)
+        self.nonce_count = 0
+        print "REGISTRATION STARTED"
+
+    def startRegistration(self):
+        from shtoom import prefs
+        import copy
+        self.regServer = tpsip.parseURL(prefs.register_uri)
+        self.regAOR = copy.copy(self.regServer)
+        self.regAOR.username = prefs.username
+        d = self.setupLocalSIP(self.regServer)
+        d.addCallback(self.sendRegistration).addErrback(log.err)
+
+    def getRegConfig(self):
+        from shtoom import prefs
+        if prefs.register_aor is None:
+            raise RegistrationUnavailable, "No registration AOR  specified"
+
+    def sendRegistration(self, cb=None, auth=None):
+        print "setup done", self._callID
+        invite = tpsip.Request('REGISTER', str(self.regServer))
+        # XXX refactor all the common headers and the like
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
+                                                self.getLocalSIPAddress())
+        invite.addHeader('cseq', '%s REGISTER'%self.getCSeq(incr=1))
+        invite.addHeader('to', '"anthony baxter" <%s>'%(str(self.regAOR)))
+        invite.addHeader('from', '"anthony baxter" <%s>'%(str(self.regAOR)))
+        invite.addHeader('content-type', 'application/sdp')
+        invite.addHeader('expires', 900)
+        invite.addHeader('event', 'registration')
+        invite.addHeader('call-id', self.getCallID())
+        if auth is not None:
+            invite.addHeader('Authorization', auth)
+        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        lhost, lport = self.getLocalSIPAddress()
+        invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
+                                prefs.username, lhost, lport))
+        invite.addHeader('content-length', '0')
+        invite.creationFinished()
+        try:
+            self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
+            print "register sent", invite.toString()
+        except (socket.error, socket.gaierror):
+            e,v,t = sys.exc_info()
+            self.compDef.errback(e(v))
+            self.setState('ABORTED')
+        else:
+            self.setState('SENT_REGISTER')
+
+    def recvResponse(self, message):
+        state = self.getState()
+        if message.code in ( 401, ):
+            auth = self.calcAuth(message.headers['www-authenticate'][0])
+            self.sendRegistration(auth=auth)
+
+    def calcAuth(self, authhdr):
+        from urllib2 import parse_http_list
+        import digestauth
+        from shtoom import prefs
+        method, auth = authhdr.split(' ', 1)
+        if method.lower() != 'digest':
+            raise ValueError, "Unknown auth method %s"%(method)
+        chal = digestauth.parse_keqv_list(parse_http_list(auth))
+        print chal
+        qop = chal.get('qop')
+        if not qop:
+            # Bogus Quotient bug.
+            qop = chal.get('qop-options')
+        if not qop:
+            qop = 'auth'
+        if qop.lower() != 'auth':
+            raise ValueError, "can't handle qop '%s'"%(qop)
+        realm = chal.get('realm')
+        algorithm = chal.get('algorithm')
+        nonce = chal.get('nonce')
+        opaque = chal.get('opaque')
+        H, KD = self._getHashingImplementation(algorithm)
+        user = prefs.register_authuser
+        passwd = prefs.register_authpasswd
+        if user is None or passwd is None:
+            raise RuntimeError, "Auth required"
+        A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
+                         
+        A2 = 'REGISTER:%s'%str(self.regServer)
+        self.nonce_count += 1
+        ncvalue = '%08x'%(self.nonce_count)
+        cnonce = digestauth.generate_nonce(bits=16,
+                                           randomness=
+                                              str(nonce)+str(self.nonce_count))
+        noncebit =  "%s:%s:%s:%s:%s" % (nonce,ncvalue,cnonce,qop,H(A2))
+        respdig = KD(H(A1), noncebit)
+        base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
+               'response="%s"' % (method, user, realm, nonce, 
+                                  str(self.regServer), respdig)
+        if opaque:
+            base = base + ', opaque="%s"' % opaque
+        if algorithm != 'MD5':
+            base = base + ', algorithm="%s"' % algorithm
+        if qop:
+            base = base + ', qop=auth, nc=%s, cnonce="%s"'%(ncvalue, cnonce)
+        print "base", base
+        return base
+
+
+            
+    def _getHashingImplementation(self, algorithm):
+        # lambdas assume digest modules are imported at the top level
+        import md5, sha
+        if algorithm.lower() == 'md5':
+            H = lambda x: md5.new(x).hexdigest()
+        elif algorithm.lower() == 'sha':
+            H = lambda x: sha.new(x).hexdigest()
+        # XXX MD5-sess
+        KD = lambda s, d, H=H: H("%s:%s" % (s, d))
+        return H, KD
+
+
 class SipPhone(DatagramProtocol, object):
     '''A SIP phone.'''
 
-    __implements__ = ISipPhone,
+    __implements__ = ISip,
 
     def __init__(self, app, *args, **kwargs):
         self.app = app
         self._calls = {}
         super(SipPhone, self, *args, **kwargs)
+
+    def register(self):
+        from shtoom import prefs
+        if prefs.register_uri is not None:
+            d = defer.Deferred()
+            r = Registration(self,d)
+            r.startRegistration()
+            return d
 
     def _newCallObject(self, deferred, to=None, callid=None):
         call = Call(self, deferred, uri=to, callid=callid)
@@ -544,31 +713,5 @@ class SipPhone(DatagramProtocol, object):
 
         elif message.response:
             print "handling response", message.code
-            if message.code in ( 100, 180, 181, 182 ):
-                return
-            elif message.code == 200:
-                state = call.getState()
-                if state == 'SENT_INVITE':
-                    self.app.debugMessage(message.body)
-                    call.sendAck(message, startRTP=1)
-                elif state == 'CONNECTED':
-                    self.app.debugMessage('Got duplicate OK to our ACK')
-                    call.sendAck(message)
-                elif state == 'SENT_BYE':
-                    self.app.endCall(call.cookie)
-                    self._delCallObject(callid)
-                    self.app.debugMessage("Hung up on call %s"%callid)
-                    self.app.statusMessage("idle")
-                else:
-                    self.app.debugMessage('Got OK in unexpected state %s'%state)
-            elif message.code - (message.code%100) == 400:
-                self.app.debugMessage(message.toString())
-                self.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
-            elif message.code - (message.code%100) == 500:
-                self.app.debugMessage(message.toString())
-                self.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
-            elif message.code - (message.code%100) == 600:
-                self.app.debugMessage(message.toString())
-                self.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
-            else:
-                self.app.debugMessage(message.toString())
+            call.recvResponse(message)
+
