@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Thu May 6 23:15:35 2004
+# Created: Thu May 6 23:59:03 2004
 #      by: The PyQt User Interface Compiler (pyuic) 3.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,11 +21,11 @@ class ShtoomMainWindow(QMainWindow):
 
         self.setCentralWidget(QWidget(self,"qt_central_widget"))
 
-        self.tabWidget3 = QTabWidget(self.centralWidget(),"tabWidget3")
-        self.tabWidget3.setProperty("geometry",QVariant(QRect(0,2,423,160)))
+        self.callSelectionTab = QTabWidget(self.centralWidget(),"callSelectionTab")
+        self.callSelectionTab.setProperty("geometry",QVariant(QRect(0,2,423,160)))
 
-        self.tab = QWidget(self.tabWidget3,"tab")
-        self.tabWidget3.insertTab(self.tab,QString(""))
+        self.tab1 = QWidget(self.callSelectionTab,"tab1")
+        self.callSelectionTab.insertTab(self.tab1,QString(""))
 
         self.textLabel4 = QLabel(self.centralWidget(),"textLabel4")
         self.textLabel4.setProperty("geometry",QVariant(QRect(10,120,41,20)))
@@ -60,7 +60,7 @@ class ShtoomMainWindow(QMainWindow):
         self.debuggingTextEdit.setProperty("undoRedoEnabled",QVariant(QVariant(0,0)))
 
         self.muteCheck = QCheckBox(self.centralWidget(),"muteCheck")
-        self.muteCheck.setProperty("geometry",QVariant(QRect(270,85,60,20)))
+        self.muteCheck.setProperty("geometry",QVariant(QRect(90,305,60,20)))
 
         self.dtmfFrame = QFrame(self.centralWidget(),"dtmfFrame")
         self.dtmfFrame.setProperty("geometry",QVariant(QRect(338,60,75,95)))
@@ -243,11 +243,12 @@ class ShtoomMainWindow(QMainWindow):
         self.connect(self.dtmfButtonStar,SIGNAL("released()"),self.dtmfButtonStar_released)
         self.connect(self.pushButton17,SIGNAL("clicked()"),self.register_clicked)
         self.connect(self.muteCheck,SIGNAL("stateChanged(int)"),self.muteCheck_stateChanged)
+        self.connect(self.callSelectionTab,SIGNAL("currentChanged(QWidget*)"),self.callSelectionTab_currentChanged)
 
 
     def languageChange(self):
         self.setProperty("caption",QVariant(self.__tr("Shtoom - Qt UI")))
-        self.tabWidget3.changeTab(self.tab,self.__tr("New Call"))
+        self.callSelectionTab.changeTab(self.tab1,self.__tr("New Call"))
         self.textLabel4.setProperty("text",QVariant(self.__tr("Status")))
         self.statusLabel.setProperty("text",QVariant(QString.null))
         QToolTip.add(self.debuggingTextEdit,self.__tr("Debugging Messages"))
@@ -415,6 +416,9 @@ class ShtoomMainWindow(QMainWindow):
 
     def muteCheck_stateChanged(self,a0):
         print "ShtoomMainWindow.muteCheck_stateChanged(int): Not implemented yet"
+
+    def callSelectionTab_currentChanged(self,a0):
+        print "ShtoomMainWindow.callSelectionTab_currentChanged(QWidget*): Not implemented yet"
 
     def __tr(self,s,c = None):
         return qApp.translate("ShtoomMainWindow",s,c)

@@ -235,3 +235,10 @@ void ShtoomMainWindow::muteCheck_stateChanged( int )
 {
 
 }
+
+
+
+void ShtoomMainWindow::callSelectionTab_currentChanged( QWidget * )
+{
+
+}

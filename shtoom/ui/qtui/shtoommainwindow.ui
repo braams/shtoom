@@ -17,7 +17,7 @@
     </property>
     <widget class="QTabWidget">
         <property name="name">
-            <cstring>tabWidget3</cstring>
+            <cstring>callSelectionTab</cstring>
         </property>
         <property name="geometry">
             <rect>
@@ -29,13 +29,14 @@
         </property>
         <widget class="QWidget">
             <property name="name">
-                <cstring>tab</cstring>
+                <cstring>tab1</cstring>
             </property>
             <attribute name="title">
                 <string>New Call</string>
             </attribute>
         </widget>
     </widget>
+
     <widget class="QLabel">
         <property name="name">
             <cstring>textLabel4</cstring>
@@ -154,8 +155,8 @@
         </property>
         <property name="geometry">
             <rect>
-                <x>270</x>
-                <y>85</y>
+                <x>90</x>
+                <y>305</y>
                 <width>60</width>
                 <height>20</height>
             </rect>
@@ -963,6 +964,12 @@
         <receiver>ShtoomMainWindow</receiver>
         <slot>muteCheck_stateChanged(int)</slot>
     </connection>
+    <connection>
+        <sender>callSelectionTab</sender>
+        <signal>currentChanged(QWidget*)</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>callSelectionTab_currentChanged(QWidget*)</slot>
+    </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">shtoommainwindow.ui.h</include>
@@ -1006,6 +1013,7 @@
     <slot>clearButton_clicked()</slot>
     <slot>register_clicked()</slot>
     <slot>muteCheck_stateChanged( int )</slot>
+    <slot>callSelectionTab_currentChanged( QWidget * )</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>
