@@ -1,6 +1,7 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.2: NOT YET RELEASED
+  - GSM codec works. (Needs optional pygsm package installed).
   - gnome UI cleanup, tk UI cleanup
   - New 'Register' button to register (after you edit registration 
     settings).
