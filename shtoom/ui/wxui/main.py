@@ -85,15 +85,12 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.logger = Logger()
 
     def statusMessage(self, message):
-        print "WxShtoomFrame.statusMessage from %s"%thread.get_ident()
         self.SetStatusText(message)
 
     def debugMessage(self, message):
-        print "WxShtoomFrame.debugMessage from %s"%thread.get_ident()
         wxLogMessage(message)
 
     def errorMessage(self, message):
-        print "WxShtoomFrame.errorMessage from %s"%thread.get_ident()
         wxLogMessage("ERROR: %s"%message)
 
     def updateCallButton(self, do_call):
@@ -202,7 +199,6 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             hfile = self.getHistoryFilename()
             if not os.access(hfile, os.R_OK|os.W_OK):
                 return
-            print "Saving history"
             hfp = open(hfile, 'w')
             [hfp.write('%s\n'%h) for h in self.address_history]
             hfp.close()
