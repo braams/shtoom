@@ -81,6 +81,8 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             pos=(posx+sizex+5,posy))
         wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
 
+        self.logger = Logger()
+
     def statusMessage(self, message):
         self.SetStatusText(message)
 
@@ -217,8 +219,8 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         # Write out the current address history
         self.saveHistory()
         # TODO: Move this into the proxy app
-        print "Stopping app now"
         reactor.callFromThread(reactor.stop)
+        self.logger.disable()
         self.Destroy()
         
     def DoExit(self, event):
@@ -264,7 +266,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.UpdateHeight(newheight)
 
     def getLogger(self):
-        return Logger()
+        return self.logger
 
 
 class LogFrameImpl(LogFrame):
@@ -284,8 +286,16 @@ class LogFrameImpl(LogFrame):
         self.Hide()
 
 class Logger:
+    def __init__(self):
+        # Disable logging during shutdown
+        self.enabled = 1
+
+    def disable(self):
+        self.enabled = 0
+
     def flush(self):
         pass
 
     def write(self, text):
-        wxLogMessage(text)
+        if self.enabled:
+            wxLogMessage(text)

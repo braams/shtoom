@@ -53,16 +53,15 @@ class WxProxy(AppProxy):
         self.wxapp.frame.callStarted(*args)
     def callConnected(self, *args):
         self.wxapp.frame.callConnected(*args)
+    def callDisconnected(self, *args):
+        self.wxapp.frame.callDisconnected(*args)
     def callFailed(self, *args):
         self.wxapp.frame.callFailed(*args)
 
     # Proxies for deferred callbacks + others
     def placeCall(self, sipURL):
-        print "wx proxy calling placeCall to ", sipURL, self.shtoomapp
         deferred = self.shtoomapp.placeCall(sipURL)
-        print "wx proxy got deferred"
         deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
-        print "wx proxy returning"
 
     def dropCall(self, cookie):
         self.shtoomapp.dropCall(cookie)
@@ -73,7 +72,6 @@ class ShtoomProxy(AppProxy):
     def placeCall(self, sipURL):
         # From the wx thread: call into the main thread a function
         # which sets up the deferred calls on the WxAppProxy method.
-        print "shtoom proxy calling placeCall"
         reactor.callFromThread(self.shtoomapp.placeCall, sipURL)
 
     def dropCall(self, cookie):
