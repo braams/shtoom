@@ -230,11 +230,6 @@ void ShtoomMainWindow::register_clicked()
 }
 
 
-void ShtoomMainWindow::checkBox1_stateChanged( int )
-{
-
-}
-
 
 void ShtoomMainWindow::muteCheck_stateChanged( int )
 {
