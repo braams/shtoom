@@ -1,0 +1,17 @@
+The following people have contributed to shtoom. Thanks to all
+concerned! Anyone I've missed, I apologise. It's not a sign of
+disrespect, merely that I'm forgetful - please feel free to 
+remind me. <wink>
+
+    Amir Bakhtiar - much patient debugging, hosting for the project, advice
+    Jp Calderone - LoopingCall, debugging, bug fixes
+    Phil Frost - bug fixes
+    Travis Hartwell - improvements to the Gtk/Gnome UI
+    Andy Hird - wx UI, bug fixes
+    Jamey Hicks - many contributions, see the CHANGES file
+    Albert Huang - debugging of stereo devices
+    Lars Immisch - bug fixes
+    Glyph Lefkowitz - debugging
+    Allan Short - debugging, advice, maintenance of the hosting
+    Itamar Shtull-Trauring - original Gtk UI, many bugfixes
+

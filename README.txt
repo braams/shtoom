@@ -96,15 +96,10 @@ Shtoom is (C) Copyright 2004 Anthony Baxter and is licensed under
 the GNU Lesser General Public License - see the file LICENSE for
 details.
 
-Thanks to folks who've contributed:
-   Itamar Shtull-Trauring,
-   Jp Calderone,
-   Andy Hird,
-   Jamey Hicks,
-   Amir Bakhtiar,
-   Allan Short for much testing and advice
+Thanks to the folks who've contributed - I've broken the contributor
+list out into the file doc/ACKS.
 
-and thanks to everyone on the Twisted project for producing such a 
+Thanks also to everyone on the Twisted project for producing such a 
 high quality framework.
 
 Thanks also to Mike Barnes for providing Mac OSX hardware, and Amir
