@@ -17,6 +17,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.xml.signal_autoconnect(self)
         self.xml.get_widget("callwindow").connect("destroy", lambda w: reactor.stop())
         self.address = self.xml.get_widget("address")
+        self.address.set_value_in_list(False, False)
         self.callButton = self.xml.get_widget("call")
         self.hangupButton = self.xml.get_widget("hangup")
         self.hangupButton.set_sensitive(0)
@@ -27,10 +28,11 @@ class ShtoomWindow(ShtoomBaseUI):
     # GUI callbacks
     def on_call_clicked(self, w):
         self.statusMessage("Calling...")
-        sipURL = self.address.get_text()
+        sipURL = self.address.entry.get_text()
         if not sipURL.startswith('sip:'):
             sipURL = "sip:" + sipURL
-            self.address.prepend_text("sip:")
+            self.address.entry.prepend_text("sip:")
+        # Add the item to self.address.list ... argh gtk docs SUCK
         self.hangupButton.set_sensitive(1)
         self.callButton.set_sensitive(0)
         self.address.set_sensitive(0)
@@ -49,16 +51,16 @@ class ShtoomWindow(ShtoomBaseUI):
         self.incoming[0].approved(code == gtk.RESPONSE_OK)
 
     def on_copy_activate(self, widget):
-        self.address.copy_clipboard()
+        self.address.entry.copy_clipboard()
 
     def on_cut_activate(self, widget):
-        self.address.cut_clipboard()
+        self.address.entry.cut_clipboard()
 
     def on_paste_activate(self, widget):
-        self.address.paste_clipboard()
+        self.address.entry.paste_clipboard()
 
     def on_clear_activate(self, widget):
-        self.address.set_text("")
+        self.address.entry.set_text("")
 
     def on_preferences_activate(self, widget):
         self.statusMessage("Editing Preferences with Gnome UI not supported yet.")
