@@ -261,7 +261,7 @@ class DebugTextView:
 
     def write(self, text):
         b = self.buffer
-        b.insert(b.get_end_iter(), text+'\n')
+        b.insert(b.get_end_iter(), text)
         lines = b.get_line_count()
         if lines > self.MAXLINES:
             b.delete(b.get_start_iter(), 
