@@ -150,16 +150,16 @@
     <property name="name">
         <cstring>MenuBar</cstring>
     </property>
-    <item text="&amp;File" name="fileMenu">
+    <item text="File" name="fileMenu">
         <action name="fileDTMFAction"/>
         <action name="fileDebugAction"/>
         <separator/>
         <action name="fileExitAction"/>
     </item>
-    <item text="&amp;Edit" name="Edit">
+    <item text="Edit" name="Edit">
         <action name="editPreferencesAction"/>
     </item>
-    <item text="&amp;Help" name="helpMenu">
+    <item text="Help" name="helpMenu">
         <action name="helpAboutAction"/>
     </item>
 </menubar>
@@ -177,7 +177,7 @@
             <string>DTMF</string>
         </property>
         <property name="menuText">
-            <string>&amp;DTMF</string>
+            <string>DTMF</string>
         </property>
         <property name="toolTip">
             <string>Show DTMF Window</string>
@@ -197,7 +197,7 @@
             <string>Debugging</string>
         </property>
         <property name="menuText">
-            <string>&amp;Debugging...</string>
+            <string>Debugging...</string>
         </property>
         <property name="accel">
             <string>Ctrl+O</string>
@@ -211,7 +211,7 @@
             <string>Exit</string>
         </property>
         <property name="menuText">
-            <string>E&amp;xit</string>
+            <string>Exit</string>
         </property>
         <property name="accel">
             <string></string>
@@ -225,7 +225,7 @@
             <string>About</string>
         </property>
         <property name="menuText">
-            <string>&amp;About</string>
+            <string>About</string>
         </property>
         <property name="accel">
             <string></string>
