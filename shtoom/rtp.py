@@ -5,13 +5,11 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.23 2003/12/21 16:34:52 itamar Exp $
+# $Id: rtp.py,v 1.24 2003/12/21 16:36:01 itamar Exp $
 #
 
 import signal, struct, random, os, md5, socket
 from time import sleep, time
-
-from select import select as Select
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 
