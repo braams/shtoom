@@ -12,6 +12,8 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     sending = False
     audiosource = None
     cookie = None
+    _muted = False
+
     def __init__(self, *args, **kwargs):
         ShtoomBaseWindow.__init__(self, *args, **kwargs)
         from shtoom.ui.logo import logoGif
@@ -58,6 +60,8 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def callConnected(self, cookie):
         self.hangupButton.setEnabled(True)
         self.statusMessage('Call Connected')
+        if self._muted:
+            self.app.muteCall(self.cookie)
 
     def callDisconnected(self, cookie, message):
         self.statusMessage('Call disconnected: %s'%message)
@@ -204,6 +208,17 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def dtmfButton0_released(self):
         if self.cookie is not None:
             self.app.stopDTMF(self.cookie, '0')
+
+    def muteCheck_stateChanged(self,val):
+        if val:
+            self._muted = True
+        else:
+            self._muted = False 
+        if self.cookie is not None:
+            if val:
+                self.app.muteCall(self.cookie)
+            else:
+                self.app.unmuteCall(self.cookie)
 
 class Logger:
     def __init__(self, textwidget):

@@ -148,13 +148,29 @@
             <string>Debugging Messages</string>
         </property>
     </widget>
+    <widget class="QCheckBox">
+        <property name="name">
+            <cstring>muteCheck</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>270</x>
+                <y>85</y>
+                <width>60</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>mute</string>
+        </property>
+    </widget>
     <widget class="QFrame">
         <property name="name">
             <cstring>dtmfFrame</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>335</x>
+                <x>338</x>
                 <y>60</y>
                 <width>75</width>
                 <height>95</height>
@@ -474,7 +490,7 @@
         </property>
         <property name="geometry">
             <rect>
-                <x>230</x>
+                <x>188</x>
                 <y>80</y>
                 <width>80</width>
                 <height>31</height>
@@ -490,7 +506,7 @@
         </property>
         <property name="geometry">
             <rect>
-                <x>50</x>
+                <x>8</x>
                 <y>80</y>
                 <width>80</width>
                 <height>30</height>
@@ -509,7 +525,7 @@
         </property>
         <property name="geometry">
             <rect>
-                <x>140</x>
+                <x>98</x>
                 <y>80</y>
                 <width>80</width>
                 <height>30</height>
@@ -938,6 +954,12 @@
         <receiver>ShtoomMainWindow</receiver>
         <slot>register_clicked()</slot>
     </connection>
+    <connection>
+        <sender>muteCheck</sender>
+        <signal>stateChanged(int)</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>muteCheck_stateChanged(int)</slot>
+    </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">shtoommainwindow.ui.h</include>
@@ -980,6 +1002,7 @@
     <slot>hangupButton_clicked()</slot>
     <slot>clearButton_clicked()</slot>
     <slot>register_clicked()</slot>
+    <slot>muteCheck_stateChanged( int )</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

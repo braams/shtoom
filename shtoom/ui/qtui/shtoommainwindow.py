@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Mon May 3 23:26:47 2004
+# Created: Thu May 6 22:59:52 2004
 #      by: The PyQt User Interface Compiler (pyuic) 3.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -59,8 +59,11 @@ class ShtoomMainWindow(QMainWindow):
         self.debuggingTextEdit.setProperty("readOnly",QVariant(QVariant(1,0)))
         self.debuggingTextEdit.setProperty("undoRedoEnabled",QVariant(QVariant(0,0)))
 
+        self.muteCheck = QCheckBox(self.centralWidget(),"muteCheck")
+        self.muteCheck.setProperty("geometry",QVariant(QRect(270,85,60,20)))
+
         self.dtmfFrame = QFrame(self.centralWidget(),"dtmfFrame")
-        self.dtmfFrame.setProperty("geometry",QVariant(QRect(335,60,75,95)))
+        self.dtmfFrame.setProperty("geometry",QVariant(QRect(338,60,75,95)))
         self.dtmfFrame.setProperty("paletteBackgroundColor",QVariant(QColor(191,191,191)))
         self.dtmfFrame.setProperty("frameShape",QVariant(QFrame.StyledPanel))
         self.dtmfFrame.setProperty("frameShadow",QVariant(QFrame.Raised))
@@ -140,14 +143,14 @@ class ShtoomMainWindow(QMainWindow):
         self.clearButton.setProperty("geometry",QVariant(QRect(10,300,71,31)))
 
         self.pushButton17 = QPushButton(self.centralWidget(),"pushButton17")
-        self.pushButton17.setProperty("geometry",QVariant(QRect(230,80,80,31)))
+        self.pushButton17.setProperty("geometry",QVariant(QRect(188,80,80,31)))
 
         self.callButton = QPushButton(self.centralWidget(),"callButton")
-        self.callButton.setProperty("geometry",QVariant(QRect(50,80,80,30)))
+        self.callButton.setProperty("geometry",QVariant(QRect(8,80,80,30)))
 
         self.hangupButton = QPushButton(self.centralWidget(),"hangupButton")
         self.hangupButton.setProperty("enabled",QVariant(QVariant(0,0)))
-        self.hangupButton.setProperty("geometry",QVariant(QRect(140,80,80,30)))
+        self.hangupButton.setProperty("geometry",QVariant(QRect(98,80,80,30)))
 
         self.textLabel1 = QLabel(self.centralWidget(),"textLabel1")
         self.textLabel1.setProperty("geometry",QVariant(QRect(10,40,40,30)))
@@ -239,6 +242,7 @@ class ShtoomMainWindow(QMainWindow):
         self.connect(self.dtmfButtonStar,SIGNAL("pressed()"),self.dtmfButtonStar_pressed)
         self.connect(self.dtmfButtonStar,SIGNAL("released()"),self.dtmfButtonStar_released)
         self.connect(self.pushButton17,SIGNAL("clicked()"),self.register_clicked)
+        self.connect(self.muteCheck,SIGNAL("stateChanged(int)"),self.muteCheck_stateChanged)
 
 
     def languageChange(self):
@@ -247,6 +251,7 @@ class ShtoomMainWindow(QMainWindow):
         self.textLabel4.setProperty("text",QVariant(self.__tr("Status")))
         self.statusLabel.setProperty("text",QVariant(QString.null))
         QToolTip.add(self.debuggingTextEdit,self.__tr("Debugging Messages"))
+        self.muteCheck.setProperty("text",QVariant(self.__tr("mute")))
         self.dtmfButton6.setProperty("text",QVariant(self.__tr("6")))
         self.dtmfButton1.setProperty("text",QVariant(self.__tr("1")))
         self.dtmfButton4.setProperty("text",QVariant(self.__tr("4")))
@@ -406,6 +411,9 @@ class ShtoomMainWindow(QMainWindow):
 
     def register_clicked(self):
         print "ShtoomMainWindow.register_clicked(): Not implemented yet"
+
+    def muteCheck_stateChanged(self,a0):
+        print "ShtoomMainWindow.muteCheck_stateChanged(int): Not implemented yet"
 
     def __tr(self,s,c = None):
         return qApp.translate("ShtoomMainWindow",s,c)
