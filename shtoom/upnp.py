@@ -84,7 +84,7 @@ class UPnPProtocol(DatagramProtocol, object):
             return
         loc = loc[0]
         d = urlopen(loc)
-        d.addCallback(self.handleIGDeviceResponse).addErrback(log.err)
+        d.addCallback(self.handleIGDeviceResponse, loc).addErrback(log.err)
 
     def parseSearchResponse(self, message):
         hdict = {}
@@ -165,7 +165,7 @@ class UPnPProtocol(DatagramProtocol, object):
             log.msg("warning: couldn't listen on std upnp port", system='UPnP')
         mcast.joinGroup('239.255.255.250', socket.INADDR_ANY)
 
-    def handleIGDeviceResponse(self, body):
+    def handleIGDeviceResponse(self, body, loc):
         if self.controlURL is not None:
             # We already got a working one - ignore this one
             return
@@ -181,11 +181,12 @@ class UPnPProtocol(DatagramProtocol, object):
         if friendly:
             self.upnpInfo['friendlyName'] = str(friendly.contents[0])
         urlbase = bs.first('URLBase')
-        if not (urlbase and urlbase.contents):
-            log.err("upnp response has no urlbase?!?", system='UPnP')
-            return
-        self.urlbase = str(urlbase.contents[0])
-        log.msg("upnp urlbase is %s"%(self.urlbase), system='UPnP')
+        if urlbase and urlbase.contents:
+            self.urlbase = str(urlbase.contents[0])
+            log.msg("upnp urlbase is %s"%(self.urlbase), system='UPnP')
+        else:
+            log.err("upnp response has no urlbase, falling back to %s"%(loc,), system='UPnP')
+            self.urlbase = loc
 
         wanservices = bs.fetch('service', 
             dict(serviceType='urn:schemas-upnp-org:service:WANIPConnection:%'))
