@@ -14,29 +14,47 @@ import fastaudio
 # sibling imports
 import interfaces
 
-from converters import PCM16toULAWConv
+from converters import MultipleConv
 import baseaudio
 
 class FastAudioDevice(baseaudio.AudioDevice):
 
     __implements__ = (interfaces.IAudio,)
 
-    def read(self, length):
-        self.buffer += self.dev.read()
-        result, self.buffer = self.buffer[:length], self.buffer[length:]
-        return result
 
     def openDev(self):
-        self.dev = PCM16toULAWConv(fastaudio.stream(8000, 1, 'int16'))
+        self.rdev = FastAudioWrapper(fastaudio.stream(8000, 1, 'int16'))
+        self.rdev.open()
+        self.rdev.start()
+        self.dev = MultipleConv(self.rdev)
+
+    def close(self):
+        self.rdev.stop()
+        self.dev.close()
+
+class FastAudioWrapper(object):
+    def __init__(self, f):
+        self._f = f
+        self.write = f.write
+        self.open = f.open
+        self.close = f.close
+        self.start = f.start
+        self.stop = f.stop
+        self.buffer = ''
+
+    def read(self, length):
+        if len(self.buffer) < length:
+            self.buffer += self.dev.read()
+        result, self.buffer = self.buffer[:length], self.buffer[length:]
+        return result
 
 opened = None
 
 def getAudioDevice(mode):
     global opened
     if opened is None:
-        opened = FastAudioDevice(mode, wrapped)
-    else:
-        if opened.isClosed():
-            opened.reopen()
+        opened = FastAudioDevice(mode)
+    if opened.isClosed():
+        opened.reopen()
     return opened
 
