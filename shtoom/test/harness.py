@@ -8,8 +8,9 @@ from time import time
 
 class TestCall:
     "A fake Call object"
-    def __init__(self, sip):
+    def __init__(self, sip, uri=None):
         self.sip = sip
+        self.uri = uri
 
     def startCall(self):
         self.d = defer.Deferred()
@@ -23,7 +24,7 @@ class TestCall:
 
     def startFakeInbound(self):
         from shtoom.sip import Dialog
-        self.dialog = Dialog()
+        self.dialog = Dialog(caller=self.uri)
         self.dialog.setDirection(inbound=True)
         d = self.sip.app.acceptCall(call=self)
         d.addCallbacks(self._cb_incomingCall, self.failedIncoming).addErrback(log.err)
@@ -32,6 +33,18 @@ class TestCall:
         from shtoom.sip import Dialog
         self.dialog = Dialog()
         self.dialog.setDirection(outbound=True)
+        if 'auth' in uri:
+            # Any test calls to a URI containing the string 'auth'
+            # trigger an auth dialog
+            d = self.sip.app.authCred('INVITE', uri, realm='fake.realm.here')
+            d.addCallback(self._cb_startFakeOutboundWithAuth, uri)
+        else:
+            d = self.sip.app.acceptCall(call=self)
+            d.addCallbacks(self._cb_incomingCall, 
+                           self.failedIncoming).addErrback(log.err)
+
+    def _cb_startFakeOutboundWithAuth(self, auth, uri):
+        print "got auth", auth
         d = self.sip.app.acceptCall(call=self)
         d.addCallbacks(self._cb_incomingCall, 
                        self.failedIncoming).addErrback(log.err)
@@ -106,7 +119,8 @@ class TestSip:
                     self.dropFakeInbound('foo')
                 else:
                     print "new incoming call starting"
-                    d = self.fakeInbound()
+                    uri = open(self.callFile).readline()
+                    d = self.fakeInbound(uri)
                     d.addCallbacks(self._cb_fakeInbound, 
                                    self._eb_fakeInbound).addErrback(log.err)
 
@@ -137,8 +151,8 @@ class TestSip:
     def register(self):
         pass
 
-    def fakeInbound(self):
-        self.c = TestCall(self)
+    def fakeInbound(self, uri):
+        self.c = TestCall(self, uri)
         d = self.c.startCall()
         self.c.startFakeInbound()
         return d
