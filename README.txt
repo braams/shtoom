@@ -3,7 +3,7 @@ Shtoom is a pure-python VoIP client, using SIP.
 At the moment it's functionality is pretty limited, but is growing
 quickly:
 
-  - Qt user interface
+  - Qt or Tk user interface (others coming soon)
   - Can make simple calls and hang them up
   - Uses the G711 ULAW codec by default 
 

@@ -15,9 +15,21 @@ def tryQtInterface():
         main()
         sys.exit()
 
+def tryTkInterface():
+    import sys
+    try:
+        import Tkinter
+    except ImportError:
+        Tkinter = None
+    if Tkinter is not None:
+        from shtoom.ui.tkshtoom import main
+        main()
+        sys.exit()
+
 def main():
     import sys
     tryQtInterface()
+    tryTkInterface()
     # Other interfaces here
     print "Error: Couldn't load _any_ userinterfaces"
 
