@@ -40,11 +40,15 @@ class FastAudioDevice(baseaudio.AudioDevice):
 class FastAudioWrapper(object):
     def __init__(self, f):
         self._f = f
-        self.write = f.write
+        #self.write = f.write
         self.close = f.close
         self.start = f.start
         self.stop = f.stop
         self.buffer = ''
+
+    def write(self, bytes):
+	if bytes:
+	    self._f.write(bytes)
 
     def open(self):
         self._f.open()
@@ -55,8 +59,17 @@ class FastAudioWrapper(object):
         self._f.close()
 
     def read(self, length=320):
+        fc = 0 
         while len(self.buffer) < length:
-            self.buffer += self._f.read()
+            nb = self._f.read()
+            if nb:
+	        self.buffer += nb
+            else:
+                fc += 1
+                if fc > 4:
+                    # just give up, for now
+                    print "audio is not ready. wah"
+		    return ''
         result, self.buffer = self.buffer[:length], self.buffer[length:]
         return result
 
