@@ -63,7 +63,7 @@ class StateMachine(object):
 
     def _start(self):
         self._doState(self.__start__)
-        self._triggerEvent(CallStartedEvent())
+        self._triggerEvent(CallStartedEvent(None))
 
     def __start__(self):
         raise NotImplementedError

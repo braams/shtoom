@@ -22,6 +22,8 @@ class        DTMFTimeoutEvent(DTMFReceivedEvent):
 class    MediaDoneEvent(Event):
     """ A media play/record completed
     """
+    def __init__(self, source):
+        self.source = source
 
 class        MediaPlayDoneEvent(MediaDoneEvent):
     """ A mediaPlay completed
@@ -72,6 +74,8 @@ class                MediaRecordStoreFailedEvent(MediaRecordDoneEvent):
 class    CallStartedEvent(Event):
     """ A call started
     """
+    def __init__(self, leg):
+        self.leg = leg
 
 class        InboundCallStartedEvent(CallStartedEvent):
     """ A new inbound call started
@@ -84,6 +88,8 @@ class        OutboundCallStartedEvent(CallStartedEvent):
 class    CallEndedEvent(Event):
     """ A call under the control of this VoiceApp ended.
     """
+    def __init__(self, leg):
+        self.leg = leg
 
 class    TimeoutEvent(Event):
     """ A user-specified timeout occurred.

@@ -26,7 +26,9 @@ class VoiceApp(StateMachine):
         super(VoiceApp, self).__init__(defer, **kwargs)
 
     def _legConnect(self, target):
+        target.app = self
         old, self._connected = self._connected, target
+        old.app = None
         return old
 
     def _playNextItem(self):
