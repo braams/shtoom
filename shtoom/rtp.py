@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.22 2003/12/20 10:16:19 anthonybaxter Exp $
+# $Id: rtp.py,v 1.23 2003/12/21 16:34:52 itamar Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -169,8 +169,9 @@ class RTPProtocol(DatagramProtocol):
             code2, rtcp = rtcpres
             if rtp[0] != rtcp[0]:
                 print "stun gave different IPs for rtp and rtcp", results
-            elif (rtp[1] != (rtcp[1] - 1) ) or ( (rtp[1] % 2) != 0 ):
+            elif ((rtcp[1] % 2) != 1) or ((rtp[1] % 2) != 0):
                 print "stun showed unusable rtp/rtcp ports", results
+                # XXX close connection, try again, tell user
             else:
                 # phew. working NAT
                 print "discovered sane NAT for RTP/RTCP"
