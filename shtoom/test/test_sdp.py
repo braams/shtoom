@@ -8,8 +8,8 @@ class SDPGeneration(TestCase):
         s = SimpleSDP()
         s.setServerIP('10.11.12.13')
         s.setLocalPort(1234)
-        s.addRtpMap(0, 'PCMU', 8000, 1)
-        s.addRtpMap(3, 'GSM', 8000, 1)
+        s.addRtpMap('PCMU', 8000)
+        s.addRtpMap('GSM', 8000)
         sdpin = s.show()
         sdpout = SDP(sdpin)
         ae = self.assertEquals

@@ -3,6 +3,28 @@
 # Copyright (c) 1998 Anthony Baxter.
 #
 
+EncodingDict = {
+    0: ('PCMU',8000,1),
+    3: ('GSM',8000,1),
+    4: ('G723',8000,1),
+    5: ('DVI4',8000,1),
+    6: ('DVI4',16000,1),
+    7: ('LPC',8000,1),
+    8: ('PCMA',8000,1),
+    9: ('G722',8000,1),
+    10: ('L16',44100,2),
+    11: ('L16',44100,1),
+    12: ('QCELP',8000,1),
+    13: ('CN',8000,1),
+    15: ('G728',8000,1),
+    16: ('DVI4',11025,1),
+    17: ('DVI4',22050,1),
+    18: ('G729',8000,1),
+}
+
+for key,value in EncodingDict.items():
+    EncodingDict[value] = key
+del key,value
 
 BadAnnounce = "Bad Announcement"
 
@@ -15,13 +37,12 @@ class Announcement:
             line = line.strip()
             if not line:
                 continue
-            if line[1] != '=':
-                print "ERROR bad line %s"%(line)
-                continue
-
-            if line[0] == 'a':
+            elif line[1] != '=':
+                raise BadAnnounce,"bad line %s"%(line)
+            elif line[0] == 'a':
                 subkey, val = line[2:].split(':',1)
                 self._a.setdefault(subkey, []).append(val)
+            # Handle other subtype entries
             self._d.setdefault(line[0], []).append(line[2:])
 
     def get(self,typechar,optional=0):
@@ -130,8 +151,20 @@ class SimpleSDP:
 	self.serverIP = l
     def setLocalPort(self, l):
 	self.localPort = l
-    def addRtpMap(self, payload, encname, clockrate, encparams=None):
+    def addRtpMap(self, encname, clockrate, encparams=None, payload=None):
         # Should store Table 4 from RFC3551 for 'payload'
+        if self.media == 'audio' and encparams is None:
+            # default to a single channel
+            encparams = 1
+        p = EncodingDict.get((encname.upper(),clockrate,encparams))
+        if payload is None:
+            if p is None:
+                raise ValueError, "Don't know payload for %s/%s/%s"%(
+                    encname.upper(),clockrate,encparams)
+            payload = p
+        if payload is not None and payload != p:
+            raise ValueError, "attempt to set payload to %s, should be %s"%(
+                                payload, p)
         self.rtpmap.append((payload,"%d %s/%d%s%s"%(
                                           payload, encname, clockrate, 
                                           ((encparams and '/') or ""), 
