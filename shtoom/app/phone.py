@@ -23,13 +23,17 @@ class Phone(BaseApplication):
         self._audioFormat = None
         self.ui = ui
 
-    def boot(self, options=None, settings=None):
+    def boot(self, options=None):
+        # Flag for suppressing the loading of config file(s)
+        # Crap. Really should load command line, then load config 
+        # if needed.
         from shtoom.ui.select import findUserInterface
-        from shtoom.opts import parseOptions, buildOptions
+
+        from shtoom.opts import buildOptions
         if options is None:
             options = buildOptions(self)
-        self.installOptions(options, settings)
-        parseOptions(self)
+        self.initOptions(options)
+
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
         BaseApplication.boot(self)
@@ -199,10 +203,4 @@ class Phone(BaseApplication):
         app.addOption(StringOption('audio_outfile','write audio to this file'))
         opts.addGroup(app)
         opts.setOptsFile('.shtoomrc')
-
-    def updateOptions(self, dict):
-        m = self._options.updateOptions(dict)
-        if m: 
-            self._options.saveOptsFile()
-            self._options.setOptions(self.getSettings())
 

@@ -12,22 +12,24 @@ class BaseApplication:
     def boot(self):
         self.connectSIP()
 
-    def installOptions(self, options, settings):
-        from shtoom.opts import defaultSettings
-        if settings:
-            self._settings = settings
-        else:
-            self._settings = defaultSettings()
+    def initOptions(self, options=None):
+        import shtoom
+        from shtoom.opts import buildOptions
+        if options is None:
+            options = buildOptions(self)
+        options.optionsStartup(version='%%prog %s'%shtoom.Version)
         self._options = options
 
     def getOptions(self):
         return self._options
 
-    def getSettings(self):
-        return self._settings
-
     def getPref(self, pref):
-        return getattr(self._settings, pref, None)
+        return self._options.getValue(pref, None)
+
+    def updateOptions(self, dict):
+        m = self._options.updateOptions(dict)
+        if m:
+            self._options.saveOptsFile()
 
     def connectSIP(self):
         from twisted.internet import reactor

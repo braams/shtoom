@@ -159,10 +159,14 @@ class NumberOption(Option):
 
 class OptionGroup(object):
 
-    def __init__(self, name='', description=''):
+    def __init__(self, name='', description='', gui=True):
         self._name = name
         self._description = description
         self._options = []
+        self._gui = gui
+
+    def getGUI(self):
+        return self._gui
 
     def getName(self):
         return self._name
@@ -185,6 +189,7 @@ class AllOptions(object):
     def __init__(self):
         self._groups = []
         self._filename = None
+        self._cached_options = {}
 
     def __iter__(self):
         for g in self._groups:
@@ -194,8 +199,7 @@ class AllOptions(object):
         self._groups.append(group)
 
     def buildOptParse(self, parser):
-        for g in self:
-            g.buildOptParse(parser)
+        [ g.buildOptParse(parser) for g in self ]
 
     def handleOptParse(self, opts, args):
         for g in self:
@@ -226,8 +230,11 @@ class AllOptions(object):
         return '\n'.join(out)
 
     def setOptsFile(self, filename):
-        d = findOptionsDir()
-        self._filename = os.path.join(d, filename)
+        if filename is None:
+            self._filename = None
+        else:
+            d = findOptionsDir()
+            self._filename = os.path.join(d, filename)
 
     def loadOptsFile(self):
         from ConfigParser import SafeConfigParser
@@ -255,24 +262,45 @@ class AllOptions(object):
             fp.write(ini)
             fp.close()
 
-    def updateOptions(self, dict):
+    def updateOptions(self, dict=None, **kw):
         modified = {}
-        for k, v in dict.items():
-            print "got %s: %s"%(k, v)
+        if dict is None:
+            dict = kw
             
         for g in self:
             for o in g:
                 n = o.getName()
                 if dict.get(n) is not None:
-                    print "setting %s to %s"%(n, dict[n])
                     if dict[n] == '' and o.optionType == 'Number':
-                        o.setValue(o.getDefault())
+                        if o.setValue(o.getDefault()):
+                            modified[n] = o.getDefault()
                     elif o.setValue(dict[n]):
-                        print "modified", o.getName()
                         modified[n] = dict[n]
                     else:
-                        print "not modified", o.getName()
+                        pass
+        # If any changed, clear the cache
         return modified
+
+    def getValue(self, option, dflt=NoDefaultOption):
+        if not self._cached_options.has_key(option):
+            for g in self:
+                for o in g:
+                    self._cached_options[o.getName()] = o
+        val = self._cached_options[option].getValue()
+        if val is NoDefaultOption:
+            val = dflt
+        return val
+                    
+    def optionsStartup(self, version='%prog'):
+        import optparse
+        parser = optparse.OptionParser(version=version)
+        self.buildOptParse(parser)
+        (opts, args) = parser.parse_args()
+        if getattr(opts, 'no_config_file'):
+            self.setOptsFile(None)
+        self.loadOptsFile()
+        self.handleOptParse(opts, args)
+        self.saveOptsFile()
 
 def findOptionsDir():
     try:

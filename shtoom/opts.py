@@ -25,7 +25,7 @@ def buildOptions(app):
     opts.addGroup(network)
 
     identity = OptionGroup('identity', 'Identity Settings')
-    identity.addOption(StringOption('email','use email address EMAIL'))
+    identity.addOption(StringOption('email_address','use email address EMAIL'))
     identity.addOption(StringOption('username','use user name USERNAME'))
     opts.addGroup(identity)
     
@@ -36,44 +36,10 @@ def buildOptions(app):
     register.addOption(StringOption('register_authpasswd','Username to auth with'))
     opts.addGroup(register)
 
-    debug = OptionGroup('debug', 'Debugging')
+    debug = OptionGroup('debug', 'Debugging', gui=False)
     debug.addOption(BooleanOption('stdout','Log to stdout', False))
+    debug.addOption(BooleanOption('no_config_file',"Don't read from or write to config file", False))
     opts.addGroup(debug)
-
     return opts
 
-
-def parseOptions(app):
-    import optparse, sys
-    import shtoom
-    Opts = app.getOptions()
-
-    parser = optparse.OptionParser(version='%%prog %s'%shtoom.Version)
-
-    Opts.buildOptParse(parser)
-    (opts, args) = parser.parse_args()
-
-    Opts.loadOptsFile()
-    Opts.handleOptParse(opts, args)
-    Opts.saveOptsFile()
-    Opts.setOptions(app.getSettings())
-
-def defaultSettings():
-    class _settings: 
-        pass
-    o = _settings()
-    o.localip = None
-    o.listenport = None
-    o.username = None
-    o.userdetail = None
-    o.email_address = None
-    o.ui = None
-    o.audio = None
-    o.audio_infile = None
-    o.audio_outfile = None
-    o.register_time = 900
-    o.register_uri = None
-    o.register_authuser = None
-    o.register_authpasswd = None
-    return o
 

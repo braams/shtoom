@@ -5,8 +5,6 @@ Linux installer: rpmbuilder??, deb?
 Before 0.2:
     - ui(gnome): Nag itamar into writing the GNOME prefs ;)
     - tests: Way more unit tests
-    - options: parse command line, then config.ini file if wanted
-    - options: flag to suppress loading or saving of config file
     - options, app: Handle changed prefs, re-init whatever's needed
     - app: authCred support in shtoom.app
     - sip: use app.authCred
