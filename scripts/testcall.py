@@ -1,10 +1,16 @@
-#
-# This is a test-bed for working out _how_ a VoiceApp would look.
+#!/usr/bin/env python
 # 
-# This is _one_ way of spelling it. A more sophisticated approach
-# would be to use PEAK. The PEAK docs make my brain hurt right now,
-# so I'm going to come back to that later.
-# 
+
+# Hack hack hack.
+import sys, os
+f = sys.path.pop(0)
+if f.endswith('scripts') and os.path.isdir(os.path.join(os.path.dirname(f),
+                                                        'shtoom')):
+    sys.path.insert(0, os.path.dirname(f))
+else:
+    sys.path.append(f)
+
+
 
 from shtoom.doug import VoiceApp
 from shtoom.doug.events import *
@@ -59,9 +65,6 @@ class PlayingApp(VoiceApp):
 
     def callFailed(self, event):
         self.returnResult('failed')
-
-# Hack hack hack.
-import sys ; sys.path.append(sys.path.pop(0))
 
 app = None
 

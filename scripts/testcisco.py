@@ -1,9 +1,4 @@
 #
-# This is a test-bed for working out _how_ a VoiceApp would look.
-# 
-# This is _one_ way of spelling it. A more sophisticated approach
-# would be to use PEAK. The PEAK docs make my brain hurt right now,
-# so I'm going to come back to that later.
 # 
 
 from shtoom.doug import VoiceApp
@@ -15,6 +10,17 @@ from twisted.python import log
 log.FileLogObserver.timeFormat = "%Y/%m/%d %H:%M:%S"
 
 import time
+
+# Hack hack hack.
+import sys, os
+f = sys.path.pop(0)
+if f.endswith('scripts') and os.path.isdir(os.path.join(os.path.dirname(f),
+                                                        'shtoom')):
+    sys.path.insert(0, os.path.dirname(f))
+else:
+    sys.path.append(f)
+
+
 
 class PlayingApp(VoiceApp):
 
@@ -144,8 +150,6 @@ class PlayingApp(VoiceApp):
         self.mediaStop()
         self.returnError('%s (in %s) %s'%(event, self.where, optional))
 
-# Hack hack hack.
-import sys ; sys.path.append(sys.path.pop(0))
 
 app = None
 
