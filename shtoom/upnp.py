@@ -181,13 +181,21 @@ class UPnPProtocol(DatagramProtocol, object):
         factory object gets its connectionFailed() method called instead.
     
         Mysteriously, this *always* happens on the urlopen in this method, and 
-        neve on any of the other TCP connections that are made during Shtoom 
+        never on any of the other TCP connections that are made during Shtoom 
         setup.  Also mysteriously, inserting this stupidrandomdelay of 4 seconds
         fixes it.
 
         Surely I should write a minimal test case and then either give the test 
         case to the Twisted folks or fix it myself, but some other things are 
         way too urgent today.
+
+        The sequence of events that I observed was: connect 1; connect 2;
+        connect 3; callback 1; callback 2; connect 4; callback 3; ...timeout 4".
+
+        where connect 1-3 are the "are you an IG device", and the connect 4 is
+        this "get WAN service desc".  So maybe in twisted the even of the 3rd
+        tcp connection completing is screwing up the state of the 4th tcp
+        connection, which has been initiated by hasn't completed yet.
         """
         log.msg("after stupidrandomrelaytoworkaroundbug, got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
