@@ -13,16 +13,13 @@ from interfaces import StunPolicy
 # This should be replaced with lookups of 
 # _stun._udp.divmod.com and _stun._udp.wirlab.net
 DefaultServers = [
+    ('stun.xten.net', 3478),
+    ('sip.iptel.org', 3478),
     ('stun2.wirlab.net', 3478),
     ('stun.wirlab.net', 3478),
     ('stun1.vovida.org', 3478),
-    ('stun.xten.net', 3478),
     ('tesla.divmod.net', 3478),
-    #('tesla.divmod.net', 3479),
-    #('ohm.divmod.net', 3478),
-    #('ohm.divmod.net', 3479),
     ('erlang.divmod.net', 3478),
-    #('erlang.divmod.net', 3479),
 ]
 
 StunTypes = {
