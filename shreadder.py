@@ -34,7 +34,10 @@ class Recorder:
             self._outfp.write(data)
         if self._play:
             self._dev.write(data, shtoom.audio.FMT_RAW)
-        self.analyse(struct.unpack('160h', data))
+        if len(data) != 320:
+            print "discarding short (%d) packet"%(len(data))
+        else:
+            self.analyse(struct.unpack('160h', data))
 
 
 def main(Recorder = Recorder):
