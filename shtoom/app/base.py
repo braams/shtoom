@@ -55,7 +55,7 @@ class BaseApplication:
     def acceptCall(self, call):
         raise NotImplementedError
 
-    def startCall(self, callcookie, cb):
+    def startCall(self, callcookie, remoteSDP, cb):
         raise NotImplementedError
 
     def endCall(self, callcookie, reason):

@@ -395,18 +395,18 @@ class Call(object):
             code is the response code (e.g.  200 for OK)
         '''
 
-        from shtoom.multicast.SDP import SDP
+        from shtoom.sdp import SDP
         body = None
         if message.method == 'INVITE' and code == 200:
             sdp = self.sip.app.getSDP(self.cookie)
             othersdp = SDP(message.body)
             sdp.intersect(othersdp)
-            if not sdp.rtpmap:
+            if not sdp.hasMediaDescriptions():
                 self.sendResponse(message, 406)
                 self.setState('ABORTED')
                 return
             body = sdp.show()
-            self.sip.app.selectFormat(self.cookie, sdp.rtpmap)
+            self.sip.app.selectFormat(self.cookie, sdp)
 
         resp = self.dialog.formatResponse(message, code, body)
 
@@ -535,16 +535,16 @@ class Call(object):
         return uri.toString()
 
     def sendAck(self, okmessage, startRTP=0):
-        from shtoom.multicast.SDP import SDP
+        from shtoom.sdp import SDP
         username = self.sip.app.getPref('username')
         oksdp = SDP(okmessage.body)
         sdp = self.sip.app.getSDP(self.cookie)
         sdp.intersect(oksdp)
-        if not sdp.rtpmap:
+        if not sdp.hasMediaDescriptions():
             self.sendResponse(message, 406)
             self.setState('ABORTED')
             return
-        self.sip.app.selectFormat(self.cookie, sdp.rtpmap)
+        self.sip.app.selectFormat(self.cookie, sdp)
         contact = okmessage.headers['contact']
         if type(contact) is list:
             contact = contact[0]
@@ -573,7 +573,7 @@ class Call(object):
         self.sip.transport.write(ack.toString(), addr)
         self.setState('CONNECTED')
         if startRTP:
-            self.sip.app.startCall(self.cookie, (oksdp.ipaddr,oksdp.port), cb)
+            self.sip.app.startCall(self.cookie, oksdp, cb)
         self.sip.app.statusMessage("Call Connected")
 
     def sendBye(self):
@@ -635,12 +635,12 @@ class Call(object):
         ''' The remote UAC has ACKed our response to their INVITE.
             Start sending and receiving audio.
         '''
-        from shtoom.multicast.SDP import SDP
+        from shtoom.sdp import SDP
         sdp = SDP(self._invite.body)
         self.setState('CONNECTED')
         if hasattr(self, 'compDef'):
             d, self.compDef = self.compDef, None
-            self.sip.app.startCall(self.cookie, (sdp.ipaddr,sdp.port),
+            self.sip.app.startCall(self.cookie, sdp,
                                    d.callback)
 
     def recvOptions(self, message):

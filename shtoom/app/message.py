@@ -83,7 +83,9 @@ class Message(BaseApplication):
         self._dtmf[callcookie] = None
         self._audioStates[callcookie] = STATE_NONE
 
-    def selectFormat(self, callcookie, rtpmap):
+    def selectFormat(self, callcookie, sdp):
+        md = sdp.getMediaDescription('audio')
+        rtpmap = md.rtpmap
         print "RTP", rtpmap
         rtp =  self._rtp[callcookie]
         audio = self._audios.get(callcookie)
@@ -102,28 +104,33 @@ class Message(BaseApplication):
             raise ValueError, "no working formats"
 
     def getSDP(self, callcookie):
-        from shtoom.multicast.SDP import SimpleSDP
+        from shtoom.sdp import SDP, MediaDescription
         rtp =  self._rtp[callcookie]
-        s = SimpleSDP()
-        s.setPacketSize(160)
+        s = SDP()
         addr = rtp.getVisibleAddress()
         s.setServerIP(addr[0])
-        s.setLocalPort(addr[1])
+        md = MediaDescription()
+        s.addMediaDescription(md)
+        md.setServerIP(addr[0])
+        md.setLocalPort(addr[1])
         fmts = self._audios[callcookie].listFormats()
         if FMT_PCMU in fmts:
-            s.addRtpMap('PCMU', 8000) # G711 ulaw
+            md.addRtpMap('PCMU', 8000) # G711 ulaw
         if FMT_GSM in fmts:
-            s.addRtpMap('GSM', 8000) # GSM 06.10
+            md.addRtpMap('GSM', 8000) # GSM 06.10
         if FMT_SPEEX in fmts:
-            s.addRtpMap('speex', 8000, payload=110)
-            #s.addRtpMap('speex', 16000, payload=111)
+            md.addRtpMap('speex', 8000, payload=110)
+            #md.addRtpMap('speex', 16000, payload=111)
         if FMT_DVI4 in fmts:
-            s.addRtpMap('DVI4', 8000)
-            #s.addRtpMap('DVI4', 16000)
-        s.addRtpMap('telephone-event', 8000, payload=101)
+            md.addRtpMap('DVI4', 8000)
+            #md.addRtpMap('DVI4', 16000)
+        md.addRtpMap('telephone-event', 8000, payload=101)
         return s
 
-    def startCall(self, callcookie, remoteAddr, cb):
+    def startCall(self, callcookie, remoteSDP, cb):
+        md = remoteSDP.getMediaDescription('audio')
+        ipaddr = md.ipaddr or remoteSDP.ipaddr
+        remoteAddr = (ipaddr, md.port)
         self._audioStates[callcookie] = self.startingState
         self._audios[callcookie].reopen()
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)

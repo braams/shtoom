@@ -8,7 +8,7 @@ from twisted.internet import defer
 from twisted.python import log
 from twisted.protocols import sip as tpsip
 from shtoom.exceptions import CallFailed
-from shtoom.multicast.SDP import rtpPTDict
+from shtoom.sdp import rtpPTDict
 import sys, traceback
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
@@ -127,7 +127,9 @@ class DougApplication(BaseApplication):
         d = rtp.createRTPSocket(fromIP,withSTUN)
         return d
 
-    def selectFormat(self, callcookie, rtpmap):
+    def selectFormat(self, callcookie, sdp):
+        md = sdp.getMediaDescription('audio')
+        rtpmap = md.rtpmap
         print "RTP", rtpmap
         rtp =  self._rtp[callcookie]
         v = self._voiceapps.get(callcookie)
@@ -144,35 +146,40 @@ class DougApplication(BaseApplication):
             raise ValueError, "no working formats"
 
     def getSDP(self, callcookie):
-        from shtoom.multicast.SDP import SimpleSDP
+        from shtoom.sdp import SDP, MediaDescription
         from shtoom.rtp import RTP_PT_CN
         rtp =  self._rtp[callcookie]
-        s = SimpleSDP()
-        s.setPacketSize(160)
+        s = SDP()
         addr = rtp.getVisibleAddress()
         s.setServerIP(addr[0])
-        s.setLocalPort(addr[1])
+        md = MediaDescription()
+        s.addMediaDescription(md)
+        md.setServerIP(addr[0])
+        md.setLocalPort(addr[1])
         fmts = self._voiceapps[callcookie].va_listFormats()
         if FMT_PCMU in fmts:
-            s.addRtpMap('PCMU', 8000) # G711 ulaw
+            md.addRtpMap('PCMU', 8000) # G711 ulaw
         if FMT_GSM in fmts:
-            s.addRtpMap('GSM', 8000) # GSM 06.10
+            md.addRtpMap('GSM', 8000) # GSM 06.10
         if FMT_SPEEX in fmts:
-            s.addRtpMap('speex', 8000, payload=110)
-            #s.addRtpMap('speex', 16000, payload=111)
+            md.addRtpMap('speex', 8000, payload=110)
+            #md.addRtpMap('speex', 16000, payload=111)
         if FMT_DVI4 in fmts:
-            s.addRtpMap('DVI4', 8000)
-            #s.addRtpMap('DVI4', 16000)
+            md.addRtpMap('DVI4', 8000)
+            #md.addRtpMap('DVI4', 16000)
         if RTP_PT_CN:
             print "added comfort noise"
-            s.addRtpMap('CN', 8000)
-        s.addRtpMap('telephone-event', 8000, payload=101)
+            md.addRtpMap('CN', 8000)
+        md.addRtpMap('telephone-event', 8000, payload=101)
         # a=fmtp:101 0-16
         return s
 
-    def startCall(self, callcookie, remoteAddr, cb):
+    def startCall(self, callcookie, remoteSDP, cb):
         # create an inboundLeg
         from shtoom.doug.leg import Leg
+        md = remoteSDP.getMediaDescription('audio')
+        ipaddr = md.ipaddr or remoteSDP.ipaddr
+        remoteAddr = (ipaddr, md.port)
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         call = self._calls[callcookie]
         if call.dialog.getDirection() == "inbound":

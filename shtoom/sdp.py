@@ -75,7 +75,7 @@ def parse_a(obj, a, text):
     obj._a.setdefault(attr, []).append(attrvalue)
     if attr == 'rtpmap':
         payload,info = attrvalue.split(' ')
-        obj.rtpmap.append((payload,attrvalue))
+        obj.rtpmap.append((int(payload),attrvalue))
         
 def unparse_a(obj, k):
     out = []
@@ -191,7 +191,7 @@ class MediaDescription:
         rtpmap = "%d %s/%d%s%s"%(payload, encname, clockrate,
                                  ((encparams and '/') or ""),
                                  encparams or "")
-        self.rtpmap.append((payload,rtpmap))
+        self.rtpmap.append((int(payload),rtpmap))
         self._a.setdefault('rtpmap', []).append(rtpmap)
         self.formats.append(str(payload))
 
@@ -207,14 +207,14 @@ class MediaDescription:
         for code, e in map2:
             if d1.has_key(rtpmap2canonical(code,e)):
                 outmap.append((code,e))
-        print map1, map2, outmap
         self.rtpmap = outmap
+        self._a['rtpmap'] = [ e for (code, e) in outmap ]
 
 class SDP:
     def __init__(self,text=None):
         from time import time
         self._id = None
-        self._d = {'v': ['0'], 't': ['0 0'], 's': ['shtoom']}
+        self._d = {'v': '0', 't': '0 0', 's': 'shtoom'}
         self._a = {}
         self.mediaDescriptions = []
         self._o_username = 'root'
@@ -275,6 +275,11 @@ class SDP:
         self.mediaDescriptions.append(md)
     def removeMediaDescription(self, md):
         self.mediaDescriptions.remove(md)
+    def getMediaDescription(self, media):
+        for md in self.mediaDescriptions:
+            if md.media == media:
+                return md
+        return None
     def hasMediaDescriptions(self):
         return len(self.mediaDescriptions)
 
@@ -312,7 +317,6 @@ def ntp2delta(ticks):
 
 
 def rtpmap2canonical(code, entry):
-    print (code, entry)
     if code < 96:
         return code
     else:
