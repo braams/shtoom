@@ -374,6 +374,22 @@ class Call(object):
         self.setState('ABORTED')
         self.compDef.errback(CallRejected)
 
+    def terminateCall(self, message):
+        from shtoom.exceptions import CallRejected, CallFailed
+        if self.getState() == 'SENT_INVITE':
+            d, self.compDef = self.compDef, None
+            if d is not None:
+                if (message.code - (message.code % 100)) in ( 400, 500 ):
+                    exc = CallFailed
+                elif  (message.code - (message.code % 100)) == 600:
+                    exc = CallRejected
+                else:
+                    exc = CallFailed
+                d.errback(exc('%s: %s'%(message.code, message.phrase)))
+        self.sip.app.endCall(self.cookie, 
+                             'other end sent\n%s'%message.toString())
+
+
     def sendResponse(self, message, code):
         ''' Send a response to a message. message is the response body,
             code is the response code (e.g.  200 for OK)
@@ -784,19 +800,20 @@ class Call(object):
                     print "Unknown state '%s' for a 401/407"%(state)
             else:
                 self.sip.app.debugMessage(message.toString())
-                self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
+                self.terminateCall(message)
                 self.sip._delCallObject(self.getCallID())
                 self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
                                                              message.phrase))
         elif message.code - (message.code%100) == 500:
             self.sip.app.debugMessage(message.toString())
-            self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
+            self.terminateCall(message)
             self.sip._delCallObject(self.getCallID())
             self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
                                                              message.phrase))
         elif message.code - (message.code%100) == 600:
             self.sip.app.debugMessage(message.toString())
-            self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
+            self.terminateCall(message)
+            #self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
             self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
                                                              message.phrase))
@@ -1099,7 +1116,7 @@ class SipPhone(DatagramProtocol, object):
                     self.app.statusMessage("received BYE")
                     # Drop the call, send a 200.
                     call.recvBye(message)
-                    self.app.endCall(call.cookie)
+                    call.terminateCall(message)
                     self._delCallObject(callid)
                 elif message.method == 'INVITE':
                     # modify dialog
