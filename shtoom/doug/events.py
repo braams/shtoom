@@ -92,6 +92,8 @@ class      CallAnsweredEvent(CallLegEvent):
 class      CallRejectedEvent(CallLegEvent):
     """ A call was rejected
     """
+    def __init__(self, reason=''):
+        self.reason = reason
 
 class      CallEndedEvent(CallLegEvent):
     """ A call started
