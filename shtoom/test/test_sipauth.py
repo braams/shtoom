@@ -2,6 +2,9 @@
 """Tests for shtoom.app.
 """
 
+# XXX Todo: Pull in examples from 
+# http://www.watersprings.org/pub/id/draft-smith-sipping-auth-examples-00.txt
+
 from twisted.trial import unittest
 
 class AuthTest(unittest.TestCase):
