@@ -104,10 +104,9 @@ else:
         tid = ''.join(tid)
         return tid
 
-class _StunBase(object):
-    def _parseStunResponse(self, dgram, address):
+def _parseStunResponse(dgram, address, expectedTID=None):
         mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
-        if self.expectedTID and self.expectedTID != tid:
+        if expectedTID is not None and expectedTID != tid:
             # a response from an earlier request
             return
         resdict = {}
@@ -144,6 +143,8 @@ class _StunBase(object):
         elif mt == 0x0111:
             log.error("STUN got an error response")
         return resdict
+
+class  _StunBase(object):
 
     def sendRequest(self, server, tid=None, avpairs=()):
         if tid is None:
@@ -218,16 +219,21 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                 for k in self._potentialStuns.keys():
                     self._potentialStuns[k].cancel()
                     self._potentialStuns[k] = None
-                self.handleStunState1(dgram, address)
+                resdict = _parseStunResponse(dgram, address, self.expectedTID)
+                if not resdict: 
+                    return
+                self.handleStunState1(resdict, address)
             else:
                 # We already have a working STUN server to play with.
                 pass
             return
-        if STUNVERBOSE: print 'calling handleStunState%s'%(getattr(self, '_stunState'))
-        getattr(self, 'handleStunState%s'%(getattr(self, '_stunState')))(dgram, address)
+        resdict = _parseStunResponse(dgram, address, self.expectedTID)
+        if not resdict: 
+            return
+        if STUNVERBOSE: print 'calling handleStunState%s'%(self._stunState)
+        getattr(self, 'handleStunState%s'%(self._stunState))(resdict, address)
 
-    def handleStunState1(self, dgram, address):
-        resdict = self._parseStunResponse(dgram, address)
+    def handleStunState1(self, resdict, address):
         self.__dict__.update(resdict)
 
         if self.externalAddress and self._altStunAddress:
@@ -242,10 +248,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
             self.sendRequest(address, tid, avpairs=(
                                     ('CHANGE-REQUEST', CHANGE_BOTH),))
 
-    def handleStunState2a(self, dgram, address):
-        resdict = self._parseStunResponse(dgram, address)
-        if not resdict: 
-            return
+    def handleStunState2a(self, resdict, address):
         self.state2DelayedCall.cancel()
         del self.state2DelayedCall
         if STUNVERBOSE:
@@ -253,10 +256,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         self.natType = NatTypeNone
         self._finishedStun()
 
-    def handleStunState2b(self, dgram, address):
-        resdict = self._parseStunResponse(dgram, address)
-        if not resdict: 
-            return
+    def handleStunState2b(self, resdict, address):
         self.state2DelayedCall.cancel()
         del self.state2DelayedCall
         if STUNVERBOSE:
@@ -284,12 +284,9 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
             self.expectedTID = tid = getRandomTID()
             self.sendRequest(self._altStunAddress, tid)
 
-    def handleStunState3(self, dgram, address):
+    def handleStunState3(self, resdict, address):
         self.state3DelayedCall.cancel()
         del self.state3DelayedCall
-        resdict = self._parseStunResponse(dgram, address)
-        if not resdict: 
-            return
         if STUNVERBOSE:
             print "3", resdict
         if self.externalAddress == resdict['externalAddress']:
@@ -317,10 +314,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
             self._finished = True
             raise ValueError("STUN Failed in state 3")
 
-    def handleStunState4(self, dgram, address):
-        resdict = self._parseStunResponse(dgram, address)
-        if not resdict: 
-            return
+    def handleStunState4(self, resdict, address):
         self.state4DelayedCall.cancel()
         del self.state4DelayedCall
         self.natType = NatTypeRestrictedCone
@@ -417,7 +411,7 @@ class StunHook(_StunBase):
             if delayed is not None:
                 delayed.cancel()
             del self._pending[tid]
-            resdict = self._parseStunResponse(dgram, address)
+            resdict = _parseStunResponse(dgram, address)
             if not resdict or not resdict.get('externalAddress'):
                 # Crap response, ignore it.
                 return
@@ -621,7 +615,7 @@ class STUNMapper(BaseMapper):
         if not stun.useful:
             cd = self._mapped[port]
             del self._mapped[port]
-            cd.errback(ValueError('%r means STUN is useless'))
+            cd.errback(ValueError('%r means STUN is useless'%(stun,)))
             return
         SH = StunHook(port.protocol)
         d = SH.discoverAddress()
