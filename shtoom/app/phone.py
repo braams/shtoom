@@ -5,19 +5,19 @@
 
 from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
-from twisted.internet import reactor, defer
+from twisted.internet import defer
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio import getAudioDevice
-from shtoom.rtp import RTPProtocol
 
 class Phone(BaseApplication):
     __implements__ = ( Application, )
 
     def __init__(self):
         from shtoom.ui.select import findUserInterface
-        BaseApplication.__init__(self)
+        import sys
         self.ui = findUserInterface(self)
+        BaseApplication.__init__(self)
         # Mapping from callcookies to rtp object
         self._rtp = {}
         # Mapping from callcookies to call objects
@@ -29,6 +29,7 @@ class Phone(BaseApplication):
 
     def start(self):
         "Start the application."
+        from twisted.internet import reactor
         reactor.run()
         self.ui.resourceUsage()
 
@@ -55,6 +56,7 @@ class Phone(BaseApplication):
         return cookie, d
 
     def _createRTP(self, cookie, fromIP, withSTUN):
+        from shtoom.rtp import RTPProtocol
         rtp = RTPProtocol(self, cookie)
         self._rtp[cookie] = rtp
         d = rtp.createRTPSocket(fromIP,withSTUN)
