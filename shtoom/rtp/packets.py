@@ -3,7 +3,7 @@
 # $Id: rtp.py,v 1.40 2004/03/07 14:41:39 anthony Exp $
 #
 
-import struct, random, os, md5, socket
+import struct
 from time import sleep, time
 
 class RTPPacket:
