@@ -18,16 +18,16 @@ class ShtoomWindow(ShtoomBaseUI):
         self.xml.get_widget("callwindow").connect("destroy",
                                                 lambda w: reactor.stop())
         self.address = self.xml.get_widget("address")
-        self.address.set_value_in_list(False, False)
+        #self.address.set_value_in_list(False, False)
         self.callButton = self.xml.get_widget("call")
         self.hangupButton = self.xml.get_widget("hangup")
         self.hangupButton.set_sensitive(0)
-        self.status = self.xml.get_widget("appbar").get_children()[0
-                                                            ].get_children()[0]
+        self.status = self.xml.get_widget("statusbar")
         self.acceptDialog = self.xml.get_widget("acceptdialog")
         self.incoming = []
 
-        self.logger = DebugTextView()
+        debug = self.xml.get_widget("debuglog")
+        self.logger = DebugTextView(debug.get_buffer())
         #h = self.xml.get_widget('hbox2')
         #h.hide()
 
@@ -35,14 +35,14 @@ class ShtoomWindow(ShtoomBaseUI):
         return self.logger
 
     def setaddress(self,sipurl):
-        self.address.entry.set_text(sipurl)
+        self.address.set_text(sipurl)
 
     # GUI callbacks
     def on_call_clicked(self, w):
         self.statusMessage("Calling...")
-        sipURL = self.address.entry.get_text()
+        sipURL = self.address.get_text()
         sipURL = self.addrlookup.lookup(sipURL)
-        self.address.entry.set_text(sipURL)
+        self.address.set_text(sipURL)
         # Add the item to self.address.list ... argh gtk docs SUCK
         self.hangupButton.set_sensitive(1)
         self.callButton.set_sensitive(0)
@@ -65,16 +65,16 @@ class ShtoomWindow(ShtoomBaseUI):
         self.incoming[0].approved(code == gtk.RESPONSE_OK)
 
     def on_copy_activate(self, widget):
-        self.address.entry.copy_clipboard()
+        self.address.copy_clipboard()
 
     def on_cut_activate(self, widget):
-        self.address.entry.cut_clipboard()
+        self.address.cut_clipboard()
 
     def on_paste_activate(self, widget):
-        self.address.entry.paste_clipboard()
+        self.address.paste_clipboard()
 
     def on_clear_activate(self, widget):
-        self.address.entry.set_text("")
+        self.address.set_text("")
 
     def on_preferences_activate(self, widget):
         #self.statusMessage("Editing Preferences with Gnome UI not supported yet.")
@@ -134,7 +134,7 @@ class ShtoomWindow(ShtoomBaseUI):
         log.msg(msg, system='ui')
 
     def statusMessage(self, msg):
-        self.status.set_text(msg)
+        self.status.push(0,msg)
 
     def on_dtmfButton0_pressed(self, widget):
         if self.cookie:
@@ -224,39 +224,12 @@ class ShtoomWindow(ShtoomBaseUI):
         self.app.updateOptions(options)
 
 
-    def on_debugButton_clicked(self, widget):
-        if not hasattr(self, 'debugview'):
-            sw = gtk.ScrolledWindow()
-            sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-            text = gtk.TextView(self.logger.buffer)
-            text.set_wrap_mode(gtk.WRAP_CHAR)
-            sw.add(text)
-            self.debugview = sw
-            self.logger.set_visible(sw)
-            vbox = self.xml.get_widget("vbox2")
-            vbox.pack_start(sw, expand=gtk.TRUE, fill=gtk.TRUE)
-            window = self.xml.get_widget("callwindow")
-            x,y,w,h = window.get_allocation()
-            window.resize(w, h+200)
-            window.show_all()
-        else:
-            self.logger.set_visible(None)
-            x,y,ww,wh = self.debugview.get_allocation()
-            vbox = self.xml.get_widget("vbox2")
-            vbox.remove(self.debugview)
-            window = self.xml.get_widget("callwindow")
-            x,y,w,h = window.get_allocation()
-            window.resize(w, h-wh)
-            window.show_all()
-            del self.debugview
-
-
 class DebugTextView:
     MAXLINES = 1000
     DELETECHUNK = 100
 
-    def __init__(self):
-        self.buffer = gtk.TextBuffer()
+    def __init__(self, widget):
+        self.buffer = widget
         self.scroll = None
 
     def set_visible(self, scroll):
