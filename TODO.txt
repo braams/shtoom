@@ -5,6 +5,7 @@ Before 0.1:
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
     - lots more error handling
+    - Hang up a phone call that is still "ringing"
 
 Before 0.2:
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
