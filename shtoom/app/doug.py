@@ -41,7 +41,7 @@ class DougApplication(BaseApplication):
             log.startLogging(sys.stdout)
         else:
             file = open(self.getPref('logfile'), 'aU')
-            print "logging to file", file
+            #print "logging to file", file
             log.startLogging(file)
         BaseApplication.boot(self)
 
