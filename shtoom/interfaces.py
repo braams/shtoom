@@ -81,6 +81,14 @@ class RTP(Interface):
         """ Stop the timer loop that delivers and receives packets.
         """
 
+    def startDTMF(self, digit):
+        """ Start sending digit 'digit'
+        """
+
+    def stopDTMF(self, digit):
+        """ Stop sending digit 'digit'
+        """
+
     
 
 class AddressBook(Interface):
