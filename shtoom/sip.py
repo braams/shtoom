@@ -616,8 +616,8 @@ class Call(object):
                         # you just get back a 401/407, with no auth challenge.
                         # In this case, retry without an auth header to get another
                         # challenge.
-                        if self.register_attempts > 1:
-                            self.sendRegistration()
+                        if self.call_attempts > 1:
+                            self.sendInvite()
                         else: 
                             print "401/407 and no auth header"
                 else:
