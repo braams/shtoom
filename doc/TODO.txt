@@ -94,6 +94,7 @@ Future:
         - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
           into shtoom.sdp, kill shtoom.multicast
     - More codec support - DVI4?, Speex
+        - http://207.34.118.42/~john/pyspeex/index.html
     - EsounD support for Gnome, aRts for KDE?
       Note that aRts (and, I suspect, esd) only handle playing of audio,
       not the recording of audio.
