@@ -100,7 +100,8 @@ class BacklogPlayout(_Playout):
             return data
         elif DEBUG:
             log.msg("BacklogPlayout audio underrun")
-        return ''
+	# Note that we should really be doing something better than silence!
+        return '\0'*320
     
 
 Playout = BrainDeadPlayout
