@@ -32,6 +32,7 @@ def getSineWave(freq, samplecount=320):
     from math import pi
     sine = sin(arange(8000.0)/(8000.0/freq) * 2.0 * pi)
     sine = sine[:samplecount]
+    print min(sine), max(sine)
     return sine
 
 

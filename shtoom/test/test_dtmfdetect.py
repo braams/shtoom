@@ -10,6 +10,10 @@ def getDTMFAudioFile():
 class DTMFDetectTest(unittest.TestCase):
 
     def test_dtmfdetection(self):
+        try:
+            import numarray
+        except:
+            raise unittest.SkipTest('numarray needed for dtmf detection')
         from shtoom.doug.dtmfdetect import DtmfDetector
         fp = open(getDTMFAudioFile(),'rb')
         dtmf = DtmfDetector()
