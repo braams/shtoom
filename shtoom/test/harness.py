@@ -6,6 +6,8 @@ from twisted.python import log
 
 from time import time
 
+app = None
+
 class TestCall:
     "A fake Call object"
     def __init__(self, d, sip):
