@@ -165,8 +165,9 @@ class Au_read:
         self._file = file
         self._soundpos = 0
         magic = int(_read_u32(file))
+        print "magic: %x"%(magic)
         if magic != AUDIO_FILE_MAGIC:
-            raise Error, 'bad magic number'
+            raise Error('bad magic number %x'%magic)
         self._hdr_size = int(_read_u32(file))
         if self._hdr_size < 24:
             raise Error, 'header size too small'

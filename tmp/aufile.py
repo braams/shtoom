@@ -1,4 +1,4 @@
-import wave, sunau
+import wave, sunau, aifc, sndhdr
 from audioop import tomono, lin2lin, ulaw2lin, ratecv
 
 import struct
@@ -56,21 +56,20 @@ class AuReader(BaseReader):
     def endianCvt(self, data):
         import array
         _array_fmts = None, None, 'h', None, 'l'
-
         if self.comptype == 'ULAW' or big_endian:
             return data
-
         if _array_fmts[self.sampwidth]:
             arr = array.array(_array_fmts[self.sampwidth]) 
             arr.fromstring(data)
             arr.byteswap()
             data = arr.tostring()
-
         return data
 
     _cvt = endianCvt
 
 class BaseWriter:
+    sampwidth = 2
+
     def __init__(self, fp):
         self.fp = self.module.open(fp, 'wb')
         self.fp.setparams((1, 2, 8000, 0, 'NONE', 'not compressed'))
@@ -85,7 +84,19 @@ class WavWriter(BaseWriter):
     module = wave
 
 class AuWriter(BaseWriter):
-    module = wave
+    module = sunau
+    def endianCvt(self, data):
+        import array
+        _array_fmts = None, None, 'h', None, 'l'
+        if _array_fmts[self.sampwidth]:
+            arr = array.array(_array_fmts[self.sampwidth]) 
+            arr.fromstring(data)
+            arr.byteswap()
+            data = arr.tostring()
+        return data
+    def write(self, data):
+        data = self.endianCvt(data)
+        BaseWriter.write(self, data)
 
 
 def getReader(filename):
@@ -119,6 +130,7 @@ def getdev():
 def test():
     import sys
     if len(sys.argv) == 2:
+        print sndhdr.what(sys.argv[1])
         inaudio = getReader(sys.argv[1])
         outaudio = getdev()
     elif len(sys.argv) == 3:
