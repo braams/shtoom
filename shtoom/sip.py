@@ -62,7 +62,7 @@ class Call(object):
         '''
         self.setupDeferred = defer.Deferred()
         if via is not None:
-            remote = tpsip.parseVia(via)
+	    remote = tpsip.URL(host=via.host, port=via.port)
         else:
             remote = uri
         # XXX tofix
@@ -253,7 +253,7 @@ class Call(object):
         resp.creationFinished()
         try:
             self.sip.transport.write(resp.toString(),self.getRemoteSIPAddress())
-            self.sip.app.debugMessage("Response sent\n"+resp.toString())
+            self.sip.app.debugMessage("Response sent to %r\n%s"%(self.getRemoteSIPAddress(),resp.toString()))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             #self.compDef.errback(e(v))
@@ -274,7 +274,15 @@ class Call(object):
     def startInboundCall(self, invite):
         via = tpsip.parseViaHeader(invite.headers['via'][0])
         d = self.setupLocalSIP(via=via)
+        contact = invite.headers['contact']
+        if type(contact) is list:
+            contact = contact[0]
+        self.contact = contact
         d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
+        self._caller = tpsip.parseURL(self.extractURI(invite.headers['from'][0]))
+        self._callee = tpsip.parseURL(self.extractURI(invite.headers['to'][0]))
+        self._remoteURI = tpsip.parseURL(self.extractURI(self.contact))
+        self._remoteAOR = self._callee
         if invite.headers.has_key('subject'):
             desc = invite.headers['subject'][0]
         else:
@@ -300,14 +308,6 @@ class Call(object):
             # Nag, nag, nag. Shut the fuck up, I'm answering...
             return
         self._invite = invite
-        contact = invite.headers['contact']
-        if type(contact) is list:
-            contact = contact[0]
-        self.contact = contact
-        self._caller = tpsip.parseURL(self.extractURI(invite.headers['from']))
-        self._callee = tpsip.parseURL(self.extractURI(invite.headers['to']))
-        self._remoteURI = tpsip.parseURL(self.contact)
-        self._remoteAOR = self._callee
         self.sendResponse(invite, 180)
         if self.getState() != 'ABORTED':
             self.setState('SENT_RINGING')
