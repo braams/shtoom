@@ -7,20 +7,17 @@ import thread
 
 class WxInjector(wxTimer):
     def __init__(self, evtlist, interval=200):
-        print "initing injector"
         wxTimer.__init__(self)
         self.evtlist = evtlist
         self.interval = interval
 
         # Schedule ourselves to be called
         self.Start(interval)
-        print "done initing injector"
 
     def Notify(self):
         # Read any events off the event list and really call them
         while self.evtlist:
             call, args = self.evtlist.pop()
-            print "Calling from %s: %r"%(thread.get_ident(), call)
             call(*args)
 
         # Reschedule to be be called again
@@ -61,13 +58,10 @@ class WxProxy(AppProxy):
     def resourceUsage(self, *args):
         self.call(self.wxapp.frame.resourceUsage, *args)
     def debugMessage(self, *args):
-        print "WxProxy.debugMessage from %s"%thread.get_ident()
         self.call(self.wxapp.frame.debugMessage, *args)
     def statusMessage(self, *args):
-        print "WxProxy.statusMessage from %s"%thread.get_ident()
         self.call(self.wxapp.frame.statusMessage, *args)
     def errorMessage(self, *args):
-        print "WxProxy.errorMessage from %s"%thread.get_ident()
         self.call(self.wxapp.frame.errorMessage, *args)
     def incomingCall(self, *args):
         self.call(self.wxapp.frame.incomingCall, *args)
