@@ -100,6 +100,7 @@
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate" last_modification_time="Sat, 22 Nov 2003 22:57:10 GMT"/>
+		      <accelerator key="p" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
 		</widget>
