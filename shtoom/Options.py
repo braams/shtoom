@@ -17,11 +17,12 @@ class Option(object):
     _default = NoDefaultOption
     optionType = 'Option'
 
-    def __init__(self, name='', description='', default=NoDefaultOption):
+    def __init__(self, name='', description='', default=NoDefaultOption, shortopt=''):
         self._name = name
         if default is not NoDefaultOption:
             self._default = default
         self._description = description
+        self._shortopt = shortopt
 
     def getValue(self):
         return self._value
@@ -74,7 +75,11 @@ class Option(object):
             t.update({'dest':self._name, 'help':self._description, 'default':self._default})
         else:
             t = {'dest':self._name, 'help':self._description, 'default':self._default}
-        parser.add_option(self.getCmdLineOption(), **t)
+        if self._shortopt:
+            short = '-'+self._shortopt
+        else:
+            short = ''
+        parser.add_option(short, self.getCmdLineOption(), **t)
 
 class BooleanOption(Option):
 
@@ -121,9 +126,9 @@ class PasswordOption(StringOption):
 class ChoiceOption(Option):
     optionType = 'Choice'
 
-    def __init__(self, name='', description='', default=NoDefaultOption, choices=[]):
+    def __init__(self, name='', description='', default=NoDefaultOption, choices=[], shortopt=''):
         self._choices = choices
-        Option.__init__(self, name, description, default)
+        Option.__init__(self, name, description, default, shortopt)
 
     def validate(self, value):
         if not isinstance(value, basestring):

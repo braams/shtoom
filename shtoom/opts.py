@@ -19,18 +19,21 @@ def buildOptions(app):
 
     network = OptionGroup('network', 'Network Settings')
     network.addOption(StringOption('localip','use LOCALIP for local ip address'))
-    network.addOption(NumberOption('listenport','use PORT for sip listener'))
-    network.addOption(ChoiceOption('stun_policy','STUN policy', 'rfc1918', choices=['never','always','rfc1918']))
+    network.addOption(NumberOption('listenport','use PORT for sip listener',
+                                    shortopt='p'))
+    network.addOption(ChoiceOption('stun_policy','STUN policy', 'rfc1918', 
+                                    choices=['never','always','rfc1918']))
     network.addOption(BooleanOption('use_upnp','Use UPnP', False))
     opts.addGroup(network)
 
     identity = OptionGroup('identity', 'Identity Settings')
-    identity.addOption(StringOption('email_address','use email address EMAIL'))
-    identity.addOption(StringOption('username','use user name USERNAME'))
+    identity.addOption(StringOption('email_address','use this email address'))
+    identity.addOption(StringOption('username','use this user name'))
     opts.addGroup(identity)
     
     register = OptionGroup('register', 'Registration')
-    register.addOption(StringOption('register_uri','URI of registration server (e.g. sip:divmod.com:5060)'))
+    register.addOption(StringOption('register_uri',
+                        'URI of registration server (e.g. sip:divmod.com:5060)'))
     register.addOption(StringOption('register_user','Username to register with'))
     register.addOption(StringOption('register_authuser','Username to auth with'))
     register.addOption(StringOption('register_authpasswd','Username to auth with'))
@@ -38,7 +41,9 @@ def buildOptions(app):
 
     debug = OptionGroup('debug', 'Debugging', gui=False)
     debug.addOption(BooleanOption('stdout','Log to stdout', False))
-    debug.addOption(BooleanOption('no_config_file',"Don't read from or write to config file", False))
+    debug.addOption(BooleanOption('no_config_file',
+                                  "Don't read from or write to config file", 
+                                  False, shortopt='N'))
     opts.addGroup(debug)
     return opts
 
