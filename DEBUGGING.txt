@@ -120,6 +120,17 @@ set to choose a different device:
   XXX TODO.
 
 
+Echo Problems
+-------------
+
+If you're having a shocking echo problem under ALSA, check you've 
+not got 'Capture' enabled for something you shouldn't have. The 
+only thing that should have 'Capture' on in alsamixer is 'Mic'. 
+
+Hit 'space' to toggle the 'Capture' flag. See the alsamixer manpage for
+more. If there's ever a direct interface to the ALSA interface from
+Python, I'll look at making this happen automatically.
+
 Unsorted Notes
 --------------
 
