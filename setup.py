@@ -26,8 +26,8 @@ class VersionCheckFailed(DependencyFailed): pass
 #    raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
 
 if py2exe is not None:
-    addnl = { 'console':['shtoom.py'], 
-              'windows': [ { 'script':'shtoom.py',
+    addnl = { 'console':['scripts/shtoomphone.py'], 
+              'windows': [ { 'script':'script/shtoomphone.py',
 		             'icon_resources' : [( 1, 'shtoom.ico')] } ] }
 else:
     addnl = {}
@@ -42,12 +42,12 @@ setup(
     packages = ['shtoom', 'shtoom.multicast',
                 'shtoom.ui', 'shtoom.ui.qtui',
                 'shtoom.ui.gnomeui', 'shtoom.ui.qtui',
-                'shtoom.ui.textui', 'shtoom.ui.tkui',
+                'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
-                'shtoom.audio', 'shtoom.app' ],
+                'shtoom.audio', 'shtoom.app', 'shtoom.doug' ],
     requires = ( 'twisted', 'python-2.3' ), 
     provides = ( 'shtoom-%s'%__version__, ), 
-    scripts = ['scripts/shtoom.py', 'scripts/shtam.py', 'scripts/shmessage.py',
+    scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py', 'scripts/shmessage.py',
               ],
     classifiers = [
        'Development Status :: 3 - Alpha',
