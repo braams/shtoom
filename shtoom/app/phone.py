@@ -121,10 +121,11 @@ class Phone(BaseApplication):
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
-        log.msg("reopening audio")
-        self._audio.reopen()
-        log.msg("reopened audio")
-        self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
+        if not self._currentCall:
+            log.msg("reopening audio")
+            self._audio.reopen()
+            log.msg("reopened audio")
+            self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         self._currentCall = callcookie
         cb(callcookie)
 
