@@ -1,10 +1,22 @@
 Shtoom is a pure-python VoIP client and other applications, using SIP.
 
-At the moment it's functionality is somewhat limited, but is 
-growing quickly:
+READ THIS FIRST
+===============
 
-  - Qt, Tk, Gnome, wxWidgets or text user interface (MFC on Windows and 
-  Cocoa on OSX coming soon)
+If you are reporting a bug, at a minimum, include the output of
+the script "shtoominfo.py" (it's in the scripts directory). Any 
+bugs reported without this are likely to just get a response saying
+"please run this script and include the output". There's also a lot
+of information in the file DEBUGGING.txt - particularly on the
+subjects of firewalls/NATs and audio. Please make sure you've read
+this before reporting a bug
+
+Highlights
+----------
+
+At the moment it's functionality is not complete, but is growing quickly:
+
+  - Qt, Tk, Gnome, wxWidgets, Cocoa or text user interface 
 
   - Can make and receive calls - tested with kphone, linphone, xten and
   cisco AS5x00 running 12.3, as well as with Asterisk and Quotient.
@@ -12,27 +24,30 @@ growing quickly:
   - Can register with SIP proxies/location services. Tested with
   divmod.com's Quotient, Asterisk, and FWD (http://www.fwd.pulver.com/)
 
-  - Uses the G711 ULAW codec by default, or GSM 06.10 (with additional
-  pygsm module installed).
+  - Uses the G711 ULAW codec by default, GSM 06.10 or Speex
+  (GSM and Speex require an additional python module, see below)
 
-  - It should work on any system with ossaudiodev, or on most other
-  systems (with the fastaudio/portaudio module installed, see the
-  dependencies section, below)
+  - It should work on any system with ossaudiodev, CoreAudio (OSX),
+  ALSA (many systems), or on most other systems (with the 
+  fastaudio/portaudio module installed, see the dependencies section, 
+  below)
 
   - Doug, the shtoom application server, makes it very easy to write
   simple voice applications. 
 
-It's been tested (by me) on Linux (Fedora Core 1) using ossaudio, and 
-Windows XP (using portaudio/fastaudio). It _should_ work Mac OS X - but
-this is untested so far.
+It's known to work on the following platforms:
+
+  Linux (Fedora Core, Ubuntu)
+  Windows XP
+  Mac OS X 10.3
+  Solaris (server side only so far)
 
 Note that only shtoom itself needs the user interface or audio interfaces.
 Doug should work on almost anything.
 
 In addition, there are a number of other programs, including shtam 
 (an answering machine/voicemail), shmessage (a simple announcement 
-server) and shtoomcu (a conferencing server) XXX shtoomcu not checked
-in yet, check back soon.
+server) and shtoomcu (a conferencing server).
 
 Dependencies
 ------------
@@ -44,11 +59,11 @@ windows installer.
 Required:
 
     Python 2.3. It might work on 2.2, but I have no real interest in 
-    maintaining that.
+    maintaining that. 2.4 is better, of course.
 
-    http://www.python.org/2.3.3
+    http://www.python.org/2.3.4
 
-    Twisted 1.1.1. Note that Twisted 1.1.1 or later is REQUIRED.
+    Twisted 1.3. Note that Twisted 1.3 or later is REQUIRED.
 
     http://www.twistedmatrix.com/
 
@@ -62,11 +77,16 @@ Optional:
 
     http://www.freenet.org.nz/python/pySpeex/
 
+    python ALSA interface
+
+    CocoaShtoom
+
 Audio
 =====
 
 At the moment, it uses either ossaudiodev, which should work on
-Linux and FreeBSD, or fastaudio, which should work on 
+Linux and FreeBSD, ALSA, which will work on a range of unix-like
+systems, CoreAudio (OS X) or fastaudio, which should work on 
 'Windows, Macintosh (8,9,X), Unix (OSS), SGI, and BeOS'
 
 It requires the PortAudio library, from 
