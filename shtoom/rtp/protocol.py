@@ -277,7 +277,13 @@ class RTPProtocol(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
         # XXX check for late STUN packets here. see, e.g datagramReceived in sip.py
         packet = parse_rtppacket(datagram)
-        packet.header.ct = self.ptdict[packet.header.pt]
+        try:
+            packet.header.ct = self.ptdict[packet.header.pt]
+        except KeyError:
+            if packet.header.pt == 19:
+                # Argh nonstandardness suckage
+                packet.header.pt = 13
+                packet.header.ct = self.ptdict[packet.header.pt]
         if packet:
             self.app.receiveRTP(self.cookie, packet)
 
