@@ -110,7 +110,7 @@ class Call(object):
     def genAck(self, okmessage, startRTP=0):
         from multicast.SDP import SDP
         sdp = SDP(okmessage.body)
-        log.msg("RTP port is %s"%sdp.port)
+        log.msg("RTP server:port is %s:%s"%(sdp.ipaddr, sdp.port))
         contact = okmessage.headers['contact']
         if type(contact) is list:
             contact = contact[0]
@@ -134,7 +134,7 @@ class Call(object):
         ack.creationFinished()
         self._sentAck = ack.toString(), (url.host, (url.port or 5060))
         if startRTP:
-            self.rtp.startSendingAndReceiving((url.host,sdp.port))
+            self.rtp.startSendingAndReceiving((sdp.ipaddr,sdp.port))
         return self._sentAck
 
     def genBye(self):
