@@ -23,6 +23,7 @@ setup(
                 'shtoom/ui', 'shtoom/ui/qtui',
                 'shtoom/ui/gnomeui', 'shtoom/ui/qtui',
                 'shtoom/ui/textui', 'shtoom/ui/tkui',
+                # 'shtoom/ui/mfcui', 'shtoom/ui/macui',
                 'shtoom/audio', ],
     scripts = ['shtoom.py'
                # 'shtam.py', 'shtoomcu.py'
