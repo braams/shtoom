@@ -77,14 +77,10 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.SetStatusText(message)
 
     def debugMessage(self, message):
-        #log.msg(message)
-        message = message.strip()
-        wxLogMessage(message)
+        log.msg(message)
 
     def errorMessage(self, message):
-        #log.msg("ERROR: %s"%message)
-        message = message.strip()
-        wxLogError(message)
+        log.err("ERROR: %s"%message)
 
     def updateCallButton(self, do_call):
         if do_call:
@@ -277,5 +273,4 @@ class Logger:
         pass
 
     def write(self, text):
-        message = message.strip()
         wxLogMessage(text)

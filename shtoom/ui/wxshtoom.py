@@ -21,8 +21,8 @@ def main(application):
     wxImage_AddHandler(wxGIFHandler())
     UI = ShtoomApplication()
     UI.frame.connectApplication(application)
-    wxsupport.install(UI)
     log.startLogging(UI.frame.getLogger(), setStdout=False)
+    wxsupport.install(UI)
 
     #from twisted.internet import reactor
     #reactor.registerWxApp(UI)
