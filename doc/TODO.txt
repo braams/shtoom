@@ -3,13 +3,20 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
 Before 0.2:
+    - debug: Why does calling from the web in quotient not work?
+    - app: refactor more code into base
+    - sip, options: remove hardcoded "anthony baxter" ;)
     - options: find a better place to put options files on windows
     - ui(gnome): Nag itamar into writing the GNOME prefs ;)
     - tests: Way more unit tests, clean up and checkin existing ones
     - options, app: Handle changed prefs, re-init whatever's needed
-    - sip: app.authCred should cache and re-use auth creds. How to 
-      know when one has already been tried and failed, though? register_count?
-    - ui(tk): A better way to prompt for user, password information
+    - sip, app: extract realm from auth challenges and present it
+    - sip: app.authCred should cache and re-use auth creds. 
+    - ui(tk): A better dialog for incoming calls. don't block, and have a 
+      timeout.
+    - ui(qt): Timeout for incoming call dialog
+    - ui(tk): A better dialog to prompt for user, password information, that
+      doesn't block the rest of the system.
     - ui(qt, gnome, text): A prompt for user, password information
     - ui(all): A way to popup an information dialog
     - sip: Connect up and debug shutdown hooks for removing registration and 
@@ -28,6 +35,7 @@ Before 0.2:
       but how does Inno Setup know where to install the executable? How
       does wininst.exe build an installer? Default to C:\Python23 ?
     - dist(win): Examine py2exe 0.5
+    - shtam: maximum message duration limit, much more configurability
 
 Before 0.3:
     - UPnP: Hookup the discovery code in shtoom.upnp. 
@@ -54,7 +62,7 @@ Later:
         - iLBC?
     - Support RTP NTE (RFC2833)
       Uses SDP of 'a=rtpmap:101 telephone-event/8000'
-    - More clients - shtam (answering machine), shtoomcu (conferencing server)
+    - More clients - shtoomcu (conferencing server)
     - Putting calls on hold, allowing multiple calls to go at once.
     - Alternately, ad-hoc conferencing of new inbound or outbound calls
     - Gnome addressbook integration. Gnome notification bar integration.
