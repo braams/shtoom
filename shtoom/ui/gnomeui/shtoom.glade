@@ -622,7 +622,7 @@ Jean-Paul Calderone</property>
 		  <property name="visible">True</property>
 		  <property name="has_default">True</property>
 		  <property name="can_focus">True</property>
-		  <property name="label" translatable="yes">Save username and password</property>
+		  <property name="label" translatable="yes">Save this username and password</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
 		  <property name="focus_on_click">False</property>
