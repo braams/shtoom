@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Fri Nov 14 18:07:33 2003
+# Created: Fri Nov 14 20:03:43 2003
 #      by: The PyQt User Interface Compiler (pyuic) 3.8.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -251,7 +251,7 @@ class ShtoomMainWindow(QMainWindow):
 
 
     def languageChange(self):
-        self.setCaption(self.__tr("Form1"))
+        self.setCaption(self.__tr("Shtoom - Qt UI"))
         self.textLabel1.setText(self.__tr("Call:"))
         self.dtmfButton9.setText(self.__tr("9"))
         self.dtmfButton0.setText(self.__tr("0"))

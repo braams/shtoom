@@ -13,7 +13,7 @@
         </rect>
     </property>
     <property name="caption">
-        <string>Form1</string>
+        <string>Shtoom - Qt UI</string>
     </property>
     <widget class="QLabel">
         <property name="name">
