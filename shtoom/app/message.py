@@ -80,7 +80,7 @@ class Message(BaseApplication):
 
     def openAudioDevice(self, callcookie):
         audio_in = self.getPref('audio_infile')
-        self._audios[callcookie] = getFileAudio(audio_in, '/dev/null')
+        self._audios[callcookie] = getFileAudio(audio_in, None)
         self._dtmf[callcookie] = None
         self._audioStates[callcookie] = STATE_NONE
 
