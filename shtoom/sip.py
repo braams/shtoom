@@ -464,18 +464,16 @@ class Call(object):
         KD = lambda s, d, H=H: H("%s:%s" % (s, d))
         return H, KD
 
-    def calcAuth(self, method, uri, authhdr):
+    def calcAuth(self, method, uri, authchal, cred):
+        (user, passwd) = cred
         from urllib2 import parse_http_list
         import digestauth
-        authmethod, auth = authhdr.split(' ', 1)
+        authmethod, auth = authchal.split(' ', 1)
         if authmethod.lower() != 'digest':
             raise ValueError, "Unknown auth method %s"%(authmethod)
         chal = digestauth.parse_keqv_list(parse_http_list(auth))
         print chal
         qop = chal.get('qop')
-        if not qop:
-            # Bogus Quotient bug.
-            qop = chal.get('qop-options')
         if not qop:
             qop = 'auth'
         if qop.lower() != 'auth':
@@ -485,10 +483,8 @@ class Call(object):
         nonce = chal.get('nonce')
         opaque = chal.get('opaque')
         H, KD = self._getHashingImplementation(algorithm)
-        user = self.sip.app.getPref('register_authuser')
-        passwd = self.sip.app.getPref('register_authpasswd')
         if user is None or passwd is None:
-            raise RuntimeError, "Auth required"
+            raise RuntimeError, "Auth required, %s %s"%(user,passwd)
         A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
         A2 = '%s:%s'%(method, uri)
         self.nonce_count += 1
@@ -535,34 +531,31 @@ class Call(object):
                 print "TOO MANY AUTH FAILURES"
                 self.setState('ABORTED')
                 return
-            if message.code == 401:
+            if message.code in ( 401, 407 ):
                 if state in ( 'SENT_INVITE', ):
-                    a = message.headers.get('www-authenticate')
+                    if message.code == 401:
+                        inH, outH = 'www-authenticate', 'authorization'
+                    else:
+                        inH, outH = 'proxy-authenticate', 'proxy-authorization'
+                    a = message.headers.get(inH)
                     if a:
-                        auth = self.calcAuth(method='INVITE',
-                                             uri=str(self.remote),
-                                             authhdr=a[0])
-                        self.sendInvite(toAddr=None,
-                                        auth=auth, 
-                                        authhdr='authorization')
+                        uri = str(self.remote)
+                        credDef = self.sip.app.authCred('INVITE', uri)
+                        credDef.addCallback(lambda c, uri=uri, chal=a[0]:
+                                        self.calcAuth('INVITE', 
+                                                      uri=uri, 
+                                                      authchal=chal, 
+                                                      cred=c)
+                            ).addCallback(lambda a, h=outH: 
+                                        self.sendInvite(toAddr=None, 
+                                                        auth=a, 
+                                                        authhdr=h)
+                            ).addErrback(log.err)
                     else:
                         # We got bounced and told to bugger off.
-                        print "401, no further possible actions"
+                        print "401/407, no further possible actions"
                 else:
-                    print "Unknown state '%s' for a 401"%(state)
-            elif message.code == 407:
-                if state in ( 'SENT_INVITE', ):
-                    a = message.headers.get('proxy-authenticate')
-                    if a:
-                        auth = self.calcAuth(method='INVITE',
-                                             uri=str(self.remote),
-                                             authhdr=a[0])
-                        self.sendInvite(toAddr=None,
-                                        auth=auth, 
-                                        authhdr='proxy-authorization')
-                    else:
-                        # We got bounced and told to bugger off.
-                        print "407, no further possible actions"
+                    print "Unknown state '%s' for a 401/407"%(state)
             else:
                 self.sip.app.debugMessage(message.toString())
                 self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
@@ -638,39 +631,40 @@ class Registration(Call):
             if self.getState() in ( 'NEW', 'REGISTERED' ):
                 self.setState('SENT_REGISTER')
 
+    def sendAuthResponse(self, authhdr, auth):
+        self.sendRegistration(auth=auth, authhdr=authhdr)
+
     def recvResponse(self, message):
         state = self.getState()
-        if message.code in ( 401, ):
+        if message.code in ( 401, 407 ):
             self.register_attempts += 1
             if self.register_attempts > 5:
                 print "REGISTRATION FAILED"
                 self.setState('FAILED')
                 return
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
-                a = message.headers.get('www-authenticate')
+                if message.code == 401:
+                    inH, outH = 'www-authenticate', 'authorization'
+                else:
+                    inH, outH = 'proxy-authenticate', 'proxy-authorization'
+                a = message.headers.get(inH)
                 if a:
-                    auth = self.calcAuth(method='REGISTER',
-                                         uri=str(self.regServer),
-                                         authhdr=a[0])
-                    self.sendRegistration(auth=auth, authhdr='authorization')
+                    uri = str(self.regServer)
+                    credDef = self.sip.app.authCred('REGISTER', uri)
+                    credDef.addCallback(lambda c, uri=uri, chal=a[0]:
+                                        self.calcAuth('REGISTER', 
+                                                      uri=uri, 
+                                                      authchal=chal, 
+                                                      cred=c)
+                            ).addCallback(lambda a, h=outH: 
+                                        self.sendRegistration(auth=a, authhdr=h)
+                            ).addErrback(log.err)
+
                 else:
                     # We got bounced and told to bugger off.
-                    print "401, no further possible actions"
+                    print "401/407, no further possible actions"
             else:
-                print "Unknown state '%s' for a 401"%(state)
-        elif message.code in ( 407, ):
-            self.register_attempts += 1
-            if self.register_attempts > 5:
-                print "REGISTRATION FAILED"
-                self.setState('FAILED')
-                return
-            if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
-                auth = self.calcAuth(method='REGISTER',
-                                     uri=str(self.regServer),
-                                     authhdr=message.headers['proxy-authenticate'][0])
-                self.sendRegistration(auth=auth, authhdr='proxy-authorization')
-            else:
-                print "Unknown state '%s' for a 401"%(state)
+                print "Unknown state '%s' for a 401/407"%(state)
         elif message.code in ( 200, ):
             # Woo. registration succeeded.
             self.register_attempts = 0
