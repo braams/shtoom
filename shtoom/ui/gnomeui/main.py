@@ -20,7 +20,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton = self.xml.get_widget("call")
         self.hangupButton = self.xml.get_widget("hangup")
         self.hangupButton.set_sensitive(0)
-        self.status = self.xml.get_widget("appbar").get_children()[0]
+        self.status = self.xml.get_widget("appbar").get_children()[0].get_children()[0]
         self.acceptDialog = self.xml.get_widget("acceptdialog")
 
     # GUI callbacks
