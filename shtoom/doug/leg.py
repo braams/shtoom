@@ -81,7 +81,7 @@ class Leg(object):
 
     def answerCall(self, voiceapp):
         " Answer the (incoming) call on this leg "
-        print "answering this call", self
+        log.msg("%r answering this call"%(self,), system="doug")
         if self._acceptDeferred is not None:
             self._voiceapp = voiceapp
             d, self._acceptDeferred = self._acceptDeferred, None

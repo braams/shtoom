@@ -37,11 +37,11 @@ class NullConv:
             return self._d.write(data)
     def close(self):
         if self._d:
-            print "audio: close"
+            log.msg("audio device %r close"%(self._d,), system="audio")
             return self._d.close()
     def reopen(self):
         if self._d:
-            print "audio: reopen ..."
+            log.msg("audio device %r reopen ..."%(self._d,), system="audio")
             return self._d.reopen()
     def isClosed(self):
         if self._d:
@@ -261,7 +261,7 @@ class MediaLayer(NullConv):
             return
         NullConv.reopen(self)
         self.playout = Playout()
-        print "initialising playout", self.playout
+        log.msg("initialising playout %r"%(self.playout,))
         self.audioLC = LoopingCall(self.playoutAudio)
         self.audioLC.start(0.020)
 
