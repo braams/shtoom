@@ -45,10 +45,10 @@ class Call(object):
 
     def setupLocalSIP(self, uri=None, via=None):
         ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL 
-	    (for outbound calls) or a t.p.sip.Via object (for inbound calls).
+            (for outbound calls) or a t.p.sip.Via object (for inbound calls).
 
             returns a Deferred that will be triggered when the local SIP
-	    end is setup
+            end is setup
         '''
         if not via:
             self.remote = uri
@@ -100,7 +100,7 @@ class Call(object):
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress, 
-								  remAddress))
+                                                                  remAddress))
             else:
                 self.compDef.errback(ValueError("couldn't connect to %s"%(
                                             host)))
@@ -301,7 +301,7 @@ class Call(object):
         to = okmessage.headers['to']
         if type(to) is list:
             to = to[0]
-        self.uri = self.extractURI(to)
+        self.uri = self.extractURI(contact)
         uri = tpsip.parseURL(self.uri)
 
         # XXX Check the OK response's SDP, find what codec we 
