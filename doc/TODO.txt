@@ -10,19 +10,24 @@ Definite before 0.3:
     - sip: dropCall() must return a deferred
     - doug: implement a leg.hangup() method (and it's events)
     - doug: implement leg connection (inbound and outbound)
-    - doug: hook up and debug s.d.conferencing 
+    - doug: hook up and debug s.d.conferencing - entrance soundburst
     - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
     - ui(gnome): a new Gtk UI - Nafai
         - Re-hookup the debugging log to the GUI for all GUIs - 
           maybe need a hide/show option
         - Prefs support
-    - ui(qt): finish multiple Call UI, including new tab for incoming call
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't need to pass in the RTP PT.
-    - stun: timeout the STUN call, generate a nice error
+    - ui(tk): new dialogs that don't block, and have a timeout.
+    - ui(qt): hide multiple call support for now
 
 Maybe before 0.3:
+    - stun: timeout the STUN call, generate a nice error (at least when
+      run interactively)
+
+Not before 0.3:
+    - ui(qt): finish multiple Call UI, including new tab for incoming call
     - doug: more detailed involvement with call establishment (e.g. for auth)
     - a basic preferences object
     - redo Qt UI from scratch to not suck - use a layout widget, for one.
@@ -45,10 +50,9 @@ Maybe before 0.3:
       'username'@'registerserver'? What to use if no register server?
     - ui(all): keybindings for DTMF. When a call is in progress, disable the
       address bar
-    - ui(tk): A better dialog for incoming calls. 
-    - ui(tk): new dialogs that don't block, and have a timeout.
-        - A better dialog to prompt for user, password information
+    - ui(tk): A better dialog to prompt for user, password information
     - ui(tk): window resize currently sucks.
+    - ui(tk): A better dialog for incoming calls. 
     - ui(qt): window resize currently sucks
     - ui(qt, wx, gtk): save call history
     - doug: reimplement shmessage and shecho in doug
