@@ -8,13 +8,14 @@ def getDTMFAudioFile():
     return sibpath(__file__, 'dtmftestfile.raw')
 
 class DTMFDetectTest(unittest.TestCase):
-
-    def test_dtmfdetection(self):
+    def setUp(self):
         try:
             import numarray
         except:
             raise unittest.SkipTest('numarray needed for dtmf detection')
-        from shtoom.doug.dtmfdetect import DtmfDetector
+
+    def test_dtmfdetection_canned(self):
+        from shtoom.doug.dtmf import DtmfDetector
         fp = open(getDTMFAudioFile(),'rb')
         dtmf = DtmfDetector()
         seen = []
@@ -28,5 +29,13 @@ class DTMFDetectTest(unittest.TestCase):
                 seen.append(digit)
                 cur = digit
         self.assertEquals(seen, ['', '3', '', '1', '', '4', '', '1', '', '#'])
+
+    def test_dtmfdetect_generated(self):
+        from shtoom.doug import dtmf
+        detect = dtmf.DtmfDetector()
+        for k in dtmf.dtmf2freq.keys():
+            s = dtmf.dtmfGenerator(k, 320)
+            digit = detect.detect(s)
+            self.assertEquals(k, digit)
 
             

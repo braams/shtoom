@@ -23,6 +23,25 @@
 # 'scaled' is the number divided by 25 - since we're examining
 # 40ms of audio at a time (1/25th of a second).
 
+HZ = 8000.0
+
+freq2dtmf = {
+        (697,1209):'1', (697,1336):'2',(697,1477):'3',(697,1633):'A',
+        (770,1209):'4', (770,1336):'5',(770,1477):'6',(770,1633):'B',
+        (852,1209):'7', (852,1336):'8',(852,1477):'9',(852,1633):'C',
+        (941,1209):'*', (941,1336):'0',(941,1477):'#',(941,1633):'D',
+             }
+
+dtmf2freq = {}
+for f, d in freq2dtmf.items():
+    dtmf2freq[d] = f
+del f, d
+    
+import sets
+frequencies = freq2dtmf.keys()
+frequencies = sets.Set([ x[0] for x in frequencies ] + 
+                       [ x[1] for x in frequencies ])
+
 def getSineWave(freq, samplecount=320):
     """ Generate a sine wave of frequency 'freq'. The samples are
         generated at 8khz. The first 'samplecount' samples will be
@@ -30,24 +49,18 @@ def getSineWave(freq, samplecount=320):
     """
     from numarray import sin, arange
     from math import pi
-    sine = sin(arange(8000.0)/(8000.0/freq) * 2.0 * pi)
+    sine = sin(arange(HZ)/(HZ/freq) * 2.0 * pi)
     sine = sine[:samplecount]
-    print min(sine), max(sine)
     return sine
 
 
 class DtmfDetector:
     "This class detects DTMF tones from an audio stream."
     def __init__(self):
-        # Store away pre-saved FFTs for each of the eight frequencies.
+        # Store away pre-calculated FFTs for each of the eight frequencies.
         self.freqmatch = {}
-        self.dtmf = {
-            (697,1209):'1', (697,1336):'2',(697,1477):'3',(697,1633):'A',
-            (770,1209):'4', (770,1336):'5',(770,1477):'6',(770,1633):'B',
-            (852,1209):'7', (852,1336):'8',(852,1477):'9',(852,1633):'C',
-            (941,1209):'*', (941,1336):'0',(941,1477):'#',(941,1633):'D',
-            }
-        for val in 1209, 1336, 1477, 1633, 697, 770, 852, 941:
+        self.dtmf = freq2dtmf
+        for val in frequencies:
             sine = getSineWave(val)
             peaks = self.getpeaks(sine)
             for peak in peaks:
@@ -93,6 +106,24 @@ class DtmfDetector:
         peaks = list(nonzero(greater(res2, 8))[0])
         return peaks
 
+def dtmfGenerator(key, duration=160):
+    import struct
+    f = dtmf2freq.get(key)
+    if not f:
+        raise ValueError('dtmf key %s not recognised!'%(key))
+    f1, f2 = f
+    s1 = getSineWave(f1, duration)
+    s2 = getSineWave(f2, duration)
+    # combine them and make louder
+    s = [ (2**13)*(s1[x]+s2[x]) for x in range(duration) ] 
+    # turn into a string
+    s = struct.pack('%dh'%duration, *s)
+    return s
+
+
+
+
+
 def test():
     import sys
     if len(sys.argv) != 2:
@@ -125,7 +156,7 @@ def test():
                 print "%.3fs: %s OFF"%(offs, old)
                 print "%.3fs: %s ON"%(offs, digit)
             old = digit
-        offs = offs + (320.0/8000)
+        offs = offs + (320.0/HZ)
 
 if __name__ == "__main__":
     test()

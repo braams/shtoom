@@ -280,7 +280,7 @@ except ImportError:
 if numarray is not None:
     class InbandDtmfDetector:
         def __init__(self, leg):
-            from shtoom.doug.dtmfdetect import DtmfDetector
+            from shtoom.doug.dtmf import DtmfDetector
             self.leg = leg
             self.prev = None
             self.D = DtmfDetector()
