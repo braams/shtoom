@@ -15,6 +15,7 @@ NoDefaultOption = _NoDefaultOption()
 class Option(object):
     _value = NoDefaultOption
     _default = NoDefaultOption
+    _dynamic = False
     optionType = 'Option'
 
     def __init__(self, name='', description='', default=NoDefaultOption, shortopt=''):
@@ -80,6 +81,13 @@ class Option(object):
         else:
             short = ''
         parser.add_option(short, self.getCmdLineOption(), **t)
+
+    # A dynamic option is not written to any stored config file
+    def getDynamic(self):
+        return self._dynamic
+
+    def setDynamic(self, dynamic):
+        self._dynamic = dynamic
 
 class BooleanOption(Option):
 
@@ -225,7 +233,7 @@ class AllOptions(object):
         for g in self:
             thisblock = {}
             for o in g:
-                if o.getValue() is not o.getDefault():
+                if o.getValue() is not o.getDefault() and not o.getDynamic():
                     thisblock[o.getName()] = o.getValue()
             if thisblock:
                 out.append('[%s]'%g.getName())
@@ -289,6 +297,18 @@ class AllOptions(object):
                         pass
         # If any changed, clear the cache
         return modified
+
+    def setValue(self, option, value=NoDefaultOption, dynamic=False):
+        if value is NoDefaultOption:
+            # Unset the value
+            raise ValueError, "unsetting options dynamically is not supported"
+        else:
+            for g in self:
+                for o in g:
+                    if o.getName() == option:
+                        o.setValue(value)
+                        del self._cached_options[option]
+                        o.setDynamic(dynamic)
 
     def getValue(self, option, dflt=NoDefaultOption):
         if not self._cached_options.has_key(option):

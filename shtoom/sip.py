@@ -272,15 +272,23 @@ class Call(object):
         getPref = self.sip.app.getPref
         if getPref('localip') is not None or _CACHED_LOCAL_IP is not None:
             ip = getPref('localip') or _CACHED_LOCAL_IP
-            locAddress = (ip, getPref('listenport') or 5060)
+            lport = getPref('listenport') 
+            if lport is None:
+                lport = 5060
+            locAddress = (ip, lport)
             remAddress = ( host, port )
             # Argh. Do a DNS lookup on remAddress
         else:
-            # it is a hack!
+            # This is a hack. To attempt to get the correct local address
+            # on a box with multiple interfaces, we connect to the remote
+            # end with a ConnectedDatagramProtocol, and get the local address.
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
-                locAddress = (protocol.transport.getHost()[1], getPref('listenport') or 5060)
+                lport = getPref('listenport') 
+                if lport is None:
+                    lport = 5060
+                locAddress = (protocol.transport.getHost()[1], lport)
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress,
