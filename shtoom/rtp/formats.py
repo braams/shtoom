@@ -1,6 +1,10 @@
 # Copyright (C) 2004 Anthony Baxter
 "This module contains the logic and classes for format negotiation"
 
+from twisted.python.util import OrderedDict
+from shtoom.avail import codecs
+
+
 class PTMarker:
     "A marker of a particular payload type"
     media = None
@@ -81,13 +85,17 @@ PT_MPV =        VideoPTMarker('MPV',  clock=90000, pt=32)
 PT_MP2T =       VideoPTMarker('MP2T', clock=90000, pt=33)
 PT_H263 =       VideoPTMarker('H263', clock=90000, pt=34)
 
+TryCodecs = OrderedDict() 
+TryCodecs[PT_GSM] = codecs.gsm
+TryCodecs[PT_SPEEX] = codecs.speex
+TryCodecs[PT_DVI4] = codecs.dvi4
+TryCodecs[PT_ILBC] = codecs.ilbc
 
 class SDPGenerator:
     "Responsible for generating SDP for the RTPProtocol"
 
     def getSDP(self, rtp, extrartp=None):
         from shtoom.sdp import SDP, MediaDescription
-        from shtoom.avail.codecs import gsm, speex, dvi4, ilbc
         if extrartp:
             raise ValueError("can't handle multiple RTP streams in a call yet")
         s = SDP()
@@ -97,15 +105,10 @@ class SDPGenerator:
         s.addMediaDescription(md)
         md.setServerIP(addr[0])
         md.setLocalPort(addr[1])
-        if gsm is not None:
-            md.addRtpMap(PT_GSM)
+        for pt, test in TryCodecs.items():
+            if test is not None:
+                md.addRtpMap(pt)
         md.addRtpMap(PT_PCMU)
-        if speex is not None:
-            md.addRtpMap(PT_SPEEX)
-            #md.addRtpMap(PT_SPEEX_16K)
-        if dvi4 is not None:
-            md.addRtpMap(PT_DVI4)
-            #s.addRtpMap(PT_DVI4_16K)
         md.addRtpMap(PT_CN)
         md.addRtpMap(PT_NTE)
         return s
