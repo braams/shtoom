@@ -173,8 +173,6 @@ class Phone(BaseApplication):
     def dropCall(self, cookie):
         call = self._calls[cookie]
         call.dropCall()
-        if self._calls.get(cookie):
-            del self._calls[cookie]
 
     def startDTMF(self, cookie, digit):
         rtp = self._rtp[cookie]
