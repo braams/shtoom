@@ -96,7 +96,7 @@ class SDP:
 	self._sessionB = self.parseB(ann.get("b",optional=1))
 	self._sessionM = self.parseM(ann.get("m",optional=1))
         self._ann = ann
-        self.rtpmap = self.get('a', 'rtpmap')
+        self.rtpmap = [(int(x.split()[0]),x) for x in self.get('a', 'rtpmap')]
 
     def get(self, typechar, option=None):
         if option is None:
@@ -196,14 +196,31 @@ class SimpleSDP:
 	return s
 
     def intersect(self, other):
+        from twisted.python.util import OrderedDict
         map1 = self.rtpmap
+        d1 = {}
+        for code,e in map1:
+            d1[rtpmap2canonical(code,e)] = e
         map2 = other.rtpmap
         outmap = []
         # XXX quadratic - make rtpmap an ordereddict
-        outmap = [ e for e1 in map1 if e1 in map2 ]
+        for code, e in map2:
+            if d1.has_key(rtpmap2canonical(code,e)):
+                outmap.append((code,e))
+        print map1, map2, outmap
         self.rtpmap = outmap
             
 def ntp2delta(ticks):
     return (ticks - 220898800)
 
 
+def rtpmap2canonical(code, entry):
+    if code < 96:
+        return code
+    else:
+        ocode,desc = entry.split(' ',1)
+        desc = desc.split('/')
+        if len(desc) == 2:
+            desc.append('1') # default channels
+        name,rate,channels = desc
+        return (name.lower(),rate,channels) 
