@@ -1,7 +1,5 @@
 # -*- test-case-name: shtoom.test.test_sdp -*-#
 #
-# Copyright (c) 1998 Anthony Baxter.
-#
 
 EncodingDict = {
     0: ('PCMU',8000,1),
@@ -152,10 +150,11 @@ class SimpleSDP:
     def setLocalPort(self, l):
 	self.localPort = l
     def addRtpMap(self, encname, clockrate, encparams=None, payload=None):
-        # Should store Table 4 from RFC3551 for 'payload'
         if self.media == 'audio' and encparams is None:
             # default to a single channel
             encparams = 1
+        if self.media != 'audio' and payload is None:
+            raise ValueError, "Don't know payloads for %s"%(self.media)
         p = EncodingDict.get((encname.upper(),clockrate,encparams))
         if payload is None:
             if p is None:
