@@ -21,30 +21,35 @@ class FastAudioDevice(baseaudio.AudioDevice):
 
     __implements__ = (interfaces.IAudio,)
 
+    _rdev = None
 
     def openDev(self):
-        self.rdev = FastAudioWrapper(fastaudio.stream(8000, 1, 'int16'))
-        self.rdev.open()
-        self.rdev.start()
-        self.dev = MultipleConv(self.rdev)
+        if self._rdev is None:
+            self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1, 'int16'))
+        self._rdev.open()
+        self.dev = MultipleConv(self._rdev)
 
-    def close(self):
-        self.rdev.stop()
-        self.dev.close()
 
 class FastAudioWrapper(object):
     def __init__(self, f):
         self._f = f
         self.write = f.write
-        self.open = f.open
         self.close = f.close
         self.start = f.start
         self.stop = f.stop
         self.buffer = ''
 
+    def open(self):
+        self._f.open()
+        self._f.start()
+
+    def close(self):
+        self._f.stop()
+        self._f.close()
+
     def read(self, length):
-        if len(self.buffer) < length:
-            self.buffer += self.dev.read()
+        while len(self.buffer) < length:
+            self.buffer += self._f.read()
         result, self.buffer = self.buffer[:length], self.buffer[length:]
         return result
 
