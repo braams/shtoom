@@ -6,11 +6,16 @@
 #
 # Set option 'use_setitimer' for better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.1 2003/11/14 05:55:32 anthonybaxter Exp $
+# $Id: rtp.py,v 1.2 2003/11/14 07:54:59 anthonybaxter Exp $
 #
 
 import time, signal, socket, struct
 from time import time, sleep
+
+try:
+    import itimer
+except ImportError:
+    itimer = None
 
 import qt
 
@@ -23,7 +28,10 @@ from shtoom.audio import getAudioDevice
 
 class RTPProtocol(DatagramProtocol):
 
-    use_setitimer = 1
+    if itimer:
+        use_setitimer = 1
+    else:
+        use_setitimer = 0
     _cbDone = None
     fp = None
     outfp = None
