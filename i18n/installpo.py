@@ -32,7 +32,7 @@ def main(target):
         if not os.path.isdir(langdir):
             print "making %s"%(langdir)
             os.mkdir(langdir)
-        lcdir = os.path.join(target, 'LC_MESSAGES')
+        lcdir = os.path.join(langdir, 'LC_MESSAGES')
         if not os.path.isdir(lcdir):
             print "making %s"%(lcdir)
             os.mkdir(lcdir)
