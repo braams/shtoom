@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: qtshtoom.py,v 1.8 2004/01/14 14:44:54 anthonybaxter Exp $
+# $Id: qtshtoom.py,v 1.9 2004/03/01 13:44:03 anthony Exp $
 #
 
 
@@ -26,7 +26,7 @@ def main(application):
     UI = ShtoomMainWindow()
     UI.connectApplication(application)
     UI.show()
-    log.startLogging(UI.getLogger())
+    log.startLogging(UI.getLogger(), setStdout=False)
     #log.startLogging(sys.stdout)
 
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
