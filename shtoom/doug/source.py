@@ -95,7 +95,9 @@ class FileSource(Source):
                 self.app._va_sourceDone(self)
 
 def convertToSource(thing, mode='r'):
-    if isinstance(thing, basestring):
+    if isinstance(thing, Source):
+        return thing
+    elif isinstance(thing, basestring):
         if mode == 'r':
             fp = open(thing, 'rb')
         elif mode == 'w':
