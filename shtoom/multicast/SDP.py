@@ -105,7 +105,9 @@ class SimpleSDP:
     """ a much simpler SDP class. For building announcements for RTSP.
       assumes a single audio stream, given type """
     def __init__(self):
-	self.length = None
+        self.packetsize = self.bitrate = self.serverIP = self.length = None
+        self.localPort = None
+        self.rtpmap = []
     def setLength(self,l):
 	self.length = l
     def setPacketSize(self,l):
@@ -117,6 +119,11 @@ class SimpleSDP:
     def setLocalPort(self, l):
 	self.localPort = l
 
+    def addRtpMap(self, payload, encname, clockrate, encparams=None):
+        # Should store Table 4 from RFC3551 for 'payload'
+        self.rtpmap.append("%d %s/%d%s%s"%(payload, encname, clockrate, 
+                                          ((encparams and '/') or ""), 
+                                           encparams or ""))
     def show(self):
 	out = []
 	out.append("v=0")
@@ -127,7 +134,8 @@ class SimpleSDP:
 	out.append("m=audio %s RTP/AVP 0 97 3"%(self.localPort))
         out.append("c=IN IP4 %s"%(self.serverIP))
 	out.append("a=control:streamid=0")
-	out.append("a=rtpmap:0 L8/8000/1")
+        for rtp in self.rtpmap:
+            out.append("a=rtpmap:%s"%(rtp))
 	out.append('a=AvgPacketSize:integer;%d'%self.packetsize)
 	out.append('a=MaxPacketSize:integer;%d'%self.packetsize)
 	out.append('')
