@@ -11,14 +11,20 @@ from shtoom.doug.events import *
 
 from shtoom.exceptions import CallRejected
 
+from twisted.python import log
+log.FileLogObserver.timeFormat = "%Y/%m/%d %H:%M:%S"
+
 import time
 
 class PlayingApp(VoiceApp):
 
     saveFile = None
     callURL = None
+    account = '2030303030'
+    pin = '3030'
 
     def __init__(self, *args, **kwargs):
+        self.where = 'init'
         self.__dict__.update(kwargs)
         self.leg = None
         if not self.callURL:
@@ -26,23 +32,29 @@ class PlayingApp(VoiceApp):
         super(PlayingApp, self).__init__(*args, **kwargs)
 
     def __start__(self):
+        self.where = 'start'
         print "starting call to", self.callURL
-
+        self.setTimer(45)
         return ( ( CallStartedEvent, self.makeACall), )
 
     def makeACall(self, event):
+        self.where = 'placeCall'
         self.timestats = [time.time()]
-        self.placeCall(self.callURL, 'sip:testcall@divmod.com')
+        self.placeCall(self.callURL, 'sip:testcall@ekit-inc.com')
         return ( (CallAnsweredEvent, self.callAnswered),
                  (CallRejectedEvent, self.callFailed), 
-                 (Event,            self.unknownEvent), 
+                 (CallEndedEvent, self.callFailed),
+                 (TimeoutEvent,      self.callTimedOut),
+                 (Event,             self.unknownEvent), 
                )
 
     def unknownEvent(self, event):
+        self.where = 'unknown'
         print "Got unhandled event %s"%event
-        return ()
+        return self.callFailed(event)
 
     def callAnswered(self, event):
+        self.where = 'answered'
         self.timestats.append(time.time())
         leg = event.getLeg()
         self.dtmfMode(single=True, inband=True)
@@ -53,45 +65,47 @@ class PlayingApp(VoiceApp):
         #self.mediaPlay(self.announceFile)
         if self.saveFile is not None:
             self.mediaRecord(self.saveFile)
-        self.setTimer(45)
         return ( (MediaDoneEvent, self.messageDone),
                  (DTMFReceivedEvent, self.dtmfEnterAccount),
-                 (TimeoutEvent, self.doneRecording),
-                 (CallEndedEvent, self.doneDoneAndDone),
+                 (TimeoutEvent, self.callTimedOut),
+                 (CallEndedEvent, self.callFailed),
                )
 
     def dtmfEnterAccount(self, event):
+        self.where = 'enter account'
         if event.digits == '7':
             print "got login!"
-            self.leg.sendDTMF('2030303030#')
+            self.leg.sendDTMF(self.account+'#')
         else:
             print "got unknown event", event.digits
-            self.callFailed(None)
+            self.callFailed(event)
         return ( (MediaDoneEvent, self.messageDone),
                  (DTMFReceivedEvent, self.dtmfEnterPin),
-                 (TimeoutEvent, self.doneRecording),
-                 (CallEndedEvent, self.doneDoneAndDone),
+                 (TimeoutEvent, self.callTimedOut),
+                 (CallEndedEvent, self.callFailed),
                )
 
     def dtmfEnterPin(self, event):
+        self.where = 'enter pin'
         print "got pin!"
         if event.digits == '2':
             print "account ok!"
-            self.leg.sendDTMF('3030#')
+            self.leg.sendDTMF(self.pin+'#')
             self.timestats.append(time.time())
             return ( (MediaDoneEvent, self.messageDone),
                      (DTMFReceivedEvent, self.dtmfMainMenu),
-                     (TimeoutEvent, self.doneRecording),
-                     (CallEndedEvent, self.doneDoneAndDone),
+                     (TimeoutEvent, self.callTimedOut),
+                     (CallEndedEvent, self.callFailed),
                    )
         elif event.digits == '9':
             print "account nak!"
-            self.callFailed(None)
+            self.callFailed(event)
         else:
             print "unknown result", event.digits
-            self.callFailed(None)
+            self.callFailed(event)
 
     def dtmfMainMenu(self, event):
+        self.where = 'main menu'
         if event.digits == '4':
             print "pin ok!"
             self.leg.sendDTMF('9')
@@ -99,14 +113,17 @@ class PlayingApp(VoiceApp):
             self.leg.hangupCall()
             self.doneDoneAndDone(None)
             return ( (MediaDoneEvent, self.messageDone),
-                     (TimeoutEvent, self.doneRecording),
+                     (TimeoutEvent, self.callTimedOut),
                      (CallEndedEvent, self.doneDoneAndDone),
                    )
         elif event.digits == '0':
             print "account nak!"
-            self.callFailed(None)
+            self.callFailed(event)
         else:
             print "unknown result", event.digits
+
+    def callTimedOut(self, event):
+        return self.callFailed(event, 'timeout')
 
     def doneRecording(self, event):
         self.mediaStop()
@@ -121,11 +138,11 @@ class PlayingApp(VoiceApp):
         self.mediaStop()
         self.returnResult(self.timestats)
 
-    def callFailed(self, event):
+    def callFailed(self, event, optional=''):
         if self.leg:
             self.leg.hangupCall()
         self.mediaStop()
-        self.returnResult(None)
+        self.returnError('%s (in %s) %s'%(event, self.where, optional))
 
 # Hack hack hack.
 import sys ; sys.path.append(sys.path.pop(0))
@@ -133,14 +150,31 @@ import sys ; sys.path.append(sys.path.pop(0))
 app = None
 
 from shtoom.app.doug import DougApplication
+
+def ts():
+    return time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+
 class MyDougApplication(DougApplication):
+
+    def acceptErrors(self, cookie, error):
+        from twisted.internet import reactor
+        actualError = error.value
+        fp = open('calltiming.out','a')
+        fp.write('%s %s: FAILED %s\n'%(ts(),  self._voiceappArgs['callURL'], actualError))
+        fp.close()
+        # Hack until dropCall returns a deferred.
+        reactor.callLater(0.4, reactor.stop)
+        
     def acceptResults(self, cookie, results):
         from twisted.internet import reactor
         fp = open('calltiming.out','a')
-        if type(results) is list:
+        if type(results) is list and len(results) == 4:
             s,conn,pin,loggedin = results
-            fp.write('%d %s: %.2f %.2f %.2f\n'%(s, self._voiceappArgs['callURL'], (conn-s), (loggedin - pin), (loggedin - s)))
+            fp.write('%s %s: %.2f %.2f %.2f\n'%(ts(), self._voiceappArgs['callURL'], (conn-s), (loggedin - pin), (loggedin - s)))
             fp.close()
+        else:
+            fp.write('%s %s: FAILED\n'%(ts, self._voiceappArgs['callURL']))
+            log.msg("err, got results %r"%(results))
         # Hack until dropCall returns a deferred.
         reactor.callLater(0.4, reactor.stop)
 
