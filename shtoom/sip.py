@@ -41,12 +41,14 @@ class Call(object):
         self.compDef = deferred
         self.call_attempts = 0
         self._callID = None
-        self.uri = None
+        self._remoteURI = None
+        self._remoteAOR = None
+        self._localAOR = None
+        self._caller = None
+        self._callee = None
         self.state = 'NEW'
         self._needSTUN = False
         self.cancel_trigger = None
-        if uri:
-            self.uri = uri
         if callid:
             self.setCallID(callid)
         self.cseq = random.randint(1000,5000)
@@ -58,12 +60,13 @@ class Call(object):
             returns a Deferred that will be triggered when the local SIP
             end is setup
         '''
-        if not via:
-            self.remote = uri
-        else:
-            self.remote = tpsip.URL(host=via.host, port=via.port)
         self.setupDeferred = defer.Deferred()
-        self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
+        if via is not None:
+            remote = tpsip.parseVia(via)
+        else:
+            remote = uri
+        # XXX tofix
+        self.setLocalIP(dest=(remote.host, remote.port or 5060))
         return self.setupDeferred
 
     def abortCall(self):
@@ -166,7 +169,23 @@ class Call(object):
         return (self._localIP, self._localPort or 5060)
 
     def getRemoteSIPAddress(self):
-        return (self.remote.host, (self.remote.port or 5060))
+        if self._remoteURI is not None:
+            return (self._remoteURI.host, (self._remoteURI.port or 5060))
+        else:
+            return (self._remoteAOR.host, (self._remoteAOR.port or 5060))
+
+    def getLocalAOR(self, full=False):
+        if not self._localAOR:
+            username = self.sip.app.getPref('username')
+            email_address = self.sip.app.getPref('email_address')
+            self._localFullAOR = '"%s" <sip:%s>;tag=%s'%(
+                            username, email_address,
+                            self.getTag())
+            self._localAOR = tpsip.parseURL(self.extractURI(self._localFullAOR))
+        if full:
+            return self._localFullAOR
+        else:
+            return self._localAOR
 
     def acceptedCall(self, cookie):
         print "acceptedCall setting cookie to", cookie
@@ -245,10 +264,12 @@ class Call(object):
         # retransmit
         # XXX Set up a timeout for the call completion
         uri = tpsip.parseURL(toAddr)
+        self._remoteAOR = uri
+        self._callee = uri
+        self._caller = self.getLocalAOR()
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)
                                                         ).addErrback(log.err)
-
 
     def startInboundCall(self, invite):
         via = tpsip.parseViaHeader(invite.headers['via'][0])
@@ -283,7 +304,10 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        self.uri = tpsip.parseURL(self.contact)
+        self._caller = tpsip.parseURL(self.extractURI(invite.headers['from']))
+        self._callee = tpsip.parseURL(self.extractURI(invite.headers['to']))
+        self._remoteURI = tpsip.parseURL(self.contact)
+        self._remoteAOR = self._callee
         self.sendResponse(invite, 180)
         if self.getState() != 'ABORTED':
             self.setState('SENT_RINGING')
@@ -314,25 +338,22 @@ class Call(object):
         self._toAddr = toAddr
         if toAddr is None:
             toAddr = self._toAddr
-        username = self.sip.app.getPref('username')
-        email_address = self.sip.app.getPref('email_address')
-        invite = tpsip.Request('INVITE', str(self.remote))
+        invite = tpsip.Request('INVITE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s INVITE'%self.getCSeq(incr=1))
-        invite.addHeader('to', str(self.uri))
+        invite.addHeader('to', str(self._callee))
         invite.addHeader('content-type', 'application/sdp')
-        invite.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            username, email_address,
-                            self.getTag()))
+        invite.addHeader('from', self.getLocalAOR(full=True))
         invite.addHeader('call-id', self.getCallID())
-        invite.addHeader('subject', 'sip: %s'%(email_address))
+        invite.addHeader('subject', self.getLocalAOR())
         invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         if auth is not None:
             print auth, authhdr
             invite.addHeader(authhdr, auth)
         lhost, lport = self.getLocalSIPAddress()
+        username = self.sip.app.getPref('username')
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
                                 username, lhost, lport))
         s = self.sip.app.getSDP(self.cookie)
@@ -340,6 +361,9 @@ class Call(object):
         invite.addHeader('content-length', len(sdp))
         invite.bodyDataReceived(sdp)
         invite.creationFinished()
+        self._caller = tpsip.parseURL(self.extractURI(invite.headers['from'][0]))
+        self._callee = tpsip.parseURL(self.extractURI(invite.headers['to'][0]))
+        self._remoteAOR = self._callee
         try:
             self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
             print "Invite sent", invite.toString()
@@ -358,7 +382,6 @@ class Call(object):
     def sendAck(self, okmessage, startRTP=0):
         from shtoom.multicast.SDP import SDP
         username = self.sip.app.getPref('username')
-        email_address = self.sip.app.getPref('email_address')
         oksdp = SDP(okmessage.body)
         sdp = self.sip.app.getSDP(self.cookie)
         sdp.intersect(oksdp)
@@ -371,18 +394,14 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        to = okmessage.headers['to']
-        if type(to) is list:
-            to = to[0]
-        self.uri = tpsip.parseURL(self.extractURI(contact))
+        self._remoteURI = tpsip.parseURL(self.extractURI(contact))
 
-        ack = tpsip.Request('ACK', self.remote)
+        ack = tpsip.Request('ACK', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
-        ack.addHeader('to', to)
-        ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            username, email_address, self.getTag()))
+        ack.addHeader('to', str(self._callee))
+        ack.addHeader('from', str(self._caller))
         ack.addHeader('call-id', self.getCallID())
         ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         ack.addHeader('content-length', 0)
@@ -392,7 +411,7 @@ class Call(object):
             del self.compDef
         else:
             cb = lambda *args: None
-        addr = self.uri.host, self.uri.port or 5060
+        addr = self._remoteURI.host, self._remoteURI.port or 5060
         log.msg("sending ACK to %s %s"%addr)
         print "sending ACK to %s %s"%addr
         self.sip.transport.write(ack.toString(), addr)
@@ -403,16 +422,14 @@ class Call(object):
 
     def sendBye(self):
         username = self.sip.app.getPref('username')
-        email_address = self.sip.app.getPref('email_address')
-        uri = self.uri
+        uri = self._remoteURI
         dest = uri.host, (uri.port or 5060)
-        bye = tpsip.Request('BYE', self.remote)
+        bye = tpsip.Request('BYE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
-        bye.addHeader('to', str(self.uri))
-        bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            username, email_address, self.getTag()))
+        bye.addHeader('to', str(self._callee))
+        bye.addHeader('from', str(self._caller))
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         bye.addHeader('content-length', 0)
@@ -427,16 +444,14 @@ class Call(object):
             being established
         """
         username = self.sip.app.getPref('username')
-        email_address = self.sip.app.getPref('email_address')
-        uri = self.remote
+        uri = self._remoteAOR
         dest = uri.host, (uri.port or 5060)
-        cancel = tpsip.Request('CANCEL', self.remote)
+        cancel = tpsip.Request('CANCEL', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         cancel.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         cancel.addHeader('cseq', '%s CANCEL'%self.getCSeq(incr=1))
-        cancel.addHeader('to', self.remote)
-        cancel.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            username, email_address, self.getTag()))
+        cancel.addHeader('to', str(self._callee))
+        cancel.addHeader('from', str(self._caller))
         cancel.addHeader('call-id', self.getCallID())
         cancel.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         cancel.addHeader('content-length', 0)
@@ -600,7 +615,7 @@ class Call(object):
                         inH, outH = 'proxy-authenticate', 'proxy-authorization'
                     a = message.headers.get(inH)
                     if a:
-                        uri = str(self.remote)
+                        uri = str(self._remoteAOR)
 
                         credDef = self.sip.app.authCred('INVITE', uri,
                                         retry=(self.call_attempts > 1)).addErrback(log.err)
@@ -665,7 +680,9 @@ class Registration(Call):
         import copy
         self.regServer = tpsip.parseURL(self.sip.app.getPref('register_uri'))
         self.regAOR = copy.copy(self.regServer)
+        self._remoteURI = self._remoteAOR = self.regAOR
         self.regAOR.username = self.sip.app.getPref('username')
+        self._localAOR = self._localFullAOR = self.regAOR
         self.regURI = copy.copy(self.regServer)
         #self.regURI.port = None
         d = self.setupLocalSIP(self.regServer)
