@@ -2,6 +2,14 @@
 
 '''SIP client code.'''
 
+# A Note For The Reader: This code in this module is _hairy_. It's also 
+# ugly, a mess and sorely in need of redesign and refactoring. Do _not_ 
+# try and use this to learn Python, or Twisted. Doing so _will_ void the
+# warranty on your brain. 
+
+# And yes, a redesign (to make it unit testable, for one thing) is very
+# much planned. 
+
 from interfaces import SIP as ISip
 
 from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
