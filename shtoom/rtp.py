@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.7 2003/11/15 19:32:09 itamar Exp $
+# $Id: rtp.py,v 1.8 2003/11/16 03:47:30 anthonybaxter Exp $
 #
 
 import time, signal, struct, random
@@ -232,6 +232,9 @@ class RTPProtocol(DatagramProtocol):
         self.packets += 1
         if self.sample is not None:
             self.sent += 1
+            # This bit is hardcoded for G711 ULAW. When other codecs are
+            # done, the first two bytes will change (but should be mostly
+            # constant across a RTP session).
             hdr = pack('!BBHII', 0x80, 0x0, self.seq, self.ts, self.ssrc)
             self.transport.write(hdr+self.sample, self.dest)
             self.sample = None
