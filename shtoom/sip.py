@@ -262,7 +262,7 @@ class Call(object):
         d = self.sip.app.acceptCall(self,
                                     calltype='inbound',
                                     desc=desc,
-                                    localIP=self.getRemoteSIPAddress()[0],
+                                    localIP=self.getLocalSIPAddress()[0],
                                     withSTUN=self.getSTUNState() ,
                                     toAddr=invite.headers.get('to'),
                                     fromAddr=invite.headers.get('from'),
