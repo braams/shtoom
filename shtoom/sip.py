@@ -307,7 +307,7 @@ class Call(object):
             self._needSTUN = True
             log.msg("stun policy says yes, use STUN", system='sip')
             deferred = defer.Deferred()
-            deferred.addCallback(self.setStunnedLocalIP).addErrback(log.err)
+            deferred.addCallback(self.setStunnedAddress).addErrback(log.err)
             SH = StunHook(self.sip)
             deferred = SH.discoverStun(deferred)
         elif useStun is False:
@@ -324,7 +324,7 @@ class Call(object):
             d.errback(HostNotKnown)
             self.setState('ABORTED')
 
-    def setStunnedLocalIP(self, (host, port)):
+    def setStunnedAddress(self, (host, port)):
         log.msg("according to STUN, local address is %s:%s"%(host, port), system='sip')
         self._localIP = host
         self._localPort = port
