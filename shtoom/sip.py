@@ -94,6 +94,27 @@ class Address:
     def __str__(self):
         return formatAddress((self._display, self._uri, self._params))
 
+def _is_ip(hostname):
+    nums = hostname.split('.')
+    if len(nums) != 4:
+        return False
+    try:
+        nums = map(int, nums)
+    except ValueError:
+        return False
+    for num in nums:
+        if num < 0 or num > 255:
+            return False
+    return True
+
+def _hostportToIPPort(hostport):
+    host, port = hostport
+    if _is_ip(host):
+        return hostport
+    else:
+        # if it doesn't resolve, just explode.
+        return socket.gethostbyname(host), port
+
 class Dialog:
     _contact = None
 
@@ -293,7 +314,7 @@ class Call(object):
 
             # This code should be removed - code in shtoom.nat does this better
             protocol = ConnectedDatagramProtocol()
-            port = reactor.connectUDP(host, port, protocol)
+            port = reactor.connectUDP(socket.gethostbyname(host), port, protocol)
             if protocol.transport:
                 lport = getPref('listenport')
                 if lport is None:
@@ -447,7 +468,7 @@ class Call(object):
         try:
             via0 = tpsip.parseViaHeader(vias[0])
             viaAddress = (via0.host.strip(), via0.port)
-            self.sip.transport.write(resp,viaAddress)
+            self.sip.transport.write(resp, _hostportToIPPort(viaAddress))
             self.sip.app.debugMessage("Response sent to %r\n%s"%(viaAddress,resp))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
@@ -559,7 +580,7 @@ class Call(object):
         self._remoteAOR = self.dialog.getCallee().getURI()
         try:
             log.msg('Invite\n%s'%invite.toString(), system='sip')
-            self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
+            self.sip.transport.write(invite.toString(), _hostportToIPPort(self.getRemoteSIPAddress()))
             #print "Invite sent", invite.toString()
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
@@ -623,7 +644,7 @@ class Call(object):
         addr = self._remoteURI.host, self._remoteURI.port or 5060
         log.msg("sending ACK to %s %s"%addr, system='sip')
         #print "sending ACK to %s %s"%addr
-        self.sip.transport.write(ack.toString(), addr)
+        self.sip.transport.write(ack.toString(), _hostportToIPPort(addr))
         self.setState('CONNECTED')
         if startRTP:
             self.sip.app.startCall(self.cookie, oksdp, cb)
@@ -648,7 +669,7 @@ class Call(object):
         bye.creationFinished()
         bye = bye.toString()
         log.msg("sending BYE to %r\n%s"%(dest, bye), system="sip")
-        self.sip.transport.write(bye, dest)
+        self.sip.transport.write(bye, _hostportToIPPort(dest))
         self.setState('SENT_BYE')
 
     def sendCancel(self):
@@ -670,7 +691,7 @@ class Call(object):
         cancel.creationFinished()
         cancel = cancel.toString()
         log.msg("sending CANCEL to %r\n%s"%(dest, cancel), system="sip")
-        self.sip.transport.write(cancel, dest)
+        self.sip.transport.write(cancel, _hostportToIPPort(dest))
         self.setState('SENT_CANCEL')
 
     def recvBye(self, message):
@@ -841,9 +862,15 @@ class Call(object):
                     else:
                         inH, outH = 'proxy-authenticate', 'proxy-authorization'
                     a = message.headers.get(inH)
-                    chal = digestauth.parse_keqv_list(
-                                        parse_http_list(a[0].split(' ',1)[1])
-                                                     )
+                    print 'GOT 401 HDR', repr(inH), repr(a), repr(message.headers)
+                    interm1 = a[0].split(' ',1)
+                    print 'INTERM1', repr(interm1)
+                    interm2 = interm1[1]
+                    print 'INTERM2', repr(interm2)
+                    httpList = parse_http_list(interm2)
+                    print 'HTTPLIST', repr(httpList)
+                    chal = digestauth.parse_keqv_list(httpList)
+                    print 'CHAL', repr(chal)
                     if a:
                         uri = str(self._remoteAOR)
                         credDef = self.sip.app.authCred(method, uri,
@@ -963,7 +990,7 @@ class Registration(Call):
         invite.addHeader('content-length', '0')
         invite.creationFinished()
         try:
-            self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
+            self.sip.transport.write(invite.toString(), _hostportToIPPort(self.getRemoteSIPAddress()))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             self.compDef.errback(e(v))
