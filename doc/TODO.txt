@@ -11,26 +11,25 @@ Definite before 0.3:
         - Re-hookup the debugging log to the GUI for all GUIs - 
           maybe need a hide/show option
         - Prefs support
-    - ui(wx): move the UI and twisted to seperate threads. This will also be
-      needed for mfcui. Implement through a stub layer that passes events
-      between the event loops.
-    - doug: implement placeCall
+    - ui(qt): finish multiple Call UI, including new tab for incoming call
     - doug: implement leg conferencing (connection)
-    - doug: implement timers
     - doug: sending of DTMF
+    - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
+      dynamic payload types. Audio shouldn't need to pass in the RTP PT.
+    - stun: timeout the STUN call, generate a nice error
 
 Maybe before 0.3:
-    - Investigate http://respyre.org/pyalsa.html
+    - rport - do the right thing with it (ie generate received & rport for it)
+      draft-ietf-sip-nat-02.txt is the relevant RFC
+    - Investigate http://respyre.org/pyalsa.html for the fixing of mixer
+      settings
     - sip: retransmit and timeout of BYE
     - rtcp: notice when we get an RTCP BYE and close the connection
     - rtcp: generate a goodbye packet. should at least have an SDES and a BYE
-    - stun: timeout the STUN call, print a nice error
     - sip/call: the state should become an object, encapsulating the current state.
       This makes it _much_ easier to handle retransmits and the like.
     - audio(all) - if the call doesn't close cleanly, the audio isn't closed
       properly.
-    - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
-      dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - options: default some useful stuff
     - options: allow a sequence type. Multiple registrations, save call 
       history

@@ -1,13 +1,18 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - doug can detect DTMF, play, record, and make outbound calls
+  - wx UI is now in a separate thread to the twisted event loop
+  - Large amounts of refactoring to call control to make it unit testable.
   - Doug: Call setup in doug is now a two-stage process - a CallStarted
     event is triggered first, the application then calls 'answerCall' or
     'rejectCall' on the leg in the event. A CallAnswered event then follows
     when the call is setup.
   - After prodding from Jamey Hicks, I've reworked the handling of
     the from: and to: lines in SIP, so that we can keep a dialog 
-    up correctly.
+    up correctly. This has been extended so that BYE also works. We
+    can now handle calls both to and from a cisco running IOS 12.3, from
+    setup through to teardown.
   - Outbound proxy support is done (thanks to Jamey Hicks)
   - RTCP decoding is done. RTCP encoding is mostly done. As yet, nothing
     uses the decoded packets or generates RTCP packets, but it's nice to 

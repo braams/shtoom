@@ -3,7 +3,7 @@ Shtoom is a pure-python VoIP client and other applications, using SIP.
 At the moment it's functionality is somewhat limited, but is 
 growing quickly:
 
-  - Qt, Tk, Gnome wxWidgets or text user interface (MFC on Windows and 
+  - Qt, Tk, Gnome, wxWidgets or text user interface (MFC on Windows and 
   Cocoa on OSX coming soon)
 
   - Can make and receive calls - tested with kphone, linphone, xten and
@@ -19,9 +19,15 @@ growing quickly:
   systems (with the fastaudio/portaudio module installed, see the
   dependencies section, below)
 
+  - Doug, the shtoom application server, makes it very easy to write
+  simple voice applications. 
+
 It's been tested (by me) on Linux (Fedora Core 1) using ossaudio, and 
 Windows XP (using portaudio/fastaudio). It _should_ work Mac OS X - but
 this is untested so far.
+
+Note that only shtoom itself needs the user interface or audio interfaces.
+Doug should work on almost anything.
 
 In addition, there are a number of other programs, including shtam 
 (an answering machine/voicemail), shmessage (a simple announcement 
@@ -73,6 +79,9 @@ The python standard ossaudiodev module works fine with ALSA. ALSA is
 an optional add-on for Linux kernel version 2.4, but is standard in 
 kernel version 2.6.
 
+Note that you don't need to worry about the audio layer if you're
+only running doug.
+
 Codecs
 ======
 
@@ -91,6 +100,8 @@ Thanks to folks who've contributed:
    Itamar Shtull-Trauring,
    Jp Calderone,
    Andy Hird,
+   Jamey Hicks,
+   Amir Bakhtiar,
    Allan Short for much testing and advice
 
 and thanks to everyone on the Twisted project for producing such a 
