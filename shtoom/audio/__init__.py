@@ -6,12 +6,30 @@ and/or IAudioWriter, as appropriate.
 """
 
 def findAudioDevice():
-    for attempt in (tryOssAudio, tryFastAudio):
+    from shtoom import prefs
+    attempts = ( tryOssAudio, tryFastAudio, )
+    if prefs.audio_infile and prefs.audio_outfile:
+        attempts = ( tryFileAudio, )
+    if prefs.audio:
+        if prefs.audio == 'oss':
+            attempts = (tryOssAudio,)
+        elif prefs.audio == 'fast':
+            attempts = (tryFastAudio,)
+        else:
+            raise ValueError("unknown audio %s"%(prefs.audio))
+    for attempt in attempts:
 	audio = attempt()
 	if audio is not None:
 	    return audio
     return None
 
+def tryFileAudio():
+    try:
+	import fileaudio
+    except ImportError:
+	return None
+    from fileaudio import getAudioDevice 
+    return getAudioDevice
 
 def tryOssAudio():
     try:
