@@ -14,7 +14,7 @@ from shtoom.audio import getAudioDevice
 from shtoom.sdp import SDP, MediaDescription
 from shtoom.ui.select import findUserInterface
 from shtoom.opts import buildOptions
-from shtoom.Options import OptionGroup, StringOption, ChoiceOption
+from shtoom.Options import OptionGroup, StringOption, ChoiceOption, OptionDict
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 
@@ -225,6 +225,8 @@ class Phone(BaseApplication):
         app.addOption(StringOption('ringing_command','run this command when a call comes in'))
         app.addOption(StringOption('logfile','log to this file'))
         opts.addGroup(app)
+        creds = OptionDict('credentials', 'cached credentials', gui=False)
+        opts.addGroup(creds)
         opts.setOptsFile('.shtoomrc')
 
     def authCred(self, method, uri, realm='unknown', retry=False):

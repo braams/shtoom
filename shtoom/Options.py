@@ -179,6 +179,8 @@ class NumberOption(Option):
 
 class OptionGroup(object):
 
+    variableNames = False
+
     def __init__(self, name='', description='', gui=True):
         self._name = name
         self._description = description
@@ -209,6 +211,34 @@ class OptionGroup(object):
     def buildOptParse(self, parser):
         for o in self._options:
             o.buildOptParse(parser)
+
+class OptionDict(OptionGroup):
+    "A dict of arbitrary values"
+
+    variableNames = True
+
+    def buildOptParse(self, parser):
+        # No optparse for you!
+        pass
+
+    def removeOption(self, option=None, name=None):
+        if option is None:
+            option = self._optdict[name]
+        del self._optdict[option.getName()]
+        self._options.remove(option)
+
+    def getOption(self, name):
+        return self._optdict.get(name)
+
+    def addOption(self, option):
+        n = option.getName()
+        if n in self._optdict:
+            old = self._optdict[n]
+            self._options.remove(old)
+            del self._optdict[n]
+        self._optdict[n] = option
+        self._options.append(option)
+
 
 class AllOptions(object):
     def __init__(self):
@@ -245,6 +275,10 @@ class AllOptions(object):
 
     def setOptions(self, opts):
         for group in self:
+            if g.variableNames:
+                # Then don't cache everything, just the group
+                setattr(opts, g.getName(), g)
+                continue
             for opt in group:
                 key, val = opt.getName(), opt.getValue()
                 if val is not NoDefaultOption and val is not None:
@@ -272,26 +306,36 @@ class AllOptions(object):
             d = findOptionsDir()
             self._filename = os.path.join(d, filename)
 
-    def loadOptsFile(self):
+    def loadOptsFile(self, loadData=None):
         from ConfigParser import SafeConfigParser
-        if self._filename is None:
-            return None
-        cfg = SafeConfigParser()
-        if hasattr(os, 'access'):
-            if not os.access(self._filename, os.R_OK|os.W_OK):
+        if loadData is None:
+            if self._filename is None:
+                return None
+            cfg = SafeConfigParser()
+            if hasattr(os, 'access'):
+                if not os.access(self._filename, os.R_OK|os.W_OK):
+                    return
+            try:
+                cfg.readfp(open(self._filename, 'rU'))
+            except IOError:
                 return
-        try:
-            cfg.readfp(open(self._filename, 'rU'))
-        except IOError:
-            return
+        else:
+            cfg = SafeConfigParser()
+            cfg.readfp(loadData)
         for g in self:
             gname = g.getName()
             if cfg.has_section(gname):
-                for o in g:
-                    oname = o.getName()
-                    if cfg.has_option(gname, oname):
-                        val= cfg.get(gname, oname)
-                        o.setValue(val)
+                if g.variableNames:
+                    for name, value in cfg.items(gname):
+                        opt = StringOption(name, name)
+                        opt.setValue(value)
+                        g.addOption(opt)
+                else:
+                    for o in g:
+                        oname = o.getName()
+                        if cfg.has_option(gname, oname):
+                            val= cfg.get(gname, oname)
+                            o.setValue(val)
 
     def saveOptsFile(self):
         if self._filename is None:
@@ -337,6 +381,10 @@ class AllOptions(object):
     def getValue(self, option, dflt=NoDefaultOption):
         if not self._cached_options.has_key(option):
             for g in self:
+                if g.variableNames:
+                    # Then cache the group object, not the items in it
+                    self._cached_options[g.getName()] = g
+                    continue
                 for o in g:
                     self._cached_options[o.getName()] = o
         val = self._cached_options[option].getValue()
