@@ -81,3 +81,9 @@ class AddressBook(Interface):
         """ Pop up the address book to add the URI 'uri' (a string).
         """
 
+class StunPolicy(Interface):
+	""" A STUNPolicy decides when STUN is applied """
+
+	def checkStun(self, localip, remoteip):
+		""" return True/False for whether STUN should apply """
+

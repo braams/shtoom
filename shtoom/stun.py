@@ -1,6 +1,7 @@
 import struct, socket, time
 from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
+from interfaces import StunPolicy
 
 
 DefaultServers = [
@@ -103,6 +104,87 @@ class StunHook(StunProtocol):
 
     def uninstallStun(self):
         self._protocol.datagramReceived = self._protocol._mp_datagramReceived
+
+# XXX should move this class somewhere else.
+class NetAddress:
+    """ A class that represents a net address of the form
+        foo/nbits, e.g. 10/8, or 192.168/16, or whatever
+    """
+    def __init__(self, netaddress):
+        parts = netaddress.split('/')
+        if len(parts) > 2:
+            raise ValueError, "should be of form address/mask"
+        if len(parts) == 1:
+            ip, mask = parts[0], 32
+        else:
+            ip, mask = parts[0], int(parts[1])
+        if mask < 0 or mask > 32:
+            raise ValueError, "mask should be between 0 and 32"
+
+        self.net = self.inet_aton(ip)
+        self.mask = ( 2L**32 -1 ) ^ ( 2L**(32-mask) - 1 )
+
+    def inet_aton(self, ipstr):
+        "A sane inet_aton"
+        net = [ int(x) for x in ipstr.split('.') ] + [ 0,0,0 ]
+        net = net[:4]
+        return  ((((((0L+net[0])<<8) + net[1])<<8) + net[2])<<8) +net[3]
+        
+
+    def inet_ntoa(self, ip):
+        import socket, struct
+        return socket.inet_ntoa(struct.pack('!I',ip))
+
+    def __repr__(self):
+        return '<NetAddress %s/%s at %#x>'%(self.inet_ntoa(self.net),
+                                           self.inet_ntoa(self.mask), id(self))
+
+    def check(self, ip):
+        "Check if an IP is contained in this network address"
+        if type(ip) is str:
+            ip = self.inet_aton(ip)
+        if ip & self.mask == self.net:
+            return True
+        else:
+            return False
+
+
+class AlwaysStun:
+    __implements__ = StunPolicy
+
+    def checkStun(self, localip, remoteip):
+        return True
+
+class NeverStun:
+    __implements__ = StunPolicy
+
+    def checkStun(self, localip, remoteip):
+        return False
+
+class RFC1918Stun:
+    "A sane default policy"
+    __implements__ = StunPolicy
+
+    addresses = ( NetAddress('10/8'), 
+                  NetAddress('172.16/12'), 
+                  NetAddress('192.168/16'), 
+                  NetAddress('127/8') )
+
+    def checkStun(self, localip, remoteip):
+        localIsRFC1918 = False
+        remoteIsRFC1918 = False
+        for net in self.addresses:
+            if net.check(localip):
+                localIsRFC1918 = True
+            if net.check(remoteip):
+                remoteIsRFC1918 = True
+        if localIsRFC1918 and not remoteIsRFC1918:
+            return True
+        else:
+            return False
+
+
+
 
 
 if __name__ == "__main__":
