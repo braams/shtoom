@@ -1,0 +1,21 @@
+name: reject first call, second call exception
+description: using test harness I reject a call then have another incoming call, result:
+          File "./shtoom/shtoom/test/harness.py", line 168, in main
+            p.start()
+          File "/home/zooko/playground/shtoom/darcsworld/shtoom/shtoom/app/phone.py", line 71, in start
+            reactor.run()
+          File "/usr/lib/python2.3/site-packages/twisted/internet/default.py", line 126, in run
+            self.mainLoop()
+          File "/usr/lib/python2.3/site-packages/twisted/internet/default.py", line 134, in mainLoop
+            self.runUntilCurrent()
+        --- <exception caught here> ---
+          File "/usr/lib/python2.3/site-packages/twisted/internet/base.py", line 423, in runUntilCurrent
+            call.func(*call.args, **call.kw)
+          File "./shtoom/shtoom/test/harness.py", line 88, in checkForCallFile
+            self.dropFakeInbound('foo')
+          File "./shtoom/shtoom/test/harness.py", line 122, in dropFakeInbound
+            self.c.terminateCall()
+          File "./shtoom/shtoom/test/harness.py", line 64, in terminateCall
+            self.sip.app.endCall(self.cookie)
+        exceptions.AttributeError: TestCall instance has no attribute 'cookie'
+
