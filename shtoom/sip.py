@@ -36,13 +36,17 @@ class Call(object):
             we'll get the right one
         """
         # XXX Allow over-riding
-        import socket
-        rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        rsock.connect_ex((host,port))
-        self._localIP = rsock.getsockname()[0]
+        import prefs
+        if prefs.myip is not None:
+            self._localIP = prefs.myip
+        else:
+            import socket
+            rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            rsock.connect_ex((host,port))
+            self._localIP = rsock.getsockname()[0]
+            rsock.close()
         log.msg("using local IP address %s"%(self._localIP))
-        rsock.close()
 
     def getCSeq(self, incr=0):
         if incr:
