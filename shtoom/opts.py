@@ -38,6 +38,18 @@ def parseOptions():
     parser.add_option('--use-upnp', dest='use_upnp',
                       help='Use UPnP (yes, no) (default no)',
                       metavar='USEUPNP')
+    parser.add_option('--register-uri', dest='register_uri',
+                      help='URI of registration server',
+                      metavar='REGISTER_URI')
+    parser.add_option('--register-user', dest='register_user',
+                      help='username to register',
+                      metavar='REGISTER_USER')
+    parser.add_option('--register-authuser', dest='register_authuser',
+                      help='username for authenticating registration (if reqd)',
+                      metavar='REGISTER_USER')
+    parser.add_option('--register-authpasswd', dest='register_authpasswd',
+                      help='passwd for authenticating registration (if reqd)',
+                      metavar='REGISTER_PASSWD')
     (opts, args) = parser.parse_args()
     if opts.localip:
         shtoom.prefs.localip = opts.localip
@@ -47,6 +59,8 @@ def parseOptions():
         shtoom.prefs.email_address = opts.email
     if opts.username:
         shtoom.prefs.username = opts.username
+    else:
+        shtoom.prefs.username = getLocalUsername()
     if opts.ui:
         shtoom.prefs.ui = opts.ui
     if opts.audio:
@@ -58,3 +72,19 @@ def parseOptions():
         shtoom.prefs.audio_outfile = opts.audio_outfile
     if opts.stdout:
         shtoom.prefs.stdout = True
+    if opts.register_uri:
+        shtoom.prefs.register_uri = opts.register_uri
+    if opts.register_authuser:
+        shtoom.prefs.register_authuser = opts.register_authuser
+    if opts.register_authpasswd:
+        shtoom.prefs.register_authpasswd = opts.register_authpasswd
+
+def getLocalUsername():
+    try:
+        import pwd
+    except ImportError:
+        # XXX how to get username on Windows?
+        raise RuntimeError, "No pwd module - please supply a --username option"
+    import os
+    username = pwd.getpwuid(os.getuid())[0]
+    return username
