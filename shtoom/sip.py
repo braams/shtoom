@@ -205,7 +205,7 @@ class Call(object):
         resp.addHeader('to', toaddr)
         resp.addHeader('date', genStandardDate())
         resp.addHeader('call-id', message.headers['call-id'][0])
-        resp.addHeader('server', 'Shtoom/%s'%shtoom.version)
+        resp.addHeader('server', 'Shtoom/%s'%shtoom.Version)
         resp.addHeader('cseq', message.headers['cseq'][0])
         if message.method == 'INVITE' and code == 200:
             resp.addHeader('contact', message.headers['to'][0])
@@ -268,7 +268,7 @@ class Call(object):
                             prefs.username, prefs.email_address, self.getTag()))
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', 'sip: %s'%(prefs.email_address))
-        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.version)
+        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
                                 prefs.username, lhost, lport))
@@ -316,7 +316,7 @@ class Call(object):
         ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             prefs.username, prefs.email_address, self.getTag()))
         ack.addHeader('call-id', self.getCallID())
-        ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.version)
+        ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         ack.addHeader('content-length', 0)
         ack.creationFinished()
         if startRTP:
@@ -338,7 +338,7 @@ class Call(object):
         bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             prefs.username, prefs.email_address, self.getTag()))
         bye.addHeader('call-id', self.getCallID())
-        bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.version)
+        bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         bye, dest = bye.toString(), (uri.host, (uri.port or 5060))
