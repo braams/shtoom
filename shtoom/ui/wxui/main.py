@@ -69,7 +69,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         # Startup without the "advanced" functionality showing
         self.OnAdvanced(None)
 
-        # The error log 
+        # Hookup the error log 
         self.errorlog = LogFrameImpl(self, -1, "Message Log")
         wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
 
@@ -253,6 +253,9 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         #sizer.SetSizeHints(self)
         self.UpdateHeight(newheight)
 
+    def getLogger(self):
+        return Logger()
+
 
 class LogFrameImpl(LogFrame):
     BUTT_CLEAR = 101
@@ -268,3 +271,11 @@ class LogFrameImpl(LogFrame):
 
     def OnClose(self, event):
         self.Hide()
+
+class Logger:
+    def flush(self):
+        pass
+
+    def write(self, text):
+        message = message.strip()
+        wxLogMessage(text)

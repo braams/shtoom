@@ -11,6 +11,8 @@ class ShtoomApplication(wxApp):
         return true
 
 def main(application):
+    from twisted.python import log
+    from twisted.internet import wxsupport
 
     # wxreactor can't handle it captain.
     #from twisted.internet import wxreactor
@@ -19,8 +21,8 @@ def main(application):
     wxImage_AddHandler(wxGIFHandler())
     UI = ShtoomApplication()
     UI.frame.connectApplication(application)
-    from twisted.internet import wxsupport
     wxsupport.install(UI)
+    log.startLogging(UI.frame.getLogger(), setStdout=False)
 
     #from twisted.internet import reactor
     #reactor.registerWxApp(UI)
