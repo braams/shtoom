@@ -7,11 +7,13 @@ from shtoom.avail import codecs
 from shtoom.audio.playout import Playout
 from twisted.python import log
 import struct
+from shtoom.lwc import Interface, implements
 
 try:
     import audioop
 except ImportError:
     audioop = None
+
 
 class NullConv:
     # Should be refactored away
@@ -57,8 +59,15 @@ def isLittleEndian():
     else:
         raise ValueError("insane endian-check result %r"%(p))
 
+class IAudioCodec:
+    def encode(bytes):
+        "encode bytes, a string of audio"
+    def decode(bytes):
+        "decode bytes, a string of audio"
+
 class _Codec:
     "Base class for codecs"
+    implements(IAudioCodec)
 
 class GSMCodec(_Codec):
     def __init__(self):
@@ -71,19 +80,20 @@ class GSMCodec(_Codec):
 
     def encode(self, bytes):
         if len(bytes) != 320:
-            log.msg("GSM: got short read len = %s"%len(bytes))
+            log.msg("GSM: short read on encode, %d != 320"%len(bytes), 
+                                                            system="codec")
             return None
         return self.enc.encode(bytes)
 
     def decode(self, bytes):
         if len(bytes) != 33:
-            print "GSM: warning: %d bytes of data, not 33"%len(bytes)
+            log.msg("GSM: short read on decode, %d !=  33"%len(bytes), 
+                                                            system="codec")
             return None
         return self.dec.decode(bytes)
 
 class SpeexCodec(_Codec):
     "A codec for Speex"
-    # XXX completely untested
 
     def __init__(self):
         self.enc = codecs.speex.new(8)
@@ -91,14 +101,16 @@ class SpeexCodec(_Codec):
 
     def encode(self, bytes, unpack=struct.unpack):
         if len(bytes) != 320:
-            log.msg("speex: short read on encode %d != 320"%len(bytes))
+            log.msg("speex: short read on encode, %d != 320"%len(bytes), 
+                                                            system="codec")
             return None
         frames = list(unpack('160h', bytes))
         return self.enc.encode(frames)
 
     def decode(self, bytes):
         if len(bytes) != 40:
-            log.msg("speex: short read on decode %d != 40"%len(bytes))
+            log.msg("speex: short read on decode %d != 40"%len(bytes), 
+                                                            system="codec")
             return None
         frames = self.dec.decode(bytes)
         ostr = struct.pack('160h', *frames)
@@ -108,22 +120,30 @@ class MulawCodec(_Codec):
     "A codec for mulaw encoded audio (e.g. G.711U)"
 
     def encode(self, bytes):
-        # XXX Check bytes length
+        if len(bytes) != 320:
+            log.msg("mulaw: short read on encode, %d != 320"%len(bytes), 
+                                                            system="codec")
         return audioop.lin2ulaw(bytes, 2)
 
     def decode(self, bytes):
-        # XXX Check bytes length
+        if len(bytes) != 160:
+            log.msg("mulaw: short read on decode, %d != 160"%len(bytes), 
+                                                            system="codec")
         return audioop.ulaw2lin(bytes, 2)
 
 class AlawCodec(_Codec):
     "A codec for alaw encoded audio (e.g. G.711A)"
 
     def encode(self, bytes):
-        # XXX Check bytes length?
+        if len(bytes) != 320:
+            log.msg("alaw: short read on encode, %d != 320"%len(bytes), 
+                                                            system="codec")
         return audioop.lin2alaw(bytes, 2)
 
     def decode(self, bytes):
-        # XXX Check bytes length?
+        if len(bytes) != 160:
+            log.msg("alaw: short read on decode, %d != 160"%len(bytes), 
+                                                            system="codec")
         return audioop.alaw2lin(bytes, 2)
 
 class NullCodec(_Codec):
