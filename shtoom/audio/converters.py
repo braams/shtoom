@@ -4,8 +4,8 @@ from shtoom.rtp.formats import PT_CN, PT_xCN
 from shtoom.rtp.packets import RTPPacket
 from shtoom.avail import codecs
 from shtoom.audio.playout import Playout
-
 from twisted.python import log
+import struct
 
 try:
     import audioop
@@ -55,11 +55,11 @@ class _Codec:
 class GSMCodec(_Codec):
     def __init__(self):
         if isLittleEndian():
-            self.enc = codecs.gsm.gsm(gsm.LITTLE)
-            self.dec = codecs.gsm.gsm(gsm.LITTLE)
+            self.enc = codecs.gsm.gsm(codecs.gsm.LITTLE)
+            self.dec = codecs.gsm.gsm(codecs.gsm.LITTLE)
         else:
-            self.enc = codecs.gsm.gsm(gsm.BIG)
-            self.dec = codecs.gsm.gsm(gsm.BIG)
+            self.enc = codecs.gsm.gsm(codecs.gsm.BIG)
+            self.dec = codecs.gsm.gsm(codecs.gsm.BIG)
 
     def encode(self, bytes):
         if len(bytes) != 320:
@@ -71,23 +71,30 @@ class GSMCodec(_Codec):
         if len(bytes) != 33:
             print "GSM: warning: %d bytes of data, not 33"%len(bytes)
             return None
-        return self.dec.encode(bytes)
+        return self.dec.decode(bytes)
 
 class SpeexCodec:
     "A codec for Speex"
     # XXX completely untested
 
     def __init__(self):
-        self.enc = speex.Encoder(8)
-        self.dec = speex.Decoder(8)
+        self.enc = codecs.speex.new(8)
+        self.dec = codecs.speex.new(8)
 
-    def encode(self, bytes):
-        # XXX length validity tests?
-        return self.enc.Encode(bytes)
+    def encode(self, bytes, unpack=struct.unpack):
+        if len(bytes) != 320:
+            log.msg("speex: short read on encode %d != 320"%len(bytes))
+            return None
+        frames = list(unpack('160h', bytes))
+        return self.enc.encode(frames)
 
     def decode(self, bytes):
-        # XXX length validity tests?
-        return self.enc.Decode(bytes)
+        if len(bytes) != 40:
+            log.msg("speex: short read on decode %d != 40"%len(bytes))
+            return None
+        frames = self.dec.decode(bytes)
+        ostr = struct.pack('160h', *frames)
+        return ostr
 
 class MulawCodec(_Codec):
     "A codec for mulaw encoded audio (e.g. G.711U)"
@@ -137,7 +144,7 @@ class Codecker:
         if codecs.gsm is not None:
             self.codecs[PT_GSM] = GSMCodec()
         if codecs.speex is not None: 
-            self.codecs[PT_GSM] = SpeexCodec()
+            self.codecs[PT_SPEEX] = SpeexCodec()
         if codecs.dvi4 is not None:
             self.codecs[PT_DVI4] = DVI4Codec()
         if codecs.ilbc is not None:
