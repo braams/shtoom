@@ -13,6 +13,13 @@ from twisted.python import log
 
 from shtoom.multicast.SDP import rtpPTDict
 
+# Sane systems
+RTP_PT_CN=13
+# Cisco
+#RTP_PT_CN=19
+# No comfort noise at all
+#RTP_PT_CN=None
+
 class NTE:
     "An object representing an RTP NTE"
     def __init__(self, key, startTS):
@@ -245,8 +252,13 @@ class RTPProtocol(DatagramProtocol):
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
         log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest), system='rtp')
-        hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
-        self.transport.write(hdr+chr(0), self.dest)
+        if RTP_PT_CN is not None:
+            cnpt = RTP_PT_CN
+        else:
+            cnpt = 13
+            hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, 
+                                        self.ts, self.ssrc)
+            self.transport.write(hdr+chr(0), self.dest)
         if hasattr(self.transport, 'connect'):
             self.transport.connect(*self.dest)
 
@@ -325,9 +337,11 @@ class RTPProtocol(DatagramProtocol):
             self.transport.write(hdr+sample, self.dest)
             self.sample = None
         else:
-            if (self.packets - self.sent) %10 == 0:
-                hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
-                self.transport.write(hdr+chr(0), self.dest)
+            if (self.packets - self.sent) % 100 == 0:
+                if RTP_PT_CN is not None:
+                    hdr = struct.pack('!BBHII', 0x80, RTP_PT_CN, self.seq, 
+                                                  self.ts, self.ssrc)
+                    self.transport.write(hdr+chr(127), self.dest)
         self.seq += 1
         # Now send any pending DTMF keystrokes
         if self._pendingDTMF:
