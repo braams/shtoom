@@ -46,6 +46,8 @@ class StateMachine(object):
                 self._doState(action, event)
                 break
         else:
+            print "No matching event for %s in state %s"%(
+                            event.getEventName(), self.getCurrentState())
             self.returnError(EventNotSpecifiedError(
                             "No matching event for %s in state %s"
                             %(event.getEventName(), self.getCurrentState())))
@@ -66,6 +68,12 @@ class StateMachine(object):
             em = callable(evt)
         else:
             em = callable()
+        try:
+            i = iter(em)
+        except TypeError:
+            print "%s did not return a new state mapping, but %r"%(
+                                            self._curState, em)
+            em = self._curEvents
         self._curEvents = em
 
     def _start(self, callstart=1):

@@ -1,4 +1,5 @@
 from shtoom.doug.events import *
+import sys
 
 class Source(object):
     "A Source object is a source and sink of audio data"
@@ -90,8 +91,11 @@ class FileSource(Source):
 
     def write(self, bytes):
         if self._mode == 'w':
-            res = self._fp.write(bytes)
-            if not res:
+            try:
+                self._fp.write(bytes)
+            except:
+                e,v,t = sys.exc_info()
+                print "write failed %s: %r"%(e,v)
                 self.app._va_sourceDone(self)
 
 def convertToSource(thing, mode='r'):
