@@ -54,3 +54,5 @@ class FastAudioDevice(baseaudio.AudioDevice):
                     return ''
         result, self.buffer = self.buffer[:length], self.buffer[length:]
         return result
+
+Device = FastAudioDevice
