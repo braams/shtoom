@@ -74,7 +74,7 @@ class PlayingApp(VoiceApp):
         username = leg.getDialog().getCallee().getURI().username
         print "voiceapp.__start__ to user %s"%(username)
         if self.saveFile is not None:
-            self.mediaRecord(self.saveFile)
+            self.leg.mediaRecord(self.saveFile)
         return ( (MediaDoneEvent, self.messageDone),
                  (DTMFReceivedEvent, self.dtmfEnterAccount),
                  (TimeoutEvent, self.callTimedOut),
@@ -142,13 +142,13 @@ class PlayingApp(VoiceApp):
                )
 
     def doneDoneAndDone(self, event):
-        self.mediaStop()
+        self.leg.mediaStop()
         self.returnResult(self.timestats)
 
     def callFailed(self, event, optional=''):
         if self.leg:
             self.leg.hangupCall()
-        self.mediaStop()
+            self.leg.mediaStop()
         self.returnError('%s (in %s) %s'%(event, self.where, optional))
 
 # Hack hack hack.
