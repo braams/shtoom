@@ -123,6 +123,8 @@ class NetAddress:
 
         self.net = self.inet_aton(ip)
         self.mask = ( 2L**32 -1 ) ^ ( 2L**(32-mask) - 1 )
+        self.start = self.net
+        self.end = self.start | (2L**(32-mask) - 1)
 
     def inet_aton(self, ipstr):
         "A sane inet_aton"
@@ -136,17 +138,24 @@ class NetAddress:
         return socket.inet_ntoa(struct.pack('!I',ip))
 
     def __repr__(self):
-        return '<NetAddress %s/%s at %#x>'%(self.inet_ntoa(self.net),
-                                           self.inet_ntoa(self.mask), id(self))
+        return '<NetAddress %s/%s (%s-%s) at %#x>'%(self.inet_ntoa(self.net),
+                                           self.inet_ntoa(self.mask), 
+                                           self.inet_ntoa(self.start), 
+                                           self.inet_ntoa(self.end), 
+                                           id(self))
 
     def check(self, ip):
-        "Check if an IP is contained in this network address"
+        "Check if an IP or network is contained in this network address"
+        if isinstance(ip, NetAddress):
+            return self.check(ip.start) and self.check(ip.end)
         if type(ip) is str:
             ip = self.inet_aton(ip)
         if ip & self.mask == self.net:
             return True
         else:
             return False
+
+    __contains__ = check
 
 
 class AlwaysStun:
@@ -174,17 +183,19 @@ class RFC1918Stun:
         localIsRFC1918 = False
         remoteIsRFC1918 = False
         for net in self.addresses:
-            if net.check(localip):
+            if localip in net:
                 localIsRFC1918 = True
-            if net.check(remoteip):
+            if remoteip in net:
                 remoteIsRFC1918 = True
         if localIsRFC1918 and not remoteIsRFC1918:
             return True
         else:
             return False
 
-
-
+_defaultPolicy = RFC1918Stun()
+def installPolicy(policy):
+    global _defaultPolicy
+    _defaultPolicy = policy
 
 
 if __name__ == "__main__":
