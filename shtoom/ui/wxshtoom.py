@@ -3,7 +3,30 @@
 from shtoom.ui.wxui import *
 from wxPython.wx import *
 from twisted.internet import reactor
+import thread
 
+class WxInjector(wxTimer):
+    def __init__(self, evtlist, interval=200):
+        print "initing injector"
+        wxTimer.__init__(self)
+        self.evtlist = evtlist
+        self.interval = interval
+
+        # Schedule ourselves to be called
+        self.Start(interval)
+        print "done initing injector"
+
+    def Notify(self):
+        # Read any events off the event list and really call them
+        while self.evtlist:
+            call, args = self.evtlist.pop()
+            print "Calling from %s: %r"%(thread.get_ident(), call)
+            call(*args)
+
+        # Reschedule to be be called again
+        self.Start(self.interval)
+
+           
 class AppProxy:
     def __init__(self, shtoomapp=None, wxapp=None):
         self.wxapp = wxapp
@@ -15,57 +38,47 @@ class AppProxy:
     def setShtoomApp(self, shtoomapp):
         self.shtoomapp = shtoomapp
 
-# Main Thread:
-#  reactor.eventloop - WxProxy instance
-# 
-# Child Thread:
-#  wxapp.eventloop - ShtoomProxy instance
-
-# placeCall
-# CT User clicks "call" button -> 
-# CT calls ShtoomProxy.placeCall ->
-# MT calls WxProxy.placeCall ->
-# MT calls shtoom.app.placeCall, gets a deferred ->
-# MT calls deferred.addCallbacks(WxProxy.callOk, WxProxy.callFailed)
-# ....
-# MT wxProxy.Call?? ->
-# CT wxapp.Call?? 
-
-# TODO: MT log handling
 
 class WxProxy(AppProxy):
     # Methods to forward onto the wx app
-    # We may need to put these on the wx event loop if things aren't
-    # thread safe
+    # This is used from within the twisted thread
 
     threadedUI = True
 
+    def __init__(self, *args, **kwargs):
+        AppProxy.__init__(self, *args, **kwargs)
+        self.evtlist = []
+
+    def call(self, method, *args):
+        self.evtlist.append((method, args))
+        
     def startUI(self):
+        WxInjector(self.evtlist)
         self.wxapp.MainLoop()
 
     def connectApplication(self, *args):
-        self.wxapp.frame.connectApplication(*args)
+        self.call(self.wxapp.frame.connectApplication, *args)
     def resourceUsage(self, *args):
-        self.wxapp.frame.resourceUsage(*args)
+        self.call(self.wxapp.frame.resourceUsage, *args)
     def debugMessage(self, *args):
-        return
-        self.wxapp.frame.debugMessage(*args)
+        print "WxProxy.debugMessage from %s"%thread.get_ident()
+        self.call(self.wxapp.frame.debugMessage, *args)
     def statusMessage(self, *args):
-        return
-        self.wxapp.frame.statusMessage(*args)
+        print "WxProxy.statusMessage from %s"%thread.get_ident()
+        self.call(self.wxapp.frame.statusMessage, *args)
     def errorMessage(self, *args):
-        return
-        self.wxapp.frame.errorMessage(*args)
+        print "WxProxy.errorMessage from %s"%thread.get_ident()
+        self.call(self.wxapp.frame.errorMessage, *args)
     def incomingCall(self, *args):
-        self.wxapp.frame.incomingCall(*args)
+        self.call(self.wxapp.frame.incomingCall, *args)
     def callStarted(self, *args):
-        self.wxapp.frame.callStarted(*args)
+        self.call(self.wxapp.frame.callStarted, *args)
     def callConnected(self, *args):
-        self.wxapp.frame.callConnected(*args)
+        self.call(self.wxapp.frame.callConnected, *args)
     def callDisconnected(self, *args):
-        self.wxapp.frame.callDisconnected(*args)
+        self.call(self.wxapp.frame.callDisconnected, *args)
     def callFailed(self, *args):
-        self.wxapp.frame.callFailed(*args)
+        self.call(self.wxapp.frame.callFailed, *args)
 
     # Proxies for deferred callbacks + others
     def placeCall(self, sipURL):
@@ -85,10 +98,13 @@ class WxProxy(AppProxy):
         return self.shtoomapp.updateOptions(opts)
 
 
-
 class ShtoomProxy(AppProxy):
     # Methods to forward onto the shtoom application from the wxapp
     # getOptions, register, placeCall, dropCall, 
+
+    # TODO: callFromThread isn't applicable here - these are called from
+    # the main thread. The twisted event loop (list) is thread safe anyway
+
     def placeCall(self, sipURL):
         # From the wx thread: call into the main thread a function
         # which sets up the deferred calls on the WxAppProxy method.
@@ -106,6 +122,7 @@ class ShtoomProxy(AppProxy):
     def updateOptions(self, opts):
         reactor.callFromThread(self.shtoomapp.updateOptions(opts))
 
+
 class WxShtoomApplication(wxApp):
     def OnInit(self):
         wxImage_AddHandler(wxGIFHandler())
@@ -113,6 +130,7 @@ class WxShtoomApplication(wxApp):
         self.frame.Show(true)
         self.SetTopWindow(self.frame)
         return true
+
 
 def main(shtoomapp):
     from twisted.python import log, threadable
@@ -126,12 +144,13 @@ def main(shtoomapp):
     wxproxy = WxProxy(shtoomapp, wxapp)
     appproxy = ShtoomProxy(wxproxy)
     wxapp.frame.connectApplication(appproxy)
-    log.startLogging(wxapp.frame.getLogger(), setStdout=False)
 
-    #reactor.callInThread(wxapp.MainLoop)
+    # TODO: This style of logging isn't thread safe. Need to plugin 
+    # the logging into the WxInjector. i.e. the logger targets the
+    # WxInjector.evtlist 
+    #log.startLogging(wxapp.frame.getLogger(), setStdout=False)
 
     return wxproxy
 
 if __name__ == "__main__":
     main()
-
