@@ -25,50 +25,6 @@ details:
             self.sip.app.endCall(self.cookie)
         exceptions.AttributeError: TestCall instance has no attribute 'cookie'
 
-name: fwd hates our ACKS
-
-more details: Asterisk on FWD hates our ACKS. I don't know why - calling
-a local asterisk works fine.
-
-to reproduce: call sip:613@fwd.pulver.com
-details: you should hear the automated message then hangup.  packet sniffer will tell you that FWD didn't believe our ACKs to it kept sending 200 OK until it gave up and hung up on us:
-  1   0.000000 192.168.1.101 -> 192.98.81.87 STUN Message : Binding Request
-  2   0.171747 192.98.81.87 -> 192.168.1.101 STUN Message : Binding Response
-  3   0.204163 192.168.1.101 -> 192.98.81.87 STUN Message : Binding Request
-  4   0.219979 192.168.1.101 -> 192.98.81.87 STUN Message : Binding Request
-  5   0.373172 192.98.81.87 -> 192.168.1.101 STUN Message : Binding Response
-  6   0.391768 192.98.81.87 -> 192.168.1.101 STUN Message : Binding Response
-  7   0.406390 192.168.1.101 -> 69.90.155.70 SIP/SDP Request: INVITE sip:613@fwd.pulver.com, with session description
-  8   0.450564 69.90.155.70 -> 192.168.1.101 SIP Status: 100 trying -- your call is important to us
-  9   0.451007 69.90.155.70 -> 192.168.1.101 SIP Status: 180 Ringing
- 10   7.445192 69.90.168.13 -> 192.168.1.101 UDP Source port: 12780  Destination port: 42794
- 11   7.446173 69.90.155.70 -> 192.168.1.101 SIP/SDP Status: 200 OK, with session description
- 12   7.448724 192.168.1.101 -> 69.90.168.13 SIP Request: ACK sip:613@fwd.pulver.com
- 13   8.455760 69.90.155.70 -> 192.168.1.101 SIP/SDP Status: 200 OK, with session description
- 14   8.466582 192.168.1.101 -> 69.90.168.13 SIP Request: ACK sip:613@fwd.pulver.com
- 15   9.465797 69.90.155.70 -> 192.168.1.101 SIP/SDP Status: 200 OK, with session description
- 16   9.475302 192.168.1.101 -> 69.90.168.13 SIP Request: ACK sip:613@fwd.pulver.com
- 17  10.465861 69.90.155.70 -> 192.168.1.101 SIP/SDP Status: 200 OK, with session description
- 18  10.476121 192.168.1.101 -> 69.90.168.13 SIP Request: ACK sip:613@fwd.pulver.com
- 19  11.465728 69.90.155.70 -> 192.168.1.101 SIP/SDP Status: 200 OK, with session description
- 20  11.471122 192.168.1.101 -> 69.90.168.13 SIP Request: ACK sip:613@fwd.pulver.com
- 21  12.465832 69.90.155.70 -> 192.168.1.101 SIP/SDP Status: 200 OK, with session description
- 22  12.468744 192.168.1.101 -> 69.90.168.13 SIP Request: ACK sip:613@fwd.pulver.com
- 23  13.465011 69.90.155.70 -> 192.168.1.101 SIP Request: BYE sip:24.222.141.10:5060
- 24  13.466866 192.168.1.101 -> 69.90.155.70 SIP Status: 200 OK
- 25  13.512840 69.90.155.70 -> 192.168.1.101 SIP Status: 479 Regretfuly, we were not able to process the URI (479/SL)
- 26  13.723958 69.90.155.70 -> 192.168.1.101 SIP Request: BYE sip:24.222.141.10:5060
- 27  14.125462 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
- 28  15.743805 69.90.155.70 -> 192.168.1.101 SIP Request: BYE sip:24.222.141.10:5060
- 29  15.745872 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
- 30  19.783432 69.90.155.70 -> 192.168.1.101 SIP Request: BYE sip:24.222.141.10:5060
- 31  19.785357 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
-Apparently this is caused by shtoom not honoring the Record-Route header 
-in the 200 response. Need to look further - 3261 refers to 3263 for how
-to send the ACK, but dash's summary is "send it to the first r-r dest
-information about how to handle this in 3261 yet. 
-
-
 
 When the audio device is busy, bad things happen:
 
