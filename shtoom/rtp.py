@@ -262,7 +262,7 @@ class RTPProtocol(DatagramProtocol):
             self.sample = None
         else:
             if (self.packets - self.sent) %10 == 0:
-                print "skipping audio, %s/%s sent"%(self.sent, self.packets)
+                hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
         self.seq += 1
         self.ts += 160
         try:

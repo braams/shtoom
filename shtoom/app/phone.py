@@ -23,6 +23,8 @@ class Phone(BaseApplication):
         self._audio = audio
         self._audioFormat = None
         self.ui = ui
+        self._currentCall = None
+        self._muted = False
 
     def boot(self, options=None):
         from shtoom.ui.select import findUserInterface
@@ -123,6 +125,7 @@ class Phone(BaseApplication):
         log.msg("reopened audio")
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         self.ui.callConnected(callcookie)
+        self._currentCall = callcookie
         cb(callcookie)
 
     def endCall(self, callcookie, reason=''):
@@ -155,6 +158,8 @@ class Phone(BaseApplication):
         self._audio = None
 
     def receiveRTP(self, callcookie, payloadType, payloadData):
+        if self._currentCall != callcookie:
+            return None
         fmt = None
         if payloadType == 0:
             fmt = FMT_PCMU
@@ -172,7 +177,9 @@ class Phone(BaseApplication):
             print "unexpected RTP PT %s len %d"%((payloadType,str(payloadType)), len(payloadData))
 
     def giveRTP(self, callcookie):
-        # Check that callcookie is the active call!
+        # Check that callcookie is the active call
+        if self._currentCall != callcookie or self._muted:
+            return None # comfort noise
         bytes = self._audio.read()
         if bytes is None:
             return None
@@ -226,3 +233,18 @@ class Phone(BaseApplication):
             return self.ui.getAuth("Auth needed for %s %s, realm '%s'"%(method, uri, realm))
         else:
             return defer.fail(CallFailed("No auth available"))
+
+    def muteCall(self, callcookie):
+        if self._currentCall is not callcookie:
+            raise ValueError, "call %s is current call, not %s"%(self._currentCall, callcookie)
+        else:
+            self._muted = True
+
+    def unmuteCall(self, callcookie):
+        if self._currentCall is not callcookie:
+            raise ValueError, "call %s is current call, not %s"%(self._currentCall, callcookie)
+        else:
+            self._muted = False
+
+    def switchCallAudio(self, callcookie):
+        self._currentCall = callcookie
