@@ -105,7 +105,7 @@ class _BeautifulSaxParser(ContentHandler, Tag):
                     if type(n) is unicode:
                         # why must the world torture me this way??
                         n = n.encode('iso8859-1','replace')
-                    ns, uname = n.rsplit(':', 1)
+                    uname = n.split(':')[-1]
                     if uname == name:
                         results.append(i)
                 elif name == i.name:
