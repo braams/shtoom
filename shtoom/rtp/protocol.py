@@ -222,6 +222,8 @@ class RTPProtocol(DatagramProtocol):
 
     def stopSendingAndReceiving(self):
         self.Done = 1
+        self.LC.stop()
+        self.LC = None
         d = self.unmapRTP()
         d.addCallback(lambda x: self.rtpListener.stopListening())
         d.addCallback(lambda x: self.rtcpListener.stopListening())
@@ -330,7 +332,9 @@ class RTPProtocol(DatagramProtocol):
 
     def nextpacket(self, n=None, f=None, pack=struct.pack):
         if self.Done:
-            self.LC.stop()
+            if self.LC is not None:
+                self.LC.stop()
+                self.LC = None
             if self._cbDone:
                 self._cbDone()
             return
