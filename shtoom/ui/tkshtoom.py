@@ -1,5 +1,6 @@
+
 # Copyright (C) 2003 Anthony Baxter
-# $Id: qtshtoom.py,v 1.4 2003/11/16 07:57:35 anthonybaxter Exp $
+# $Id: tkshtoom.py,v 1.1 2003/11/16 07:57:35 anthonybaxter Exp $
 #
 
 
@@ -13,24 +14,19 @@ def shutdown():
     reactor.stop()
 
 def main():
-    import qt
-    from twisted.internet import qtreactor
-    app=qt.QApplication([])
-    qtreactor.install(app)
-
     import sys
     from twisted.internet import reactor
     from twisted.python import log
+    from twisted.internet import tksupport
 
-    from shtoom.ui.qtui import ShtoomMainWindow
+    from shtoom.ui.tkui import ShtoomMainWindow
     UI = ShtoomMainWindow()
+    tksupport.install(UI.getMain())
     UI.connectSIP()
-    UI.show()
-    #log.startLogging(UI.getLogger())
     log.startLogging(sys.stdout)
     
-    reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
-    app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
+    #reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
+    #app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
 
     reactor.run()
 

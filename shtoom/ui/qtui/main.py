@@ -1,24 +1,17 @@
 # Copyright (C) 2003 Anthony Baxter
 from shtoommainwindow import *
 
+from shtoom.ui.base import ShtoomBaseUI
+
 import sys
 from twisted.python import log
 from qt import *
 
-from twisted.internet import reactor
-
-class ShtoomMainWindow(ShtoomMainWindow):
+class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
     
     sending = False
     audiosource = None
     connected = False
-
-    def connectSIP(self):
-        from shtoom import sip
-        p = sip.SipPhone(self)
-        self.sip = p
-        self.sipListener = reactor.listenUDP(5060, p)
-        log.msg('sip listener installed')
 
     def debugMessage(self, message):
         log.msg(message)
