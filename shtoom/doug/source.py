@@ -51,7 +51,7 @@ class FileSource(Source):
         else:
             bytes = self._fp.read(320)
             if not bytes:
-                self.app._triggerEvent(MediaPlayContentDoneEvent(self))
+                self.app._va_sourceDone(self)
             else:
                 return bytes
 
@@ -59,7 +59,7 @@ class FileSource(Source):
         if self._mode == 'w':
             res = self._fp.write(bytes)
             if not res:
-                self.app._triggerEvent(MediaRecordStoreFailedEvent(self))
+                self.app._va_sourceDone(self)
 
 def convertToSource(thing, mode='r'):
     print "opening thing", thing
