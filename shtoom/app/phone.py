@@ -14,23 +14,23 @@ from shtoom.audio import getAudioDevice
 class Phone(BaseApplication):
     __implements__ = ( Application, )
 
-    def __init__(self, ui=None, audio=None, prefs=None):
-        from shtoom.ui.select import findUserInterface
-        self.connectPrefs(prefs)
-        if ui is None:
-            self.ui = findUserInterface(self, self.getPref('ui'))
-        else:
-            self.ui = ui
-        self._audio = audio
-        BaseApplication.__init__(self, prefs=prefs)
+    def __init__(self, ui=None, audio=None):
         # Mapping from callcookies to rtp object
         self._rtp = {}
         # Mapping from callcookies to call objects
         self._calls = {}
-
         self._pendingRTP = {}
-        self._audio = None
+        self._audio = audio
         self._audioFormat = None
+        self.ui = ui
+
+    def boot(self, prefs=None):
+        from shtoom.ui.select import findUserInterface
+        self.connectPrefs(prefs)
+        if self.ui is None:
+            self.ui = findUserInterface(self, self.getPref('ui'))
+        BaseApplication.boot(self)
+
 
     def start(self):
         "Start the application."
@@ -159,7 +159,6 @@ class Phone(BaseApplication):
         else:
             print "unexpected RTP PT %s len %d"%(rtpPTDict.get(payloadType,str(payloadType)), len(datagram))
 
-
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call!
         return self._audioFormat, self._audio.read()
@@ -186,3 +185,23 @@ class Phone(BaseApplication):
 
     def debugMessage(self, message):
         self.ui.debugMessage(message)
+
+    def appSpecificOptions(self, opts):
+        import os.path
+
+        from shtoom.Options import OptionGroup, StringOption, ChoiceOption
+        app = OptionGroup('shtoom', 'Application Settings')
+        app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','tk','text']))
+        app.addOption(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port']))
+        app.addOption(StringOption('audio_infile','read audio from this file'))
+        app.addOption(StringOption('audio_outfile','write audio to this file'))
+        opts.addGroup(app)
+
+        try:
+            saveDir = os.path.expanduser('~%s'%os.getlogin())
+            saveFile = os.path.join(saveDir, '.shtoomrc')
+        except:
+            saveFile = '.shtoomrc'
+
+        opts.setOptsFile(saveFile)
+

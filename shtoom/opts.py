@@ -1,84 +1,6 @@
 
 # Copyright (C) 2004 Anthony Baxter
 
-def parseOptions():
-    import optparse, sys
-    import shtoom.prefs, shtoom
-    parser = optparse.OptionParser(version='%%prog %s'%shtoom.Version)
-    parser.add_option('-i', '--localip', dest='localip',
-                      help='use LOCALIP for local ip address',
-                      metavar='LOCALIP')
-    parser.add_option('-p', '--port', dest='localport', type='int',
-                      help='use PORT for SIP listener',
-                      metavar='PORT')
-    parser.add_option('-u', '--ui', dest='ui',
-                      help='use UI interface (qt, tk, ...)',
-                      metavar='UI')
-    parser.add_option('-a', '--audio', dest='audio',
-                      help='use AUDIO interface (oss, fast, ...)',
-                      metavar='AUDIO')
-    parser.add_option('-e', '--email', dest='email',
-                      help='use email address EMAIL',
-                      metavar='EMAIL')
-    parser.add_option('-n', '--username', dest='username',
-                      help='use user name NAME',
-                      metavar='NAME')
-    parser.add_option('-s', '--stdout', dest='stdout',
-                      help='debug to stdout (ALWAYS)',
-                      metavar='STDOUT')
-    parser.add_option('--audio-in', dest='audio_infile',
-                      help='read audio from file INFILE',
-                      metavar='INFILE')
-    parser.add_option('--audio-out', dest='audio_outfile',
-                      help='write audio to file OUTFILE',
-                      metavar='OUTFILE')
-    parser.add_option('--stun-policy', dest='stun_policy',
-                  help='STUN policy (never, always, rfc1918) (default rfc1918)',
-                  metavar='STUNPOLICY')
-    parser.add_option('--use-upnp', dest='use_upnp',
-                      help='Use UPnP (yes, no) (default no)',
-                      metavar='USEUPNP')
-    parser.add_option('--register-uri', dest='register_uri',
-                      help='URI of registration server',
-                      metavar='REGISTER_URI')
-    parser.add_option('--register-user', dest='register_user',
-                      help='username to register',
-                      metavar='REGISTER_USER')
-    parser.add_option('--register-authuser', dest='register_authuser',
-                      help='username for authenticating registration (if reqd)',
-                      metavar='REGISTER_USER')
-    parser.add_option('--register-authpasswd', dest='register_authpasswd',
-                      help='passwd for authenticating registration (if reqd)',
-                      metavar='REGISTER_PASSWD')
-    (opts, args) = parser.parse_args()
-    if opts.localip:
-        shtoom.prefs.localip = opts.localip
-    if opts.localport:
-        shtoom.prefs.localport = opts.localport
-    if opts.email:
-        shtoom.prefs.email_address = opts.email
-    if opts.username:
-        shtoom.prefs.username = opts.username
-    else:
-        shtoom.prefs.username = getLocalUsername()
-    if opts.ui:
-        shtoom.prefs.ui = opts.ui
-    if opts.audio:
-        shtoom.prefs.audio = opts.audio
-    # check both, or neither, are set
-    if opts.audio_infile:
-        shtoom.prefs.audio_infile = opts.audio_infile
-    if opts.audio_outfile:
-        shtoom.prefs.audio_outfile = opts.audio_outfile
-    if opts.stdout:
-        shtoom.prefs.stdout = True
-    if opts.register_uri:
-        shtoom.prefs.register_uri = opts.register_uri
-    if opts.register_authuser:
-        shtoom.prefs.register_authuser = opts.register_authuser
-    if opts.register_authpasswd:
-        shtoom.prefs.register_authpasswd = opts.register_authpasswd
-
 def getLocalUsername():
     try:
         import pwd
@@ -88,3 +10,51 @@ def getLocalUsername():
     import os
     username = pwd.getpwuid(os.getuid())[0]
     return username
+
+def buildOptions(app):
+    from shtoom.Options import AllOptions, OptionGroup, StringOption, NumberOption, ChoiceOption, BooleanOption
+    opts = AllOptions()
+
+    app.appSpecificOptions(opts)
+
+    network = OptionGroup('network', 'Network Settings')
+    network.addOption(StringOption('localip','use LOCALIP for local ip address'))
+    network.addOption(NumberOption('listenport','use PORT for sip listener'))
+    network.addOption(ChoiceOption('stun_policy','STUN policy', 'rfc1918',choices=['never','always','rfc1918']))
+    network.addOption(BooleanOption('use_upnp','Use UPnP', False))
+    opts.addGroup(network)
+
+    identity = OptionGroup('identity', 'Identity Settings')
+    identity.addOption(StringOption('email','use email address EMAIL'))
+    identity.addOption(StringOption('username','use user name USERNAME'))
+    opts.addGroup(identity)
+    
+    debug = OptionGroup('debug', 'Debugging')
+    debug.addOption(BooleanOption('stdout','Log to stdout', False))
+    opts.addGroup(debug)
+
+    register = OptionGroup('register', 'Registration')
+    register.addOption(StringOption('register_uri','URI of registration server (e.g. sip:divmod.com:5060)'))
+    register.addOption(StringOption('register_user','Username to register with'))
+    register.addOption(StringOption('register_authuser','Username to auth with'))
+    register.addOption(StringOption('register_authpasswd','Username to auth with'))
+    opts.addGroup(register)
+
+    return opts
+
+
+def parseOptions(app):
+    import optparse, sys
+    import shtoom.prefs, shtoom
+    Opts = buildOptions(app)
+
+    parser = optparse.OptionParser(version='%%prog %s'%shtoom.Version)
+
+    Opts.buildOptParse(parser)
+    (opts, args) = parser.parse_args()
+
+    Opts.loadOptsFile()
+    Opts.handleOptParse(opts, args)
+    Opts.saveOptsFile()
+
+    Opts.setOptions()

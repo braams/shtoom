@@ -7,8 +7,10 @@ class BaseApplication:
     __cookieCount = 0
 
     def __init__(self, prefs=None):
-        self.connectSIP()
+        pass
 
+    def boot(self):
+        self.connectSIP()
 
     def connectPrefs(self, prefs):
         if prefs:
