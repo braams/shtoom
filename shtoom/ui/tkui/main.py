@@ -76,12 +76,25 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._buttonF.grid(row=1,column=1, sticky=NW)
         self._debugText = Text(self._top2, width=72, height=7, wrap='char')
         self._debugText.grid(row=1,column=2, sticky=NW)
+        for b in ( '1', '2', '3',  '4', '5', '6' ,  '7', '8', '9', '0', ):
+            self._debugText.bind('<KeyPress-%s>'%b,     lambda e, b=b: self.startDTMF(b))
+            self._debugText.bind('<KeyRelease-%s>'%b,   lambda e, b=b: self.stopDTMF(b))
+        self._debugText.bind('<KeyPress-asterisk>',    lambda e, b=b: self.startDTMF('*'))
+        self._debugText.bind('<KeyPress-KP_Multiply>', lambda e, b=b: self.startDTMF('*'))
+        self._debugText.bind('<KeyRelease-asterisk>',   lambda e, b=b: self.stopDTMF('*'))
+        self._debugText.bind('<KeyRelease-KP_Multiply>',lambda e, b=b: self.stopDTMF('*'))
+        self._debugText.bind('<KeyPress-numbersign>',  lambda e, b=b: self.startDTMF('#'))
+        self._debugText.bind('<KeyPress-KP_Enter>',    lambda e, b=b: self.startDTMF('#'))
+        self._debugText.bind('<KeyRelease-numbersign>', lambda e, b=b: self.stopDTMF('#'))
+        self._debugText.bind('<KeyRelease-KP_Enter>',   lambda e, b=b: self.stopDTMF('#'))
         self._top2.grid(row=3,column=1, columnspan=6,sticky=NW)
 
 
     def startDTMF(self, key):
         if self.cookie:
             self.app.startDTMF(self.cookie, key)
+        else:
+            print "discarding", key
 
     def stopDTMF(self, key):
         if self.cookie:
