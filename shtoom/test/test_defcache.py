@@ -198,7 +198,7 @@ class DefcacheTests(unittest.TestCase):
         ar = self.assertRaises
 
 	# Has to be elsewhere to avoid SyntaxErrors :-(
-	from shtoom.test.decorated_defcache_test import Dectest
+	from shtoom.test.py24tests import Dectest
 
         # XXX actually test the stupid things?!
         d = Dectest()

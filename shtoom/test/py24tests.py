@@ -1,3 +1,15 @@
+from twisted.trial import unittest
+
+
+def decoratedLWCTest(IBar, b2):
+    from shtoom.lwc import arguments
+
+    @arguments(IBar)
+    def takesABar(bar):
+        return bar is b2
+
+    return takesABar
+
 # Copyright (C) 2004 Anthony Baxter
 
 """Tests for shtoom.defcache.
