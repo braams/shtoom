@@ -21,6 +21,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.address = self.xml.get_widget("address")
         #self.address.set_value_in_list(False, False)
         self.callButton = self.xml.get_widget("call")
+        self.dtmfwindow = self.xml.get_widget("dtmfWindow")
         self.hangupButton = self.xml.get_widget("hangup")
         self.hangupButton.set_sensitive(0)
         self.status = self.xml.get_widget("statusbar")
@@ -82,6 +83,12 @@ class ShtoomWindow(ShtoomBaseUI):
         from prefs import PreferencesDialog
         p = PreferencesDialog(self.xml.get_widget("callwindow"), self, self.app.getOptions())
         p.show()
+
+    def on_dtmfmenu_activate(self, widget):
+        self.dtmfwindow.show_all()
+
+    def on_dtmfmenu_close(self, widget):
+        self.dtmfwindow.hide_all()
 
     def on_lookup_clicked(self, w):
         from addressedit import AddressBook
