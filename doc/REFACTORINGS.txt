@@ -7,7 +7,8 @@ it actually is - the code as it is works, but could be done better.
 Most of them are also going to be necessary to move forward in some
 areas that are currently blocked.
 
-[xxx work in progress]
+[xxx work in progress - please give me comments on details if 
+you're interested in looking at any of these]
 
 SDP/RTP/Payload Types refactoring
 ---------------------------------
@@ -20,6 +21,10 @@ code would pass an object to the RTP layer that has both the data
 *and* the payload type, and similarly, receive an object from the RTP
 layer with both the data and the payload type. This then gets passed
 to the AudioLayer object. 
+
+The bits that would need touching are shtoom.app.{doug,phone}, 
+shtoom.rtp, shtoom.audio.converters. shtoo.app.base can be ignored,
+as it's going away soon.
 
 Call
 ----
