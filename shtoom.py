@@ -31,6 +31,9 @@ def tryGnomeInterface():
     try:
         import pygtk
         pygtk.require("2.0")
+    except ImportError:
+        pass
+    try:
         import gtk
     except ImportError:
         gtk = None
