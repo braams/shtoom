@@ -6,11 +6,12 @@ class ShtoomBaseUI:
     """ Common code for all userinterfaces """
 
     def connectSIP(self):
+	from shtoom import prefs 
         from twisted.internet import reactor
         from shtoom import sip
         p = sip.SipPhone(self)
         self.sip = p
-        self.sipListener = reactor.listenUDP(5060, p)
+        self.sipListener = reactor.listenUDP(prefs.localport or 5060, p)
         log.msg('sip listener installed')
 
     def resourceUsage(self):

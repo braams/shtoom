@@ -26,12 +26,23 @@ def tryTkInterface():
         main()
         sys.exit()
 
-def main():
-    import sys
+def findUserInterface():
+    from shtoom import prefs
+    if prefs.ui:
+        if prefs.ui.lower() == 'qt':
+            tryQtInterface()
+        elif prefs.ui.lower()[:2] == 'tk':
+            tryTkInterface()
     tryQtInterface()
     tryTkInterface()
     # Other interfaces here
     print "Error: Couldn't load _any_ userinterfaces"
+
+def main():
+    import sys
+    from shtoom.opts import parseOptions
+    parseOptions()
+    findUserInterface()
 
 if __name__ == "__main__":
     main()

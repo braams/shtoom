@@ -11,7 +11,7 @@ from rtp import RTPProtocol
 from twisted.python import log
 import random
 
-import prefs
+from shtoom import prefs
 
 
 def genCallId():
@@ -45,8 +45,8 @@ class Call(object):
         """
         # XXX Allow over-riding
         import prefs
-        if prefs.myip is not None:
-            self._localIP = prefs.myip
+        if prefs.localip is not None:
+            self._localIP = prefs.localip
         else:
             import socket
             rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -65,7 +65,7 @@ class Call(object):
         return self._callID
 
     def getLocalSIPAddress(self):
-        return (self._localIP, 5060)
+        return (self._localIP, prefs.localport or 5060)
 
     def getRemoteSIPAddress(self):
         return (self.url.host, (self.url.port or 5060))
