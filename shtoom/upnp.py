@@ -84,6 +84,7 @@ class UPnPProtocol(DatagramProtocol, object):
             return
         loc = loc[0]
         d = urlopen(loc)
+        log.msg("found a UPnP device at %s"%loc, system="UPnP")
         d.addCallback(self.handleIGDeviceResponse, loc).addErrback(log.err)
 
     def parseSearchResponse(self, message):
@@ -124,6 +125,7 @@ class UPnPProtocol(DatagramProtocol, object):
             return defer.fail(NoUPnPFound())
 
     def completedDiscovery(self):
+        log.msg("discovery completed", system="UPnP")
         if self.upnpTimeout:
             self.upnpTimeout.cancel()
             self.upnpTimeout = None
@@ -134,6 +136,7 @@ class UPnPProtocol(DatagramProtocol, object):
                 d.callback(self)
 
     def failedDiscovery(self, err):
+        log.msg("discovery failed", system="UPnP")
         if hasattr(self, '_discDef'):
             if self.controlURL is not None:
                 self.controlURL = None
@@ -142,7 +145,7 @@ class UPnPProtocol(DatagramProtocol, object):
             d.callback(NoUPnPFound())
 
     def timeoutDiscovery(self):
-        log.msg("UPnP discovery timed out", system="UPnP")
+        log.msg("discovery timed out", system="UPnP")
         self.upnpTimeout = None
         if hasattr(self, '_discDef'):
             if self.urlbase is None:
@@ -166,6 +169,7 @@ class UPnPProtocol(DatagramProtocol, object):
         mcast.joinGroup('239.255.255.250', socket.INADDR_ANY)
 
     def handleIGDeviceResponse(self, body, loc):
+        log.msg("got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
             # We already got a working one - ignore this one
             return
@@ -205,6 +209,7 @@ class UPnPProtocol(DatagramProtocol, object):
         d.addCallback(self.handleWanServiceDesc).addErrback(log.err)
 
     def handleWanServiceDesc(self, body):
+        log.msg("got WANServiceDesc from %s"%(self.urlbase,), system='UPnP')
         data = body.read()
         self.soap = SOAPRequestFactory(self.controlURL, 
                             "urn:schemas-upnp-org:service:WANIPConnection:1")
