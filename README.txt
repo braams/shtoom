@@ -78,6 +78,10 @@ Optional:
     http://www.freenet.org.nz/python/pySpeex/
 
     python ALSA interface
+        The state of audio on Linux is terrible. The ALSA interface is
+        much better, use it if you can. See the large amounts of ranting
+        in the DEBUGGING.txt file for more.
+        svn://divmod.org/svn/Shtoom/trunk/audio/pyalsaaudio
 
     CocoaShtoom
 
