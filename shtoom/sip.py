@@ -141,7 +141,7 @@ class Dialog:
 
     def setCallID(self, callid=None):
         if not callid:
-            callid = getCallId()
+            callid = genCallId()
         self._callid = callid
 
     def setContact(self, username, ip, port):
@@ -539,7 +539,7 @@ class Call(object):
         oksdp = SDP(okmessage.body)
         sdp = self.sip.app.getSDP(self.cookie, oksdp)
         if not sdp.hasMediaDescriptions():
-            self.sendResponse(message, 406)
+            self.sendResponse(okmessage, 406)
             self.setState('ABORTED')
             return
         contact = okmessage.headers['contact']
