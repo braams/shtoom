@@ -2,22 +2,30 @@ from shtoom import log
 import os, sys, gettext
 
 _installedDomain = None
+_installDir = None
 
 def install(domain='shtoom'):
     # A hunting we will go, a hunting we will go, la de da de da
-    global _installedDomain
+    global _installedDomain, _installDir
 
     if _installedDomain == domain:
         return
 
     d = _findLocaleDir(domain)
     if d is None:
+        gettext.bindtextdomain(domain)
+        gettext.textdomain(domain)
         gettext.install(domain)
     else:
         print "found localedir", d
+        _installDir = d
+        gettext.bindtextdomain(domain, d)
+        gettext.textdomain(domain)
         gettext.install(domain, d)
     _installedDomain = domain
 
+def getLocaleDir():
+    return _installDir
 
 def _findLocaleDir(domain):
     import gettext, sys, shtoom
