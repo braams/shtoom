@@ -1,0 +1,30 @@
+Major changes in the shtoom suite. In reverse chronological order.
+
+0.2: NOT YET RELEASED
+  - Config file (.shtoomrc) added. This will save off any command
+    line arguments that are supplied, as well as any set via the
+    preferences dialog.
+  - Preferences dialog added (to Tk and Qt only, so far)
+  - Many bugfixes to the SIP handling code. Placing and receiving
+    calls via a proxy now works.
+  - Digest Auth support is done. This authenticates both INVITE 
+    and REGISTRATIONs. At the moment the auth has to be supplied
+    via a preference - this will be fixed, soon.
+  - SIP REGISTRATION is done - this allows you to register with a 
+    SIP Proxy (for instance, divmod.com)
+  - The 'guts' of Shtoom are now in shtoom.app - the new Application
+    object controls most of the behaviour of the phone. It creates 
+    SIP, RTP and UI objects and handles the communication between them.
+  - Major refactoring of the UI selection code
+  - UPnP discovery is working, but not hooked up (not much point until
+    the UPnP-using code is done).
+  
+
+0.1: RELEASED 2004-01-11. 
+  - Initial basic calling UI done, for Tk, Gnome, Qt/KDE and command 
+    line
+  - Audio using either ossaudiodev or portaudio/fastaudio
+  - Can make and receive calls
+  - Supports firewall traversal via STUN
+  - Uses either PCMU (8KHz ULAW, default) or GSM 06.10 (if optional
+    pygsm module is installed).

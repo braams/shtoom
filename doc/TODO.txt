@@ -1,0 +1,72 @@
+Mac installer: bundlebuilder
+Windows installer: Innoconda, py2exe
+Linux installer: rpmbuilder??, deb?
+
+Before 0.2:
+    - ui(gnome): Nag itamar into writing the GNOME prefs ;)
+    - tests: Way more unit tests
+    - options: parse command line, then config.ini file if wanted
+    - options: flag to suppress loading or saving of config file
+    - options, app: Handle changed prefs, re-init whatever's needed
+    - app: authCred support in shtoom.app
+    - sip: use app.authCred
+    - ui(all): A way to prompt for user, password information
+    - ui(all): A way to popup an information dialog
+    - sip: Connect up and debug shutdown hooks for removing registration and 
+      closing any open calls (dropCall needs to return a deferred)
+    - ui(tk): Finish Tkinter GUI
+    - ui(tk, gnome): Re-hookup the debugging log to the GUI for all GUIs - 
+      maybe need a hide/show option
+    - rtp: Integrate existing RTCP code
+    - sip: lots more error handling
+    - app: Hang up a phone call that is still "ringing":
+      1. doesn't seem to stop RTP/RTCP udp ports
+      2. if called broken address (e.g. "sip:") can't hang up
+    - dist(win): Fix the fastaudio windows distribution - it needs to include 
+      the libsndfile.dll file. I might need to switch to using Inno Setup -
+      but how does Inno Setup know where to install the executable? How
+      does wininst.exe build an installer? Default to C:\Python23 ?
+    - dist(win): Examine py2exe 0.5
+
+Before 0.3:
+    - UPnP: Hookup the discovery code in shtoom.upnp. 
+    - UPnP: Finish forwardPort and cancelForwardPort. 
+      Annoyingly, it doesn't seem like responses include some sort 
+      of response cookie to indicate which query it is for.
+      Needs SOAP client in Twisted 1.1.2.
+    - Handle more of SIP 
+        - Lookup servers/proxies using multicast, SRV
+        - redirects
+        - retransmits &c
+        - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
+          into shtoom.sdp, kill shtoom.multicast
+    - Codec switchability - DVI4?, Speex
+    - EsounD support for Gnome, aRts for KDE?
+      Note that aRts (and, I suspect, esd) only handle playing of audio,
+      not the recording of audio.
+
+Later:
+
+    - Statistics display
+    - New codec support: 
+        - G723?
+        - iLBC?
+    - Support RTP NTE (RFC2833)
+      Uses SDP of 'a=rtpmap:101 telephone-event/8000'
+    - More clients - shtam (answering machine), shtoomcu (conferencing server)
+    - Putting calls on hold, allowing multiple calls to go at once.
+    - Alternately, ad-hoc conferencing of new inbound or outbound calls
+    - Gnome addressbook integration. Gnome notification bar integration.
+    - KDE addressbook integration. KDE panel integration.
+    - Mac OS X UI and addressbook integration.
+    - Mac OS CoreAudio support for Mac audio - fzzzy is working on this.
+    - Native Windows audio - see 
+      http://www.cs.columbia.edu/~hgs/teaching/ais/slides/windows_audio.ppt
+      for an overview - DirectSound or DirectKS. It appears that WinMM isn't
+      suitable.
+    - Windows address book? Is there such a beast? Windows Messenger?
+    - PGP integration for SIP
+    - Crypto for RTP (via codec? what's the standard?)
+    - Video. Capture is the tricky bit in a cross-platform way. Mac OSX
+      already has a videocapture module.
+
