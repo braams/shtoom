@@ -16,7 +16,6 @@ Definite before 0.3:
     - ui(gnome): a new Gtk UI - Nafai
         - Re-hookup the debugging log to the GUI for all GUIs - 
           maybe need a hide/show option
-        - Prefs support
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - ui(tk): new dialogs that don't block, and have a timeout.

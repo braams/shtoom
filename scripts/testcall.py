@@ -14,7 +14,7 @@ from shtoom.exceptions import CallRejected
 class PlayingApp(VoiceApp):
 
     announceFile = 'tmp/doug_welcome.raw'
-    callURL = 'sip:anthony@divmod.com'
+    callURL = 'sip:anthony@localhost:5061'
 
     def __init__(self, *args, **kwargs):
         self.__dict__.update(kwargs)
@@ -47,7 +47,6 @@ class PlayingApp(VoiceApp):
         print "voiceapp.__start__ to user %s"%(username)
         self.mediaPlay(self.announceFile)
         return ( (MediaDoneEvent, self.messageDone),
-	         (CallEndedEvent, self.doneDoneAndDone),
                )
 
     def messageDone(self, event):

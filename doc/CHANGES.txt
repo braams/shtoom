@@ -1,6 +1,8 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - Scripts now live in the 'scripts' directory
+  - The Gtk UI now has a preferences dialog.
   - A conference server is in. There's a top-level script 'conference'
     that will run it. More work to be done, including enter/leave sounds
     and the like.

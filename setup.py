@@ -47,8 +47,7 @@ setup(
                 'shtoom.audio', 'shtoom.app' ],
     requires = ( 'twisted', 'python-2.3' ), 
     provides = ( 'shtoom-%s'%__version__, ), 
-    scripts = ['shtoom.py', 'shtam.py', 'shmessage.py',
-               # 'shtoomcu.py'
+    scripts = ['scripts/shtoom.py', 'scripts/shtam.py', 'scripts/shmessage.py',
               ],
     classifiers = [
        'Development Status :: 3 - Alpha',
