@@ -189,7 +189,7 @@ class RTPProtocol(DatagramProtocol):
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
-        log.msg("sending comfort noise to seed firewall")
+        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest))
         hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
         self.transport.write(hdr+chr(0), self.dest)
 
