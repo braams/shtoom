@@ -183,6 +183,7 @@ class MediaDescription:
     def addRtpMap(self, fmt):
         if fmt.pt is None:
             pts = self.rtpmap.keys()
+            pts.sort()
             if pts and pts[-1] > 100:
                 payload = pts[-1] + 1
             else:

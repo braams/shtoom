@@ -12,7 +12,7 @@ from twisted.trial import unittest
 
 class SDPTests(unittest.TestCase):
 
-    def testSimpleSDP(self):
+    def testOLDSimpleSDP(self):
         from shtoom.multicast.SDP import SDP, SimpleSDP
         s = SimpleSDP()
         s.setServerIP('10.11.12.13')
@@ -28,6 +28,26 @@ class SDPTests(unittest.TestCase):
         ae(sdpout.formats, [0,3])
         ae(sdpout.media, 'audio')
         ae(sdpout.transport, 'RTP/AVP')
+
+    def testSDPCreation(self):
+        from shtoom.sdp import SDP, MediaDescription
+        from shtoom.rtp.formats import PT_PCMU, PT_SPEEX, PT_NTE, PT_CN
+        ae = self.assertEquals
+
+        s = SDP()
+        md = MediaDescription()
+        s.addMediaDescription(md)
+        s.setServerIP('127.0.0.1')
+        md.setServerIP('127.0.0.1')
+        md.setLocalPort(45678)
+        md.addRtpMap(PT_PCMU)
+        md.addRtpMap(PT_SPEEX)
+        md.addRtpMap(PT_CN)
+        md.addRtpMap(PT_NTE)
+        pts = [ x[1] for x in md.rtpmap.values() ]
+        ae(pts, [PT_PCMU, PT_SPEEX, PT_CN, PT_NTE])
+
+
 
     def testParseShowSDP(self):
         from shtoom.sdp import SDP
