@@ -25,6 +25,7 @@ class Phone(BaseApplication):
         self.ui = ui
         self._currentCall = None
         self._muted = False
+        self._rtpProtocolClass = None
 
     def boot(self, options=None):
         from shtoom.ui.select import findUserInterface
@@ -50,7 +51,8 @@ class Phone(BaseApplication):
         reactor.run()
 
     def getAuth(self, method, realm):
-        self.ui.getString("Please enter user,passwd for %s at %s"%(method, realm))
+        self.ui.getString("Please enter user,passwd for %s at %s"%(method, 
+                                                                   realm))
 
     def acceptCall(self, call):
         print "dialog is", call.dialog
@@ -61,13 +63,13 @@ class Phone(BaseApplication):
         d = self._createRTP(cookie, 
                             call.getLocalSIPAddress()[0], 
                             call.getSTUNState())
+        self.ui.callStarted(cookie)
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
             # Otherwise we chain callbacks
             d.addCallback(lambda x: 
-                                 self.ui.incomingCall(call.dialog.getCaller(), 
-                                                      cookie)
-                         )
+                            self.ui.incomingCall(call.dialog.getCaller(), 
+                                                 cookie))
         elif calltype == 'outbound':
             d.addCallback(lambda x, cookie=cookie: cookie )
         else:
@@ -75,8 +77,11 @@ class Phone(BaseApplication):
         return d
 
     def _createRTP(self, cookie, localIP, withSTUN):
-        from shtoom.rtp import RTPProtocol
-        rtp = RTPProtocol(self, cookie)
+        if self._rtpProtocolClass is None:
+            from shtoom.rtp import RTPProtocol
+            rtp = RTPProtocol(self, cookie)
+        else:
+            rtp = self._rtpProtocolClass(self, cookie)
         self._rtp[cookie] = rtp
         d = rtp.createRTPSocket(localIP,withSTUN)
         return d
