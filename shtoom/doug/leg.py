@@ -1,3 +1,5 @@
+# Copyright (C) 2004 Anthony Baxter
+
 """ A leg """
 
 
@@ -14,3 +16,5 @@ class Leg(object):
         """ Remove the currently running VoiceApp from the leg, and
             slot in a new one. Returns the hijacked app.
         """
+
+    

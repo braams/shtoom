@@ -1,6 +1,10 @@
+# Copyright (C) 2004 Anthony Baxter
+
 class Event(object):
     """
     """
+    def getEventName(self):
+        return self.__class__.__name__
 
 class    DTMFReceivedEvent(Event):
     """ Received some DTMF keystrokes.
