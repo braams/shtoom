@@ -453,6 +453,9 @@ class Call(object):
         """ The remote UAC changed it's mind about the new call and
             gave up.
         """
+        self.sendResponse(message, 487)
+        self.setState('ABORTED')
+        self.sip.app.endCall(self.cookie)
 
     def recvAck(self, message):
         ''' The remote UAC has ACKed our response to their INVITE.
@@ -492,9 +495,11 @@ class Call(object):
         elif state in ( 'CONNECTED', ):
             self.sendBye()
             self.setState('SENT_BYE')
+            # XXX callLater to give up...
         elif state in ( 'SENT_INVITE', ):
             self.sendCancel()
             self.setState('SENT_CANCEL')
+            # XXX callLater to give up...
         elif state in ( 'NEW', ):
             self.setState('ABORTED')
 
@@ -940,6 +945,8 @@ class SipPhone(DatagramProtocol, object):
                     call.recvInvite(message)
                 elif message.method == 'ACK':
                     call.recvAck(message)
+                elif message.method == 'CANCEL':
+                    call.recvCancel(message)
 
         elif message.response:
             print "handling response", message.code
