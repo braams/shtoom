@@ -11,15 +11,24 @@ if f.endswith('scripts') and os.path.isdir(os.path.join(os.path.dirname(f),
 else:
     sys.path.append(f)
 
+# For testing purposes
+# Force STUN to return the crappiest type of NAT
+#import shtoom.stun
+#shtoom.stun._ForceStunType = shtoom.stun.NatTypeSymmetric
+# Force UPnP to not work
+#import shtoom.upnp
+#shtoom.upnp.UPNP_PORT = 1901
+
 def main():
     from twisted.internet import defer
     from shtoom.upnp import getUPnP
     from shtoom.stun import getSTUN
-    from shtoom.nat import getLocalIPAddress
+    from shtoom.nat import getLocalIPAddress, getMapper
     ud = getUPnP()
     sd = getSTUN()
     ld = getLocalIPAddress()
-    dl = defer.DeferredList([ud, sd, ld])
+    md = getMapper()
+    dl = defer.DeferredList([ud, sd, ld, md])
     dl.addCallback(gotResults).addErrback(didntGetResults)
 
 def didntGetResults(*res):
@@ -31,7 +40,7 @@ def gotResults(natresults):
     from shtoom.avail import audio, codecs
     from shtoom import __version__
     import platform, twisted.copyright
-    (ures, upnp), (sres, stun), (lres,locIP) = natresults
+    (ures, upnp), (sres, stun), (lres,locIP), (mres, mapper) = natresults
     print "Shtoom, version %s"%(__version__)
     print "Using python version", platform.python_version()
     print "Using twisted version", twisted.copyright.version
@@ -54,13 +63,14 @@ def gotResults(natresults):
         print "No UPnP-capable device discovered"
     if sres:
         print "STUN says NAT type: %s"%(stun.name)
-        if not ures:
+        if not upnp:
             if stun.blocked:
                 print "You will be unable to make calls to the internet"
             elif not stun.useful:
                 print "You will need to use an outbound proxy to make calls to the internet"
     else:
         print "STUN was unable to get a result. This is bad"
+    print "And the mapper we'd use is: %r"%(mapper)
     reactor.stop()
 
 
