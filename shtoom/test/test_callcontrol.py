@@ -1,4 +1,5 @@
-
+from twisted.internet import reactor, defer
+from twisted.python import log
 callFlowOutboundHorror = """
 For an outbound call:
   UI calls app.placeCall(), which calls sip.SIP.placeCall(), which 
@@ -37,33 +38,132 @@ callFlowInboundHorror = """
      (Call.acceptedCall(), Call.rejectedCall())
 """
 
+class TestAudio:
+    def selectFormat(self, fmt): 
+        print "selecting fake audio format"
+
+    def listFormat(self):
+        return []
+
+    def reopen(self):
+        print "reopening fake audio"
+
+    def close(self):
+        print "closing fake audio"
+
+    def read(self):
+        return ''
+
+    def write(self, bytes):
+        pass
+
 class TestUI:
 
-    def cb_callStarted(self, cookie):
-        pass
+    def connectApplication(self, app):
+        self.app = app
+
+    def callStarted(self, cookie):
+        self.cookie = cookie
+        print "callStarted", self.cookie
 
     def cb_callFailed(self, cookie, message=None):
-        pass
+        print "callFailed", self.cookie
 
-    def callConnected(self, cookie):
-        pass
+    def cb_callConnected(self, cookie):
+        print "callConnected", self.cookie
+        reactor.callLater(0, self.dropCall)
 
     def callDisconnected(self, cookie, reason):
-        pass
+        print "callDisconnected", self.cookie
+        reactor.stop()
 
-    def incomingCall(self, description, cookie, defresp):
-        pass
+    def incomingCall(self, description, cookie):
+        print "incoming"
+        return defer.succeed('PretendCookie #1')
 
-    def placeCall(self):
-        pass
+    def fakeCall(self):
+        print "placing a call"
+        d = self.app.placeCall('sip:foo@bar')
+        d.addCallbacks(self.cb_callConnected, 
+                       self.cb_callFailed).addErrback(log.err)
 
     def dropCall(self):
-        pass
+        self.app.dropCall(self.cookie)
 
 class TestCall:
     "A fake Call object"
+    def __init__(self, d, sip):
+        self.d = d
+        self.sip = sip
 
-class TestSIP
-    "Just like shtoom.sip.Sip, only not"
+    def getLocalSIPAddress(self):
+        return ( '127.0.0.1', 5060)
+
+    def getSTUNState(self): 
+        return False
+
+    def startFakeOutbound(self, uri):
+        from shtoom.sip import Dialog
+        self.dialog = Dialog()
+        self.dialog.setDirection(outbound=True)
+        d = self.sip.app.acceptCall(call=self)
+        d.addCallbacks(self.acceptedFakeCall, 
+                       self.rejectedFakeCall).addErrback(log.err)
+
+    def acceptedFakeCall(self, cookie):
+        print "accepted, got %r"%(cookie,)
+        self.cookie = cookie
+        d, self.d = self.d, None
+        self.sip.app.startCall(self.cookie, ('127.0.0.1', 9876), d.callback)
+
+    def rejectedFakeCall(self, e):
+        print "rejected, got %r"%(e,)
+        d, self.d = self.d, None
+        d.errback(e)
+
+    def dropCall(self):
+        self.sip.app.endCall(self.cookie)
+
+
+class TestSip:
+    "Just like shtoom.sip.SipPhone, only not"
+    def __init__(self, app):
+        self.app = app
+
     def placeCall(self, uri):
+        d = defer.Deferred()
+        c = TestCall(d, self)
+        c.startFakeOutbound(uri)
+        return d
+
+    def register(self):
         pass
+
+class TestRTP:
+    def __init__(self, app, cookie):
+        self.cookie = cookie
+        self.app = app
+
+    def createRTPSocket(self, ip, stun):
+        return defer.succeed('ok')
+
+    def startSendingAndReceiving(self, remote):
+        pass
+
+    def stopSendingAndReceiving(self):
+        pass
+
+from twisted.trial import unittest
+
+class TestCallControl(unittest.TestCase):
+    def testOutbound(self):
+        from shtoom.app.phone import Phone
+        ui = TestUI()
+        p = Phone(ui=ui, audio=TestAudio())
+        p._rtpProtocolClass = TestRTP
+        ui.connectApplication(p)
+        reactor.callLater(0, ui.fakeCall)
+        p.boot()
+        p.sip = TestSip(p)
+        p.start()
+
