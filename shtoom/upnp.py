@@ -169,7 +169,11 @@ class UPnPProtocol(DatagramProtocol, object):
         mcast.joinGroup('239.255.255.250', socket.INADDR_ANY)
 
     def handleIGDeviceResponse(self, body, loc):
-        log.msg("got an IGDevice from %s"%(loc,), system='UPnP')
+        log.msg("before stupidrandomdelaytoworkaroundbug got an IGDevice from %s"%(loc,), system='UPnP')
+        reactor.callLater(4, self.stupidrandomdelaytoworkaroundbug, body, loc)
+
+    def stupidrandomdelaytoworkaroundbug(self, body, loc):
+        log.msg("after stupidrandomrelaytoworkaroundbug, got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
             log.msg("already found UPnP, discarding duplicate response", 
                                                                 system="UPnP")
