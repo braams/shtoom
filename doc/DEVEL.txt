@@ -1,0 +1,38 @@
+Working with Branches in Subversion
+-----------------------------------
+
+svn branching isn't as automatic as it could be, unfortunately. 
+Merge tracking is listed as a "medium term goal" for svn. 
+
+Sample::
+
+ branchName=branchtesting # or whatever
+ ShtoomRoot=svn+ssh://divmod.org/svn/Shtoom/
+ svn cp $ShtoomRoot/trunk/shtoom $ShtoomRoot/branches/$branchName
+ cd somedir
+ # Either:
+     svn co $ShtoomRoot/branches/$branchName 
+     cd branchtesting
+ # Or
+     cp -a svntrunk $branchName
+     cd $branchName
+     svn switch $ShtoomRoot/branches/$branchName 
+ # Make a note of the revision you branched from, or from inside the
+ # branch checkout, 'svn up ; svn log --stop-on-copy' and find the 
+ # last mentioned revision
+ branchRev=671
+ cd trunk-wc
+ svn merge -r$branchRev:HEAD $ShtoomRoot/branches/$branchName 
+ svn stat
+ svn ci -m 'merging branch $branchName' [changed file list]
+ svn rm $ShtoomRoot/branches/$branchName 
+
+Current Branches
+----------------
+
+This is to track current and historic branches, including the 
+revision which they branched from, and the revision they were
+merged at.
+
+rtp-sdp-refactor: branched at r676, not yet merged back in.
+
