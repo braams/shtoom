@@ -103,6 +103,8 @@ class MultipleConv(NullConv):
         elif format == FMT_GSM:
             if self._gsmencoder:
                 indata = self._d.read()
+                if indata is None:
+                    return None
                 if len(indata) != 320:
                     print "GSM: got short read len = %s"%len(indata)
                     return None
