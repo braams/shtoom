@@ -3,7 +3,6 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??
 
 Before 0.2:
-    - refactor shtoom.prefs away
     - Nag itamar into writing the GNOME prefs ;)
     - Handle changed prefs, re-init whatever's needed
     - authCred support in shtoom.app
