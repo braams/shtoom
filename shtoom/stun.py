@@ -85,6 +85,9 @@ NatTypeRestrictedCone = _NatType('RestrictedCone')
 NatTypePortRestricted = _NatType('PortRestricted')
 
 
+# For testing - always return this STUN type
+_ForceStunType = None
+
 
 import os
 if hasattr(os, 'urandom'):
@@ -347,6 +350,10 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
 
     def startDiscovery(self):
         from shtoom.nat import isBogusAddress, getLocalIPAddress
+        if _ForceStunType is not None:
+            self.natType = _ForceStunType
+            reactor.callLater(0, self._finishedStun)
+            return
         localAddress = self.transport.getHost().host
         if isBogusAddress(localAddress):
             d = getLocalIPAddress()
