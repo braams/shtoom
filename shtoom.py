@@ -2,7 +2,8 @@
 
 # Copyright (C) 2004 Anthony Baxter
 
-
+# Hack hack hack.
+import sys ; sys.path.append(sys.path.pop(0))
 
 def tryTextInterface():
     import sys
