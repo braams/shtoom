@@ -391,7 +391,7 @@ class Call(object):
             del self.compDef
         else:
             cb = lambda *args: None
-        print "sending ACK to %s %s"%(uri.host, uri.port or 5060)
+        log.msg("sending ACK to %s %s"%(uri.host, uri.port or 5060))
         self.sip.transport.write(ack.toString(), (uri.host, (uri.port or 5060)))
         self.setState('CONNECTED')
         if startRTP:

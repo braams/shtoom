@@ -5,7 +5,7 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# $Id: rtp.py,v 1.35 2004/03/04 13:07:35 anthony Exp $
+# $Id: rtp.py,v 1.36 2004/03/04 14:20:47 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -123,11 +123,11 @@ class RTPProtocol(DatagramProtocol):
         ''' Handle results of the rtp/rtcp STUN. We have to check that
             the results have the same IP and usable port numbers
         '''
-        print "got STUN back!", results
+        log.msg("got STUN back! %r"%(results))
         rtpres, rtcpres = results
         if rtpres[0] != defer.SUCCESS or rtcpres[0] != defer.SUCCESS:
             # barf out.
-            print "uh oh, stun failed", results
+            log.msg("uh oh, stun failed %r"%(results))
         else:
             code1, rtp = rtpres
             code2, rtcp = rtcpres
@@ -137,9 +137,10 @@ class RTPProtocol(DatagramProtocol):
             # this seems almost impossible with most firewalls. So just try
             # to get a working rtp port (an even port number is required).
             elif ((rtp[1] % 2) != 0):
-                print "stun showed unusable rtp/rtcp ports", results
+                log.msg("stun showed unusable rtp/rtcp ports %r, retry number %d"%(results, self._stunAttempts))
                 # XXX close connection, try again, tell user
                 if self._stunAttempts > 8:
+                    # XXX
                     print "Giving up. Made %d attempts to get a working port"%(
                         self._stunAttempts)
                 self._stunAttempts += 1
@@ -148,7 +149,7 @@ class RTPProtocol(DatagramProtocol):
                 self._socketCreationAttempt()
             else:
                 # phew. working NAT
-                print "discovered sane NAT for RTP/RTCP"
+                log.msg("discovered sane NAT for RTP/RTCP")
                 self._extIP, self._extRTPPort = rtp
                 self._stunAttempts = 0
                 d = self._socketCompleteDef
@@ -186,7 +187,7 @@ class RTPProtocol(DatagramProtocol):
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
-        print "sending comfort noise to seed firewall"
+        log.msg("sending comfort noise to seed firewall")
         hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
         self.transport.write(hdr+chr(0), self.dest)
 
