@@ -98,9 +98,6 @@ class    CallLegEvent(Event):
     def _extraRepr(self):
         return repr(self.leg)
 
-class      CallStartedEvent(CallLegEvent):
-    """ A call started
-    """
 
 class      CallAnsweredEvent(CallLegEvent):
     """ A call was connected
@@ -115,7 +112,7 @@ class      CallRejectedEvent(CallLegEvent):
     def _extraRepr(self):
         return repr(self.reason)
 
-class      CallEndedEvent(CallLegEvent):
+class      CallStartedEvent(CallLegEvent):
     """ A call started
     """
 

@@ -9,6 +9,8 @@
 """
 
 from shtoom.doug.source import Source
+from shtoom.doug.events import CallAnsweredEvent, CallRejectedEvent
+from twisted.python import log
 
 class Leg(object):
 
@@ -68,7 +70,7 @@ class Leg(object):
             d.callback(self._cookie)
         else:
             log.msg("can't answer call %s, already answered/rejected"%(
-                                                self.cookie), system='doug')
+                                                self._cookie), system='doug')
 
     def rejectCall(self, reason):
         " Reject the (incoming) call on this leg "
@@ -79,7 +81,7 @@ class Leg(object):
             d.errback(reason)
         else:
             log.msg("can't reject call %s, already answered/rejected"%(
-                                                self.cookie), system='doug')
+                                                self._cookie), system='doug')
 
     def hangupCall(self):
         self._voiceapp.va_hangupCall(self._cookie)

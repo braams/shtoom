@@ -110,7 +110,7 @@ class VoiceApp(StateMachine):
         c = self.__currentDTMFKey
         if dtmf:
             if c is not dtmf:
-                self.va_stopDTMFevent(c)
+                self.va_stopDTMFevent(c, callcookie)
                 self.__currentDTMFKey = dtmf
                 self._inboundDTMFKeyPress(dtmf)
             else:
