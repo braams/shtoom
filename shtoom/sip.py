@@ -919,7 +919,7 @@ class Registration(Call):
                     uri = str(self.regURI)
                     credDef = self.sip.app.authCred('REGISTER', uri,
                                             retry=(self.register_attempts > 1)
-                                            ).addErrback(log.err)
+                                            )
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('REGISTER',
                                                       uri=uri,
