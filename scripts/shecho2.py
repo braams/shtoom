@@ -64,23 +64,14 @@ class EchoApp(VoiceApp):
 
 
 class EchoApplication(DougApplication):
-
-    def acceptErrors(self, cookie, error):
-        log.deferr(error)
-
-    def acceptResults(self, cookie, results):
-        log.msg("EchoApp for %s got %r"%(cookie, results))
-
+    configFileName = '.shechorc'
 
 def main():
-    from twisted.internet import reactor
     global app
+    from twisted.internet import reactor
+
     app = EchoApplication(EchoApp)
-    print "app", app
     app.boot()
-    print app, "booted"
-    #reactor.callLater(0, app.startVoiceApp)
-    print app, "about to start"
     app.start()
 
 if __name__ == "__main__":
