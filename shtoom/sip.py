@@ -164,6 +164,7 @@ class Call(object):
         ''' Accept currently pending call.
         '''
         from shtoom.exceptions import CallRejected
+	print "rejecting because", message
         self.sendResponse(self._invite, 603)
         self.setState('ABORTED')
         self.compDef.errback(CallRejected)
@@ -244,7 +245,7 @@ class Call(object):
                     self.sip.app.acceptCall(self,
                                             calltype='inbound',
                                             desc=desc,
-                                            fromIP=self.getRemoteSIPAddress()[0],
+                                            fromIP=self.getLocalSIPAddress()[0],
                                             withSTUN=self.getSTUNState() ,
                                             toAddr=invite.headers.get('to'),
                                             fromAddr=invite.headers.get('from'),
