@@ -1,9 +1,9 @@
-To update the base .pot file, from the root (the directory with 'shtoom', 
-'scripts' and 'i18n' directories), run 
+To update the base .pot (which contains the translation template), and
+any existing '.po' (translation) files, run 
 
-    % ./i18n/makepots.sh
+    % ./i18n/makepots.py
 
-This will update i18n/shtoom.pot
+This will update i18n/shtoom.pot and any .po files that are already there.
 
 To create a new language-specific .po file, change to the 'i18n' directory,
 and run 
@@ -15,12 +15,11 @@ en_AU.po. Edit this file, add it to svn (or email it to me) and you're
 done! If you don't have the msginit &c commands on your system, please
 let me know and I'll generate one for you.
 
-If the base translations file (shtoom.pot) is updated, you can merge
-in the changes with 
 
-    % msgmerge -U en_AU.po shtoom.pot 
+To install the .mo files, run 
 
-Edit en_AU.po to include the updated entries, and once again, check it
-in or send it to me for checkin.
+    % ./i18n/installpo.py <targetdir>
 
-
+Work still to be done:
+    Install the .mo files from setup.py
+    Determine the right thing to do with windows.
