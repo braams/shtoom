@@ -11,7 +11,7 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
 
     sending = False
     audiosource = None
-    cookie = False
+    cookie = None
 
     def debugMessage(self, message):
         log.msg(message)
@@ -26,7 +26,7 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         self.app.dropCall(self.cookie)
         self.callButton.setEnabled(True)
         self.hangupButton.setEnabled(False)
-        self.cookie = False
+        self.cookie = None
 
     def callButton_clicked(self):
         sipURL = str(self.addressComboBox.currentText())
@@ -76,13 +76,108 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
                 'Yes', 'No', '', 0, 1)
         print "accept is", accept
         if accept == 0:
-            self.connected = call
+            self.cookie = call
             self.callButton.setEnabled(False)
             defresp.callback('yes')
         else:
             # BOGUS
             defresp.errback(CallRejected)
 
+    def dtmfButtonHash_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '#')
+
+    def dtmfButtonHash_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '#')
+
+    def dtmfButtonStar_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '*')
+
+    def dtmfButtonStar_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '*')
+
+    def dtmfButton1_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '1')
+
+    def dtmfButton1_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '1')
+
+    def dtmfButton2_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '2')
+
+    def dtmfButton2_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '2')
+
+    def dtmfButton3_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '3')
+
+    def dtmfButton3_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '3')
+
+    def dtmfButton4_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '4')
+
+    def dtmfButton4_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '4')
+
+    def dtmfButton5_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '5')
+
+    def dtmfButton5_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '5')
+
+    def dtmfButton6_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '6')
+
+    def dtmfButton6_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '6')
+
+    def dtmfButton7_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '7')
+
+    def dtmfButton7_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '7')
+
+    def dtmfButton8_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '8')
+
+    def dtmfButton8_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '8')
+
+    def dtmfButton9_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '9')
+
+    def dtmfButton9_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '9')
+
+    def dtmfButton0_pressed(self):
+        if self.cookie is not None:
+            self.app.startDTMF(self.cookie, '0')
+
+    def dtmfButton0_released(self):
+        if self.cookie is not None:
+            self.app.stopDTMF(self.cookie, '0')
 
 class Logger:
     def __init__(self, textwidget):
