@@ -1,4 +1,6 @@
-Blow away current UI, replace
+Fix full-duplex mode to not suck
+
+Finish current UI
 
 Replace shtoom/multicast package with something that doesn't suck
 
@@ -12,6 +14,8 @@ Statistics display
 
 Preferences storage
 
+Command line options - particularly localIP
+
 Make interface for audio source(s)
 Maybe use http://www.portaudio.com/ 
 (python interface at http://www.freenet.org.nz/python/pyPortAudio )
@@ -21,5 +25,23 @@ http://www.freenet.org.nz/python/pySpeex/
 GSM?
 G723?
 iLBC?
+
+linphone uses:
+    v=0
+    o=anthony 123456 654321 IN IP4 192.168.41.16
+    s=A conversation
+    c=IN IP4 192.168.41.16
+    t=0 0
+    m=audio 7078 RTP/AVP 0 3 8 110 111 115 101
+    b=AS:110 20
+    b=AS:111 20
+    a=rtpmap:0 PCMU/8000/1
+    a=rtpmap:3 GSM/8000/1
+    a=rtpmap:8 PCMA/8000/1
+    a=rtpmap:110 speex/8000/1
+    a=rtpmap:111 speex/16000/1
+    a=rtpmap:115 1015/8000/1
+    a=rtpmap:101 telephone-event/8000
+    a=fmtp:101 0-11
 
 

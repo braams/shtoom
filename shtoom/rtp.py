@@ -4,9 +4,9 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# Set option 'use_setitimer' for better results - needs
+# 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.2 2003/11/14 07:54:59 anthonybaxter Exp $
+# $Id: rtp.py,v 1.3 2003/11/14 08:35:29 anthonybaxter Exp $
 #
 
 import time, signal, socket, struct
