@@ -2,7 +2,7 @@
 
 # The Phone app.
 
-import threading, os.path
+import threading
 
 from twisted.internet import defer, protocol
 from twisted.python import log, threadable
@@ -91,9 +91,10 @@ class Phone(BaseApplication):
             ringingCommand = self.getPref('ringing_command')
             # Commented out until I test it
             if 0 and ringingCommand:
+                from twisted.internet import reactor
                 args = ringingCommand.split(' ')
                 cmdname = args[0]
-                reactor.spawnProcess(protocol.ProcessProtocol(), cmd, args)
+                reactor.spawnProcess(protocol.ProcessProtocol(), cmdname, args)
             self.ui.incomingCall(call.dialog.getCaller(), cookie, d)
         elif calltype == 'outbound':
             d.addCallback(lambda x, cookie=cookie: cookie )
