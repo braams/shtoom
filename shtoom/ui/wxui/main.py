@@ -70,7 +70,11 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.OnAdvanced(None)
 
         # Hookup the error log 
-        self.errorlog = LogFrameImpl(self, -1, "Message Log")
+        # Calculate initial pos for the message log window
+        (posx,posy) = self.GetPosition()
+        (sizex,sizey) = self.GetSize()
+        self.errorlog = LogFrameImpl(self, -1, "Message Log", 
+            pos=(posx+sizex+5,posy))
         wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
 
     def statusMessage(self, message):
@@ -263,6 +267,7 @@ class LogFrameImpl(LogFrame):
         LogFrame.__init__(self, *args, **kwargs)
         EVT_BUTTON(self, self.BUTT_CLEAR, self.OnClear)
         EVT_BUTTON(self, self.BUTT_CLOSE, self.OnClose)
+        EVT_CLOSE(self, self.OnClose)
     
     def OnClear(self, event):
         self.text_errorlog.Clear()
