@@ -62,9 +62,10 @@ class OSXAudio(object):
 
     def close(self):
         if self.running:
-            print "and (not) stopping it again"
-            #coreaudio.stopAudio(self)
-            #self.running = False
+            print "uninstalling coreaudio callback"
+            coreaudio.stopAudio(self)
+            self.outbuffer = ''
+            self.running = False
 
     def from44KStereo(self, buffer):
         b, self.tostate = audioop.ratecv(buffer, 2, 2, 44100, 8000, self.tostate)
