@@ -1,23 +1,24 @@
 """
 """
 
-from shtoom.avail import audio as av_audio
 from twisted.python import log
 from shtoom.audio.converters import MediaLayer
 
-audioOptions = { 'oss': av_audio.ossaudio,
-                 'fast': av_audio.fastaudio,
-                 'port': av_audio.fastaudio,
-                 'osx': av_audio.osxaudio,
-                 'core': av_audio.osxaudio,
-                 'file': av_audio.fileaudio,
-               }
-
-allAudioOptions = [ av_audio.ossaudio, av_audio.fastaudio, av_audio.osxaudio ]
 
 
 def findAudioInterface():
     from __main__ import app
+    # Ugh. Circular import hell
+    from shtoom.avail import audio as av_audio
+    audioOptions = { 'oss': av_audio.ossaudio,
+                     'fast': av_audio.fastaudio,
+                     'port': av_audio.fastaudio,
+                     'osx': av_audio.osxaudio,
+                     'core': av_audio.osxaudio,
+                     'file': av_audio.fileaudio,
+                   }
+    allAudioOptions = [av_audio.ossaudio,av_audio.fastaudio,av_audio.osxaudio]
+
     audioPref = attempts = None
 
     if app is not None:
