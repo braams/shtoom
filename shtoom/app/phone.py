@@ -26,7 +26,8 @@ class Phone(BaseApplication):
     def boot(self, options=None, settings=None):
         from shtoom.ui.select import findUserInterface
         from shtoom.opts import parseOptions, buildOptions
-        options = buildOptions(self)
+        if options is None:
+            options = buildOptions(self)
         self.installOptions(options, settings)
         parseOptions(self)
         if self.ui is None:

@@ -99,7 +99,7 @@ class Call(object):
         host, port = dest
         getPref = self.sip.app.getPref
         if getPref('localip') is not None:
-            self._localAddress = (getPref('localip'), getPref('localport') or 5060)
+            self._localAddress = (getPref('localip'), getPref('listenport') or 5060)
             locAddress = self._localAddress
             remAddress = ( host, port )
             # Argh. Do a DNS lookup on remAddress
@@ -108,7 +108,7 @@ class Call(object):
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
-                locAddress = (protocol.transport.getHost()[1], getPref('localport') or 5060)
+                locAddress = (protocol.transport.getHost()[1], getPref('listenport') or 5060)
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress,

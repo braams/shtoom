@@ -63,7 +63,7 @@ def defaultSettings():
         pass
     o = _settings()
     o.localip = None
-    o.localport = None
+    o.listenport = None
     o.username = None
     o.userdetail = None
     o.email_address = None

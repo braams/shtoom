@@ -34,7 +34,7 @@ class BaseApplication:
         from shtoom import sip
         p = sip.SipPhone(self)
         self.sip = p
-        self.sipListener = reactor.listenUDP(self.getPref('localport') or 5060, p)
+        self.sipListener = reactor.listenUDP(self.getPref('listenport') or 5060, p)
         log.msg('sip listener installed')
 
     def stopSIP(self):
