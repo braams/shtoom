@@ -117,20 +117,8 @@ class Phone(BaseApplication):
             return
         md = sdp.getMediaDescription('audio')
         rtpmap = md.rtpmap
-        rtp = self._rtp[callcookie]
-        for entry,(desc,pt) in rtpmap.items():
-            if pt == PT_PCMU:
-                self._audio.selectDefaultFormat(PT_PCMU)
-                self._audioFormat = entry
-                break
-            elif pt == PT_GSM:
-                self._audio.selectDefaultFormat(PT_GSM)
-                self._audioFormat = entry
-                break
-            else:
-                raise ValueError, "couldn't set to %r"%pt
-        else:
-            raise ValueError, "no working formats"
+        ptlist = [ x[1] for x in  rtpmap.values() ]
+        self._audio.selectDefaultFormat(ptlist)
 
     def getSDP(self, callcookie, othersdp=None):
         rtp = self._rtp[callcookie]
