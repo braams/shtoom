@@ -692,7 +692,12 @@ class Registration(Call):
                     # challenge.
                     if self.register_attempts > 1:
                         self.sendRegistration()
-                    else: 
+                    elif state == 'CANCEL_REGISTER':
+                        self.setState('UNREGISTERED')
+                        d = self._cancelDef
+                        del self._cancelDef
+                        d.callback(self)
+                    else:
                         self.sip.app.statusMessage("Registration: auth failed")
             else:
                 print "Unknown registration state '%s' for a 401/407"%(state)
@@ -712,14 +717,20 @@ class Registration(Call):
                 self.setState('UNREGISTERED')
                 d = self._cancelDef
                 del self._cancelDef
-                d.callback('ok')
+                d.callback(self)
             else:
                 print "Unknown state '%s' for a 200"%(state)
         elif message.code in ( 100, ):
             # Trying?!?
             pass
         else:
-            log.err("don't know about %s for registration"%(message.code))
+            if state == 'CANCEL_REGISTER':
+                self.setState('UNREGISTERED')
+                d = self._cancelDef
+                del self._cancelDef
+                d.callback(self)
+            else:
+                log.err("don't know about %s for registration"%(message.code))
 
     def cancelRegistration(self):
         # Cancel this outstanding registration. Should return a deferred 
@@ -751,12 +762,23 @@ class SipPhone(DatagramProtocol, object):
     def getRegistrations(self):
         return [c for c in self._calls.values() if isinstance(c, Registration)]
 
-    def register(self):
+    def register(self, removed=None):
+        if removed:
+            print "cancelled", removed
+            self._delCallObject(removed.getCallID())
         if self.app.getPref('register_uri') is not None:
-            d = defer.Deferred()
-            r = Registration(self,d)
-            r.startRegistration()
-            return d
+            existing = self.getRegistrations()
+            if existing:
+                for reg in existing:
+                    print "removing", reg, existing
+                    d = reg.cancelRegistration()
+                    d.addCallbacks(self.register, log.err)
+            else:
+                print "no outstanding registrations, registering"
+                d = defer.Deferred()
+                r = Registration(self,d)
+                r.startRegistration()
+                return d
 
     def _newCallObject(self, deferred, to=None, callid=None):
         call = Call(self, deferred, uri=to, callid=callid)

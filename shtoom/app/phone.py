@@ -36,13 +36,15 @@ class Phone(BaseApplication):
             self.ui = findUserInterface(self, self.getPref('ui'))
         BaseApplication.boot(self)
 
+    def register(self):
+        register_uri = self.getPref('register_uri')
+        if register_uri is not None:
+            self.sip.register()
+
     def start(self):
         "Start the application."
         from twisted.internet import reactor
-        register_uri = self.getPref('register_uri')
-        if register_uri is not None:
-            d = self.sip.register()
-            d.addCallback(log.err).addErrback(log.err)
+        self.register()
         reactor.run()
         self.ui.resourceUsage()
 

@@ -43,13 +43,16 @@ class ShtoomMainWindow(ShtoomBaseUI):
                                     command=self.hangupButton_clicked,
                                     state=DISABLED)
         self._hangupButton.grid(row=1, column=2, sticky=NW) 
+        self._registerButton = Button(self._top3, text="Register",
+                                  command=self.registerButton_clicked)
+        self._registerButton.grid(row=1, column=3, sticky=NW) 
         self._top3.grid(row=2,column=1,columnspan=2, sticky=NW)
         self._statusF = Frame(self._top1)
         self._statusL = Label(self._statusF, text="Status:")
         self._statusL.grid(column=1,row=1,sticky=W)
         self._statusW = Label(self._statusF, text="")
         self._statusW.grid(column=2,row=1,sticky=W)
-        self._statusF.grid(row=2, column=3, columnspan=3, sticky=W)
+        self._statusF.grid(row=2, column=4, columnspan=1, sticky=W)
 
         self._top2 = Frame(self.main)
         self._buttonF = Frame(self._top2)
@@ -65,7 +68,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
                 button.grid(row=row+1, column=col+1, sticky=NW)
                 self._dtmfbuttons[dtmf] = button
         self._buttonF.grid(row=1,column=1, sticky=NW)
-        self._debugText = Text(self._top2, width=80, height=7, wrap='char')
+        self._debugText = Text(self._top2, width=72, height=7, wrap='char')
         self._debugText.grid(row=1,column=2, sticky=NW)
         self._top2.grid(row=3,column=1, columnspan=6,sticky=NW)
         
@@ -98,13 +101,22 @@ class ShtoomMainWindow(ShtoomBaseUI):
             return
         self._callButton.config(state=DISABLED)
         deferred = self.app.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
+        deferred.addCallbacks(self.callStarted, self.callFailed).addErrback(log.err)
+
+    def registerButton_clicked(self, evt=None):
+        self.app.register()
 
     def callConnected(self, cookie):
+        pass
+
+    def callDisconnected(self, e):
+        self.statusMessage("Call disconnected: %r"%(e))
+
+    def callStarted(self, cookie):
         self.cookie = cookie
         self._hangupButton.config(state=NORMAL)
 
-    def callDisconnected(self, cookie, message):
+    def callFailed(self, cookie, message):
         self.errorMessage("call ended %s"%message)
         self._hangupButton.config(state=DISABLED)
         self._callButton.config(state=NORMAL)
