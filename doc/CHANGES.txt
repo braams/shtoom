@@ -1,6 +1,7 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.2: NOT YET RELEASED
+  - suppress the config file being used with --no-config-file
   - Config file (.shtoomrc) added. This will save off any command
     line arguments that are supplied, as well as any set via the
     preferences dialog.

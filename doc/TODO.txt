@@ -3,6 +3,7 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
 Before 0.2:
+    - options: short option name support
     - ui(gnome): Nag itamar into writing the GNOME prefs ;)
     - tests: Way more unit tests
     - options, app: Handle changed prefs, re-init whatever's needed
