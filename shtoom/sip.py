@@ -12,6 +12,8 @@ from rtp import RTPProtocol
 
 import shtoom
 
+_CACHED_LOCAL_IP = None
+
 from twisted.python import log
 import random, sys, socket
 
@@ -96,11 +98,12 @@ class Call(object):
         """
         # XXX Allow over-riding
         from shtoom.stun import StunHook, getPolicy
+        global _CACHED_LOCAL_IP
         host, port = dest
         getPref = self.sip.app.getPref
-        if getPref('localip') is not None:
-            self._localAddress = (getPref('localip'), getPref('listenport') or 5060)
-            locAddress = self._localAddress
+        if getPref('localip') is not None or _CACHED_LOCAL_IP is not None:
+            ip = getPref('localip') or _CACHED_LOCAL_IP
+            locAddress = (ip, getPref('listenport') or 5060)
             remAddress = ( host, port )
             # Argh. Do a DNS lookup on remAddress
         else:
@@ -113,6 +116,7 @@ class Call(object):
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress,
                                                                   remAddress))
+                _CACHED_LOCAL_IP = locAddress[0]
             else:
                 self.compDef.errback(ValueError("couldn't connect to %s"%(
                                             host)))
@@ -356,9 +360,6 @@ class Call(object):
         self.uri = self.extractURI(contact)
         uri = tpsip.parseURL(self.uri)
 
-        # XXX Check the OK response's SDP, find what codec we
-        # should be using
-
         ack = tpsip.Request('ACK', self.uri)
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
@@ -384,9 +385,10 @@ class Call(object):
     def sendBye(self):
         username = self.sip.app.getPref('username')
         email_address = self.sip.app.getPref('email_address')
-        dest = self.extractURI(self.contact)
-        uri = tpsip.parseURL(dest)
-        bye = tpsip.Request('BYE', dest)
+        uri = self.remote
+        dest = uri.host, (uri.port or 5060)
+        print "BYE options", dest, str(self.remote)
+        bye = tpsip.Request('BYE', str(self.remote))
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
@@ -397,7 +399,8 @@ class Call(object):
         bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         bye.addHeader('content-length', 0)
         bye.creationFinished()
-        bye, dest = bye.toString(), (uri.host, (uri.port or 5060))
+        bye = bye.toString()
+        print "sending BYE to %s %s"%dest
         self.sip.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
@@ -450,6 +453,7 @@ class Call(object):
         if not appTeardown and self.cancel_trigger is not None:
                 reactor.removeSystemEventTrigger(self.cancel_trigger)
         state = self.getState()
+        print "dropcall in state", state
         if state == 'NONE':
             self.sip.app.debugMessage("no call to drop")
         elif state in ( 'CONNECTED', ):
