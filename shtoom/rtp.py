@@ -254,7 +254,7 @@ class RTPProtocol(DatagramProtocol):
                 self._cbDone()
             return
         self.packets += 1
-        if self.sample is not None:
+        if self.sample is not None and self.sample[1] is not None:
             fmt, sample = self.sample
             self.sent += 1
             hdr = pack('!BBHII', 0x80, fmt, self.seq, self.ts, self.ssrc)
