@@ -2,12 +2,25 @@ Mac installer: bundlebuilder
 Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
-Before 0.3:
-    - sip: Handle unknown calls and send back a 481
+      http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
+
+Definite before 0.3:
+    - sip: move more stuff into the Dialog class
+    - ui(gnome): a new Gtk UI - Nafai
+        - Re-hookup the debugging log to the GUI for all GUIs - 
+          maybe need a hide/show option
+        - Prefs support
+    - ui(wx): move the UI and twisted to seperate threads. This will also be
+      needed for mfcui. Implement through a stub layer that passes events
+      between the event loops.
+    - doug: implement placeCall
+    - doug: implement leg conferencing (connection)
+
+Maybe before 0.3:
+    - Investigate http://respyre.org/pyalsa.html
     - sip: retransmit and timeout of BYE
     - rtcp: notice when we get an RTCP BYE and close the connection
     - rtcp: generate a goodbye packet. should at least have an SDES and a BYE
-    - sip: Something's not quite right in ACK - IOS is tossing it
     - stun: timeout the STUN call, print a nice error
     - sip/call: the state should become an object, encapsulating the current state.
       This makes it _much_ easier to handle retransmits and the like.
@@ -22,25 +35,13 @@ Before 0.3:
       'username'@'registerserver'? What to use if no register server?
     - ui(all): keybindings for DTMF. When a call is in progress, disable the
       address bar
-    - ui(gnome): a new Gtk UI - Nafai
-        - Re-hookup the debugging log to the GUI for all GUIs - 
-          maybe need a hide/show option
-        - Prefs support
     - ui(tk): A better dialog for incoming calls. 
     - ui(tk): new dialogs that don't block, and have a timeout.
         - A better dialog to prompt for user, password information
     - ui(tk): window resize currently sucks.
     - ui(qt): window resize currently sucks
     - ui(qt, wx, gtk): save call history
-    - ui(wx): move the UI and twisted to seperate threads. This will also be
-      needed for mfcui. Implement through a stub layer that passes events
-      between the event loops.
     - doug: reimplement shmessage and shecho in doug
-    - doug: make the incoming call a leg, pass it in at call start
-    - doug: API for connecting up a specific Source (e.g. EchoSource)
-    - doug: test that media record works, write a sample app to use it
-    - doug: implement placeCall
-    - doug: implement leg conferencing (connection)
     - doug: create application frameworky bit (look at quotient.deployment?)
     - doug: implement timers
     - doug: sending of DTMF
@@ -48,12 +49,12 @@ Before 0.3:
     - shtoom: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
     - Mac OS CoreAudio support for Mac audio - dp/bob
-    - rtcp: finish RTCP encoding -- RR, SR, PRIV
+    - rtcp: finish RTCP encoding -- RR, SR, PRIV. Handle strange extended
+      SR/RR from ciscos.
+    - doug: expose the auth headers from the call?
 
 Future:
     - doug: write MixSource (for conferencing)
-    - sip, app: support outbound proxies (e.g. fwdnat.pulver.com:5082, see
-      http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
     - bug: Why does calling from the web in quotient not work?
     - app: break base in two - phone shares almost nothing with the rest
     - options: find a better place to put options files on windows

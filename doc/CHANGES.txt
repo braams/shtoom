@@ -1,6 +1,10 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - Doug: Call setup in doug is now a two-stage process - a CallStarted
+    event is triggered first, the application then calls 'answerCall' or
+    'rejectCall' on the leg in the event. A CallAnswered event then follows
+    when the call is setup.
   - After prodding from Jamey Hicks, I've reworked the handling of
     the from: and to: lines in SIP, so that we can keep a dialog 
     up correctly.
