@@ -1,0 +1,446 @@
+[As is _very_ obvious, this is nowhere near complete yet.
+Contributions, questions, &c are more than welcome - Anthony]
+
+
+Doug API Documentation
+----------------------
+
+For the simplest possible doug application, check the file
+scripts/shmessage.py - this application accepts a connection,
+plays a simple announcement, and then hangs up the call.
+The file scripts/testcisco.py shows an outbound call application -
+this places a call to an address and interacts with an IVR.
+
+
+Doug Concepts
+-------------
+
+This section discusses the major concepts in Doug.
+
+The State Machine
+=================
+
+XXX TBD
+
+
+VoiceApps, Legs, Events and more
+================================
+
+XXX TBD
+
+
+Miscellenous Concepts
+=====================
+
+Bridging/connectLegs
+XXX TBD
+
+
+Implementing a Doug VoiceApp
+----------------------------
+
+Documentation about implementing a voiceapp.
+XXX TBD
+
+Event handlers
+==============
+
+All event handlers behave the same way - they are invoked with
+the event, they "do stuff", and then they should return the list 
+of new (event,handler) pairs. They can also return a deferred 
+that returns a list of (event,handler) pairs - any events that 
+come in while this deferred is in progress will be queued up 
+and delivered once the deferred is done.
+
+
+Required methods
+================
+
+There's only one method that a voiceapp must implement - 
+the __start__ method. This returns the initial list of
+(event,handler) two-tuples.
+
+
+Forbidden methods
+=================
+
+If you name any of your methods with a leading va_, you
+stand a risk of stomping on the voiceapp implementation.
+Obviously, if you name a method with the same name as any
+of the methods listed below in 'Application Methods', you
+also risk hosing yourself.
+
+
+Application Methods
+-------------------
+
+A voiceapp can call the following methods.
+
+connectLegs(leg1, leg2=None)
+============================
+
+Bridge two legs together XXX TBD more!
+
+dtmfMode(single, inband, leg=None)
+==================================
+
+See leg.dtmfMode()
+
+
+getDefaultLeg()
+===============
+
+XXX TBD
+
+getLeg(cookie)
+==============
+
+Get the leg associated with 'cookie'. Note that you shouldn't need
+this.
+
+
+isPlaying(leg=None)
+===================
+
+See leg.isPlaying() - if no leg is specified, the leg returned by
+getDefaultLeg() is used.
+
+
+isRecording(leg=None)
+=====================
+
+See leg.isRecording() - if no leg is specified, the leg returned by
+getDefaultLeg() is used.
+
+
+mediaPlay(playlist, leg=None)
+=============================
+
+See leg.mediaPlay() - if no leg is specified, the leg returned by
+getDefaultLeg() is used.
+
+
+mediaRecord(dest, leg=None)
+===========================
+
+See leg.mediaRecord() - if no leg is specified, the leg returned by
+getDefaultLeg() is used.
+
+
+mediaStop(leg=None)
+===================
+
+See leg.mediaStop() - if no leg is specified, the leg returned by
+getDefaultLeg() is used.
+
+
+placeCall(toURI, fromURI)
+=========================
+
+Start an outbound call, to address 'toURI', from address 'fromURI'.
+When the call is setup a CallAnsweredEvent or CallRejectedEvent will
+be generated.
+
+
+returnError(error)
+==================
+
+Return a successful result to the caller of the voiceapp
+
+
+returnResult(result)
+====================
+
+Return a failed result to the caller of the voiceapp
+
+
+sendDTMF()
+==========
+
+See leg.sendDTMF()
+
+
+setTimer(delay)
+===============
+
+XXX add the ability to supply userdata to the timer!
+
+
+Leg Methods
+-----------
+
+Leg objects have the following methods that can be used from an
+application:
+
+answerCall(voiceapp)
+====================
+
+Answer an incoming call. Pass the voiceapp (usually 'self') as 
+the argument. A CallAnsweredEvent will be generated when the call
+is setup.
+
+
+dtmfMode(single=False, inband=False, timeout=0)
+===============================================
+
+Change the leg's dtmf mode. If single is True, an event is generated    
+for each dtmf key received, if not, only strings ending in '#' are      
+returned (XXX todo: add the ability to customise how you want DTMF      
+returned). If inband is True, the inband DTMF detection is turned on    
+(this requires numarray be available). This is relatively expensive,    
+and won't work for compressed audio streams (such as GSM), so it's not
+recommended unless you have no other alternative. The timeout sets
+a maximum time to wait from the first to the last key press.
+
+
+getCookie()
+===========
+
+Get the leg cookie. You probably won't need this.
+
+
+getDialog()
+===========
+
+Get the SIP dialog associated with the leg.
+
+
+hangupCall()
+============
+
+Hangup this leg.
+
+
+isPlaying()
+===========
+
+Is there currently audio being played down the leg?
+
+
+isRecording()
+=============
+
+Is the leg currently collecting audio?
+
+
+mediaPlay(playlist)
+===================
+
+Play a list of media sources.
+XXX TBD
+
+
+mediaRecord(savefile)
+=====================
+
+Record audio from the leg to a file.
+XXX TBD
+
+
+mediaStop()
+===========
+
+Stop any mediaPlay or mediaRecords that are currently in progress.
+
+
+rejectCall(exception)
+=====================
+
+Reject an incoming call. exception should be an instance of
+shtoom.exceptions.CallRejected
+XXX TBD further events?
+
+sendDTMF(digits, duration=0.1, delay=0.5)
+=========================================
+
+Send the string digits (which should consist of 0-9A-F*#, only),
+each DTMF digit lasting for duration seconds, and with delay seconds
+between them.
+
+
+Events
+------
+
+The canonical source of all events in Doug is the file 
+shtoom.doug.events. Events are classes, using inheritance -
+so, for instance if you set up a handler for a MediaRecordDoneEvent,
+you'll get it or any subclasses of it.
+
+Here's the hierarchy::
+
+    Event
+        DTMFReceivedEvent(Event)
+            DTMFTimeoutEvent(DTMFReceivedEvent)
+        MediaDoneEvent(Event)
+            MediaPlayDoneEvent(MediaDoneEvent)
+                MediaPlayContentDoneEvent(MediaPlayDoneEvent)
+                MediaPlayContentFailedEvent(MediaPlayDoneEvent)
+                MediaPlayUserBargeInEvent(DTMFReceivedEvent, MediaPlayDoneEvent)
+                MediaPlayTimerExpiredEvent(MediaPlayDoneEvent)
+                MediaPlayRemoteClosedEvent(MediaPlayDoneEvent)
+            MediaRecordDoneEvent(MediaDoneEvent)
+                MediaRecordRemoteClosedEvent(MediaRecordDoneEvent)
+                MediaRecordTimeoutExceededEvent(MediaRecordDoneEvent)
+                MediaRecordFailedEvent(MediaRecordDoneEvent)
+                    MediaRecordStoreFailedEvent(MediaRecordDoneEvent)
+        CallLegEvent(Event)
+            CallAnsweredEvent(CallLegEvent)
+            CallRejectedEvent(CallLegEvent)
+            CallStartedEvent(CallLegEvent)
+                InboundCallStartedEvent(CallStartedEvent)
+                OutboundCallStartedEvent(CallStartedEvent)
+            CallEndedEvent(CallLegEvent)
+        TimeoutEvent(Event)
+        ApplicationSpecificEvent(Event)
+
+
+Major events and documentation for them:
+
+ApplicationSpecificEvent
+========================
+
+Users can use this as a baseclass for their own events, or just
+subclass Event directly if you prefer that.
+
+CallAnsweredEvent
+=================
+
+A call leg was answered. This event has a leg that can be retrieved 
+with getLeg()
+
+
+CallEndedEvent
+==============
+
+
+CallLegEvent
+============
+
+
+CallRejectedEvent
+=================
+
+
+CallStartedEvent
+================
+
+A CallStartedEvent is triggered on a new incoming (or outgoing)
+call. Note that at this point, the call has not been accepted or
+started.
+
+
+DTMFReceivedEvent
+=================
+
+
+DTMFTimeoutEvent
+================
+
+
+InboundCallStartedEvent
+=======================
+
+
+MediaDoneEvent
+==============
+
+
+MediaPlayContentDoneEvent
+=========================
+
+
+MediaPlayContentFailedEvent
+===========================
+
+
+MediaPlayDoneEvent
+==================
+
+
+MediaPlayRemoteClosedEvent
+==========================
+
+
+MediaPlayTimerExpiredEvent
+==========================
+
+
+MediaPlayUserBargeInEvent
+=========================
+
+
+MediaRecordDoneEvent
+====================
+
+
+MediaRecordFailedEvent
+======================
+
+
+MediaRecordRemoteClosedEvent
+============================
+
+
+MediaRecordStoreFailedEvent
+===========================
+
+
+MediaRecordTimeoutExceededEvent
+===============================
+
+
+OutboundCallStartedEvent
+========================
+
+
+TimeoutEvent
+============
+
+
+
+Event Methods
+-------------
+
+Events can have the following methods. 
+
+getLeg()
+========
+
+(Only callLegEvent and children) - return the leg associated with the
+event.
+
+
+getDialog()
+===========
+
+Returns the SIP dialog associated with the event.
+
+
+Dialog Methods
+--------------
+
+Dialogs (returned by getDialog) implement the following methods of interest.
+
+getCaller()
+===========
+
+Returns the URI of the calling party.
+
+
+getCallee()
+===========
+
+Returns the URI of the called party.
+
+
+Other Bits
+----------
+
+Conferencing
+============
+
+Hooking the bastard together
+============================
+
+See scripts/shmessage.py or scripts/testcall.py for simple (ha!) examples 
+for now.
