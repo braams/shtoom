@@ -6,6 +6,8 @@ class NullConv:
         self._d = device
     def getDevice(self):
         return self._d
+    def setDevice(self, d):
+        self._d = d
     def getFormats(self):
         return self._d.getFormats()
     def selectFormat(self, format):
@@ -74,7 +76,7 @@ class MultipleConv(NullConv):
 
     def listFormats(self):
         if gsm is not None:
-            return [FMT_PCMU, FMT_GSM, FMT_RAW,]
+            return [FMT_GSM, FMT_PCMU, FMT_RAW,]
         else:
             return [FMT_PCMU, FMT_RAW,]
 
@@ -94,7 +96,11 @@ class MultipleConv(NullConv):
         elif format == FMT_GSM:
             if self._gsmencoder:
                 indata = self._d.read()
-                return self._encoder.encode(indata)
+                if len(indata) != 320:
+                    print "Uh oh, GSM got short read len = %s"%len(indata)
+                    return ''
+                outdata = self._gsmencoder.encode(indata)
+                return outdata
             else:
                 print "No GSM available"
         else:

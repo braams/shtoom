@@ -6,6 +6,7 @@ import baseaudio, ossaudiodev
 opened = None
 
 class OSSAudioDevice(baseaudio.AudioDevice):
+    dev = None
 
     def openDev(self):
         import ossaudiodev
@@ -18,7 +19,10 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             self.dev = dev
         if 'AFMT_S16_LE' in formats:
             dev.setfmt(ossaudiodev.AFMT_S16_LE)
-            self.dev = MultipleConv(Wrapper(dev))
+            if self.dev is None:
+                self.dev = MultipleConv(Wrapper(dev))
+            else:
+                self.dev.setDevice(Wrapper(dev))
         else:
             raise ValueError, \
                 "Couldn't find signed 16 bit PCM, got %s"%(
