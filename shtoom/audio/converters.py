@@ -58,7 +58,7 @@ class PCM16toGSMConv(NullConv):
 if gsm is None:
     del PCM16toGSMConv
 
-from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
+from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4, FMT_RAW
 
 class MultipleConv(NullConv):
     """ Goddam Asterisk """
@@ -74,9 +74,9 @@ class MultipleConv(NullConv):
 
     def listFormats(self):
         if gsm is not None:
-            return [FMT_PCMU, FMT_GSM]
+            return [FMT_PCMU, FMT_GSM, FMT_RAW,]
         else:
-            return [FMT_PCMU,]
+            return [FMT_PCMU, FMT_RAW,]
 
     def selectFormat(self, fmt):
         if not fmt in self.listFormats():
@@ -89,6 +89,8 @@ class MultipleConv(NullConv):
             format = self._fmt
         if format == FMT_PCMU:
             return audioop.lin2ulaw(self._d.read(), 2)
+        elif format == FMT_RAW:
+            return self._d.read()
         elif format == FMT_GSM:
             if self._gsmencoder:
                 indata = self._d.read()
@@ -101,6 +103,8 @@ class MultipleConv(NullConv):
     def write(self, data, format):
         if format == FMT_PCMU:
             return self._d.write(audioop.ulaw2lin(data, 2))
+        elif format == FMT_RAW:
+            return self._d.write(data)
         elif format == FMT_GSM:
             if self._gsmdecoder:
                 if len(data) != 33:
