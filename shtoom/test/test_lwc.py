@@ -10,7 +10,6 @@ import sys
 class LWCTests(unittest.TestCase):
 
     def test_lwc(self):
-        print "Testing"
         ## Basic implements testing
         class IFoo(Interface):
             pass
@@ -128,5 +127,4 @@ class LWCTests(unittest.TestCase):
                                         tryToAdaptToIBar, "A string")
         self.assert_(result == 1)
      
-        print "Passed"
      
