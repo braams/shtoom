@@ -16,8 +16,9 @@ def getTextInterface(fail=False):
 def getQtInterface(fail=False):
     try:
         import qt
+        import shtoom.ui.qtshtoom
     except (ImportError, SystemError):
-        cleanup('qt')
+        cleanup('qt', 'shtoom.ui.qtshtoom')
         qt = None
         if fail:
             raise
@@ -29,8 +30,9 @@ def getWxInterface(fail=False):
     try:
         import wx
         import wxPython.wx
+        import shtoom.ui.wxshtoom
     except:
-        cleanup('wx', 'wxPython', 'wxPython.wx')
+        cleanup('wx', 'wxPython', 'wxPython.wx', 'shtoom.ui.wxshtoom')
         wx = None
         if fail:
             raise
@@ -43,8 +45,9 @@ def getTkInterface(fail=False):
     import sys
     try:
         import Tkinter
+        import shtoom.ui.tkshtoom
     except ImportError:
-        cleanup('Tkinter', '_tkinter')
+        cleanup('Tkinter', '_tkinter', 'shtoom.ui.tkshtoom')
         Tkinter = None
         if fail:
             raise
@@ -59,8 +62,10 @@ def getGnomeInterface(fail=False):
         import gnome.ui
         import gtk
         import gtk.glade
+        import shtoom.ui.gnomeshtoom
     except ImportError:
-        cleanup('pygtk', 'gnome', 'gtk', 'gtk.glade', 'gnome.ui')
+        cleanup('pygtk', 'gnome', 'gtk', 'gtk.glade', 'gnome.ui',
+            'shtoom.ui.gnomeshtoom')
         if fail:
             raise
         gtk = None
