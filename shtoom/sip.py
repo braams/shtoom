@@ -38,6 +38,22 @@ def genStandardDate(t=None):
         t = time.gmtime()
     return time.strftime("%a, %d %b %Y %H:%M:%S GMT", t)
 
+def formatAddress(threetuple):
+    """ Format a ( 'display name', URL, {params} ) correctly. Inverse of
+        twisted.protocols.sip.parseAddress() 
+    """
+    display, uri, params = threetuple
+    params = ';'.join(['='.join(x) for x in params.items()])
+    if params:
+        params = ';'+params
+    if display:
+        out = '"%s" <%s>'%(display, str(uri))
+    else:
+        out = str(uri)
+    if params:
+        out = out + params
+    return out
+
 class Call(object):
     '''State machine for a phone call (inbound or outbound).'''
 
@@ -242,12 +258,16 @@ class Call(object):
         vias = message.headers['via']
         for via in vias:
             resp.addHeader('via', via)
-        resp.addHeader('from', message.headers['from'][0])
-        toaddr = message.headers['to'][0]
-        toname,touri,toparams = tpsip.parseAddress(toaddr)
-        if not toparams.has_key('tag'):
-            toaddr = "%s;tag=%s"%(toaddr, self.getTag())
-        resp.addHeader('to', toaddr)
+        if not self._callee:
+            addr = message.headers['to'][0]
+            self._callee = tpsip.parseAddress(addr)
+            if not self._callee[2].has_key('tag'):
+                self._callee[2]['tag'] = self.getTag()
+        if not self._caller:
+            addr = message.headers['from'][0]
+            self._caller = tpsip.parseAddress(addr)
+        resp.addHeader('to', formatAddress(self._callee))
+        resp.addHeader('from', formatAddress(self._caller))
         resp.addHeader('date', genStandardDate())
         resp.addHeader('call-id', message.headers['call-id'][0])
         resp.addHeader('server', 'Shtoom/%s'%ShtoomVersion)
@@ -282,8 +302,9 @@ class Call(object):
         # XXX Set up a timeout for the call completion
         uri = tpsip.parseURL(toAddr)
         self._remoteAOR = uri
-        self._callee = uri
-        self._caller = self.getLocalAOR()
+        # XXX Display name?
+        self._callee = ('', uri, {})
+        self._caller = ('', self.getLocalAOR(), { 'tag': self.getTag() })
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)
                                                         ).addErrback(log.err)
@@ -295,10 +316,12 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        self._caller = tpsip.parseURL(self.extractURI(invite.headers['from'][0]))
-        self._callee = tpsip.parseURL(self.extractURI(invite.headers['to'][0]))
+        self._caller = tpsip.parseAddress(invite.headers['from'][0])
+        self._callee = tpsip.parseAddress(invite.headers['to'][0])
+        if not self._callee[2].get('tag'):
+            self._callee[2]['tag'] = self.getTag()
         self._remoteURI = tpsip.parseURL(self.extractURI(self.contact))
-        self._remoteAOR = self._callee
+        self._remoteAOR = self._callee[1]
         d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
         if invite.headers.has_key('subject'):
             desc = invite.headers['subject'][0]
@@ -313,7 +336,9 @@ class Call(object):
                                               withSTUN=self.getSTUNState() ,
                                               toAddr=invite.headers.get('to'),
                                               fromAddr=invite.headers.get('from'),
-                                              ).addCallbacks(self.acceptedCall, self.rejectCall).addErrback(log.err)
+                                              ).addCallbacks(
+                                                   self.acceptedCall, 
+                                                   self.rejectCall).addErrback(log.err)
                       and None)
         #self.app.incomingCall(subj, call, defaccept, defsetup)
 
@@ -358,9 +383,9 @@ class Call(object):
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s INVITE'%self.getCSeq(incr=1))
-        invite.addHeader('to', str(self._callee))
+        invite.addHeader('to', formatAddress(self._callee))
         invite.addHeader('content-type', 'application/sdp')
-        invite.addHeader('from', self.getLocalAOR(full=True))
+        invite.addHeader('from', formatAddress(self._caller))
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', self.getLocalAOR())
         invite.addHeader('allow-events', 'telephone-event')
@@ -377,9 +402,9 @@ class Call(object):
         invite.addHeader('content-length', len(sdp))
         invite.bodyDataReceived(sdp)
         invite.creationFinished()
-        self._caller = tpsip.parseURL(self.extractURI(invite.headers['from'][0]))
-        self._callee = tpsip.parseURL(self.extractURI(invite.headers['to'][0]))
-        self._remoteAOR = self._callee
+        #self._caller = tpsip.parseURL(self.extractURI(invite.headers['from'][0]))
+        #self._callee = tpsip.parseURL(self.extractURI(invite.headers['to'][0]))
+        self._remoteAOR = self._callee[1]
         try:
             self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
             #print "Invite sent", invite.toString()
@@ -411,13 +436,13 @@ class Call(object):
             contact = contact[0]
         self.contact = contact
         self._remoteURI = tpsip.parseURL(self.extractURI(contact))
-
+        self._callee = tpsip.parseAddress(okmessage.headers['to'][0])
         ack = tpsip.Request('ACK', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
-        ack.addHeader('to', okmessage.headers['to'][0])
-        ack.addHeader('from', okmessage.headers['from'][0])
+        ack.addHeader('to', formatAddress(self._callee))
+        ack.addHeader('from', formatAddress(self._caller))
         ack.addHeader('call-id', self.getCallID())
         ack.addHeader('allow-events', 'telephone-event')
         ack.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
@@ -445,8 +470,8 @@ class Call(object):
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
-        bye.addHeader('to', str(self._callee))
-        bye.addHeader('from', str(self._caller))
+        bye.addHeader('to', formatAddress(self._callee))
+        bye.addHeader('from', formatAddress(self._caller))
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         bye.addHeader('content-length', 0)
@@ -467,8 +492,8 @@ class Call(object):
         # XXX refactor all the common headers and the like
         cancel.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         cancel.addHeader('cseq', '%s CANCEL'%self.getCSeq(incr=1))
-        cancel.addHeader('to', str(self._callee))
-        cancel.addHeader('from', str(self._caller))
+        cancel.addHeader('to', formatAddress(self._callee))
+        cancel.addHeader('from', formatAddress(self._caller))
         cancel.addHeader('call-id', self.getCallID())
         cancel.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         cancel.addHeader('content-length', 0)
@@ -916,17 +941,6 @@ class SipPhone(DatagramProtocol, object):
         invite = call.startOutboundCall(uri)
         return _d
 
-
-    def startDTMF(self, digit):
-        """Start sending DTMF digit 'digit'
-        """
-        self.app.debugMessage("startDTMF not implemented yet!")
-
-    def stopDTMF(self):
-        """Stop sending DTMF digit 'digit'
-        """
-        self.app.debugMessage("stopDTMF not implemented yet!")
-
     def datagramReceived(self, datagram, addr):
         self.app.debugMessage("Got a SIP packet from %s:%s"%(addr))
         mp = tpsip.MessagesParser(self.sipMessageReceived)
@@ -960,6 +974,12 @@ class SipPhone(DatagramProtocol, object):
         if message.request and message.method.lower() != 'invite' and not call:
             self.app.debugMessage("SIP request refers to unknown call %s %r"%(
                                                     callid, self._calls.keys()))
+            _d = defer.Deferred()
+            callid = message.headers['call-id'][0]
+            call = self._newCallObject(_d, callid = callid)
+            _d.addCallbacks(lambda x: call.sendResponse(message, 481), log.err
+                                                                ).addErrback(log.err)
+            self._delCallObject(callid)
             # XXX In this case, send a 481!
             return
         if message.request:
