@@ -56,13 +56,14 @@ class DtmfDetector:
         """ Test for DTMF in a sample. Returns either a string with the
             DTMF digit, or the empty string if none is present. Accepts
             a string of length 640, representing 320 16 bit signed PCM
-            samples (host endianness).
+            samples (host endianness). This is _two_ samples at normal
+            shtoom sampling rates.
         """
         import numarray
         from sets import Set
         a = numarray.fromstring(sample, numarray.Int16)
         if len(a) != 320:
-            raise ValueError, "only accepts samples of length 320 (40ms) for now"
+            raise ValueError("samples length %d != 320 (40ms)"%(len(a))
         peaks = self.getpeaks(a)
         matched = Set()
         for p in peaks:
