@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - textui's logging is saner - shtoomphone got a --logfile option
+  - another playout algorithm, with a better buffering strategy (CW)
+  - native ALSA support (Casper Wilstrup)
   - doug's connectLegs() primitive now works, and connects an 
     inbound and an outbound leg together.
   - doug has had most of the voiceapp body moved out to the Leg 
