@@ -1,3 +1,8 @@
+name: wxShtoom call setup confused
+to reproduce: run shtoom with wx GUI, call it from another shtoom
+details: wx Shtoom opens audio channel before user decides whether to accept or decline call; exceptions in log
+more details: I've spent way too many hours trying to fix this without success.  You are more than welcome to see my patches, but they don't fix it properly -- after my patches audio channel doesn't get opened prematurely, but there is an exception with cookie=None passed to the acceptedCall() callback, so the call never starts at all.
+
 name: reject first call, second call exception
 to reproduce: using test harness I reject a call then have another incoming call
 details: 
