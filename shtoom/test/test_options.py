@@ -13,13 +13,13 @@ class OptionsTests(unittest.TestCase):
         all = O.AllOptions()
         for gnum, gname in [ (x, 'Group%d'%x) for x in range(10) ]:
             group = O.OptionGroup(gname, 'This is %s'%gname)
-            group.addOption(O.StringOption('string%d'%(gnum),
+            group.add(O.StringOption('string%d'%(gnum),
                                         'this is string option %d'%gnum))
-            group.addOption(O.BooleanOption('bool%d'%(gnum),
+            group.add(O.BooleanOption('bool%d'%(gnum),
                                         'this is boolean option %d'%gnum))
-            group.addOption(O.NumberOption('num%d'%(gnum),
+            group.add(O.NumberOption('num%d'%(gnum),
                                         'this is number option %d'%gnum))
-            all.addGroup(group)
+            all.add(group)
         self.assertEquals(len(list(all)), 10)
         self.assertEquals(len(list(list(all)[0])),3)
         self.assertEquals(len(list(list(all)[-1])),3)
@@ -27,18 +27,18 @@ class OptionsTests(unittest.TestCase):
     def test_duplicateOptions(self):
         all = O.AllOptions()
         group = O.OptionGroup('testgroup', 'this is a test group')
-        group.addOption(O.StringOption('test1', 'this is test1'))
-        group.addOption(O.StringOption('test2', 'this is test2'))
+        group.add(O.StringOption('test1', 'this is test1'))
+        group.add(O.StringOption('test2', 'this is test2'))
         dupe1 = O.StringOption('test1', 'this is a duplicate test1')
-        self.assertRaises(O.DuplicateOptionError, group.addOption, dupe1)
+        self.assertRaises(O.DuplicateOptionError, group.add, dupe1)
 
-        all.addGroup(group)
+        all.add(group)
         group2 = O.OptionGroup('testgroup', 'this is a duplicate')
-        self.assertRaises(O.DuplicateOptionError, all.addGroup, group2)
+        self.assertRaises(O.DuplicateOptionError, all.add, group2)
         group3 = O.OptionGroup('testgroup2', 'a second group')
-        group3.addOption(O.StringOption('test1', 'this is a duplicate test1'))
+        group3.add(O.StringOption('test1', 'this is a duplicate test1'))
         # XXX This should fail with a DuplicateOptionError, but doesn't
-        self.assertRaises(O.DuplicateOptionError, all.addGroup, group3)
+        self.assertRaises(O.DuplicateOptionError, all.add, group3)
 
     def test_booleanOptions(self):
         pass
@@ -70,11 +70,11 @@ class OptionsTests(unittest.TestCase):
         ae = self.assertEquals
         all = O.AllOptions()
         g = O.OptionGroup('group','test group')
-        g.addOption(O.StringOption('optiona', 'option - a', default='first'))
-        g.addOption(O.StringOption('optionb', 'option - b', default='second'))
+        g.add(O.StringOption('optiona', 'option - a', default='first'))
+        g.add(O.StringOption('optionb', 'option - b', default='second'))
         # no default value
-        g.addOption(O.StringOption('optionc', 'option - c'))
-        all.addGroup(g)
+        g.add(O.StringOption('optionc', 'option - c'))
+        all.add(g)
         s1, s2, s3 = g
         cfg = _getConfigParsed(all)
         ae(cfg.sections(), [])
