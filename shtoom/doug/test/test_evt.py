@@ -8,22 +8,21 @@ You can run this with command-line:
 
 from twisted.trial import unittest
 from twisted.internet import reactor, defer
+from twisted.python.failure import Failure
 
 from shtoom.doug.events import Event, CallStartedEvent
 from shtoom.doug.voiceapp import VoiceApp
+from shtoom.doug.exceptions import *
 
 class DummyEvent1(Event): pass
 class DummyEvent2(Event): pass
 class DummyEvent2_1(DummyEvent2): pass
 class DummyEvent2_2(DummyEvent2): pass
 
-class UnknownEventError(Exception): pass
-
-
-class TestStateMachine(VoiceApp):
+class StateMachineOne(VoiceApp):
     def __init__(self, defer, **kwargs):
         self._out = []
-        super(TestStateMachine, self).__init__(defer, **kwargs)
+        super(StateMachineOne, self).__init__(defer, **kwargs)
 
     def __start__(self):
         print "starting"
@@ -62,11 +61,22 @@ class TestStateMachine(VoiceApp):
         self._out.append(3)
         self.returnResult(self._out)
 
+class StateMachineTwo(StateMachineOne):
+    def second(self, evt):
+        print "second"
+        self.raiseEvent(DummyEvent2_2())
+        return ()
 
 class StateMachineTest(unittest.TestCase):
     def testStateMachine(self):
         d = defer.Deferred()
-        A = TestStateMachine(d)
+        A = StateMachineOne(d)
         reactor.callLater(0, A._start)
         self.assertEquals(unittest.deferredResult(d), [0,1,2,3])
 
+    def testBrokenStateMachine(self):
+        d = defer.Deferred()
+        A = StateMachineTwo(d)
+        reactor.callLater(0, A._start)
+        out = unittest.deferredError(d)
+        out.trap(Failure(EventNotSpecifiedError()))
