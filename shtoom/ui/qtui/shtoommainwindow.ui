@@ -571,7 +571,7 @@
         <action name="fileSaveAction"/>
         <action name="fileSaveAsAction"/>
         <separator/>
-        <action name="filePrintAction"/>
+        <action name="filePrefsAction"/>
         <separator/>
         <action name="fileExitAction"/>
     </item>
@@ -652,16 +652,16 @@
     </action>
     <action>
         <property name="name">
-            <cstring>filePrintAction</cstring>
+            <cstring>filePrefsAction</cstring>
         </property>
         <property name="iconSet">
             <iconset></iconset>
         </property>
         <property name="text">
-            <string>Print</string>
+            <string>Preferences</string>
         </property>
         <property name="menuText">
-            <string>&amp;Print...</string>
+            <string>&amp;Preferences...</string>
         </property>
         <property name="accel">
             <string>Ctrl+P</string>
@@ -750,10 +750,10 @@
         <slot>fileSaveAs()</slot>
     </connection>
     <connection>
-        <sender>filePrintAction</sender>
+        <sender>filePrefsAction</sender>
         <signal>activated()</signal>
         <receiver>ShtoomMainWindow</receiver>
-        <slot>filePrint()</slot>
+        <slot>filePrefs()</slot>
     </connection>
     <connection>
         <sender>fileExitAction</sender>
@@ -957,7 +957,7 @@
     <slot>fileOpen()</slot>
     <slot>fileSave()</slot>
     <slot>fileSaveAs()</slot>
-    <slot>filePrint()</slot>
+    <slot>filePrefs()</slot>
     <slot>fileExit()</slot>
     <slot>helpIndex()</slot>
     <slot>helpContents()</slot>

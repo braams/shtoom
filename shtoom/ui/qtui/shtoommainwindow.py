@@ -168,8 +168,8 @@ class ShtoomMainWindow(QMainWindow):
         self.fileSaveAction = QAction(self,"fileSaveAction")
         self.fileSaveAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileSaveAsAction = QAction(self,"fileSaveAsAction")
-        self.filePrintAction = QAction(self,"filePrintAction")
-        self.filePrintAction.setProperty("iconSet",QVariant(QIconSet()))
+        self.filePrefsAction = QAction(self,"filePrefsAction")
+        self.filePrefsAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileExitAction = QAction(self,"fileExitAction")
         self.helpContentsAction = QAction(self,"helpContentsAction")
         self.helpIndexAction = QAction(self,"helpIndexAction")
@@ -187,7 +187,7 @@ class ShtoomMainWindow(QMainWindow):
         self.fileSaveAction.addTo(self.fileMenu)
         self.fileSaveAsAction.addTo(self.fileMenu)
         self.fileMenu.insertSeparator()
-        self.filePrintAction.addTo(self.fileMenu)
+        self.filePrefsAction.addTo(self.fileMenu)
         self.fileMenu.insertSeparator()
         self.fileExitAction.addTo(self.fileMenu)
         self.menubar.insertItem(QString(""),self.fileMenu,1)
@@ -209,7 +209,7 @@ class ShtoomMainWindow(QMainWindow):
         self.connect(self.fileOpenAction,SIGNAL("activated()"),self.fileOpen)
         self.connect(self.fileSaveAction,SIGNAL("activated()"),self.fileSave)
         self.connect(self.fileSaveAsAction,SIGNAL("activated()"),self.fileSaveAs)
-        self.connect(self.filePrintAction,SIGNAL("activated()"),self.filePrint)
+        self.connect(self.filePrefsAction,SIGNAL("activated()"),self.filePrefs)
         self.connect(self.fileExitAction,SIGNAL("activated()"),self.fileExit)
         self.connect(self.helpIndexAction,SIGNAL("activated()"),self.helpIndex)
         self.connect(self.helpContentsAction,SIGNAL("activated()"),self.helpContents)
@@ -280,9 +280,9 @@ class ShtoomMainWindow(QMainWindow):
         self.fileSaveAsAction.setProperty("text",QVariant(self.__tr("Save As")))
         self.fileSaveAsAction.setProperty("menuText",QVariant(self.__tr("Save &As...")))
         self.fileSaveAsAction.setProperty("accel",QVariant(QString.null))
-        self.filePrintAction.setProperty("text",QVariant(self.__tr("Print")))
-        self.filePrintAction.setProperty("menuText",QVariant(self.__tr("&Print...")))
-        self.filePrintAction.setProperty("accel",QVariant(self.__tr("Ctrl+P")))
+        self.filePrefsAction.setProperty("text",QVariant(self.__tr("Preferences")))
+        self.filePrefsAction.setProperty("menuText",QVariant(self.__tr("&Preferences...")))
+        self.filePrefsAction.setProperty("accel",QVariant(self.__tr("Ctrl+P")))
         self.fileExitAction.setProperty("text",QVariant(QString.null))
         self.fileExitAction.setProperty("menuText",QVariant(self.__tr("E&xit")))
         self.fileExitAction.setProperty("accel",QVariant(QString.null))
@@ -311,8 +311,8 @@ class ShtoomMainWindow(QMainWindow):
     def fileSaveAs(self):
         print "ShtoomMainWindow.fileSaveAs(): Not implemented yet"
 
-    def filePrint(self):
-        print "ShtoomMainWindow.filePrint(): Not implemented yet"
+    def filePrefs(self):
+        print "ShtoomMainWindow.filePrefs(): Not implemented yet"
 
     def fileExit(self):
         print "ShtoomMainWindow.fileExit(): Not implemented yet"

@@ -64,7 +64,7 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         fn = QFileDialog.getOpenFileName(fn, QString.null, self)
         self.audiosource = str(fn)
 
-    def filePrint(self):
+    def filePrefs(self):
         from prefs import PreferencesDialog
         self.prefs =PreferencesDialog(self, self.app.getOptions())
         self.prefs.show()
