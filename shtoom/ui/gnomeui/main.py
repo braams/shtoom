@@ -224,6 +224,7 @@ class ShtoomWindow(ShtoomBaseUI):
             text.set_wrap_mode(gtk.WRAP_CHAR)
             sw.add(text)
             self.debugview = sw
+            self.logger.set_visible(sw)
             vbox = self.xml.get_widget("vbox2")
             vbox.pack_start(sw, expand=gtk.TRUE, fill=gtk.TRUE)
             window = self.xml.get_widget("callwindow")
@@ -231,6 +232,7 @@ class ShtoomWindow(ShtoomBaseUI):
             window.resize(w, h+200)
             window.show_all()
         else:
+            self.logger.set_visible(None)
             x,y,ww,wh = self.debugview.get_allocation()
             vbox = self.xml.get_widget("vbox2")
             vbox.remove(self.debugview)
@@ -247,6 +249,13 @@ class DebugTextView:
 
     def __init__(self):
         self.buffer = gtk.TextBuffer()
+        self.scroll = None
+
+    def set_visible(self, scroll):
+        self.scroll = scroll
+        if scroll:
+            adj = self.scroll.get_vadjustment()
+            adj.set_value(adj.upper)
 
     def write(self, text):
         b = self.buffer
@@ -255,6 +264,10 @@ class DebugTextView:
         if lines > self.MAXLINES:
             b.delete(b.get_start_iter(), 
                      b.get_iter_at_line_offset(self.DELETECHUNK,0))
+        if self.scroll is not None:
+            adj = self.scroll.get_vadjustment()
+            adj.set_value(adj.upper)
+            
 
     def flush(self):
         pass
