@@ -215,7 +215,7 @@ class Call(object):
         resp.addHeader('to', toaddr)
         resp.addHeader('date', genStandardDate())
         resp.addHeader('call-id', message.headers['call-id'][0])
-        resp.addHeader('server', 'Shtoom/%s'%shtoom.Version)
+        resp.addHeader('server', 'Shtoom/%s'%shtoom.__version__)
         resp.addHeader('cseq', message.headers['cseq'][0])
         if message.method == 'INVITE' and code == 200:
             lhost, lport = self.getLocalSIPAddress()
@@ -325,7 +325,7 @@ class Call(object):
                             self.getTag()))
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', 'sip: %s'%(email_address))
-        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         if auth is not None:
             print auth, authhdr
             invite.addHeader(authhdr, auth)
@@ -383,7 +383,7 @@ class Call(object):
         ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             username, email_address, self.getTag()))
         ack.addHeader('call-id', self.getCallID())
-        ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         ack.addHeader('content-length', 0)
         ack.creationFinished()
         if hasattr(self, 'compDef'):
@@ -411,7 +411,7 @@ class Call(object):
         bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             username, email_address, self.getTag()))
         bye.addHeader('call-id', self.getCallID())
-        bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         bye = bye.toString()
@@ -435,7 +435,7 @@ class Call(object):
         cancel.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             username, email_address, self.getTag()))
         cancel.addHeader('call-id', self.getCallID())
-        cancel.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        cancel.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         cancel.addHeader('content-length', 0)
         cancel.creationFinished()
         cancel = cancel.toString()
@@ -685,7 +685,7 @@ class Registration(Call):
         invite.addHeader('call-id', self.getCallID())
         if auth is not None:
             invite.addHeader(authhdr, auth)
-        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '<sip:%s@%s:%s>'%(
                                 username, lhost, lport))

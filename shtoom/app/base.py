@@ -24,7 +24,7 @@ class BaseApplication:
         from shtoom.opts import buildOptions
         if options is None:
             options = buildOptions(self)
-        options.optionsStartup(version='%%prog %s'%shtoom.Version)
+        options.optionsStartup(version='%%prog %s'%shtoom.__version__)
         self._options = options
 
     def getOptions(self):

@@ -7,23 +7,23 @@ try:
 except:
     py2exe = None
 
-from shtoom import Version
+from shtoom import __version__ 
 
 class DependencyFailed(Exception): pass
 class VersionCheckFailed(DependencyFailed): pass
 
-import sys
-if sys.version < '2.3':
-    raise VersionCheckFailed, "Python 2.3 is required"
+#import sys
+#if sys.version < '2.3':
+#    raise VersionCheckFailed, "Python 2.3 is required"
 
-try:
-    import twisted
-except ImportError:
-    raise DependencyFailed, "You need Twisted - http://www.twistedmatrix.com/"
+#try:
+#    import twisted
+#except ImportError:
+#    raise DependencyFailed, "You need Twisted - http://www.twistedmatrix.com/"
 
-from twisted.copyright import version as tcversion
-if tcversion < '1.1.1':
-    raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
+#from twisted.copyright import version as tcversion
+#if tcversion < '1.1.1':
+#    raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
 
 if py2exe is not None:
     addnl = { 'console':['shtoom.py'], 
@@ -34,17 +34,19 @@ else:
 
 setup(
     name = "shtoom",
-    version = Version,
+    version = __version__,
     description = "Shtoom - SIP softphone",
     author = "Anthony Baxter",
     author_email = "anthony@interlink.com.au",
     url = 'http://sourceforge.net/projects/shtoom/',
-    packages = ['shtoom', 'shtoom/multicast',
-                'shtoom/ui', 'shtoom/ui/qtui',
-                'shtoom/ui/gnomeui', 'shtoom/ui/qtui',
-                'shtoom/ui/textui', 'shtoom/ui/tkui',
-                # 'shtoom/ui/mfcui', 'shtoom/ui/macui',
-                'shtoom/audio', 'shtoom/app' ],
+    packages = ['shtoom', 'shtoom.multicast',
+                'shtoom.ui', 'shtoom.ui.qtui',
+                'shtoom.ui.gnomeui', 'shtoom.ui.qtui',
+                'shtoom.ui.textui', 'shtoom.ui.tkui',
+                # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
+                'shtoom.audio', 'shtoom.app' ],
+    requires = ( 'twisted', 'python-2.3' ), 
+    provides = ( 'shtoom-%s'%__version__, ), 
     scripts = ['shtoom.py', 'shtam.py', 'shmessage.py',
                # 'shtoomcu.py'
               ],
