@@ -286,7 +286,7 @@ class Call(object):
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress,
-                                                                  remAddress))
+                                                                  remAddress), system='sip')
                 _CACHED_LOCAL_IP = locAddress[0]
             else:
                 self.compDef.errback(ValueError("couldn't connect to %s"%(
@@ -297,7 +297,7 @@ class Call(object):
         useStun = pol.checkStun(locAddress[0], remAddress[0])
         if useStun is True:
             self._needSTUN = True
-            log.msg("stun policy says yes, use STUN")
+            log.msg("stun policy says yes, use STUN", system='sip')
             deferred = defer.Deferred()
             deferred.addCallback(self.setStunnedLocalIP).addErrback(log.err)
             SH = StunHook(self.sip)
@@ -318,7 +318,7 @@ class Call(object):
             self.setState('ABORTED')
 
     def setStunnedLocalIP(self, (host, port)):
-        log.msg("according to STUN, local address is %s:%s"%(host, port))
+        log.msg("according to STUN, local address is %s:%s"%(host, port), system='sip')
         self._localIP = host
         self._localPort = port
         # XXX Check for multiple firings!
@@ -414,7 +414,7 @@ class Call(object):
         # XXX Display name? needs an option
         self.dialog.setDirection(outbound=True)
         self.dialog.setCallee(Address(uri, ensureTag=False))
-        self.dialog.setCaller(self.getLocalAOR(addr=fromAddr))
+        self.dialog.setCaller(self.getLocalAOR(addr=fromAddr, full=True))
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)
                                                         ).addErrback(log.err)
@@ -489,7 +489,7 @@ class Call(object):
         invite.addHeader('content-type', 'application/sdp')
         invite.addHeader('from', str(self.dialog.getCaller()))
         invite.addHeader('call-id', self.getCallID())
-        invite.addHeader('subject', str(self.getLocalAOR(full=True)))
+        invite.addHeader('subject', str(self.getLocalAOR()))
         invite.addHeader('allow-events', 'telephone-event')
         invite.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         if auth is not None:
@@ -503,6 +503,7 @@ class Call(object):
         invite.creationFinished()
         self._remoteAOR = self.dialog.getCallee().getURI()
         try:
+            log.msg('Invite\n%s'%invite.toString(), system='sip')
             self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
             #print "Invite sent", invite.toString()
         except (socket.error, socket.gaierror):
@@ -551,7 +552,7 @@ class Call(object):
         else:
             cb = lambda *args: None
         addr = self._remoteURI.host, self._remoteURI.port or 5060
-        log.msg("sending ACK to %s %s"%addr)
+        log.msg("sending ACK to %s %s"%addr, system='sip')
         print "sending ACK to %s %s"%addr
         self.sip.transport.write(ack.toString(), addr)
         self.setState('CONNECTED')
@@ -994,7 +995,6 @@ class SipPhone(DatagramProtocol, object):
 
     def _newCallObject(self, deferred, to=None, callid=None):
         call = Call(self, deferred, uri=to, callid=callid)
-        print "XXX", call, call.getState(), call.getCallID()
         if call.getState() != 'ABORTED':
             if call.getCallID():
                 self._calls[call.getCallID()] = call
