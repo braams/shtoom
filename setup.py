@@ -24,14 +24,18 @@ setup(
                 'shtoom/ui/gnomeui', 'shtoom/ui/qtui',
                 'shtoom/ui/textui', 'shtoom/ui/tkui',
                 'shtoom/audio', ],
-    scripts = ['shtoom.py'],
+    scripts = ['shtoom.py'
+               # 'shtam.py', 'shtoomcu.py'
+              ],
     classifiers = [
        'Development Status :: 3 - Alpha',
-       'License :: OSI Approved :: Python Software Foundation License',
+       'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
        'Operating System :: POSIX',
+       'Operating System :: Microsoft :: Windows',
+       'Operating System :: MacOS :: MacOS X',
        'Programming Language :: Python',
        'Topic :: Internet',
-       'Topic :: System :: Networking',
+       'Topic :: Communications :: Internet Phone',
     ]
 
 )
