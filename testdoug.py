@@ -14,6 +14,7 @@ from shtoom.exceptions import CallRejected
 class RecordingApp(VoiceApp):
 
     announceFile = 'tmp/doug_welcome.raw'
+    testRecordingFile = 'tmp/recording.raw'
 
     def __init__(self, *args, **kwargs):
         print args, kwargs
@@ -74,7 +75,14 @@ class RecordingApp(VoiceApp):
             if event.digits == '2':
                 from shtoom.doug.source import EchoSource
                 self.mediaPlay([EchoSource(delay=1.0)])
-                return ( (DTMFReceivedEvent, self.echoDone), )
+                return ( (DTMFReceivedEvent, self.echoDone), 
+                         (CallEndedEvent, self.allDone), 
+                       )
+            if event.digits == '5':
+                self.mediaRecord(self.testRecordingFile)
+                return ( (DTMFReceivedEvent, self.recordingDone), 
+                         (CallEndedEvent, self.allDone), 
+                       )
         elif event.digits == '#':
             self.mediaPlay('tmp/goodbye.raw')
             return ( (CallEndedEvent, self.allDone),
@@ -91,6 +99,15 @@ class RecordingApp(VoiceApp):
     
     def echoDone(self, event):
         self.mediaStop()
+        return self.waitForAKey(event=None)
+
+    def recordingDone(self, event):
+        self.mediaStop()
+        self.mediaPlay(self.testRecordingFile)
+        return ( (CallEndedEvent, self.allDone),
+                 (MediaDoneEvent, self.waitForAKey),
+                 (DTMFReceivedEvent, self.gotAKey),
+               )
 
     def allDone(self, event):
         self.returnResult('other end closed')
