@@ -98,7 +98,7 @@ class Call(object):
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
-                locAddress = protocol.transport.getHost()[1:3]
+                locAddress = (protocol.transport.getHost()[1], prefs.localport or 5060)
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress, 
