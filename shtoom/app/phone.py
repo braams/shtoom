@@ -46,7 +46,6 @@ class Phone(BaseApplication):
         from twisted.internet import reactor
         self.register()
         reactor.run()
-        self.ui.resourceUsage()
 
     def getAuth(self, method, realm):
         self.ui.getString("Please enter user,passwd for %s at %s"%(method, realm))

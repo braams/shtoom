@@ -22,8 +22,6 @@ class ShtoomApplication(wxApp):
     # It'd probably be much easier just to pass back the frame
     def connectApplication(self, *args):
         self.frame.connectApplication(*args)
-    def resourceUsage(self, *args):
-        self.frame.resourceUsage(*args)
     def debugMessage(self, *args):
         self.frame.debugMessage(*args)
     def statusMessage(self, *args):
