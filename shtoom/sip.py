@@ -288,15 +288,16 @@ class Call(object):
         else:
             name,uri,params =  tpsip.parseAddress(invite.headers['from'][0])
             desc = "From: %s %s" %(name,uri)
-        d = self.sip.app.acceptCall(self,
-                                    calltype='inbound',
-                                    desc=desc,
-                                    localIP=self.getLocalSIPAddress()[0],
-                                    withSTUN=self.getSTUNState() ,
-                                    toAddr=invite.headers.get('to'),
-                                    fromAddr=invite.headers.get('from'),
-                                           )
-        d.addCallbacks(self.acceptedCall, self.rejectCall).addErrback(log.err)
+        d.addCallback(lambda justWaitingForGetLocalSIP:
+                      self.sip.app.acceptCall(self,
+                                              calltype='inbound',
+                                              desc=desc,
+                                              localIP=self.getLocalSIPAddress()[0],
+                                              withSTUN=self.getSTUNState() ,
+                                              toAddr=invite.headers.get('to'),
+                                              fromAddr=invite.headers.get('from'),
+                                              ).addCallbacks(self.acceptedCall, self.rejectCall).addErrback(log.err)
+                      and None)
         #self.app.incomingCall(subj, call, defaccept, defsetup)
 
     def recvInvite(self, invite):
