@@ -7,11 +7,22 @@ class Event(object):
     def getEventName(self):
         return self.__class__.__name__
 
+    def _extraRepr(self):
+        return ''
+
+    def __repr__(self):
+        e = self._extraRepr()
+        if e: e = '(%s) '%e
+        return '<%s %sat %x>'%(self.__class__.__name__, e, id(self))
+
 class    DTMFReceivedEvent(Event):
     """ Received some DTMF keystrokes.
     """
     def __init__(self, digits):
         self.digits = digits
+
+    def _extraRepr(self):
+        return str(self.digits)
 
 class        DTMFTimeoutEvent(DTMFReceivedEvent):
     """ A timeout occurred while collecting DTMF.
@@ -25,6 +36,9 @@ class    MediaDoneEvent(Event):
     """
     def __init__(self, source):
         self.source = source
+
+    def _extraRepr(self):
+        return repr(self.source)
 
 class        MediaPlayDoneEvent(MediaDoneEvent):
     """ A mediaPlay completed
@@ -81,6 +95,9 @@ class    CallLegEvent(Event):
     def getLeg(self):
         return self.leg
 
+    def _extraRepr(self):
+        return repr(self.leg)
+
 class      CallStartedEvent(CallLegEvent):
     """ A call started
     """
@@ -95,11 +112,12 @@ class      CallRejectedEvent(CallLegEvent):
     def __init__(self, reason=''):
         self.reason = reason
 
+    def _extraRepr(self):
+        return repr(self.reason)
+
 class      CallEndedEvent(CallLegEvent):
     """ A call started
     """
-    def __init__(self, leg):
-        self.leg = leg
 
 class        InboundCallStartedEvent(CallStartedEvent):
     """ A new inbound call started
@@ -123,6 +141,9 @@ class    TimeoutEvent(Event):
 
     def getTimer(self):
         return self.timer
+
+    def _extraRepr(self):
+        return repr(self.timer)
 
 class    ApplicationSpecificEvent(Event):
     """ An Application-Specific Event.
