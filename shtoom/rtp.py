@@ -5,18 +5,11 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# 'use_setitimer' will give better results - needs
-# http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.32 2004/03/01 10:55:18 anthony Exp $
+# $Id: rtp.py,v 1.33 2004/03/03 13:21:42 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
 from time import sleep, time
-
-try:
-    import itimer
-except ImportError:
-    itimer = None
 
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
@@ -34,11 +27,6 @@ class RTPProtocol(DatagramProtocol):
 
     _stunAttempts = 0
 
-    if itimer:
-        use_setitimer = 1
-    else:
-        use_setitimer = 0
-    use_setitimer = 0
     _cbDone = None
     PT_pcmu = rtpPTDict[('PCMU', 8000, 1)]
     PT_gsm = rtpPTDict[('GSM', 8000, 1)]
@@ -196,9 +184,12 @@ class RTPProtocol(DatagramProtocol):
             pass
         self.LC = LoopingCall(self.nextpacket)
         self.LC.start(0.020)
-        if self.use_setitimer:
-            signal.signal(signal.SIGALRM, self.reactorWakeUp)
-            itimer.setitimer(itimer.ITIMER_REAL, 0.009, 0.009)
+        # Now send a single CN packet to seed any firewalls that might
+        # need an outbound packet to let the inbound back.
+        # PT 13 is CN.
+        print "sending comfort noise to seed firewall"
+        hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
+        self.transport.write(hdr+chr(0), self.dest)
 
     def reactorWakeUp(self, n, f, reactor=reactor):
         reactor.wakeUp()
@@ -255,8 +246,6 @@ class RTPProtocol(DatagramProtocol):
         tt = time()
         if self.Done:
             self.LC.stop()
-            if self.use_setitimer:
-                itimer.setitimer(itimer.ITIMER_REAL, 0.0, 0.0)
             if self._cbDone:
                 self._cbDone()
             return
@@ -267,7 +256,7 @@ class RTPProtocol(DatagramProtocol):
             # This bit is hardcoded for G711 ULAW. When other codecs are
             # done, the first two bytes will change (but should be mostly
             # constant across a RTP session).
-            hdr = pack('!BBHII', 0x80|fmt, 0x0, self.seq, self.ts, self.ssrc)
+            hdr = pack('!BBHII', 0x80, fmt, self.seq, self.ts, self.ssrc)
             self.transport.write(hdr+sample, self.dest)
             self.sample = None
         else:
@@ -280,7 +269,7 @@ class RTPProtocol(DatagramProtocol):
         except IOError:
             pass
 
-        if (self.sample is not None) and (len(self.sample) == 0):
+        if 0 and (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
         tt = (time() - tt) * 1000
