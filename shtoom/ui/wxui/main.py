@@ -69,7 +69,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.minx = sizex
 
         # Initialise the status bar
-        self.SetStatusText('Not connected')
+        self.SetStatusText(_('Not connected'))
 
         # Startup without the "advanced" functionality showing
         # This also restricts the resizing of the window
@@ -78,7 +78,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         # Hookup the error log
         # Calculate initial pos for the message log window
         posx, posy = self.GetPosition()
-        self.errorlog = LogFrameImpl(self, -1, "Message Log",
+        self.errorlog = LogFrameImpl(self, -1, _("Debugging"),
             pos=(posx+sizex+5,posy))
         wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
 
@@ -91,15 +91,15 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         wxLogMessage(message)
 
     def errorMessage(self, message):
-        wxLogMessage("ERROR: %s"%message)
+        wxLogMessage("%s: %s"%(_('ERROR'),message))
 
     def updateCallButton(self, do_call):
         if do_call:
             self.call_mode = True
-            self.button_call.SetLabel("Call")
+            self.button_call.SetLabel(_("Call"))
         else:
             self.call_mode = False
-            self.button_call.SetLabel("Hangup")
+            self.button_call.SetLabel(_("Hang Up"))
 
     def OnCall(self, event):
         if self.call_mode:
@@ -114,8 +114,8 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         sipURL = self.getCurrentAddress()
         if not sipURL.startswith('sip'):
             dlg = wxMessageDialog(self,
-                '%s is a invalid address. The address must begin with "sip".'%sipURL,
-                "Address error", wxOK)
+                '%s %s'%(sipURL, _('is a invalid address. The address must begin with "sip".')),
+                _("Address error"), wxOK)
             dlg.ShowModal()
             return
         # have hang up and call buttons toggle
@@ -128,7 +128,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
 
     def callConnected(self, cookie):
         self.updateCallButton(do_call=False)
-        self.SetStatusText("Call connected")
+        self.SetStatusText(_("Call Connected"))
         # Save the address we connected to. We'll use this to
         # pre-populate the address combo on startup
         address = self.getCurrentAddress()
@@ -136,7 +136,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             self.address_history.append(address)
 
     def callDisconnected(self, cookie, message=""):
-        status = "Call disconnected"
+        status = _("Call Disconnected")
         if message:
             status = "%s: %r"%(status, message)
         self.SetStatusText(status)
@@ -144,7 +144,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.cookie = None
 
     def callFailed(self, cookie, message=""):
-        status = "Call failed"
+        status = _("Call Failed")
         if message:
             status = "%s: %r"%(status, message)
         self.SetStatusText(status)
@@ -154,7 +154,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
     def HangupCall(self, event):
         self.app.dropCall(self.cookie)
         self.updateCallButton(do_call=True)
-        self.SetStatusText('Not connected')
+        self.SetStatusText(_('Not connected'))
         self.cookie = False
 
     def incomingCall(self, description, cookie):
