@@ -6,9 +6,11 @@ Definite before 0.3:
     - go through and make sure Doug is up-to-date with recent refactorings
     - all interfaces must be current and correct
     - Asterisk is rejecting our ACK - e.g. to 613@fwd.pulver.com
-    - doug: implement leg bridging (inbound and outbound)
     - doug: use dropCall()'s deferred to generate correct events
+    - doug: move the DTMF code from shtoom.app.doug to shtoom.doug.leg.Leg
     - doug: s.d.conferencing's entrance soundburst bug
+    - doug: after a connectLegs(), forward on DTMF? How?
+    - doug: flesh out leg tests, then voiceapp tests
     - ui(qt): hide multiple call support for now
     - Some sort of "debug dump" command that dumps relevant info (ui, audio,
       &c) for bugreports.

@@ -1,6 +1,10 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - doug's connectLegs() primitive now works, and connects an 
+    inbound and an outbound leg together.
+  - doug has had most of the voiceapp body moved out to the Leg 
+    object, where it belongs. 
   - scripts/shreadder.py now takes an optional codec argument, e.g.
     PT_GSM, PT_SPEEX. The audio will be roundtripped through that 
     codec. Good for testing.

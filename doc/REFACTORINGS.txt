@@ -97,3 +97,8 @@ This is needed to allow multiple legs in a call (e.g. inbound and
 outbound legs). This also gives me an opportunity to refactor and
 unit test a lot of the code. Excellent!
 
+More detail: Most everything in doug/voiceapp.py more properly
+belongs to the Leg class - mediaPlay/Record &c are leg-specific.
+
+This has been done, as of r809. Leg bridging is implemented, as well.
+
