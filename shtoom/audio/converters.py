@@ -79,7 +79,7 @@ class MultipleConv(NullConv):
             return [FMT_PCMU,]
 
     def selectFormat(self, fmt):
-        if not fmt in self.listFormats:
+        if not fmt in self.listFormats():
             raise ValueError, "unknown format"
         else:
             self._fmt = fmt
@@ -88,10 +88,10 @@ class MultipleConv(NullConv):
         if format is None:
             format = self._fmt
         if format == FMT_PCMU:
-            return audioop.lin2ulaw(self._d.read(320), 2)
+            return audioop.lin2ulaw(self._d.read(), 2)
         elif format == FMT_GSM:
             if self._gsmencoder:
-                indata = self._d.read(320)
+                indata = self._d.read()
                 return self._encoder.encode(indata)
             else:
                 print "No GSM available"
