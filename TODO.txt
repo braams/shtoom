@@ -1,5 +1,9 @@
 
 Before 0.2:
+    - Fix the fastaudio windows distribution - it needs to include the 
+      libsndfile.dll file. I might need to switch to using Inno Setup -
+      but how does Inno Setup know where to install the executable? How
+      does wininst.exe build an installer? Default to C:\Python23 ?
     - SIP registration. We can use STUN to allow the INVITEs back from the
       server that we register with.
     - Finish Tkinter GUI
