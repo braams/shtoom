@@ -103,6 +103,8 @@ class Incoming:
 
     def approved(self, answer):
         if answer:
+            if self.main.connected:
+                self.main.on_hangup_clicked(None)
             self.main.connected = self.call
             self.main.callButton.set_sensitive(0)
             self.main.address.set_sensitive(0)
