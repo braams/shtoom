@@ -32,6 +32,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.hangupButton.setEnabled(False)
         self.cookie = None
 
+    def register_clicked(self):
+        self.app.register()
+
     def callButton_clicked(self):
         sipURL = str(self.addressComboBox.currentText())
         if not sipURL.startswith('sip:'):

@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>493</width>
-            <height>499</height>
+            <width>421</width>
+            <height>385</height>
         </rect>
     </property>
     <property name="caption">
@@ -29,38 +29,6 @@
         </property>
         <property name="text">
             <string>Call:</string>
-        </property>
-    </widget>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel4</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>138</y>
-                <width>50</width>
-                <height>30</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Status</string>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>lookupAddressButton</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>370</x>
-                <y>20</y>
-                <width>31</width>
-                <height>31</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string></string>
         </property>
     </widget>
     <widget class="QPushButton">
@@ -98,6 +66,47 @@
             <string>Hang Up</string>
         </property>
     </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>pushButton17</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>230</x>
+                <y>60</y>
+                <width>80</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Register</string>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel4</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>120</y>
+                <width>41</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="font">
+            <font>
+                <family>Sans Serif</family>
+                <bold>1</bold>
+            </font>
+        </property>
+        <property name="text">
+            <string>Status</string>
+        </property>
+        <property name="alignment">
+            <set>AlignBottom|AlignRight</set>
+        </property>
+    </widget>
     <widget class="QLabel">
         <property name="name">
             <cstring>statusLabel</cstring>
@@ -105,13 +114,84 @@
         <property name="geometry">
             <rect>
                 <x>60</x>
-                <y>140</y>
-                <width>180</width>
+                <y>121</y>
+                <width>250</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="backgroundMode">
+            <enum>PaletteBrightText</enum>
+        </property>
+        <property name="font">
+            <font>
+                <family>Sans Serif</family>
+            </font>
+        </property>
+        <property name="text">
+            <string></string>
+        </property>
+        <property name="alignment">
+            <set>AlignBottom</set>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>lookupAddressButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>320</x>
+                <y>20</y>
+                <width>31</width>
                 <height>31</height>
             </rect>
         </property>
         <property name="text">
             <string></string>
+        </property>
+    </widget>
+    <widget class="QComboBox">
+        <property name="name">
+            <cstring>addressComboBox</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>50</x>
+                <y>20</y>
+                <width>260</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="editable">
+            <bool>true</bool>
+        </property>
+        <property name="sizeLimit">
+            <number>20</number>
+        </property>
+        <property name="insertionPolicy">
+            <enum>AtTop</enum>
+        </property>
+        <property name="autoCompletion">
+            <bool>true</bool>
+        </property>
+        <property name="duplicatesEnabled">
+            <bool>false</bool>
+        </property>
+    </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>pixmapLogo</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>360</x>
+                <y>20</y>
+                <width>50</width>
+                <height>30</height>
+            </rect>
+        </property>
+        <property name="scaledContents">
+            <bool>true</bool>
         </property>
     </widget>
     <widget class="QTextEdit">
@@ -121,8 +201,8 @@
         <property name="geometry">
             <rect>
                 <x>0</x>
-                <y>270</y>
-                <width>490</width>
+                <y>170</y>
+                <width>410</width>
                 <height>120</height>
             </rect>
         </property>
@@ -158,147 +238,23 @@
             <string>Debugging Messages</string>
         </property>
     </widget>
-    <widget class="QComboBox">
-        <property name="name">
-            <cstring>addressComboBox</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>50</x>
-                <y>20</y>
-                <width>311</width>
-                <height>31</height>
-            </rect>
-        </property>
-        <property name="editable">
-            <bool>true</bool>
-        </property>
-        <property name="sizeLimit">
-            <number>20</number>
-        </property>
-        <property name="insertionPolicy">
-            <enum>AtTop</enum>
-        </property>
-        <property name="autoCompletion">
-            <bool>true</bool>
-        </property>
-        <property name="duplicatesEnabled">
-            <bool>false</bool>
-        </property>
-    </widget>
-    <widget class="QPushButton">
-        <property name="name">
-            <cstring>clearButton</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>400</y>
-                <width>71</width>
-                <height>31</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Clear</string>
-        </property>
-    </widget>
-    <widget class="QLayoutWidget">
-        <property name="name">
-            <cstring>layout6</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>11</x>
-                <y>191</y>
-                <width>246</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <hbox>
-            <property name="name">
-                <cstring>unnamed</cstring>
-            </property>
-            <widget class="QLabel">
-                <property name="name">
-                    <cstring>textLabel2</cstring>
-                </property>
-                <property name="font">
-                    <font>
-                    </font>
-                </property>
-                <property name="text">
-                    <string>Sent Pkts</string>
-                </property>
-            </widget>
-            <widget class="QLineEdit">
-                <property name="name">
-                    <cstring>sentPacketsLineEdit</cstring>
-                </property>
-                <property name="font">
-                    <font>
-                        <family>Courier</family>
-                    </font>
-                </property>
-            </widget>
-        </hbox>
-    </widget>
-    <widget class="QLayoutWidget">
-        <property name="name">
-            <cstring>layout6_2</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>10</x>
-                <y>220</y>
-                <width>246</width>
-                <height>28</height>
-            </rect>
-        </property>
-        <hbox>
-            <property name="name">
-                <cstring>unnamed</cstring>
-            </property>
-            <widget class="QLabel">
-                <property name="name">
-                    <cstring>textLabel2_r</cstring>
-                </property>
-                <property name="font">
-                    <font>
-                    </font>
-                </property>
-                <property name="text">
-                    <string>Rcvd Pkts</string>
-                </property>
-            </widget>
-            <widget class="QLineEdit">
-                <property name="name">
-                    <cstring>rcvdPacketsLineEdit</cstring>
-                </property>
-                <property name="font">
-                    <font>
-                        <family>Courier</family>
-                    </font>
-                </property>
-            </widget>
-        </hbox>
-    </widget>
     <widget class="QFrame">
         <property name="name">
-            <cstring>frame3</cstring>
+            <cstring>dtmfFrame</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>330</x>
-                <y>100</y>
-                <width>80</width>
-                <height>100</height>
+                <x>335</x>
+                <y>60</y>
+                <width>75</width>
+                <height>95</height>
             </rect>
         </property>
         <property name="paletteBackgroundColor">
             <color>
-                <red>230</red>
-                <green>230</green>
-                <blue>230</blue>
+                <red>191</red>
+                <green>191</green>
+                <blue>191</blue>
             </color>
         </property>
         <property name="frameShape">
@@ -307,6 +263,26 @@
         <property name="frameShadow">
             <enum>Raised</enum>
         </property>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>dtmfButton6</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>30</y>
+                    <width>15</width>
+                    <height>15</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>6</string>
+            </property>
+        </widget>
         <widget class="QPushButton">
             <property name="name">
                 <cstring>dtmfButton1</cstring>
@@ -381,66 +357,6 @@
         </widget>
         <widget class="QPushButton">
             <property name="name">
-                <cstring>dtmfButton3</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>10</y>
-                    <width>15</width>
-                    <height>15</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                </font>
-            </property>
-            <property name="text">
-                <string>3</string>
-            </property>
-        </widget>
-        <widget class="QPushButton">
-            <property name="name">
-                <cstring>dtmfButton5</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>30</y>
-                    <width>15</width>
-                    <height>15</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                </font>
-            </property>
-            <property name="text">
-                <string>5</string>
-            </property>
-        </widget>
-        <widget class="QPushButton">
-            <property name="name">
-                <cstring>dtmfButton6</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>30</y>
-                    <width>15</width>
-                    <height>15</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                </font>
-            </property>
-            <property name="text">
-                <string>6</string>
-            </property>
-        </widget>
-        <widget class="QPushButton">
-            <property name="name">
                 <cstring>dtmfButton7</cstring>
             </property>
             <property name="geometry">
@@ -457,46 +373,6 @@
             </property>
             <property name="text">
                 <string>7</string>
-            </property>
-        </widget>
-        <widget class="QPushButton">
-            <property name="name">
-                <cstring>dtmfButton8</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>30</x>
-                    <y>50</y>
-                    <width>15</width>
-                    <height>15</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                </font>
-            </property>
-            <property name="text">
-                <string>8</string>
-            </property>
-        </widget>
-        <widget class="QPushButton">
-            <property name="name">
-                <cstring>dtmfButton9</cstring>
-            </property>
-            <property name="geometry">
-                <rect>
-                    <x>50</x>
-                    <y>50</y>
-                    <width>15</width>
-                    <height>15</height>
-                </rect>
-            </property>
-            <property name="font">
-                <font>
-                </font>
-            </property>
-            <property name="text">
-                <string>9</string>
             </property>
         </widget>
         <widget class="QPushButton">
@@ -541,6 +417,66 @@
         </widget>
         <widget class="QPushButton">
             <property name="name">
+                <cstring>dtmfButton8</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>50</y>
+                    <width>15</width>
+                    <height>15</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>8</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>dtmfButton5</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>30</x>
+                    <y>30</y>
+                    <width>16</width>
+                    <height>16</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>5</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>dtmfButton9</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>50</y>
+                    <width>15</width>
+                    <height>15</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>9</string>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
                 <cstring>dtmfButtonHash</cstring>
             </property>
             <property name="geometry">
@@ -559,24 +495,67 @@
                 <string>#</string>
             </property>
         </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>dtmfButton3</cstring>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>50</x>
+                    <y>10</y>
+                    <width>15</width>
+                    <height>15</height>
+                </rect>
+            </property>
+            <property name="font">
+                <font>
+                </font>
+            </property>
+            <property name="text">
+                <string>3</string>
+            </property>
+        </widget>
     </widget>
     <widget class="QLabel">
         <property name="name">
-            <cstring>pixmapLogo</cstring>
+            <cstring>appVersion</cstring>
         </property>
         <property name="geometry">
             <rect>
-                <x>420</x>
-                <y>16</y>
-                <width>50</width>
-                <height>30</height>
+                <x>290</x>
+                <y>300</y>
+                <width>120</width>
+                <height>31</height>
             </rect>
         </property>
-        <property name="pixmap">
-            <pixmap></pixmap>
+        <property name="font">
+            <font>
+                <family>Sans Serif</family>
+                <pointsize>14</pointsize>
+                <bold>1</bold>
+            </font>
         </property>
-        <property name="scaledContents">
-            <bool>true</bool>
+        <property name="text">
+            <string>Shtoom</string>
+        </property>
+        <property name="alignment">
+            <set>AlignVCenter|AlignRight</set>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>clearButton</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>300</y>
+                <width>71</width>
+                <height>31</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Clear</string>
         </property>
     </widget>
 </widget>
@@ -822,19 +801,6 @@
         <receiver>ShtoomMainWindow</receiver>
         <slot>clearButton_clicked()</slot>
     </connection>
-
-    <connection>
-        <sender>dtmfButton1</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton1_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton1</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton1_released()</slot>
-    </connection>
     <connection>
         <sender>dtmfButton2</sender>
         <signal>pressed()</signal>
@@ -967,6 +933,12 @@
         <receiver>ShtoomMainWindow</receiver>
         <slot>dtmfButtonStar_released()</slot>
     </connection>
+    <connection>
+        <sender>pushButton17</sender>
+        <signal>clicked()</signal>
+        <receiver>ShtoomMainWindow</receiver>
+        <slot>register_clicked()</slot>
+    </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">shtoommainwindow.ui.h</include>
@@ -1005,11 +977,10 @@
     <slot>dtmfButton3_released()</slot>
     <slot>dtmfButton2_pressed()</slot>
     <slot>dtmfButton2_released()</slot>
-    <slot>dtmfButton1_pressed()</slot>
-    <slot>dtmfButton1_released()</slot>
     <slot>callButton_clicked()</slot>
     <slot>hangupButton_clicked()</slot>
     <slot>clearButton_clicked()</slot>
+    <slot>register_clicked()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

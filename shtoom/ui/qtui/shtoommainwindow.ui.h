@@ -222,3 +222,9 @@ void ShtoomMainWindow::clearButton_clicked()
 {
 
 }
+
+
+void ShtoomMainWindow::register_clicked()
+{
+
+}
