@@ -256,6 +256,9 @@ class Call(object):
             call, it's an attempt to modify - send a 488 in this case.
         '''
         # XXX if self.getState() is not 'NEW', send a 488
+        if self.getState() == 'SENT_RINGING':
+            # Nag, nag, nag. Shut the fuck up, I'm answering...
+            return
         self._invite = invite
         contact = invite.headers['contact']
         if type(contact) is list:
@@ -618,8 +621,6 @@ class Registration(Call):
             invite.addHeader('expires', 900)
         elif state in ( 'CANCEL_REGISTER' ):
             invite.addHeader('expires', 0)
-        #invite.addHeader('event', 'registration')
-        #invite.addHeader('allow-events', 'presence')
         invite.addHeader('call-id', self.getCallID())
         if auth is not None:
             invite.addHeader(authhdr, auth)
@@ -838,8 +839,6 @@ class SipPhone(DatagramProtocol, object):
                 defsetup = defer.Deferred()
                 call = self._newCallObject(defsetup, callid=callid)
                 call.startInboundCall(message)
-
-
             else:
                 if message.method == 'BYE':
                     # Aw. Other end goes away :-(
