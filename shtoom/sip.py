@@ -4,7 +4,8 @@
 
 from interfaces import ISipPhone
 
-from twisted.internet.protocol import DatagramProtocol
+from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
+from twisted.internet import reactor
 from twisted.protocols import sip as tpsip
 from rtp import RTPProtocol
 
@@ -48,12 +49,11 @@ class Call(object):
         if prefs.localip is not None:
             self._localIP = prefs.localip
         else:
-            import socket
-            rsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            rsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            rsock.connect_ex((host,port))
-            self._localIP = rsock.getsockname()[0]
-            rsock.close()
+            # it is a hack! and won't work for NAT. oh well.
+            protocol = ConnectedDatagramProtocol()
+            port = reactor.connectUDP(host, port, protocol)
+            self._localIP = protocol.transport.getHost()[1]
+            port.stopListening()
         log.msg("using local IP address %s"%(self._localIP))
 
     def getCSeq(self, incr=0):
