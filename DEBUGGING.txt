@@ -149,8 +149,10 @@ not got 'Capture' enabled for something you shouldn't have. The
 only thing that should have 'Capture' on in alsamixer is 'Mic'. 
 
 Hit 'space' to toggle the 'Capture' flag. See the alsamixer manpage for
-more. If there's ever a direct interface to the ALSA interface from
-Python, I'll look at making this happen automatically.
+more. There's now an ALSA mixer interface, and shtoom will warn and fix
+the ALSA mixer setting soon. See also:
+http://people.redhat.com/~alexl/files/why-alsa-sucks.png
+
 
 Unsorted Notes
 --------------
