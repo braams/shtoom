@@ -74,15 +74,22 @@ class ShtoomWindow(ShtoomBaseUI):
         self.cookie = cookie
         self.hangupButton.set_sensitive(1)
 
+    def callDisconnected(self, cookie, reason):
+        self.cookie = None
+        self.hangupButton.set_sensitive(0)
+        self.callButton.set_sensitive(1)
+        print "closed: ", reason
+
     def callFailed(self, reason):
         self.statusMessage("Call failed: %s" % reason.value)
         self.hangupButton.set_sensitive(0)
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
 
-    def incomingCall(self, description, call, defresp, defsetup):
+    def incomingCall(self, description, cookie, defresp):
+        from shtoom.exceptions import CallRejected
         # XXX multiple incoming calls won't work
-        self.incoming.append(Incoming(self, description, call, defresp, defsetup))
+        self.incoming.append(Incoming(self, cookie, description, defresp))
         if len(self.incoming) == 1:
             self.incoming[0].show()
 
@@ -102,41 +109,41 @@ class ShtoomWindow(ShtoomBaseUI):
 
 class Incoming:
 
-    def __init__(self, main, description, call, deferredResponse, deferredSetup):
+    def __init__(self, main, cookie, description, deferredResponse):
         self.main = main
+        self.cookie = cookie
         self.description = description
-        self.call = call
         self.deferredResponse = deferredResponse
-        self.deferredSetup = deferredSetup.addCallback(self.main._cbAcceptDone).addErrback(log.err)
         self.timeoutID = reactor.callLater(30, self._cbTimeout)
         self.current = False
 
     def show(self):
         """Display the dialog."""
         self.current = True
-        self.main.xml.get_widget("acceptlabel").set_text("Accept call from %s?" % self.call)
+        self.main.xml.get_widget("acceptlabel").set_text("Accept call from %s?" % self.description)
         self.main.acceptDialog.show()
 
     def approved(self, answer):
+        from shtoom.exceptions import CallRejected
         self.timeoutID.cancel()
         if answer:
-            if self.main.connected:
+            if self.main.cookie:
                 self.main.on_hangup_clicked(None)
-            self.main.connected = self.call
+            self.main.cookie = self.cookie
             self.main.callButton.set_sensitive(0)
             self.main.address.set_sensitive(0)
-            self.deferredResponse.addCallbacks(self.main.callConnected, self.main.callFailed).addErrback(log.err)
-            self.deferredSetup.callback('yes')
+            self.main.acceptDialog.hide()
+            self.deferredResponse.callback('yes')
         else:
-            # XXX no string exceptions!
-            self.deferredSetup.errback('no')
-        del self.deferredSetup
+            self.main.acceptDialog.hide()
+            self.deferredResponse.errback(CallRejected)
         del self.deferredResponse
         del self.main
 
     def _cbTimeout(self):
         """User didn't answer, same response as user not accepting call."""
+        from shtoom.exceptions import CallNotAnswered
         if self.current:
             self.main.acceptDialog.hide()
-        self.deferredSetup.errback('no')
+        self.deferredResponse.errback(CallNotAnswered)
         del self.deferredSetup
