@@ -96,7 +96,11 @@ class SDP:
         self._sessionB = self.parseB(ann.get("b",optional=1))
         self._sessionM = self.parseM(ann.get("m",optional=1))
         self._ann = ann
-        self.rtpmap = [(int(x.split()[0]),x) for x in self.get('a', 'rtpmap')]
+        media = self.get('a', 'rtpmap')
+        if media is None:
+            self.rtpmap = []
+        else:
+            self.rtpmap = [(int(x.split()[0]),x) for x in media]
 
     def get(self, typechar, option=None):
         if option is None:
