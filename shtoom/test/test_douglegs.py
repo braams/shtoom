@@ -1,8 +1,7 @@
 "Tests for the leg bridging code"
 from twisted.trial import unittest
-
 import twisted.trial.util
-#twisted.trial.util.wait(testdef)
+from twisted.internet import defer
 
 from shtoom.doug.leg import Bridge, BridgeSource, Leg
 
@@ -56,3 +55,40 @@ class DougLegTests(unittest.TestCase):
         # We should be connected to silence at this point
         ae(l.leg_giveRTP(), None)
 
+    def test_legCallSetup(self):
+        from shtoom.sip import Dialog
+        ae = self.assertEquals
+        d = Dialog()
+        cookie = 'NCookie'
+        class A:
+            res = None
+            def good(self, res):
+                self.res = res
+            def bad(self, err):
+                self.res = err
+
+        l = Leg(cookie, d)
+        a = A()
+        d = defer.Deferred()
+        d.addCallbacks(a.good, a.bad)
+        l.incomingCall(d)
+        ae(a.res, None)
+        l.answerCall(voiceapp=None)
+        twisted.trial.util.wait(d)
+        ae(a.res, cookie)
+        l.rejectCall('because')
+        twisted.trial.util.wait(d)
+        ae(a.res, cookie)
+
+        l = Leg(cookie, d)
+        a = A()
+        d = defer.Deferred()
+        d.addCallbacks(a.good, a.bad)
+        l.incomingCall(d)
+        ae(a.res, None)
+        # XXX should be an exception
+        l.rejectCall('because')
+        twisted.trial.util.wait(d)
+        # rejectCall triggers an errback, so we get 
+        # Failure(DefaultException(reason))
+        ae(a.res.value.args, ('because',))
