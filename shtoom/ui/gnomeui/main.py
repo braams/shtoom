@@ -140,6 +140,7 @@ class Incoming:
                 self.main.on_hangup_clicked(None)
             self.main.cookie = self.cookie
             self.main.callButton.set_sensitive(0)
+            self.main.hangupButton.set_sensitive(1)
             self.main.address.set_sensitive(0)
             self.main.acceptDialog.hide()
             self.deferredResponse.callback(self.cookie)
