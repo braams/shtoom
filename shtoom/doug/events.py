@@ -1,11 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
 
-class _IgnoranceIsBliss:
-    pass
-
-IGNORE_EVENT = _IgnoranceIsBliss()
-
-del _IgnoranceIsBliss
 
 class Event(object):
     """
@@ -132,3 +126,10 @@ class    ApplicationSpecificEvent(Event):
     """ An Application-Specific Event.
         Subclass this to implement your own events
     """
+
+class _IgnoranceIsBliss(Event):
+    pass
+
+IGNORE_EVENT = _IgnoranceIsBliss()
+
+del _IgnoranceIsBliss
