@@ -305,7 +305,7 @@ class Call(object):
             call, it's an attempt to modify - send a 488 in this case.
         '''
         # XXX if self.getState() is not 'NEW', send a 488
-        if self.getState() == 'SENT_RINGING':
+        if self.getState() in ( 'SENT_RINGING', 'INVITE_OK' ):
             # Nag, nag, nag. Shut the fuck up, I'm answering...
             return
         self._invite = invite
