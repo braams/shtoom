@@ -1,6 +1,7 @@
 from shtoom.doug.events import *
 from shtoom.doug.source import Source
 from twisted.internet.task import LoopingCall
+from sets import Set
 import sys
 
 class ConfSource(Source):
@@ -21,10 +22,10 @@ class ConfSource(Source):
         return self._room.readAudio(self)
 
     def close(self):
-        return self._room.removeMember(self)
+        self._room.removeMember(self)
 
     def write(self, bytes):
-        return self._room.writeAudio(self, bytes)
+        self._room.writeAudio(self, bytes)
 
 class Room:
     """A room is a conference. Everyone in the room hears everyone else 
@@ -37,13 +38,13 @@ class Room:
     # This means we don't have to worry about the end systems not 
     # contributing during a window.
 
-    def __init__(self):
-        from sets import Set
+    def __init__(self, MaxSpeakers=4):
         self._members = Set()
         self._audioIn = {}
         self._audioOut = {}
         self._audioOutDefault = ''
         self._audioCalcLoop = LoopingCall(self.mixAudio)
+        self._maxSpeakers = MaxSpeakers
 
     def shutdown(self):
         self._audioCalcLoop.cancel()
@@ -73,21 +74,36 @@ class Room:
         return self._audioOut.get(confsource, self._audioOutDefault)
 
     def mixAudio(self):
-        # Not _quite_ right yet. This code returns the top 4 overall,
-        # without knocking out the source's own audio. But it's close.
-
-        # The short form of this is that it means you'll hear your own
-        # voice on the call. Hey, it's a start.
-
         import audioop
+        self._audioOut = {}
         samples = self._audioIn.items()
         power = [ (audioop.rms(x[1],2),x[1], x[0]) for x in samples ]
         power.sort(); power.reverse()
-        samples = [ x[1] for x in power[:4] ]
+        speakers = Set([x[2] for x in power[:self._maxSpeakers]])
+        # First we calculate the 'default' audio. Used for everyone who's
+        # not a speaker in the room.
+        samples = [ x[1] for x in power[:self._maxSpeakers] ]
         divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples ]
         out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
         self._audioOutDefault = out
-        return out
+
+        # Now calculate output for each speaker.
+        allsamples = {}
+        for p,sample,speaker in power:
+            allsamples[speaker] = p, sample
+        for s in speakers:
+            # For each, take the set of (other speakers), grab the 
+            # top N speakers, and combine them. Add to the _audioOut 
+            # dictionary.
+            all = allsamples.copy()
+            del all[s]
+            power = all.values()
+            power.sort() ; power.reverse()
+            samples = [ x[1] for x in power[:self._maxSpeakers] ]
+            divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples ]
+            out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+            self._audioOut[speaker] = out
+        self._audioIn = {}
 
 _RegisterOfAllRooms = {}
 
