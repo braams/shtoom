@@ -418,7 +418,7 @@ def _cb_gotUPnP(upnp):
     # keep the UPnPMapper alive, so that unmap of existing entries work 
     # correctly. Otherwise, kill it.
     global _cached_mapper
-    if _cached_mapper and _cached_mapper.controlURL != upnp.controlURL:
+    if _cached_mapper and _cached_mapper.upnp and _cached_mapper.upnp.controlURL != upnp.controlURL:
         _cached_mapper = None
     return upnp
 
