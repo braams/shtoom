@@ -53,6 +53,7 @@ class Call(object):
         self._remoteURI = None
         self._remoteAOR = None
         self._localAOR = None
+        self._outboundProxyURI = None
         self._caller = None
         self._callee = None
         self.state = 'NEW'
@@ -70,6 +71,10 @@ class Call(object):
             end is setup
         '''
         self.setupDeferred = defer.Deferred()
+        outboundProxyURI = self.sip.app.getPref('outbound_proxy_url')
+        if outboundProxyURI:
+            print 'outboundProxyURI=' + outboundProxyURI
+            self._outboundProxyURI = tpsip.parseURL(outboundProxyURI)
         if via is not None:
 	    remote = tpsip.URL(host=via.host, port=via.port)
         else:
@@ -178,7 +183,9 @@ class Call(object):
         return (self._localIP, self._localPort or 5060)
 
     def getRemoteSIPAddress(self):
-        if self._remoteURI is not None:
+        if self._outboundProxyURI is not None:
+            return (self._outboundProxyURI.host, (self._outboundProxyURI.port or 5060))
+        elif self._remoteURI is not None:
             return (self._remoteURI.host, (self._remoteURI.port or 5060))
         else:
             return (self._remoteAOR.host, (self._remoteAOR.port or 5060))
@@ -233,8 +240,6 @@ class Call(object):
         #else:
         #    branch = ''
         vias = message.headers['via']
-        #resp.addHeader('via', 'SIP/2.0/UDP %s:%s%s'%(
-        #                            self.getLocalSIPAddress()+(branch,)))
         for via in vias:
             resp.addHeader('via', via)
         resp.addHeader('from', message.headers['from'][0])
@@ -262,8 +267,10 @@ class Call(object):
             resp.addHeader('content-length', 0)
         resp.creationFinished()
         try:
-            self.sip.transport.write(resp.toString(),self.getRemoteSIPAddress())
-            self.sip.app.debugMessage("Response sent to %r\n%s"%(self.getRemoteSIPAddress(),resp.toString()))
+            via0 = tpsip.parseViaHeader(vias[0])
+            viaAddress = (via0.host, via0.port)
+            self.sip.transport.write(resp.toString(),viaAddress)
+            self.sip.app.debugMessage("Response sent to %r\n%s"%(viaAddress,resp.toString()))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             #self.compDef.errback(e(v))
@@ -346,9 +353,6 @@ class Call(object):
             del self.compDef
             d.callback('call aborted')
             return
-        self._toAddr = toAddr
-        if toAddr is None:
-            toAddr = self._toAddr
         invite = tpsip.Request('INVITE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
@@ -412,8 +416,8 @@ class Call(object):
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
-        ack.addHeader('to', str(self._callee))
-        ack.addHeader('from', str(self._caller))
+        ack.addHeader('to', okmessage.headers['to'][0])
+        ack.addHeader('from', okmessage.headers['from'][0])
         ack.addHeader('call-id', self.getCallID())
         ack.addHeader('allow-events', 'telephone-event')
         ack.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
@@ -593,6 +597,8 @@ class Call(object):
         print "Handling %s while in state %s"%(message.code, state)
         if message.code in ( 100, 180, 181, 182 ):
             return
+        elif message.code == 183:
+            self.sip.app.debugMessage('Should handle early media here:\n' + message.toString())            
         elif message.code == 200:
             if state == 'SENT_INVITE':
                 self.sip.app.debugMessage("Got Response 200\n")
