@@ -7,7 +7,6 @@ from shtoom.audio.converters import MediaLayer
 
 
 def findAudioInterface():
-    from __main__ import app
     # Ugh. Circular import hell
     from shtoom.avail import audio as av_audio
     audioOptions = { 'oss': av_audio.ossaudio,
@@ -26,6 +25,11 @@ def findAudioInterface():
                       ]
 
     audioPref = attempts = None
+
+    try:
+        from __main__ import app
+    except:
+        app = None
 
     if app is not None:
         files = app.getPref('audio_infile') or app.getPref('audio_outfile')

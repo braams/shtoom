@@ -18,7 +18,7 @@ from interfaces import SIP as ISip
 from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
 from twisted.internet import defer
 from twisted.protocols import sip as tpsip
-from twisted.python import log
+from twisted.python import log, failure
 
 from shtoom.exceptions import CallRejected, CallFailed, HostNotKnown
 from shtoom import __version__ as ShtoomVersion
@@ -375,6 +375,9 @@ class Call(object):
     def rejectCall(self, message=None):
         ''' Accept currently pending call.
         '''
+        if isinstance(message, failure.Failure):
+            message.raiseException()
+    
         log.msg("rejecting because %r"%(message,))
         self.sendResponse(self._invite, 603)
         self.setState('ABORTED')

@@ -17,7 +17,6 @@ from shtoom.opts import buildOptions
 from shtoom.Options import OptionGroup, StringOption, ChoiceOption
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
-from shtoom.audio import getAudioDevice
 
 class Phone(BaseApplication):
     __implements__ = ( Application, )
@@ -81,8 +80,7 @@ class Phone(BaseApplication):
 
     def acceptCall(self, call):
         log.msg("dialog is %r"%(call.dialog))
-        if self._audio is None:
-            self.openAudioDevice()
+        self.openAudioDevice()
         cookie = self.getCookie()
         self._calls[cookie] = call
         d = self._createRTP(cookie,
