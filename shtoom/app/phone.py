@@ -50,7 +50,7 @@ class Phone(BaseApplication):
             self.ui = findUserInterface(self, self.getPref('ui'))
         l = self.getPref('logfile')
         if l:
-            log.startLogging(open(l, 'aU'), setStdout=False)
+            log.startLogging(open(l, 'aU'))
         BaseApplication.boot(self)
 
     def register(self):
