@@ -1,4 +1,37 @@
+Debugging
+---------
 
+Some notes on helping you debug shtoom. There's a bit more 
+attitude in this file than you might think necessary. I 
+apologise - many of these problems are a source of some 
+frustration and annoyance to me, so this venting is probably
+healthy for me <wink>
+
+
+Firewalls
+---------
+
+Firewalls are the absolute BANE of VoIP and SIP. If the firewall
+is well designed and modern, it should work just fine. If not...
+well, we'll come to some possible solutions to that.
+
+First test - in shtoom/, there is a file 'stun.py'. This can be
+run as a script, and should at least let you know if UDP packets
+can get in and out of your network. If you run it and get no 
+response, then your firewall is blocking it.
+
+You can force a solution to this with the 'force_rtp_port' to 
+force shtoom to use a particular RTP port, then manually set your
+firewall to forward this port back to your machine. This is 
+kind of hacky, but works.
+
+If you're looking at a firewall, the thing you are looking for
+is "stateful UDP filtering". That is, if a UDP packet goes out,
+it lets the reply back in. There's a bunch of firewalls that 
+will do this, but _only_ for DNS packets. Wonderful. 
+
+Going forward, I will hopefully finish the UPnP support so that
+those running firewalls which support this can use this. 
 
 Notes on sound drivers under Linux
 ----------------------------------
@@ -11,8 +44,32 @@ having problems:
 
   i810_audio
   trident
+  <insert your dodgy sound driver here>
 
-If you have one of these, you're boned. Install ALSA.
+If you have one of these, you're boned. Install ALSA. If you can't/
+won't upgrade to a Linux 2.6 kernel, find a version for your system.
+
+For Redhat/Fedora users, look at the Planet CCRMA project, 
+http://www-ccrma.stanford.edu/
+It provides packaged versions of all of this.
+
+Debian users should look for the alsa-base package. I've been advised
+that "dpkg-reconfigure alsa-base" will allow you to set it up and 
+select your sound card (for instance).
+
+For others, go to http://www.alsa-project.org/
+
+Yes, in theory it _should_ be possible to make your existing sound
+driver work. But I'm not able to spend the time to do so -- there's
+far more useful things I can be working on. If you want to try and
+figure out your sound driver, and contribute fixes or documentation
+on how to make it work, please, do so! I will happily include the
+documentation here, and credit you for it. As a first pointer, note
+that shtoom opens the audio device in mono mode. At least for the
+i810_audio driver, this just Does Not Work. I'm not interested in
+trying to fudge around this by merging the stereo audio into a mono
+signal.
+
 
 Determining your sound driver
 -----------------------------
@@ -29,5 +86,15 @@ The 'snd' is the base ALSA module. For non-ALSA, you'll get
 something like
 
 soundcore              10720  1 i810_audio
+
+Sound drivers under Windows
+---------------------------
+
+Under Windows, we use the PortAudio package. By default, this 
+uses the default windows sound device. You can alter this through
+the control panel. There's also some environment variables you can
+set to choose a different device:
+
+  XXX TODO.
 
 
