@@ -583,7 +583,7 @@ _cached_mapper = None
 def getMapper():
     global _cached_mapper
     if _cached_mapper is None:
-        _cached_mapper = StunMapper()
+        _cached_mapper = STUNMapper()
     return _cached_mapper
 
 def clearCache():
