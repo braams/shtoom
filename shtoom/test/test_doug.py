@@ -18,13 +18,13 @@ class TestDougApplication(DougApplication):
     configFileName = None
 
     def acceptErrors(self, cookie, error):
-        print "cookie %s got error %r"%(cookie, error)
+        #print "cookie %s got error %r"%(cookie, error)
         if self._trial_def is not None:
             d, self._trial_def = self._trial_def, None
             reactor.callLater(0, d.errback, error)
 
     def acceptResults(self, cookie, result):
-        print "cookie %s got result %r"%(cookie, result)
+        #print "cookie %s got result %r"%(cookie, result)
         if self._trial_def is not None:
             d, self._trial_def = self._trial_def, None
             reactor.callLater(0, d.callback, result)
@@ -33,7 +33,7 @@ class NullApp(VoiceApp):
     """ This application does nothing but return """
 
     def __start__(self):
-        print "started!"
+        #print "started!"
         self.returnResult('hello world')
 
 class SimpleListenApp(VoiceApp):
