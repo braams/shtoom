@@ -16,6 +16,36 @@ from shtoom.doug.statemachine import StateMachine
 from twisted.internet import reactor
 from shtoom.audio.converters import DougConverter
 
+try:
+    import numarray
+except ImportError:
+    numarray = None
+
+if numarray is not None:
+    class InbandDtmfDetector:
+        def __init__(self, voiceapp):
+            from shtoom.doug.dtmfdetector import DtmfDetector
+            self.voiceapp = voiceapp
+            self.prev = None
+            self.D = DtmfDetector()
+            self.digit = ''
+        def __call__(self, samp):
+            if self.prev is None:
+                self.prev = samp
+                return 
+            nd = self.D.detect(self.prev+samp)
+            if nd != self.digit:
+                if self.digit == '':
+                    self.digit = nd
+                    self.voiceapp._va_startDTMFEvent(nd)
+                elif nd == '':
+                    old, self.digit = nd, self.digit
+                    self.voiceapp._va_stopDTMFEvent(old)
+                else:
+                    old, self.digit = nd, self.digit
+                    self.voiceapp._va_stopDTMFEvent(old)
+                    self.voiceapp._va_startDTMFEvent(self.digit)
+
 class Timer:
     def __init__(self, voiceapp, delay):
         self._delay = delay
@@ -44,6 +74,7 @@ class VoiceApp(StateMachine):
         self._legConnect(self.__silenceSource)
         self.__converter = DougConverter()
         self.__appl = appl
+        self.__inbandDTMFdetector = None
         super(VoiceApp, self).__init__(defer, **kwargs)
 
     def va_listFormats(self):
@@ -116,6 +147,8 @@ class VoiceApp(StateMachine):
     def va_receiveRTP(self, format, data):
         data = self.__converter.convertInbound(format, data)
         self.__connected.write(data)
+        if self.__inbandDTMFdetector is not None:
+            self.__inbandDTMFdetector(data)
 
     def va_start(self):
         self._start(callstart=0)
@@ -162,8 +195,15 @@ class VoiceApp(StateMachine):
     def isRecording(self):
         return self.__connected.isRecording()
 
-    def dtmfMode(self, single=False, timeout=0):
+    def dtmfMode(self, single=False, inband=False, timeout=0):
         self.__dtmfSingleMode = single
+        if inband:
+            if numarray is False:
+                raise RuntimeError, "need numarray to do inband DTMF"
+            else:
+                self.__inbandDTMFdetector = InbandDtmfDetector(self)
+        else:
+            self.__inbandDTMFdetector = None
         # XXX handle timeout
 
     def placeCall(self, toURI, fromURI=None):
