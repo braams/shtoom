@@ -61,7 +61,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.address.set_text("")
 
     def on_preferences_activate(self, widget):
-        self.statusMessage("Preferences are not supported yet.")
+        self.statusMessage("Editing Preferences with Gnome UI not supported yet.")
 
     def on_quit_activate(self, widget):
         reactor.stop()
