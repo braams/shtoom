@@ -249,11 +249,17 @@ def installPolicy(policy):
 def getPolicy():
     return _defaultPolicy
 
+def giveUpInteractive():
+    print """Time's Up. If you didn't get any responses, then your firewall
+is probably not going to work with SIP."""
+    reactor.stop()
+
 
 if __name__ == "__main__":
     import sys
     stunClient = StunProtocol()
     log.startLogging(sys.stdout)
     reactor.listenUDP(5061, stunClient)
+    reactor.callLater(10, giveUpInteractive)
     reactor.callLater(0, stunClient.blatServers)
     reactor.run()
