@@ -169,7 +169,7 @@ class SimpleSDP:
                 raise ValueError, "Don't know payload for %s/%s/%s"%(
                     encname.upper(),clockrate,encparams)
             payload = p
-        if payload is not None and payload != p:
+        if p is not None and payload != p:
             raise ValueError, "attempt to set payload to %s, should be %s"%(
                                 payload, p)
         self.rtpmap.append((payload,"%d %s/%d%s%s"%(
