@@ -67,7 +67,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             return
         self.sipURL = args[1]
         deferred = self.app.placeCall(self.sipURL)
-        deferred.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
+        deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
 
     def callStarted(self, cookie):
         self._cookie = cookie
