@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from twisted.internet import defer, stdio
 from twisted.protocols import basic
 from twisted.python import log
