@@ -17,6 +17,7 @@ from shtoom.app.base import STATE_NONE, STATE_SENDING, STATE_RECEIVING, STATE_BO
 
 class Message(BaseApplication):
     __implements__ = ( Application, )
+    startingState = STATE_SENDING 
 
     def __init__(self, ui=None, audio=None):
         # Mapping from callcookies to rtp object
@@ -126,7 +127,7 @@ class Message(BaseApplication):
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
-        self._audioStates[callcookie] = STATE_SENDING 
+        self._audioStates[callcookie] = self.startingState 
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         log.msg("call %s connected"%callcookie)
         cb(callcookie)
