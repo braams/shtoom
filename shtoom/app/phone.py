@@ -209,7 +209,7 @@ class Phone(BaseApplication):
 
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
         app = OptionGroup('shtoom', 'Shtoom')
-        app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','tk','text']))
+        app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','wx', 'tk','text']))
         app.addOption(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port']))
         app.addOption(StringOption('audio_infile','read audio from this file'))
         app.addOption(StringOption('audio_outfile','write audio to this file'))
