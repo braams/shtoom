@@ -113,7 +113,7 @@ class UPnPProtocol(DatagramProtocol, object):
         except socket.error:
             del self._discDef
             return defer.fail(NoUPnPFound('no network available'))
-        self.upnpTimeout = reactor.callLater(3, self.timeoutDiscovery)
+        self.upnpTimeout = reactor.callLater(6, self.timeoutDiscovery)
         return self._discDef
 
     def isAvailable(self):
