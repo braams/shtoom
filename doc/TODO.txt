@@ -17,6 +17,7 @@ Definite before 0.3:
     - document Doug API
     - update website
     - create shtoom wiki
+    - set svn:executable on the scripts
 
 Maybe before 0.3:
     - doug: placeCall to a broken address doesn't give generate a 
@@ -40,7 +41,7 @@ Not before 0.3:
       draft-ietf-sip-nat-02.txt is the relevant I-D
     - Investigate http://respyre.org/pyalsa.html for the fixing of mixer
       settings
-    - sip: retransmit and timeout of BYE
+    - sip: retransmit and timeout of BYE - needs Call/Dialog refactoring
     - rtp: detect SSRC collisions
     - doug, rtp: when mixing, generate CSRCs
     - rtcp: finish RTCP encoding -- RR, SR, PRIV. Handle strange extended
@@ -68,14 +69,13 @@ Not before 0.3:
     - ui(qt, wx, gtk): save call history
     - doug: create application frameworky bit (look at quotient.deployment?)
     - ui(all): multi-tab view for multiple calls
-    - shtoom: ringing tone for incoming call?
+    - shtoomphone: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
     - doug: expose the auth headers to/from the call?
 
 Future:
-    - doug: write MixSource (for conferencing)
     - bug: Why does calling from the web in quotient not work?
-    - app: break base in two - phone shares almost nothing with the rest
+    - app: break base in two - phone shares almost nothing with doug
     - options: find a better place to put options files on windows
     - tests: Way more unit tests, clean up and checkin existing ones
     - options, app: Handle changed prefs, re-init whatever's needed
@@ -97,28 +97,23 @@ Future:
     - Handle more of SIP 
         - Lookup servers/proxies using multicast, SRV
         - redirects
-        - retransmits &c
-        - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
-          into shtoom.sdp, kill shtoom.multicast
-    - More codec support - DVI4?, Speex
-        - http://207.34.118.42/~john/pyspeex/index.html
+        - retransmits. Needs Call/Dialog refactoring
     - EsounD support for Gnome, aRts for KDE?
       Note that aRts (and, I suspect, esd) only handle playing of audio,
       not the recording of audio.
-
-Later:
-
     - Statistics display
     - New codec support: 
-        - G723?
-        - iLBC?
-    - More clients - shtoomcu (conferencing server)
+        - DVI4? Is this the same thing as audioop implements?
+        - speex? http://207.34.118.42/~john/pyspeex/index.html
+        - iLBC? - www.ilbcfreeware.org
+        - G723? - patented, reference implementation available
+        - G729? - patented.
+        - QCELP? - patented, appears to be proprietary Qualcomm evil.
     - Putting calls on hold, allowing multiple calls to go at once.
     - Alternately, ad-hoc conferencing of new inbound or outbound calls
     - Gnome addressbook integration. Gnome notification bar integration.
     - KDE addressbook integration. KDE panel integration.
     - Mac OS X addressbook integration.
-    - Mac OS CoreAudio support for Mac audio - fzzzy is working on this.
     - Native Windows audio - see 
       http://www.cs.columbia.edu/~hgs/teaching/ais/slides/windows_audio.ppt
       for an overview - DirectSound or DirectKS. It appears that WinMM isn't
@@ -130,3 +125,4 @@ Later:
       already has a videocapture module.
     - dinsdale: doug's violent brother. VoiceXML.
       http://www.voicexml.org/tutorials/intro1.html
+    - make shtoom.rtp work with mcast rtp, add a command line client

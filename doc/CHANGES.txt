@@ -17,7 +17,7 @@ Major changes in the shtoom suite. In reverse chronological order.
   - the main phone application is now called shtoomphone. Too many import
     horrors with 'import shtoom' getting the script, rather than the 
     package in site-packages.
-  - A simple tftp client is in
+  - A simple tftp client is checked in
   - Scripts now live in the 'scripts' directory
   - The Gtk UI now has an debug log. You can hide and reveal it by clicking on
     the '+' button.
