@@ -38,7 +38,7 @@ def tryTkInterface(application):
         try:
             from shtoom.ui.tkshtoom import main
             return main(application)
-        except Tkinter.TclError, le:
+        except:
             pass
 
 def tryGnomeInterface(application):
