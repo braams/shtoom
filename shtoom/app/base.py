@@ -35,9 +35,9 @@ class BaseApplication:
     def getPref(self, pref):
         return self._options.getValue(pref, None)
 
-    def updateOptions(self, dict):
+    def updateOptions(self, dict, forceSave=False):
         m = self._options.updateOptions(dict)
-        if m:
+        if m or forceSave:
             self._options.saveOptsFile()
 
     def connectSIP(self):
