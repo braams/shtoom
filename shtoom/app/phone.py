@@ -204,3 +204,11 @@ class Phone(BaseApplication):
         opts.addGroup(app)
         opts.setOptsFile('.shtoomrc')
 
+    def authCred(self, method, uri):
+        "Place holder for now"
+        if hasattr(self.ui, 'getAuth'):
+            return self.ui.getAuth("Please enter user,passwd for %s %s"%(
+                                                                method, uri))
+        else:
+            return defer.succeed((self.getPref('register_authuser'), 
+                                 self.getPref('register_authpasswd')))
