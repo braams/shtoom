@@ -8,6 +8,7 @@
     many legs (for some more exotic use-case).
 """
 
+from shtoom.doug.source import Source
 
 class Leg(object):
 
@@ -86,3 +87,55 @@ class Leg(object):
     def sendDTMF(self, digits, duration=0.1, delay=0.05):
         self._voiceapp.sendDTMF(digits, cookie=self._cookie,
                                 duration=duration, delay=delay)
+
+class BridgeSource(Source):
+    "A BridgeSource connects a leg to another leg via a bridge"
+    def __init__(self, app, bridge):
+        self.app = app
+        self.bridge = bridge
+        self._readbuffer = ''
+
+    def connect(self, other):
+        self.other = other
+
+    def isPlaying(self):
+        return True
+
+    def isRecording(self):
+        return True
+
+    def copyData(self, bytes):
+        "Copy data to the other leg"
+        self._readbuffer = bytes
+
+    def read(self):
+        b, self._readbuffer = self._readbuffer, ''
+        return b
+
+    def write(self, bytes):
+        self.other.copyData(bytes)
+    
+    def close(self):
+        self.bridge.closeBridge(self)
+        self.other.close()
+
+class Bridge:
+    """A bridge connects two legs together, and passes audio from one to
+       the other. It creates two Source objects, that are connected to
+       each leg"""
+    def __init__(self, app, leg1, leg2):
+        self.app = app
+        self.connectLegs(leg1, leg2)
+
+    def connectLegs(self, l1, l2):
+        bs1 = BridgeSource(self.app, self)
+        bs2 = BridgeSource(self.app, self)
+        bs1.connect(bs2)
+        bs2.connect(bs1)
+        l1.connectSource(bs1)
+        l2.connectSource(bs2)
+
+    def close(self, bs):
+        # Nothing for now.
+        pass
+        

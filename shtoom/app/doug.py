@@ -136,7 +136,7 @@ class DougApplication(BaseApplication):
         rtpmap = md.rtpmap
         v = self._voiceapps.get(callcookie)
         ptlist = [ x[1] for x in  rtpmap.values() ]
-        v.va_selectDefaultFormat(ptlist)
+        v.va_selectDefaultFormat(ptlist, callcookie=callcookie)
 
     def getSDP(self, callcookie, othersdp=None):
         rtp = self._rtp[callcookie]
@@ -177,18 +177,18 @@ class DougApplication(BaseApplication):
             start = (ord(data[1]) & 128) and True or False
             print "got dtmf", key, start
             if start:
-                v.va_startDTMFevent(nteMap[key])
+                v.va_startDTMFevent(nteMap[key], callcookie)
             else:
-                v.va_stopDTMFevent(nteMap[key])
+                v.va_stopDTMFevent(nteMap[key], callcookie)
             return
         try:
-            self._voiceapps[callcookie].va_receiveRTP(packet)
+            self._voiceapps[callcookie].va_receiveRTP(packet, callcookie)
         except IOError:
             pass
 
     def giveRTP(self, callcookie):
         v = self._voiceapps[callcookie]
-        packet = v.va_giveRTP()
+        packet = v.va_giveRTP(callcookie)
         return packet
 
     def placeCall(self, cookie, sipURL, fromURI=None):

@@ -95,3 +95,7 @@ class ISource:
     def write(self, bytes):
         """ write a packet of audio to the source
         """
+
+class ILeg:
+    """A Leg is a SIP connection into the voice app"""
+

@@ -78,8 +78,8 @@ class VoiceApp(StateMachine):
         self.__inbandDTMFdetector = None
         super(VoiceApp, self).__init__(defer, **kwargs)
 
-    def va_selectDefaultFormat(self, format):
-        return self.__converter.selectDefaultFormat(format)
+    def va_selectDefaultFormat(self, ptlist, callcookie):
+        return self.__converter.selectDefaultFormat(ptlist)
 
     def _legConnect(self, target):
         target.app = self
@@ -106,7 +106,7 @@ class VoiceApp(StateMachine):
         if self.__connected is source:
             self._va_playNextItem()
 
-    def va_startDTMFevent(self, dtmf):
+    def va_startDTMFevent(self, dtmf, callcookie):
         c = self.__currentDTMFKey
         if dtmf:
             if c is not dtmf:
@@ -127,12 +127,12 @@ class VoiceApp(StateMachine):
                 self._triggerEvent(DTMFReceivedEvent(dtmf))
 
 
-    def va_stopDTMFevent(self, dtmf):
+    def va_stopDTMFevent(self, dtmf, callcookie):
         # For now, I only care about dtmf start events
         if dtmf == self.__currentDTMFKey:
             self.__currentDTMFKey = None
 
-    def va_giveRTP(self):
+    def va_giveRTP(self, callcookie):
         # returns (format, RTP)
         data = self.__connected.read()
         if data:
@@ -140,7 +140,7 @@ class VoiceApp(StateMachine):
             return packet
         return None # comfort noise
 
-    def va_receiveRTP(self, packet):
+    def va_receiveRTP(self, packet, callcookie):
         data = self.__converter.convertInbound(packet)
         if self.__inbandDTMFdetector is not None:
             self.__inbandDTMFdetector(data)
