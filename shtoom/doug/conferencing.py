@@ -1,6 +1,7 @@
 from shtoom.doug.events import *
 from shtoom.doug.source import Source
 from twisted.internet.task import LoopingCall
+from twisted.python import log
 from sets import Set
 
 class ConferenceError(Exception): pass
@@ -14,6 +15,7 @@ class ConfSource(Source):
         self._user = leg.getDialog().getRemoteTag().getURI()
         self._room = room
         self._room.addMember(self)
+        self._quiet = False
         super(ConfSource, self).__init__()
 
     def isPlaying(self):
@@ -24,9 +26,17 @@ class ConfSource(Source):
 
     def read(self):
         try:
-            return self._room.readAudio(self)
+            ret = self._room.readAudio(self)
         except ConferenceClosedError:
-            self.app._va_sourceDone(self)
+            return self.app._va_sourceDone(self)
+        if not ret:
+            if not self._quiet:
+                log.msg("%r is now receiving silence"%(self))
+                self._quiet = True
+        elif self._quiet:
+            log.msg("%r has stopped receiving silence"%(self))
+            self._quiet = False
+        return ret
 
 
     def close(self):
