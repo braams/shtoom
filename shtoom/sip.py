@@ -25,6 +25,8 @@ from shtoom import __version__ as ShtoomVersion
 from shtoom.stun import getPolicy
 from shtoom.sdp import SDP
 
+import struct
+
 _CACHED_LOCAL_IP = None
 
 
@@ -233,8 +235,7 @@ class Call(object):
         self.setupDeferred = defer.Deferred()
         outboundProxyURI = self.sip.app.getPref('outbound_proxy_url')
         if outboundProxyURI:
-            print outboundProxyURI
-            log.msg('outboundProxyURI=%s'%(outboundProxyURI,))
+            log.msg('using outboundProxyURI of %s'%(outboundProxyURI,),system="sip")
             self._outboundProxyURI = tpsip.parseURL(outboundProxyURI)
         if via is not None:
             remote = tpsip.URL(host=via.host, port=via.port)
@@ -623,7 +624,7 @@ class Call(object):
         self.setState('CONNECTED')
         if startRTP:
             self.sip.app.startCall(self.cookie, oksdp, cb)
-        log.msg("sending ACK to %r\n%s"%(addr, ack.toString()))
+        log.msg("sending ACK to %r\n%s"%(addr, ack.toString()), system="sip")
         self.sip.app.statusMessage("Call Connected")
 
     def sendBye(self, toAddr="ignored", auth=None, authhdr=None):
@@ -643,7 +644,7 @@ class Call(object):
             bye.addHeader(authhdr, auth)
         bye.creationFinished()
         bye = bye.toString()
-        log.msg("sending BYE to %r\n%s"%(dest, bye))
+        log.msg("sending BYE to %r\n%s"%(dest, bye), system="sip")
         self.sip.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
@@ -665,7 +666,7 @@ class Call(object):
         cancel.addHeader('content-length', 0)
         cancel.creationFinished()
         cancel = cancel.toString()
-        log.msg("sending CANCEL to %r\n%s"%(dest, cancel))
+        log.msg("sending CANCEL to %r\n%s"%(dest, cancel), system="sip")
         self.sip.transport.write(cancel, dest)
         self.setState('SENT_CANCEL')
 
@@ -716,7 +717,7 @@ class Call(object):
         if not appTeardown and self.cancel_trigger is not None:
             reactor.removeSystemEventTrigger(self.cancel_trigger)
         state = self.getState()
-        log.msg("dropcall in state %r"%state)
+        log.msg("dropcall in state %r"%state, system="sip")
         if state == 'NONE':
             self.sip.app.debugMessage("no call to drop")
             return defer.succeed('no call to drop')
@@ -786,7 +787,7 @@ class Call(object):
 
     def recvResponse(self, message):
         state = self.getState()
-        log.msg("Handling %s while in state %s"%(message.code, state))
+        log.msg("Handling %s while in state %s"%(message.code, state), system="sip")
         if message.code in ( 100, 180, 181, 182 ):
             return
         elif message.code == 183:
@@ -1088,7 +1089,7 @@ class SipProtocol(DatagramProtocol, object):
                     d = reg.cancelRegistration()
                     d.addCallbacks(self.register, log.err)
             else:
-                log.msg("no outstanding registrations, registering")
+                log.msg("no outstanding registrations, registering", system="sip")
                 d = defer.Deferred()
                 r = Registration(self,d)
                 r.startRegistration()
@@ -1145,6 +1146,12 @@ class SipProtocol(DatagramProtocol, object):
         return _d
 
     def datagramReceived(self, datagram, addr):
+        # We need to be careful here that we aren't getting late STUN packets :-(
+        if len(datagram) < 100:
+            maybestun = struct.unpack('!h', datagram[:2])
+            if maybestun[0] in (0x0101, 0x0111):
+                log.msg("late stun packet, ignoring", system="sip")
+                return
         self.app.debugMessage("Got a SIP packet from %s:%s"%(addr))
         mp = tpsip.MessagesParser(self.sipMessageReceived)
         self.app.debugMessage("SIP PACKET\n%s"%(datagram))
