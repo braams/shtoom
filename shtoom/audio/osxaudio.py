@@ -33,6 +33,7 @@ class OSXAudio(object):
         self.inbuffer = '' # Buffer from the network back to the mac
         self.running = False
         self.reopen()
+        self.counter = 0
 
     def read(self, bytes=320, buffer=320*0):
         if self.prevtime is None:
@@ -41,6 +42,8 @@ class OSXAudio(object):
             delta = 1000*(time() - self.prevtime)
         self.prevtime = time()
         if len(self.outbuffer) < (buffer + bytes):
+            #if self.counter % 20 == 0:
+                #print "silence, because %d < %d"%(len(self.outbuffer), buffer+bytes)
             return ''
         else:
             sound, self.outbuffer = self.outbuffer[:bytes], self.outbuffer[bytes:]
@@ -100,6 +103,8 @@ class OSXAudio(object):
         std = self.toPCMString(samples)
         std = self.from44KStereo(std)
         self.outbuffer = self.outbuffer + std
+        if len(self.outbuffer) > (3 * 320):
+            self.outbuffer = self.outbuffer[-960:]
         #self._maybeLoopback()
 
     def getSamples(self):
@@ -112,6 +117,9 @@ class OSXAudio(object):
             return res
 
     def callback(self, buffer):
+        self.counter += 1
+        #if self.counter % 20 == 0:
+            #print "callback #%d"%(self.counter)
         try:
             self.storeSamples(buffer)
             out = self.getSamples()
