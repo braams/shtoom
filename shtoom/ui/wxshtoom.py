@@ -48,10 +48,13 @@ class WxProxy(AppProxy):
     def resourceUsage(self, *args):
         self.wxapp.frame.resourceUsage(*args)
     def debugMessage(self, *args):
+        return
         self.wxapp.frame.debugMessage(*args)
     def statusMessage(self, *args):
+        return
         self.wxapp.frame.statusMessage(*args)
     def errorMessage(self, *args):
+        return
         self.wxapp.frame.errorMessage(*args)
     def incomingCall(self, *args):
         self.wxapp.frame.incomingCall(*args)
@@ -72,6 +75,17 @@ class WxProxy(AppProxy):
     def dropCall(self, cookie):
         self.shtoomapp.dropCall(cookie)
 
+    def register(self):
+        self.shtoomapp.register()
+
+    def getOptions(self):
+        return self.shtoomapp.getOptions()
+
+    def updateOptions(self, opts):
+        return self.shtoomapp.updateOptions(opts)
+
+
+
 class ShtoomProxy(AppProxy):
     # Methods to forward onto the shtoom application from the wxapp
     # getOptions, register, placeCall, dropCall, 
@@ -83,6 +97,14 @@ class ShtoomProxy(AppProxy):
     def dropCall(self, cookie):
         reactor.callFromThread(self.shtoomapp.dropCall, cookie)
     
+    def register(self):
+        reactor.callFromThread(self.shtoomapp.register())
+
+    def getOptions(self):
+        return self.shtoomapp.getOptions()
+
+    def updateOptions(self, opts):
+        reactor.callFromThread(self.shtoomapp.updateOptions(opts))
 
 class WxShtoomApplication(wxApp):
     def OnInit(self):
