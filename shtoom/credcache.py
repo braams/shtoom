@@ -21,8 +21,8 @@ class CredCache:
 
     def loadCreds(self, creds):
         for o in creds:
-            realm = o.getName()
-            user, password = self.decodeSavedCred(o.getValue())
+            realm = o.name
+            user, password = self.decodeSavedCred(o.value)
             self._cred[realm] = (user, password)
 
     def getCred(self, realm):

@@ -160,7 +160,7 @@ class AllOptions(object):
                     for name, value in cfg.items(gname):
                         opt = String(name, name)
                         _valueSetter(opt,value)
-                        g.addOption(opt)
+                        g.add(opt)
                 else:
                     for o in g:
                         oname = o.name

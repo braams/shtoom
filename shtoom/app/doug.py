@@ -245,10 +245,10 @@ class DougApplication(BaseApplication):
 
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
         app = OptionGroup('doug', 'doug')
-        app.addOption(StringOption('logfile','log to this file'))
-        app.addOption(StringOption('dougargs',
+        app.add(StringOption('logfile','log to this file'))
+        app.add(StringOption('dougargs',
                                 'pass these arguments to the voiceapp'))
-        opts.addGroup(app)
+        opts.add(app)
         if self.configFileName is not None:
             opts.setOptsFile(self.configFileName)
 

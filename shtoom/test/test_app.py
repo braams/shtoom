@@ -28,11 +28,11 @@ class AppStartup(unittest.TestCase):
         o = AllOptions()
         o.no_config_file = True
         g = OptionGroup('whatever', 'some settings')
-        g.addOption(StringOption('ui', 'whatever', 'tk'))
-        g.addOption(BooleanOption('no_config_file', 'whatever', True))
-        g.addOption(StringOption('logfile', 'whatever', ''))
-        g.addOption(NumberOption('listenport', 'port', 0))
-        o.addGroup(g)
+        g.add(StringOption('ui', 'whatever', 'tk'))
+        g.add(BooleanOption('no_config_file', 'whatever', True))
+        g.add(StringOption('logfile', 'whatever', ''))
+        g.add(NumberOption('listenport', 'port', 0))
+        o.add(g)
         return o
 
     def test_phoneBootWithOptions(self):
