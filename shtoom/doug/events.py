@@ -77,6 +77,12 @@ class    CallStartedEvent(Event):
     def __init__(self, leg):
         self.leg = leg
 
+class    CallEndedEvent(Event):
+    """ A call started
+    """
+    def __init__(self, leg):
+        self.leg = leg
+
 class        InboundCallStartedEvent(CallStartedEvent):
     """ A new inbound call started
     """
