@@ -44,6 +44,12 @@ class UI(Interface):
             established.
         """
 
+    def getAuth(self, message):
+        """ Prompt for user auth, using the message 'message'.
+            Returns a Deferred that returns ( user, passwd )
+            on success, or fails with CallRejected.
+        """
+
 class SIP(Interface):
     """ This describes the interface to the SIP layer that the Application
         uses.
