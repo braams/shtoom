@@ -286,7 +286,7 @@ class Call(object):
                             username, email_address, 
                             self.getTag()))
         invite.addHeader('call-id', self.getCallID())
-        invite.addHeader('subject', 'sip: %s'%(getPref('email_address')))
+        invite.addHeader('subject', 'sip: %s'%(email_address))
         invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
