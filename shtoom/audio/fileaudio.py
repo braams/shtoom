@@ -17,7 +17,15 @@ class AudioFromFiles:
 
 def getAudioDevice(mode):
     from shtoom import prefs
-    return AudioFromFiles(prefs.audio_infile, prefs.audio_outfile)
+    global opened
+    if opened is None:
+        opened = AudioFromFiles(prefs.audio_infile, prefs.audio_outfile)
+    else:
+        return opened 
 
-if __name__ == "__main__":
-    test()
+def closeAudioDevice():
+    global opened
+    opened.close()
+    opened = None
+
+

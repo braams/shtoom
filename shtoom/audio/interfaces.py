@@ -1,16 +1,31 @@
 from twisted.python.components import Interface
 
-# XXX better explanation of audio format etc.
 
-class IAudioReader(Interface):
-    """Reads in audio."""
+class IAudio(Interface):
+    '''Lowlevel interface to audio source/sink.'''
 
-    def read(self, length):
-        """Return length bytes."""
+    def getFormats(self):
+        '''Retuns a list of the supported audio formats'''
 
+    def selectFormat(self, format):
+        '''Select a particular format for audio. This format is used for
+           both reading and writing.
+        '''
 
-class IAudioWriter(Interface):
-    """Writes audio out."""
+    def close(self):
+        '''Close the underlying audio device'''
+
+    def reopen(self):
+        '''Reopen a closed audio device'''
+
+    def isClosed(self):
+        '''Return true/false about whether the underlying audio is available'''
+
+    def read(self):
+        '''Return a packet of audio. The length of the audio returned depends
+           on the currently selected audio Format.
+        '''
 
     def write(self, data):
-        """Writes audio."""
+        '''Writes audio.'''
+

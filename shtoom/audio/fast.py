@@ -1,7 +1,9 @@
 """Use fastaudio, a python wrapper for PortAudio.
 
 Apparently this means it'll work on 'Windows, Macintosh (8,9,X),
-Unix (OSS), SGI, and BeOS'.
+Unix (OSS), SGI, and BeOS'. It doesn't work for me using ALSA's
+OSS emulation.
+
 Requires fastaudio.tar.gz and PortAudio available from
 http://www.freenet.org.nz/python/pyPortAudio/
 """
@@ -13,31 +15,28 @@ import fastaudio
 import interfaces
 
 from converters import PCM16toULAWConv
+import baseaudio
 
-class AudioFile:
+class FastAudioDevice(baseaudio.AudioDevice):
 
-    __implements__ = (interfaces.IAudioReader, interfaces.IAudioWriter)
-
-    def __init__(self, stream):
-        self.stream = stream
-        self.stream.open()
-        self.stream.start()
-        self.buffer = ""
-    
-    def __del__(self):
-        self.stream.stop()
-        self.stream.close()
-        del self.stream
-
-    def write(self, data):
-        self.stream.write(data)
+    __implements__ = (interfaces.IAudio,)
 
     def read(self, length):
-        self.buffer += self.stream.read()
+        self.buffer += self.dev.read()
         result, self.buffer = self.buffer[:length], self.buffer[length:]
         return result
 
+    def openDev(self):
+        self.dev = PCM16toULAWConv(fastaudio.stream(8000, 1, 'int16'))
+
+opened = None
 
 def getAudioDevice(mode):
-    # we ignore mode, result can always both read and write
-    return PCM16toULAWConv(AudioFile(fastaudio.stream(8000, 1, 'int16')))
+    global opened
+    if opened is None:
+        opened = FastAudioDevice(mode, wrapped)
+    else:
+        if opened.isClosed():
+            opened.reopen()
+    return opened
+

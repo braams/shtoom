@@ -18,25 +18,25 @@ def findAudioDevice():
         else:
             raise ValueError("unknown audio %s"%(prefs.audio))
     for attempt in attempts:
-	audio = attempt()
-	if audio is not None:
-	    return audio
+        audio = attempt()
+        if audio is not None:
+            return audio
     return None
 
 def tryFileAudio():
     try:
-	import fileaudio
+        import fileaudio
     except ImportError:
-	return None
-    from fileaudio import getAudioDevice 
+        return None
+    from fileaudio import getAudioDevice
     return getAudioDevice
 
 def tryOssAudio():
     try:
-	import ossaudiodev
+        import ossaudiodev
     except ImportError:
-	return None
-    from ossaudio import getAudioDevice 
+        return None
+    from ossaudio import getAudioDevice
     return getAudioDevice
 
 def tryFastAudio():

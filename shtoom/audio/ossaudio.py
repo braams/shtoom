@@ -1,33 +1,39 @@
 # Copyright (C) 2003 Anthony Baxter
 
 from converters import NullConv, PCM16toULAWConv
+import baseaudio, ossaudiodev
 
 opened = None
 
-def getAudioDevice(mode, wrapped=1):
-    import ossaudiodev
-    global opened
-    if opened is None:
-        dev = ossaudiodev.open(mode)
+class OSSAudioDevice(baseaudio.AudioDevice):
+    def openDev(self):
+        import ossaudiodev
+        dev = ossaudiodev.open(self._mode)
         dev.speed(8000)
         dev.nonblock()
         dev.channels(1)
-        opened = dev
+        formats = listFormats(dev)
+        if not self._wrapped:
+            self.dev = dev
+        if 0 and 'AFMT_MU_LAW' in formats:
+            dev.setfmt(ossaudiodev.AFMT_MU_LAW)
+            self.dev = NullConv(dev)
+        elif 'AFMT_S16_LE' in formats:
+            dev.setfmt(ossaudiodev.AFMT_S16_LE)
+            self.dev = PCM16toULAWConv(dev)
+        else:
+            raise ValueError, \
+                "Couldn't find ULAW or signed 16b PCM, got %s"%(
+                ", ".join(formats))
+
+def getAudioDevice(mode, wrapped=1):
+    global opened
+    if opened is None:
+        opened = OSSAudioDevice(mode, wrapped)
     else:
-        dev = opened
-    formats = listFormats(dev)
-    if not wrapped:
-        return dev
-    if 'AFMT_MU_LAW' in formats:
-        dev.setfmt(ossaudiodev.AFMT_MU_LAW)
-        return NullConv(dev)
-    elif 'AFMT_S16_LE' in formats:
-        dev.setfmt(ossaudiodev.AFMT_S16_LE)
-        return PCM16toULAWConv(dev)
-    else:
-        raise ValueError, \
-            "Couldn't find ULAW or signed 16b PCM, got %s"%(
-            ", ".join(formats))
+        if opened.isClosed():
+            opened.reopen()
+    return opened
 
 
 def listFormats(dev):
