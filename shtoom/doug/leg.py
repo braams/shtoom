@@ -213,18 +213,12 @@ class Leg(object):
         # XXX handle timeout
 
 
-
-
-
-
-
-
-
 class BridgeSource(Source):
     "A BridgeSource connects a leg to another leg via a bridge"
     def __init__(self, bridge):
         self.bridge = bridge
         self._readbuffer = ''
+        super(BridgeSource, self).__init__()
 
     def connect(self, other):
         self.other = other
@@ -249,6 +243,7 @@ class BridgeSource(Source):
     
     def close(self):
         if self.bridge is not None:
+            self.leg._sourceDone(self)
             self.bridge.closeBridge(self)
             self.bridge = None
             self.other.close()
