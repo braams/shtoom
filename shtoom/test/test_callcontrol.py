@@ -142,15 +142,15 @@ class TestCall:
 
     def acceptedFakeCall(self, cookie):
         from shtoom.sdp import SDP, MediaDescription
-        sdp = SDP()
-        sdp.setServerIP('127.0.0.1')
+        s = SDP()
+        s.setServerIP('127.0.0.1')
         md = MediaDescription()
         s.addMediaDescription(md)
         md.setLocalPort(9876)
         print "accepted, got %r"%(cookie,)
         self.cookie = cookie
         d, self.d = self.d, None
-        self.sip.app.startCall(self.cookie, sdp, d.callback)
+        self.sip.app.startCall(self.cookie, s, d.callback)
 
     def rejectedFakeCall(self, e):
         print "rejected, got %r"%(e,)
