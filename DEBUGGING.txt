@@ -1,3 +1,10 @@
+Reporting a bug
+---------------
+
+If you're reporting a bug in shtoom, please make sure you run 
+the script 'scripts/shtoominfo.py' and include this in your 
+bug report (feel free to hide the IP addresses if you'd prefer).
+
 Debugging
 ---------
 
@@ -18,30 +25,42 @@ Some test addresses to try calling:
   
 See also the section later titled "Test Harness"
 
+
 Firewalls
 ---------
 
-Firewalls are the absolute BANE of VoIP and SIP. If the firewall
-is well designed and modern, it should work just fine. If not...
-well, we'll come to some possible solutions to that.
+Firewalls are the absolute BANE of VoIP and SIP. If the firewall is well
+designed and modern, it should work just fine. If not... well, we'll
+come to some possible solutions to that.
 
-First test - in shtoom/, there is a file 'stun.py'. This can be
-run as a script, and should at least let you know if UDP packets
-can get in and out of your network. If you run it and get no 
-response, then your firewall is blocking it.
+You should run the script 'shtoominfo.py' (in the scripts directory).
+This will report the particular sort of NAT you're using. In particular,
+note that any firewall that's a Symmetric NAT without UPnP support will
+require you to use an outbound proxy for things to work. A UDP Blocked
+NAT means that you're probably not going to be able to make any calls at
+all.
 
-You can force a solution to this with the 'force_rtp_port' to 
-force shtoom to use a particular RTP port, then manually set your
-firewall to forward this port back to your machine. This is 
-kind of hacky, but works.
+If your firewall is, for instance, a linux box, and you feel comfortable
+enough with it, you can force a NAT solution with the option
+'force_rtp_port' to force shtoom to use a particular RTP port, then
+manually set your firewall to forward this port back to your machine.
+This is kind of hacky, but works.
 
-If you're looking at a firewall, the thing you are looking for
-is "stateful UDP filtering". That is, if a UDP packet goes out,
-it lets the reply back in. There's a bunch of firewalls that 
-will do this, but _only_ for DNS packets. Wonderful. 
+If you're looking at a firewall, the thing you are looking for is
+"stateful UDP filtering". That is, if a UDP packet goes out, it lets
+the reply back in. There's a bunch of firewalls that will do this, but
+_only_ for DNS packets. Wonderful. Shtoom should detect what sort of
+firewall you are using.
 
-Going forward, I will hopefully finish the UPnP support so that
-those running firewalls which support this can use this. 
+Shtoom also works with UPnP gateways (such as Microsoft's Internet
+Connection Sharing, and many off-the-shelf firewall appliances.) It
+works fine with the boxes I've tested against, but I only have access
+to a limited number of these. If you are having difficulties, send 
+me debugging (including a packet trace of shtoom communications
+with the firewall). If this is all a bit beyond you, and you really
+want it fixed, arrange for me to get access to one of the firewalls in
+question-- either a login on a box behind the firewall, or else talk to
+me about sending me one of the devices in question.
 
 Sound
 -----
@@ -53,6 +72,9 @@ it, spitting out some numbers about the power level of the audio.
 Use this to test your audio setup. Note that under ALSA on Linux,
 all audio devices start muted. Use alsamixer to unmute them. (Yes,
 this is stupid, no, I don't know why they made that choice).
+
+The shtoominfo.py script, mentioned already, should dump out which
+audio interfaces are available.
 
 Notes on sound drivers under Linux
 ----------------------------------
@@ -73,7 +95,7 @@ ALSA for your system.
 
 For Redhat/Fedora users, look at the Planet CCRMA project, 
 http://www-ccrma.stanford.edu/
-It provides packaged versions of all of this.
+It provides packaged versions of ALSA and the like.
 
 Debian users should look for the alsa-base package. I've been advised
 that "dpkg-reconfigure alsa-base" will allow you to set it up and 
@@ -82,7 +104,7 @@ select your sound card (for instance).
 For others, go to http://www.alsa-project.org/
 
 Yes, in theory it _should_ be possible to make your existing sound
-driver work. But I'm not able to spend the time to do so -- there's
+driver work. But I'm not willing to spend the time to do so -- there's
 far more useful things I can be working on. If you want to try and
 figure out your sound driver, and contribute fixes or documentation
 on how to make it work, please, do so! I will happily include the
