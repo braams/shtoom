@@ -1,39 +1,31 @@
-Fix full-duplex mode to not suck
+Before 0.1:
+    Fix Windows audio
+    STUN and possibly UPnP support in order to bust out of NAT.
+    Finish Tkinter GUI
+    Re-hookup the debugging log to the GUI
+    Integrate existing RTCP code
 
-Finish current UI
+Before 0.2:
+    Handle rest of SIP 
+        - registration
+        - Lookup servers/proxies using multicast, SRV
+        - retransmits &c
+        - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
+          into shtoom.sdp, kill shtoom.multicast
+    Codec switchability - DVI4, Speex
 
-Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP into
-shtoom.sdp 
+Later:
+    Statistics display
+    Preferences storage
 
-Handle rest of SIP 
- 
-   - Incoming calls, including registration
+    New codec support: 
+        - http://www.freenet.org.nz/python/pySpeex/
+        - GSM?
+        - G723?
+        - iLBC?
 
-   - Lookup servers/proxies using multicast, SRV
+    Support RTP NTE
+        a=rtpmap:101 telephone-event/8000
 
-Integrate existing RTCP code
-
-Codec switchability
-
-Statistics display
-
-Preferences storage
-
-Command line options - particularly localIP
-
-Make interface for audio source(s)
-Maybe use http://www.portaudio.com/ 
-(python interface at http://www.freenet.org.nz/python/pyPortAudio )
-
-New codec support: 
-http://www.freenet.org.nz/python/pySpeex/
-GSM?
-G723?
-iLBC?
-
-    a=rtpmap:101 telephone-event/8000
-
-STUN and possibly UPnP support in order to bust out of NAT.
-
-More clients - shtam (answering machine), shtoomcu (conferencing server)
+    More clients - shtam (answering machine), shtoomcu (conferencing server)
 
