@@ -76,11 +76,12 @@ class ShtoomMainWindow(ShtoomBaseUI):
         reactor.stop()
         self.main.quit()
 
-    def getString(self, message):
+    def getAuth(self, message):
         from tkSimpleDialog import askstring
         from twisted.internet import defer
-        answer = askstring(message)
-        return defer.succeed(answer)
+        answer = askstring('Authentication Required', message)
+        user, passwd = answer.split(',',1)
+        return defer.succeed((user.strip(), passwd.strip()))
 
     def incomingCall(self, description, cookie, defresp):
         import tkMessageBox
