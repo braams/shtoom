@@ -2,7 +2,7 @@
 # Copyright (C) 2003 Anthony Baxter
 #
 
-EncodingDict = {
+rtpPTDict = {
     0: ('PCMU',8000,1),
     3: ('GSM',8000,1),
     4: ('G723',8000,1),
@@ -19,12 +19,13 @@ EncodingDict = {
     16: ('DVI4',11025,1),
     17: ('DVI4',22050,1),
     18: ('G729',8000,1),
+    19: ('xCN',8000,1),
 }
 
 # XXX todo - rtpmaps should be ordereddicts or somesuch.
 
-for key,value in EncodingDict.items():
-    EncodingDict[value] = key
+for key,value in rtpPTDict.items():
+    rtpPTDict[value] = key
 del key,value
 
 BadAnnounce = "Bad Announcement"
@@ -162,7 +163,7 @@ class SimpleSDP:
             encparams = 1
         if self.media != 'audio' and payload is None:
             raise ValueError, "Don't know payloads for %s"%(self.media)
-        p = EncodingDict.get((encname.upper(),clockrate,encparams))
+        p = rtpPTDict.get((encname.upper(),clockrate,encparams))
         if payload is None:
             if p is None:
                 raise ValueError, "Don't know payload for %s/%s/%s"%(

@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.19 2003/11/20 23:19:19 anthonybaxter Exp $
+# $Id: rtp.py,v 1.20 2003/11/21 01:39:12 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -22,6 +22,7 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 
 from shtoom.audio import getAudioDevice
+from shtoom.multicast.SDP import rtpPTDict
 
 
 class LoopingCall:
@@ -72,6 +73,7 @@ class RTPProtocol(DatagramProtocol):
     collectStats = 0
     statsIn = []
     statsOut = []
+    expected_PT = rtpPTDict[('PCMU', 8000, 1)]
 
     def createRTPSocket(self):
         """Start listening on UDP ports for RTP and RTCP.
@@ -180,14 +182,19 @@ class RTPProtocol(DatagramProtocol):
                 self.statsIn = []
         if self.outfp:
             hdr = struct.unpack('!BBHII', datagram[:12])
-            if hdr[1] != 0:
-                # Non-mulaw.
-                print "datagram len %d, HDR: %02x %02x"%(len(datagram),hdr[0],hdr[1])
-            else:
+            # Don't care about the marker bit.
+            PT = hdr[1]&127 
+            if PT == self.expected_PT:
                 try:
                     self.outfp.write(datagram[12:])
                 except IOError:
                     pass
+            elif PT in (13, 19):
+                # comfort noise
+                pass
+            else:
+                print rtpPTDict.keys()
+                print "unexpected RTP PT %s len %d, HDR: %02x %02x"%(rtpPTDict.get(PT,str(PT)), len(datagram),hdr[0],hdr[1])
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
@@ -249,7 +256,8 @@ class RTPProtocol(DatagramProtocol):
             self.transport.write(hdr+self.sample, self.dest)
             self.sample = None
         else:
-            print "skipping audio, %s/%s sent"%(self.sent, self.packets)
+            if (self.packets - self.sent) %10 == 0:
+                print "skipping audio, %s/%s sent"%(self.sent, self.packets)
         if self.collectStats:
             t = time()
             self.statsOut.append(str(int((t-self.prevOutTime)*1000)))
