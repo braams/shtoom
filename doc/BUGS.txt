@@ -2,6 +2,7 @@ name: media port off by 2 error
 to reproduce: run Shtoom behind NAT, let it use STUN to discover externally-visible port numbers
 details: the port numbers returned by STUN are the port numbers Shtoom listens on, but the port numbers it puts in the "media" line in SDP are +2
 more details: I discovered this while trying to demo a Shtoom-derived product.  I worked-around it by telling the other UA to subtract 2 from the RTP port in the SDP.  This worked, enabling the other UA to send media packets to the behind-NAT-Shtoom.
+analysis: As far as I know, this was a bug introduced in local code.
 
 name: wxShtoom call setup confused
 to reproduce: run shtoom with wx GUI, call it from another shtoom
@@ -68,7 +69,10 @@ details: you should hear the automated message then hangup.  packet sniffer will
  29  15.745872 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
  30  19.783432 69.90.155.70 -> 192.168.1.101 SIP Request: BYE sip:24.222.141.10:5060
  31  19.785357 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
-p
+Apparently this is caused by shtoom not honoring the Record-Route header 
+in the 200 response. Need to look further - 3261 refers to 3263 for how
+to send the ACK, but dash's summary is "send it to the first r-r dest
+information about how to handle this in 3261 yet. 
 
 
 

@@ -3,6 +3,7 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
+    - Record-Route handling in requests/responses
     - go through and make sure Doug is up-to-date with recent refactorings
     - all interfaces must be current and correct
     - Asterisk is rejecting our ACK - e.g. to 613@fwd.pulver.com
