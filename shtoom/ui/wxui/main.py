@@ -1,5 +1,6 @@
 from wxPython.wx import *
 from wxshtoomframe import ShtoomMainFrame
+from wxlogframe import LogFrame
 from shtoom.ui.base import ShtoomBaseUI
 from twisted.python import log
 from twisted.internet import reactor
@@ -12,8 +13,6 @@ import os
 # wxglade is at generating code.
 
 # TODO: Hookup the DTMF code for the number buttons
-# TODO: Hookup the log text widget thingy (or dump it cos its ugly). Maybe
-#       have an error log which can be viewed in a seperate window
 
 class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
     # Control IDs
@@ -46,6 +45,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         EVT_MENU(self, self.MENU_EXIT, self.DoExit)
         EVT_MENU(self, self.MENU_PREFS, self.DoPreferences)
         EVT_MENU(self, self.MENU_REGISTER, self.DoRegister)
+        EVT_MENU(self, self.MENU_ERRORLOG, self.DoErrorLog)
         EVT_BUTTON(self, self.BUTT_ADVANCED, self.OnAdvanced)
         EVT_BUTTON(self, self.BUTT_CALL, self.OnCall)
         EVT_TEXT_ENTER(self, self.COMBO_ADDRESS, self.PlaceCall)
@@ -69,14 +69,22 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         # Startup without the "advanced" functionality showing
         self.OnAdvanced(None)
 
+        # The error log 
+        self.errorlog = LogFrameImpl(self, -1, "Message Log")
+        wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
+
     def statusMessage(self, message):
         self.SetStatusText(message)
 
     def debugMessage(self, message):
-        log.msg(message)
+        #log.msg(message)
+        message = message.strip()
+        wxLogMessage(message)
 
     def errorMessage(self, message):
-        log.msg("ERROR: %s"%message)
+        #log.msg("ERROR: %s"%message)
+        message = message.strip()
+        wxLogError(message)
 
     def updateCallButton(self, do_call):
         if do_call:
@@ -155,6 +163,9 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             defresp.callback('yes')
         else:
             defresp.errback(CallRejected)
+
+    def DoErrorLog(self, event):
+        self.errorlog.Show(True)
 
     def DoRegister(self, event):
         dlg = wxMessageDialog(self, 
@@ -242,3 +253,18 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         #sizer.SetSizeHints(self)
         self.UpdateHeight(newheight)
 
+
+class LogFrameImpl(LogFrame):
+    BUTT_CLEAR = 101
+    BUTT_CLOSE = 102
+
+    def __init__(self, *args, **kwargs):
+        LogFrame.__init__(self, *args, **kwargs)
+        EVT_BUTTON(self, self.BUTT_CLEAR, self.OnClear)
+        EVT_BUTTON(self, self.BUTT_CLOSE, self.OnClose)
+    
+    def OnClear(self, event):
+        self.text_errorlog.Clear()
+
+    def OnClose(self, event):
+        self.Hide()
