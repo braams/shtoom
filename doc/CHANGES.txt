@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - shtam and shecho have been rewritten as doug applications. shtam now
+    sends the voicemail as an email when it's collected.
+  - OSX audio hooked up, using audio code from Donovan Preston.
   - the main phone application is now called shtoomphone. Too many import
     horrors with 'import shtoom' getting the script, rather than the 
     package in site-packages.

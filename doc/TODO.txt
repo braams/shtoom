@@ -15,12 +15,10 @@ Definite before 0.3:
 Maybe before 0.3:
     - doug: placeCall to a broken address doesn't give generate a 
       correct event
-    - shtam: rewrite in doug
-    - cocoa native UI, os x native sound. depends on the mac arriving.
+    - cocoa native UI into it's own thread to workaround broken cfreactor
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't need to pass in the RTP PT.
-    - stun: timeout the STUN call, generate a nice error (at least when
-      run interactively)
+    - stun: timeout the STUN call, generate a nice error 
     - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
     - ui(tk): new dialogs that don't block, and have a timeout.
