@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (C) 2004 Anthony Baxter
 # $Id: stun.py,v 1.15 2004/03/02 14:22:31 anthony Exp $
 
