@@ -7,7 +7,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.29 2004/01/14 14:44:54 anthonybaxter Exp $
+# $Id: rtp.py,v 1.30 2004/02/21 06:57:28 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -301,3 +301,10 @@ class RTPProtocol(DatagramProtocol):
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
+
+    def startDTMF(self, digit):
+        print "start sending %s"%digit
+
+    def stopDTMF(self, digit):
+        print "stop sending %s"%digit
+
