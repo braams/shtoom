@@ -29,6 +29,9 @@ class ShtoomMainWindow(ShtoomBaseUI):
                                     command=self.hangupButton_clicked,
                                     state=DISABLED)
         self._hangupButton.pack(side=LEFT)
+        self._prefButton = Button(self._top2, text="Prefs",
+                                  command=self.prefButton_clicked)
+        self._prefButton.pack(side=RIGHT)
 
     def getMain(self):
         return self.main
@@ -73,13 +76,25 @@ class ShtoomMainWindow(ShtoomBaseUI):
         reactor.stop()
         self.main.quit()
 
+    def getString(self, message):
+        from tkSimpleDialog import askstring
+        from twisted.internet import defer
+        answer = askstring(message)
+        return defer.succeed(answer)
+
     def incomingCall(self, description, cookie, defresp):
         import tkMessageBox
         answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
-        print "GOT ANSWER", answer
         if answer:
             self.cookie = cookie
             self._callButton.config(state=DISABLED)
             defresp.callback('yes')
         else:
             defresp.errback(CallRejected)
+
+    def prefButton_clicked(self):
+        from prefs import PreferencesDialog
+        self._p = PreferencesDialog(self.main, self, self.app.getOptions())
+
+    def updateOptions(self, od):
+        self.app.updateOptions(od)
