@@ -2,6 +2,7 @@ from twisted.internet import reactor, defer
 from twisted.python import log
 import twisted.trial.util
 
+#TDEBUG=True
 TDEBUG=False
 
 callFlowOutboundHorror = """
@@ -250,7 +251,7 @@ class TestCallControl(unittest.TestCase):
             ui.actions = []
             au.actions = []
 
-    def NtestOutboundRemoteBye(self):
+    def testOutboundRemoteBye(self):
         from shtoom.app.phone import Phone
         ui = TestUI()
         au = TestAudio()
@@ -264,6 +265,7 @@ class TestCallControl(unittest.TestCase):
         p.connectSIP = lambda x=None: None 
         p.boot()
         p.sip = TestSip(p)
+        reactor.callLater(0.3, lambda : p.sip.dropCall(ui.cookie))
         p.start()
         twisted.trial.util.wait(testdef)
         self.assertEquals(au.actions, ['reopen', 'close'])
@@ -273,7 +275,7 @@ class TestCallControl(unittest.TestCase):
         for a,c in actions[1:]:
             self.assertEquals(cookie,c)
         actions = [x[0] for x in actions]
-        self.assertEquals(actions, ['start', 'connected', 'drop', 'disconnected'])
+        self.assertEquals(actions, ['start', 'connected', 'disconnected'])
         if TDEBUG: print actions
 
     def testInboundRemoteBye(self):
