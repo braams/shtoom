@@ -39,48 +39,64 @@ callFlowInboundHorror = """
 """
 
 class TestAudio:
+    def __init__(self):
+        self.actions = []
     def selectFormat(self, fmt): 
+        self.actions.append('select')
         print "selecting fake audio format"
 
     def listFormat(self):
+        self.actions.append('list')
         return []
 
     def reopen(self):
+        self.actions.append('reopen')
         print "reopening fake audio"
 
     def close(self):
+        self.actions.append('close')
         print "closing fake audio"
 
     def read(self):
+        self.actions.append('read')
         return ''
 
     def write(self, bytes):
+        self.actions.append('write')
         pass
 
 class TestUI:
     threadedUI = False
 
+    def __init__(self):
+        self.actions = []
+
     def connectApplication(self, app):
         self.app = app
 
     def callStarted(self, cookie):
+        self.actions.append(('start',cookie))
         self.cookie = cookie
         print "callStarted", self.cookie
 
     def cb_callFailed(self, cookie, message=None):
+        self.actions.append(('failed',cookie))
         print "callFailed", self.cookie
 
     def cb_callConnected(self, cookie):
         print "callConnected", self.cookie
+        self.actions.append(('connected',cookie))
         reactor.callLater(0, self.dropCall)
 
     def callDisconnected(self, cookie, reason):
+        self.actions.append(('disconnected',cookie))
         print "callDisconnected", self.cookie
         reactor.stop()
 
     def incomingCall(self, description, cookie):
         print "incoming"
-        return defer.succeed('PretendCookie #1')
+        self.actions.append(('incoming',cookie))
+        return defer.succeed(cookie)
 
     def fakeCall(self):
         print "placing a call"
@@ -89,7 +105,10 @@ class TestUI:
                        self.cb_callFailed).addErrback(log.err)
 
     def dropCall(self):
+        print "dropping connected call"
+        self.actions.append(('drop',self.cookie))
         self.app.dropCall(self.cookie)
+        print "dropped"
 
 class TestCall:
     "A fake Call object"
@@ -102,6 +121,14 @@ class TestCall:
 
     def getSTUNState(self): 
         return False
+
+    def startFakeInbound(self):
+        from shtoom.sip import Dialog
+        self.dialog = Dialog()
+        self.dialog.setDirection(inbound=True)
+        d = self.sip.app.acceptCall(call=self)
+        d.addCallbacks(self.acceptedFakeCall, 
+                       self.rejectedFakeCall).addErrback(log.err)
 
     def startFakeOutbound(self, uri):
         from shtoom.sip import Dialog
@@ -123,6 +150,7 @@ class TestCall:
         d.errback(e)
 
     def dropCall(self):
+        print "drop"
         self.sip.app.endCall(self.cookie)
 
 
@@ -133,25 +161,42 @@ class TestSip:
 
     def placeCall(self, uri):
         d = defer.Deferred()
-        c = TestCall(d, self)
-        c.startFakeOutbound(uri)
+        self.c = TestCall(d, self)
+        self.c.startFakeOutbound(uri)
         return d
 
     def register(self):
         pass
 
+    def fakeInbound(self):
+        d = defer.Deferred()
+        self.c = TestCall(d, self)
+        self.c.startFakeInbound()
+        return d
+
+    def dropFakeInbound(self, result):
+        self.c.dropCall()
+
+    def dropCall(self, cookie):
+        print "dropCall"
+        self.c.dropCall()
+
 class TestRTP:
+    actions = []
     def __init__(self, app, cookie):
         self.cookie = cookie
         self.app = app
 
     def createRTPSocket(self, ip, stun):
+        self.actions.append('create')
         return defer.succeed('ok')
 
     def startSendingAndReceiving(self, remote):
+        self.actions.append('start')
         pass
 
     def stopSendingAndReceiving(self):
+        self.actions.append('stop')
         pass
 
 from twisted.trial import unittest
@@ -160,11 +205,47 @@ class TestCallControl(unittest.TestCase):
     def testOutbound(self):
         from shtoom.app.phone import Phone
         ui = TestUI()
-        p = Phone(ui=ui, audio=TestAudio())
+        au = TestAudio()
+        p = Phone(ui=ui, audio=au)
+        TestRTP.actions = []
         p._rtpProtocolClass = TestRTP
         ui.connectApplication(p)
         reactor.callLater(0, ui.fakeCall)
+        p.connectSIP = lambda x=None: None 
         p.boot()
         p.sip = TestSip(p)
         p.start()
+        self.assertEquals(au.actions, ['reopen', 'close'])
+        self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
+        actions = ui.actions
+        cookie = actions[0][1]
+        for a,c in actions[1:]:
+            self.assertEquals(cookie,c)
+        actions = [x[0] for x in actions]
+        self.assertEquals(actions, ['start', 'connected', 'drop', 'disconnected'])
+        print actions
 
+    def testInbound(self):
+        from shtoom.app.phone import Phone
+        ui = TestUI()
+        au = TestAudio()
+        p = Phone(ui=ui, audio=au)
+        TestRTP.actions = []
+        p._rtpProtocolClass = TestRTP
+        ui.connectApplication(p)
+        p.connectSIP = lambda x=None: None 
+        p.boot()
+        p.sip = TestSip(p)
+        d =  p.sip.fakeInbound()
+        d.addCallback(p.sip.dropFakeInbound)
+        p.start()
+        self.assertEquals(au.actions, ['reopen', 'close'])
+        self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
+        actions = ui.actions
+        cookie = actions[0][1]
+        for a,c in actions[1:]:
+            self.assertEquals(cookie,c)
+        actions = [x[0] for x in actions]
+        # XXX no connected??
+        self.assertEquals(actions, ['start', 'incoming', 'connected', 'disconnected'])
+        
