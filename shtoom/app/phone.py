@@ -204,11 +204,15 @@ class Phone(BaseApplication):
         opts.addGroup(app)
         opts.setOptsFile('.shtoomrc')
 
-    def authCred(self, method, uri):
+    def authCred(self, method, uri, realm='unknown', retry=False):
         "Place holder for now"
-        if hasattr(self.ui, 'getAuth'):
-            return self.ui.getAuth("Please enter user,passwd for %s %s"%(
-                                                                method, uri))
-        else:
+        user = self.getPref('register_authuser')
+        passwd = self.getPref('register_authpasswd')
+        if user is not None and passwd is not None and retry is False:
             return defer.succeed((self.getPref('register_authuser'), 
                                  self.getPref('register_authpasswd')))
+        elif hasattr(self.ui, 'getAuth'):
+            return self.ui.getAuth("Auth needed for %s %s, realm '%s'"%(method, uri, realm))
+        else:
+            raise CallFailed, "No auth available"
+
