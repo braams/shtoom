@@ -11,7 +11,7 @@ class AudioFromFiles:
         self.read = self._infp.read
         self.write = self._outfp.write
 
-    def close():
+    def close(self):
         self._infp.close()
         self._outfp.close()
 
