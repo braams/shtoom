@@ -745,6 +745,8 @@ class Call(object):
         return H, KD
 
     def calcAuth(self, method, uri, authchal, cred):
+        if not cred:
+            raise RuntimeError, "Auth required, but not provided?"
         (user, passwd) = cred
         authmethod, auth = authchal.split(' ', 1)
         if authmethod.lower() != 'digest':
