@@ -59,12 +59,19 @@ import sys ; sys.path.append(sys.path.pop(0))
 
 app = None
 
+from shtoom.app.doug import DougApplication
+class MyDougApplication(DougApplication):
+    def acceptResults(self, cookie, results):
+        from twisted.internet import reactor
+        self.dropCall(cookie)
+        # Hack until dropCall returns a deferred.
+        reactor.callLater(0.4, reactor.stop)
+
 def main():
-    from shtoom.app.doug import DougApplication
     from twisted.internet import reactor
     global app
 
-    app = DougApplication(PlayingApp)
+    app = MyDougApplication(PlayingApp)
     app.boot()
     reactor.callLater(0,app.startVoiceApp)
     app.start()
