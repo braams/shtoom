@@ -1087,9 +1087,9 @@ class SipPhone(DatagramProtocol, object):
         callid = message.headers['call-id']
         call = self._getCallObject(callid)
         if message.response and not call:
+            # XXX  should keep a cache of recently discarded calls
             self.app.debugMessage("SIP response refers to unknown call %s %r"%(
                                                     callid, self._calls.keys()))
-            #print "unknown", message.toString()
             return
         if message.request and message.method.lower() != 'invite' and not call:
             self.app.debugMessage("SIP request refers to unknown call %s %r"%(
@@ -1099,7 +1099,6 @@ class SipPhone(DatagramProtocol, object):
             call = self._newCallObject(_d, callid = callid)
             call.sendResponse(message, 481)
             self._delCallObject(callid)
-            # XXX In this case, send a 481!
             return
         if message.request:
             print "handling request", message.method
