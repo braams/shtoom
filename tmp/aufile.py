@@ -8,7 +8,7 @@ else:
     big_endian = 0
 
 class BaseReader:
-    _cvt = lambda x: x
+    _cvt = lambda s, x: x
     _freqCvt = { 8000: 160, 16000: 320, 32000: 640, 64000: 1280 }
 
     def __init__(self, fp):
@@ -19,11 +19,11 @@ class BaseReader:
             raise ValueError("Incorrect file format %r"%(p,))
         self.comptype = p[4]
         if p[0] == 2:
-            self._cvt = lambda x, c=self._cvt: audiop.tomono(c(x))
+            self._cvt = lambda x,c=self._cvt: audiop.tomono(c(x))
         elif p[0] != 1:
             raise ValueError("can only handle mono/stereo, not %d"%p[0])
         if p[1] != 2:
-            self._cvt = lambda s, x,ch=p[1],c=self._cvt: lin2lin(c(x),ch,2)
+            self._cvt = lambda x,ch=p[1],c=self._cvt: lin2lin(c(x),ch,2)
         self.sampwidth = p[1]
         if p[2] % 8000 != 0:
             raise ValueError("sampfreq must be multiple of 8k")
@@ -31,7 +31,7 @@ class BaseReader:
         if p[2] != 8000:
             print "rate conversion"
             self._ratecvt = None
-            self._cvt = lambda s, x,c=self._cvt: self.rateCvt(c(x))
+            self._cvt = lambda x,c=self._cvt: self.rateCvt(c(x))
 
     def rateCvt(self, data):
         data, self._ratecvt = ratecv(data,2,1,self.sampfreq,8000,self._ratecvt)
