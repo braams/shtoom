@@ -14,6 +14,8 @@ from shtoom.audio import getAudioDevice
 class Phone(BaseApplication):
     __implements__ = ( Application, )
 
+    _startReactor = True
+
     def __init__(self, ui=None, audio=None):
         # Mapping from callcookies to rtp object
         self._rtp = {}
@@ -52,6 +54,9 @@ class Phone(BaseApplication):
         from twisted.internet import reactor
 
         self.register()
+        if not self._startReactor:
+            log.msg("Not starting reactor - test mode?")
+            return
         if self.needsThreadedUI():
             from twisted.python import threadable
             import threading
@@ -69,7 +74,7 @@ class Phone(BaseApplication):
 
     def acceptCall(self, call):
         from twisted.internet import reactor
-        print "dialog is", call.dialog
+        log.msg("dialog is %r"%(call.dialog))
         if self._audio is None:
             self.openAudioDevice()
         cookie = self.getCookie()
@@ -147,20 +152,20 @@ class Phone(BaseApplication):
         return s
 
     def startCall(self, callcookie, remoteSDP, cb):
-        print "startCall reopening", self._currentCall, self._audio
+        log.msg("startCall reopening %r %r"%(self._currentCall, self._audio))
         md = remoteSDP.getMediaDescription('audio')
         ipaddr = md.ipaddr or remoteSDP.ipaddr
         remoteAddr = (ipaddr, md.port)
         if not self._currentCall:
             self._audio.reopen()
-        print "call Start", callcookie, remoteAddr
+        log.msg("call Start %r %r"%(callcookie, remoteAddr))
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         self._currentCall = callcookie
         cb(callcookie)
 
     def endCall(self, callcookie, reason=''):
         rtp = self._rtp.get(callcookie)
-        print "endCall clearing", callcookie
+        log.msg("endCall clearing %r"%(callcookie))
         self._currentCall = None
         if rtp:
             rtp = self._rtp[callcookie]
@@ -207,7 +212,7 @@ class Phone(BaseApplication):
             # comfort noise
             pass
         else:
-            print "unexpected RTP PT %s len %d"%((payloadType,str(payloadType)), len(payloadData))
+            log.err("unexpected RTP PT %s len %d"%((payloadType,str(payloadType)), len(payloadData)))
 
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call
