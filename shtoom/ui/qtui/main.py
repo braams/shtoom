@@ -11,7 +11,7 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
 
     sending = False
     audiosource = None
-    connected = False
+    cookie = False
 
     def debugMessage(self, message):
         log.msg(message)
@@ -23,10 +23,10 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         log.msg("ERROR: %s"%message)
 
     def hangupButton_clicked(self):
-        self.sip.dropCall(self.connected)
+        self.app.dropCall(self.cookie)
         self.callButton.setEnabled(True)
         self.hangupButton.setEnabled(False)
-        self.connected = False
+        self.cookie = False
 
     def callButton_clicked(self):
         sipURL = str(self.addressComboBox.currentText())
@@ -34,10 +34,11 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
             log.msg("Invalid SIP url %s"%(sipURL))
             return
         self.callButton.setEnabled(False)
-        self.connected, defer = self.sip.placeCall(sipURL)
+        defer = self.app.placeCall(sipURL)
         defer.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
 
-    def callConnected(self, call):
+    def callConnected(self, cookie):
+        self.cookie = cookie
         self.hangupButton.setEnabled(True)
 
     def callDisconnected(self, e):

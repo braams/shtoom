@@ -36,6 +36,7 @@ def tryGnomeInterface(application):
         pass
     try:
         import gtk
+        import gtk.glade
     except ImportError:
         gtk = None
     if gtk is not None:

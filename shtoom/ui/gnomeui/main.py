@@ -12,7 +12,7 @@ from shtoom.ui.base import ShtoomBaseUI
 class ShtoomWindow(ShtoomBaseUI):
 
     def __init__(self):
-        self.connected = False
+        self.cookie = False
         self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"))
         self.xml.signal_autoconnect(self)
         self.xml.get_widget("callwindow").connect("destroy", lambda w: reactor.stop())
@@ -34,16 +34,16 @@ class ShtoomWindow(ShtoomBaseUI):
         self.hangupButton.set_sensitive(1)
         self.callButton.set_sensitive(0)
         self.address.set_sensitive(0)
-        self.connected, deferred = self.sip.placeCall(sipURL)
+        deferred = self.app.placeCall(sipURL)
         deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
 
     def on_hangup_clicked(self, w):
-        self.sip.dropCall(self.connected)
+        self.app.dropCall(self.cookie)
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
         self.hangupButton.set_sensitive(0)
         self.statusMessage("")
-        self.connected = False
+        self.cookie = None
 
     def on_acceptdialog_response(self, widget, code):
         self.incoming[0].approved(code == gtk.RESPONSE_OK)
@@ -70,7 +70,8 @@ class ShtoomWindow(ShtoomBaseUI):
         self.xml.get_widget("about").show()
 
     # event callbacks
-    def callConnected(self, call):
+    def callConnected(self, cookie):
+        self.cookie = cookie
         self.hangupButton.set_sensitive(1)
 
     def callFailed(self, reason):

@@ -5,7 +5,7 @@ from twisted.internet import stdio
 from twisted.protocols import basic
 
 class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
-    _connected = None
+    _cookie = None
     _pending = None
     _debug = True
     from os import linesep as delimiter
@@ -51,7 +51,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         self.transport.write("Commands: %s\n"%(' '.join(methods)))
 
     def cmd_call(self, line):
-        if self._connected is not None:
+        if self._cookie is not None:
             self.transport.write("error: only one call at a time for now\n")
             return
         args = line.split()
@@ -62,19 +62,19 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             self.transport.write("error: call <sipurl>\n")
             return
         self.sipURL = args[1]
-        self._connected, deferred = self.sip.placeCall(self.sipURL)
+        deferred = self.app.placeCall(self.sipURL)
         deferred.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
 
-    def callConnected(self, call):
+    def callConnected(self, cookie):
         log.msg("Call to %s CONNECTED"%(self.sipURL))
 
     def callDisconnected(self, call):
         log.msg("Call to %s DISCONNECTED"%(self.sipURL))
 
     def cmd_hangup(self, line):
-        if self._connected is not None:
-            self.sip.dropCall(self._connected)
-            self._connected = None
+        if self._cookie is not None:
+            self.app.dropCall(self._cookie)
+            self._cookie = None
         else:
             self.transport.write("error: no active call\n")
 
@@ -85,7 +85,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         if not self._pending:
             self.transport.write("no pending calls")
             return
-        self._connected, resp, setup = self._pending
+        self._cookie, resp, setup = self._pending
         self._pending = None
         setup.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
         resp.callback('yes')
@@ -94,6 +94,6 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         if not self._pending:
             self.transport.write("no pending calls")
             return
-        self._connected, resp, setup = self._pending
+        self._cookie, resp, setup = self._pending
         self._pending = None
         resp.errback('no')
