@@ -28,7 +28,7 @@ class Call(object):
         self.cseq = random.randint(1000,5000)
         self.rtp = None
         self.url = tpsip.parseURL(to)
-        ip = self.setLocalIP((self.url.host, self.url.port or 5060))
+        ip = self.setLocalIP(dest=(self.url.host, self.url.port or 5060))
         if ip:
             self.setCallID()
             self.state = 'NONE'
@@ -51,12 +51,13 @@ class Call(object):
             self._tag = ('%08x'%(random.randint(0, 2**32)))[:8]
         return self._tag
 
-    def setLocalIP(self, (host,port)):
+    def setLocalIP(self, dest):
         """ Try and determine the local IP address to use. We do a connect_ex
             in the (faint?) hope that on a machine with multiple interfaces,
             we'll get the right one
         """
         # XXX Allow over-riding
+        host, port = dest
         import prefs
         if prefs.localip is not None:
             self._localIP = prefs.localip
@@ -98,7 +99,7 @@ class Call(object):
 
     def genInvite(self, toAddr):
         from multicast.SDP import SimpleSDP
-        self.setLocalIP((self.url.host, self.url.port or 5060))
+        self.setLocalIP(dest=(self.url.host, self.url.port or 5060))
         invite = tpsip.Request('INVITE', str(self.url))
         invite.addHeader('via', 'SIP/2.0/UDP %s;rport'%(
                                     self.getLocalSIPAddress()[0]))
