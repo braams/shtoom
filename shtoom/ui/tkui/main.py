@@ -38,7 +38,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
     def statusMessage(self, msg):
         print "status", msg
 
-    def callButton_clicked(self):
+    def callButton_clicked(self, evt=None):
         sipURL = self._urlentry.get()
         if not sipURL.startswith('sip:'):
             log.msg("Invalid SIP url %s"%(sipURL))
