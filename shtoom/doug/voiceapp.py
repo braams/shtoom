@@ -163,6 +163,11 @@ class VoiceApp(StateMachine):
             leg = self._inbound
         self._triggerEvent(CallAnsweredEvent(leg))
 
+    def va_callrejected(self, leg=None):
+        if leg is None: 
+            leg = self._inbound
+        self._triggerEvent(CallRejectedEvent(leg))
+
     def va_abort(self):
         self.mediaStop()
         self._triggerEvent(CallEndedEvent(None))

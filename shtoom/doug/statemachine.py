@@ -68,12 +68,17 @@ class StateMachine(object):
             em = callable(evt)
         else:
             em = callable()
-        try:
-            i = iter(em)
-        except TypeError:
-            print "%s did not return a new state mapping, but %r"%(
-                                            self._curState, em)
-            em = self._curEvents
+        if self._doneDeferred is None:
+            # We're done. 
+            self._curEvents = ()
+            self._curState = '<done>'
+        else:
+            try:
+                i = iter(em)
+            except TypeError:
+                print "%s did not return a new state mapping, but %r"%(
+                                                self._curState, em)
+                em = self._curEvents
         self._curEvents = em
 
     def _start(self, callstart=1):

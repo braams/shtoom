@@ -226,7 +226,9 @@ class DougApplication(BaseApplication):
         self._voiceapps[ncookie] = self._voiceapps[cookie] 
         print "connecting %s to %s"%(ncookie, cookie), self._voiceapps.keys()
         d = self.sip.placeCall(sipURL, fromURI, cookie=ncookie)
-        d.addCallback(lambda x: self.outboundCallConnected(cookie, x)).addErrback(log.err)
+        d.addCallbacks(
+            lambda x: self.outboundCallConnected(cookie, x),
+            lambda x: self.outboundCallFailed(cookie, ncookie, x)).addErrback(log.err)
         return d
 
     def outboundCallConnected(self, voiceappCookie, outboundCookie):
@@ -236,6 +238,14 @@ class DougApplication(BaseApplication):
         outbound = Leg(outboundCookie, call.dialog)
         outbound.outgoingCall()
         self._voiceapps[voiceappCookie].va_callanswered(outbound)
+
+    def outboundCallFailed(self, voiceappCookie, outboundCookie, exc):
+        from shtoom.doug.leg import Leg
+        print "outbound failed!", voiceappCookie, outboundCookie
+        call = self._calls[outboundCookie]
+        outbound = Leg(outboundCookie, call.dialog)
+        outbound.outgoingCall()
+        self._voiceapps[voiceappCookie].va_callrejected(outbound)
 
     def dropCall(self, cookie):
         print "dropCall", cookie
