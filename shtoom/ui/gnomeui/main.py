@@ -17,7 +17,8 @@ class ShtoomWindow(ShtoomBaseUI):
         self.cookie = False
         d = shtoom.i18n.getLocaleDir()
         domain = gettext.textdomain()
-        gtk.glade.bindtextdomain(domain, d)
+        if d is not None:
+            gtk.glade.bindtextdomain(domain, d)
         gtk.glade.textdomain(domain)
         self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"), None,
                                                         gettext.textdomain())
@@ -33,6 +34,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.hangupButton.set_sensitive(0)
         self.status = self.xml.get_widget("statusbar")
         self.acceptDialog = self.xml.get_widget("acceptdialog")
+        self.authDialog = self.xml.get_widget("authdialog")
         self.incoming = []
 
         debug = self.xml.get_widget("debuglog")
@@ -87,9 +89,9 @@ class ShtoomWindow(ShtoomBaseUI):
         self.address.set_text("")
 
     def on_preferences_activate(self, widget):
-        #self.statusMessage("Editing Preferences with Gnome UI not supported yet.")
         from prefs import PreferencesDialog
-        p = PreferencesDialog(self.xml.get_widget("callwindow"), self, self.app.getOptions())
+        p = PreferencesDialog(self.xml.get_widget("callwindow"), self, 
+                              self.app.getOptions())
         p.show()
 
     def on_debugmenu_activate(self, widget):
@@ -135,6 +137,10 @@ class ShtoomWindow(ShtoomBaseUI):
         self.hangupButton.set_sensitive(0)
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
+
+    def getAuth(self, method, realm):
+        msg = _('Enter username and password\nfor "%(method)s" at "%(realm)s"')
+        msg = msg % {'method':method, 'realm':realm }
 
     def incomingCall(self, description, cookie):
         # XXX multiple incoming calls won't work
