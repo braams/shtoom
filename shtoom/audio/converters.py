@@ -192,10 +192,10 @@ class MediaLayer(NullConv):
         return self.codecker.encode(bytes)
 
     def write(self, packet):
-        audio = self.codecker.encode(packet)
+        audio = self.codecker.encode(packet.data)
         if not audio:
             return 0
-        return self._d.write(data)
+        return self._d.write(packet.data)
 
 class DougConverter(MediaLayer):
     "Specialised converter for Doug."
