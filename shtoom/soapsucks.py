@@ -101,7 +101,11 @@ class _BeautifulSaxParser(ContentHandler, Tag):
         for i in obj.contents:
             if isinstance(i, Tag):
                 if ':' in i.name:
-                    ns, uname = i.name.rsplit(':')
+                    n = i.name
+                    if type(n) is unicode:
+                        # why must the world torture me this way??
+                        n = n.encode('iso8859-1','replace')
+                    ns, uname = n.rsplit(':', 1)
                     if uname == name:
                         results.append(i)
                 elif name == i.name:
