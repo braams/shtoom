@@ -6,6 +6,7 @@
 from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
 from twisted.internet import defer
+from twisted.python import log
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio import getAudioDevice
@@ -30,6 +31,10 @@ class Phone(BaseApplication):
     def start(self):
         "Start the application."
         from twisted.internet import reactor
+        from shtoom.prefs import register_uri
+        if register_uri is not None:
+            d = self.sip.register()
+            d.addCallback(log.err).addErrback(log.err)
         reactor.run()
         self.ui.resourceUsage()
 
