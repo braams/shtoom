@@ -26,20 +26,21 @@ The bits that would need touching are shtoom.app.{doug,phone},
 shtoom.rtp, shtoom.audio.converters. shtoo.app.base can be ignored,
 as it's going away soon.
 
-IRC notes:
-
  the RTP layer is then in charge of all things RTP-ish.
  So the changes are: 
- 1. getSDP() and selectFormat() pass the SDP down to the rtp object
- for it's subsequent use
- 2. AudioLayer returns format as strings, singletons, or whatever,
- this is punted across to RTP object
- 3. RTP takes these format objects and Does The Right Thing.
- Note that passing an _object_ to/from RTP, with 'payload' and
- 'payloadType' attributes (or whatever) also means that it's easier to attach
- RTP timestamps to the data.
- Which is something that will be needed RSN for the AudioLayer's
- playout buffering.
+ 1. getSDP() and selectFormat() hand off SDP negotiations to the RTPProtocol.
+ 2. Call object passes the SDP in an ACK to RTP via the app object so it can
+ build a PT dictionary
+ 3. MediaLayer (previously known as MultipleConverter) gets and receives
+ RTPPacket objects, that encapsulate an RTP packet, including payload type,
+ timestamp and data.
+ 4. RTPProtocol gets an RTPParser object, that converts RTPPackets to/from
+ the wire format.
+ 5. Optional codec support moves to the new shtoom.avail module (see the
+ ``Import testing'' section, below.
+
+
+This refactoring is in progress on the branch rtp-sdp-refactor.
 
 Call
 ----
@@ -63,5 +64,21 @@ Import testing
 There's a bunch of try: import foo except: foo = None stanzas buried 
 in the code. I'd like to move all of that out to a seperate module 
 that does *all* of the import tests in one place.
+
+There's now a module shtoom.avail for encapsulating all these icky 
+bits. Right now it only has audio codecs in it.
+
+Going forward, it should probably do something like:
+
+try: 
+    import foobarbaz
+except ImportError:
+    # some sort of debugging?
+    foobarbaz = None
+    _removeModule('foobarbaz')
+except: 
+    log.err('got a funny exception ...')
+    foobarbaz = None
+    _removeModule('foobarbaz')
 
 
