@@ -67,6 +67,9 @@ class UPnPProtocol(DatagramProtocol, object):
         if status == "200":
             self.gotSearchResponse = True
             self.handleSearchResponse(message)
+            if self.upnpTimeout:
+                self.upnpTimeout.cancel()
+                self.upnpTimeout = None
 
     def handleSearchResponse(self, message):
         import urlparse
@@ -136,6 +139,8 @@ class UPnPProtocol(DatagramProtocol, object):
             d.callback(NoUPnPFound())
 
     def timeoutDiscovery(self):
+        log.msg("UPnP discovery timed out", system="UPnP")
+        self.upnpTimeout = None
         if hasattr(self, '_discDef'):
             if self.urlbase is None:
                 d = self._discDef
@@ -409,7 +414,7 @@ def getUPnP():
         prot = UPnPProtocol()
         prot.listenMulticast()
         d = prot.discoverUPnP()
-        d.addCallback(_cb_gotUPnP)
+        d.addCallback(_cb_gotUPnP).addErrback(log.err)
         return d
     else:
         return _cached_upnp.isAvailable()
@@ -417,6 +422,7 @@ getUPnP = DeferredCache(getUPnP, inProgressOnly=False)
 
 def _cb_gotUPnP(upnp):
     if isinstance(upnp, NoUPnPFound):
+        log.msg("no UPnP found!", system="UPnP")
         return None
     # A little bit of tricksiness here. If we got the same upnp server,
     # keep the UPnPMapper alive, so that unmap of existing entries work 
