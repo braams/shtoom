@@ -256,10 +256,10 @@ class RTCPCompound:
 
 class RTCPProtocol(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
-        print "received RTCP from %r (%d bytes): \n%s"%(addr, len(datagram), hexrepr(datagram))
+        #print "received RTCP from %r (%d bytes): \n%s"%(addr, len(datagram), hexrepr(datagram))
         packet = RTCPCompound(datagram)
-        for rtcp in packet:
-            print "RTCP:", rtcp
+        #for rtcp in packet:
+        #    print "RTCP:", rtcp
 
     def sendDatagram(self, packet):
         self.transport.write(packet)
