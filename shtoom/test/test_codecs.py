@@ -12,7 +12,7 @@ from shtoom.audio.converters import isLittleEndian
 instr = ''.join([chr(x*32) for x in range(8)]) * 40
 if not isLittleEndian():
     import array
-    a = array.array('w')
+    a = array.array('H')
     a.fromstring(instr)
     a.byteswap()
     instr = a.tostring()

@@ -163,6 +163,7 @@ class MediaDescription:
                         # a=rtpmap entry for it.
                         continue
                     self.addRtpMap(PT)
+                    # XXX the above line is unbound local variable error if not RTPDict.has_key(pt) --Zooko 2004-09-29
         self.formats = formats
 
     def setMedia(self, media):
