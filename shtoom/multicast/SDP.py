@@ -21,6 +21,8 @@ EncodingDict = {
     18: ('G729',8000,1),
 }
 
+# XXX todo - rtpmaps should be ordereddicts or somesuch.
+
 for key,value in EncodingDict.items():
     EncodingDict[value] = key
 del key,value
@@ -94,6 +96,7 @@ class SDP:
 	self._sessionB = self.parseB(ann.get("b",optional=1))
 	self._sessionM = self.parseM(ann.get("m",optional=1))
         self._ann = ann
+        self.rtpmap = self.get('a', 'rtpmap')
 
     def get(self, typechar, option=None):
         if option is None:
@@ -150,6 +153,9 @@ class SimpleSDP:
 	self.serverIP = l
     def setLocalPort(self, l):
 	self.localPort = l
+
+    def clearRtpMap(self):
+        self.rtpmap = []
     def addRtpMap(self, encname, clockrate, encparams=None, payload=None):
         if self.media == 'audio' and encparams is None:
             # default to a single channel
@@ -188,6 +194,16 @@ class SimpleSDP:
 	out.append('')
 	s = '\n'.join(out)
 	return s
-	
+
+    def intersect(self, other):
+        map1 = self.rtpmap
+        map2 = other.rtpmap
+        outmap = []
+        # XXX quadratic - make rtpmap an ordereddict
+        outmap = [ e for e1 in map1 if e1 in map2 ]
+        self.rtpmap = outmap
+            
 def ntp2delta(ticks):
     return (ticks - 220898800)
+
+
