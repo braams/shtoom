@@ -9,7 +9,8 @@ class SineProducer(Protocol):
         self.startLoop()
 
     def startLoop(self):
-        reactor.callLater((1.0 / 80.0), self.startLoop)
+        reactor.callLater((1.0 / 90.0), self.startLoop)
+        print 'writing'
         self.transport.write(self.data)
 
 factory = Factory()

@@ -11,6 +11,7 @@ class Echo(Protocol):
 
     def dataReceived(self, data):
         self.counter += 1
+        print repr(data)
         if self.counter > self.cnt:
             print '.'
             self.counter = 0
