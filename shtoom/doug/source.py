@@ -3,6 +3,10 @@ import sys
 
 class Source(object):
     "A Source object is a source and sink of audio data"
+
+    # Can this Source handle DMTF?
+    wantsDTMF = False
+
     def __init__(self):
         self.leg = None
 

@@ -215,6 +215,10 @@ class Leg(object):
 
 class BridgeSource(Source):
     "A BridgeSource connects a leg to another leg via a bridge"
+
+    # We want DTMF
+    wantsDTMF = True
+
     def __init__(self, bridge):
         self.bridge = bridge
         self._readbuffer = ''
