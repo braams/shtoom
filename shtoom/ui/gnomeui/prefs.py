@@ -56,16 +56,18 @@ class PreferencesDialog:
 
         self.tooltips = gtk.Tooltips()
 
-        notebook = gtk.Notebook()
+        notebook = gtk.Notebook(spacing=8)
+        notebook.set_border_width(4)
+        self.dialog.vbox.set_border_width(4)
         self.dialog.vbox.pack_start(notebook)
         #self.dialog.add(vbox)
 
         for group in self.opts:
-            tab = gtk.VBox()
-            print "tab", tab
+            tab = gtk.VBox(spacing=8)
+            #print "tab", tab
 
             for optnumber, option in enumerate(group):
-                optBox = gtk.HBox()
+                optBox = gtk.HBox(spacing=8)
 
                 l = gtk.Label(option.getPrettyName())
                 self.tooltips.set_tip(l, option.getDescription())
@@ -95,7 +97,7 @@ class PreferencesDialog:
                         b = gtk.RadioButton(lb, c)
                         self.tooltips.set_tip(b, option.getDescription())
                         if c == option.getValue():
-                            print "setting", c
+                            #print "setting", c
                             b.set_active(gtk.TRUE)
                         else:
                             b.set_active(gtk.FALSE)
