@@ -4,7 +4,6 @@ Linux installer: rpmbuilder??
 
 Before 0.2:
     - refactor shtoom.prefs away
-    - Tk Preferences GUI
     - Nag itamar into writing the GNOME prefs ;)
     - Handle changed prefs, re-init whatever's needed
     - authCred support in shtoom.app
@@ -19,7 +18,8 @@ Before 0.2:
     - Connect up and debug shutdown hooks for removing registration and 
       closing any open calls (dropCall needs to return a deferred)
     - Finish Tkinter GUI
-    - Re-hookup the debugging log to the GUI
+    - Re-hookup the debugging log to the GUI for all GUIs - maybe need
+      a hide/show option
     - Integrate existing RTCP code
     - lots more error handling
     - Hang up a phone call that is still "ringing":
