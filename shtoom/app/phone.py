@@ -76,7 +76,8 @@ class Phone(BaseApplication):
             self.ui.startUI()
         else:
             from twisted.internet import reactor
-            reactor.run()
+            if not hasattr(reactor,'running') or not reactor.running:
+                reactor.run()
 
     def acceptCall(self, call):
         log.msg("dialog is %r"%(call.dialog))
@@ -183,7 +184,7 @@ class Phone(BaseApplication):
     def receiveRTP(self, callcookie, packet):
         # XXX the mute/nonmute should be in the AudioLayer
         from shtoom.rtp.formats import PT_NTE
-        if packet.header.pt == PT_NTE:
+        if packet.header.ct == PT_NTE:
             return None
         if self._currentCall != callcookie:
             return None
@@ -247,8 +248,19 @@ class Phone(BaseApplication):
         if user is not None and passwd is not None and retry is False:
             return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
-        #elif hasattr(self.ui, 'getAuth'):
-        #    return self.ui.getAuth(method, realm)
+        elif hasattr(self.ui, 'getAuth'):
+            def processAuth(res):
+                if not res:
+                    return res
+                if len(res) == 2:
+                    return res
+                elif len(res) == 3:
+                    user,pw,saveok = res
+                    # XXX save
+                    return user, pw
+            d = self.ui.getAuth(method, realm)
+            d.addCallback(processAuth)
+            return d
         else:
             return defer.fail(CallFailed("No auth available"))
 
