@@ -1,15 +1,10 @@
 #
+# This is a test-bed for working out _how_ a VoiceApp would look.
 # 
-
-from shtoom.doug import VoiceApp
-from shtoom.doug.events import *
-
-from shtoom.exceptions import CallRejected
-
-from twisted.python import log
-log.FileLogObserver.timeFormat = "%Y/%m/%d %H:%M:%S"
-
-import time
+# This is _one_ way of spelling it. A more sophisticated approach
+# would be to use PEAK. The PEAK docs make my brain hurt right now,
+# so I'm going to come back to that later.
+# 
 
 # Hack hack hack.
 import sys, os
@@ -21,6 +16,16 @@ else:
     sys.path.append(f)
 
 
+from shtoom.doug import VoiceApp
+from shtoom.doug.events import *
+
+from shtoom.exceptions import CallRejected
+
+from twisted.python import log
+
+log.FileLogObserver.timeFormat = "%Y/%m/%d %H:%M:%S"
+
+import time
 
 class PlayingApp(VoiceApp):
 
@@ -68,7 +73,6 @@ class PlayingApp(VoiceApp):
         self.leg.hijackLeg(self)
         username = leg._dialog.getCallee().getURI().username
         print "voiceapp.__start__ to user %s"%(username)
-        #self.mediaPlay(self.announceFile)
         if self.saveFile is not None:
             self.mediaRecord(self.saveFile)
         return ( (MediaDoneEvent, self.messageDone),
@@ -82,6 +86,7 @@ class PlayingApp(VoiceApp):
         if event.digits == '7':
             print "got login!"
             self.leg.sendDTMF(self.account+'#')
+            self.timestats.append(time.time())
         else:
             print "got unknown event", event.digits
             self.callFailed(event)
@@ -131,10 +136,6 @@ class PlayingApp(VoiceApp):
     def callTimedOut(self, event):
         return self.callFailed(event, 'timeout')
 
-    def doneRecording(self, event):
-        self.mediaStop()
-        return self.messageDone(event)
-
     def messageDone(self, event):
         self.leg.hangupCall()
         return ( (CallEndedEvent, self.doneDoneAndDone),
@@ -150,6 +151,8 @@ class PlayingApp(VoiceApp):
         self.mediaStop()
         self.returnError('%s (in %s) %s'%(event, self.where, optional))
 
+# Hack hack hack.
+import sys ; sys.path.append(sys.path.pop(0))
 
 app = None
 
@@ -172,12 +175,14 @@ class MyDougApplication(DougApplication):
     def acceptResults(self, cookie, results):
         from twisted.internet import reactor
         fp = open('calltiming.out','a')
-        if type(results) is list and len(results) == 4:
-            s,conn,pin,loggedin = results
-            fp.write('%s %s: %.2f %.2f %.2f\n'%(ts(), self._voiceappArgs['callURL'], (conn-s), (loggedin - pin), (loggedin - s)))
+        if type(results) is list and len(results) == 5:
+            s,conn,ac,pin,loggedin = results
+            pintime = len(self._voiceappArgs['pin'])*0.15 + 0.10
+            actime = len(self._voiceappArgs['account'])*0.15 + 0.10
+            fp.write('%s %s: connect:%.2f accheck:%.2f pincheck:%.2f total:%.2f\n'%(ts(), self._voiceappArgs['callURL'], (conn-s), (pin-ac)-actime, (loggedin - pin)-pintime, (loggedin - s)))
             fp.close()
         else:
-            fp.write('%s %s: FAILED\n'%(ts, self._voiceappArgs['callURL']))
+            fp.write('%s %s: FAILED\n'%(ts(), self._voiceappArgs['callURL']))
             log.msg("err, got results %r"%(results))
         # Hack until dropCall returns a deferred.
         reactor.callLater(0.4, reactor.stop)
