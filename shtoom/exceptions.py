@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: exceptions.py,v 1.1 2004/01/14 14:44:54 anthonybaxter Exp $
+# $Id: exceptions.py,v 1.2 2004/03/02 13:03:03 anthony Exp $
 
 class FatalError(Exception): pass 
 class     DependencyFailure(FatalError): pass 
@@ -10,4 +10,7 @@ class CallFailed(Exception): pass
 class     CallRejected(CallFailed): pass
 class     CallNotAnswered(CallFailed): pass
 class     STUNFailed(CallFailed): pass
+class     UserBogosity(CallFailed): pass
+class     HostNotKnown(UserBogosity): pass
+class     InvalidSIPURL(UserBogosity): pass
 
