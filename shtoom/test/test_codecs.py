@@ -33,17 +33,12 @@ class CodecTest(unittest.TestCase):
 
     def testNullCodec(self):
         ae = self.assertEquals
-        c = Codecker()
-        c.setDefaultFormat(PT_CN)
-        ae(c.getDefaultFormat(), PT_CN)
+        ar = self.assertRaises
         n = NullCodec()
-        ae = self.assertEquals
         ae(n.encode('frobozulate'), None)
         ae(n.decode('frobozulate'), None)
-        p = RTPPacket(PT_CN, '\x00', ts=None)
-        ae(c.decode(p), None)
-        ae(c.encode(None), None)
-        ae(c.encode('\x00'), None)
+        c = Codecker()
+        ar(ValueError, c.setDefaultFormat, PT_CN)
 
     def testPassthruCodec(self):
         ae = self.assertEquals
