@@ -43,7 +43,7 @@ class ShtoomMainFrame(wx.Frame):
         self.button_star = wx.Button(self.advanced, self.BUTT_STAR, "*", style=wx.BU_EXACTFIT)
         self.button_0 = wx.Button(self.advanced, self.BUTT_0, "0", style=wx.BU_EXACTFIT)
         self.button_hash = wx.Button(self.advanced, self.BUTT_HASH, "#", style=wx.BU_EXACTFIT)
-        self.bitmap_1 = wx.StaticBitmap(self.advanced, -1, wx.Image("/home/andyh/projects/external/shtoom/shtoom/ui/shtoom.gif", wx.BITMAP_TYPE_GIF).ConvertToBitmap())
+        self.bitmap_1 = wx.StaticBitmap(self.advanced, -1, wx.Image("/home/andyh/projects/external/shtoom/shtoom/ui/gnomeui/shtoom.gif", wx.BITMAP_TYPE_GIF).ConvertToBitmap())
 
         self.__set_properties()
         self.__do_layout()

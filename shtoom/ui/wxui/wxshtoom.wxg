@@ -249,7 +249,7 @@
                             <option>1</option>
                             <object class="wxStaticBitmap" name="bitmap_1" base="EditStaticBitmap">
                                 <attribute>1</attribute>
-                                <bitmap>/home/andyh/projects/external/shtoom/shtoom/ui/shtoom.gif</bitmap>
+                                <bitmap>/home/andyh/projects/external/shtoom/shtoom/ui/gnomeui/shtoom.gif</bitmap>
                             </object>
                         </object>
                     </object>

@@ -1,5 +1,5 @@
 from wxPython.wx import *
-from wxshtoomframe3 import ShtoomMainFrame
+from wxshtoomframe import ShtoomMainFrame
 from shtoom.ui.base import ShtoomBaseUI
 from twisted.python import log
 from prefs import PreferencesDialog
