@@ -98,7 +98,9 @@ class ShtoomWindow(ShtoomBaseUI):
     def incomingCall(self, description, cookie, defsetup):
         from shtoom.exceptions import CallRejected
         # XXX multiple incoming calls won't work
-        self.incoming.append(Incoming(self, cookie, description, defsetup))
+        d = defer.Deferred()
+        self.incoming.append(Incoming(self, cookie, description, d))
+        defsetup.addCallback(lambda x: d)
         if len(self.incoming) == 1:
             self.incoming[0].show()
 
@@ -219,8 +221,8 @@ class Incoming:
         from shtoom.exceptions import CallRejected
         self.timeoutID.cancel()
         if answer:
-            if self.main.cookie:
-                self.main.on_hangup_clicked(None)
+            #if self.main.cookie:
+            #    self.main.on_hangup_clicked(None)
             self.main.cookie = self.cookie
             self.main.callButton.set_sensitive(0)
             self.main.hangupButton.set_sensitive(1)
