@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.9 2003/11/16 04:39:43 anthonybaxter Exp $
+# $Id: rtp.py,v 1.10 2003/11/16 04:44:01 anthonybaxter Exp $
 #
 
 import time, signal, struct, random, sys
@@ -52,7 +52,7 @@ class LoopingCall:
     def _loop(self, starttime, count, interval):
         if hasattr(self, "call"):
             del self.call
-        sys.real_stdout.write("OUT %s\n"%(time()))
+        sys.__stdout__.write("OUT %s\n"%(time()))
         self.f(*self.a, **self.kw)
         now = time()
         while self.running:
