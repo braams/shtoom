@@ -11,7 +11,7 @@ from shtoom.doug.events import *
 
 class RecordingApp(VoiceApp):
 
-    announceFile = 'tmp/doug_welcome.wav'
+    announceFile = 'tmp/doug_welcome.raw'
 
     def __init__(self, *args, **kwargs):
         print args, kwargs
