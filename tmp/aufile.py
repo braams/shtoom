@@ -1,4 +1,3 @@
-import ossaudiodev
 import wave, sunau
 from audioop import tomono, lin2lin, ulaw2lin, ratecv
 
@@ -8,8 +7,8 @@ if struct.pack("h", 1) == "\000\001":
 else:
     big_endian = 0
 
-class BaseFile:
-    _cvt = lambda s, x: x
+class BaseReader:
+    _cvt = lambda x: x
     _freqCvt = { 8000: 160, 16000: 320, 32000: 640, 64000: 1280 }
 
     def __init__(self, fp):
@@ -20,11 +19,11 @@ class BaseFile:
             raise ValueError("Incorrect file format %r"%(p,))
         self.comptype = p[4]
         if p[0] == 2:
-            self._cvt = lambda s, x, c=self._cvt: audiop.tomono(c(x))
+            self._cvt = lambda x, c=self._cvt: audiop.tomono(c(x))
         elif p[0] != 1:
             raise ValueError("can only handle mono/stereo, not %d"%p[0])
         if p[1] != 2:
-            self._cvt = lambda s,x,ch=p[1],c=self._cvt: lin2lin(c(x),ch,2)
+            self._cvt = lambda s, x,ch=p[1],c=self._cvt: lin2lin(c(x),ch,2)
         self.sampwidth = p[1]
         if p[2] % 8000 != 0:
             raise ValueError("sampfreq must be multiple of 8k")
@@ -32,7 +31,7 @@ class BaseFile:
         if p[2] != 8000:
             print "rate conversion"
             self._ratecvt = None
-            self._cvt = lambda x,c=self._cvt: self.rateCvt(c(x))
+            self._cvt = lambda s, x,c=self._cvt: self.rateCvt(c(x))
 
     def rateCvt(self, data):
         data, self._ratecvt = ratecv(data,2,1,self.sampfreq,8000,self._ratecvt)
@@ -43,11 +42,14 @@ class BaseFile:
         data = self._cvt(data)
         return data
 
-class WavFile(BaseFile):
+    def close(self):
+        self.fp.close()
+
+class WavReader(BaseReader):
     module = wave
     allowedComp = ('NONE','ULAW')
 
-class AuFile(BaseFile):
+class AuReader(BaseReader):
     module = sunau
     allowedComp = ('ULAW','NONE')
 
@@ -68,30 +70,69 @@ class AuFile(BaseFile):
 
     _cvt = endianCvt
 
+class BaseWriter:
+    def __init__(self, fp):
+        self.fp = self.module.open(fp, 'wb')
+        self.fp.setparams((1, 2, 8000, 0, 'NONE', 'not compressed'))
+
+    def write(self, data):
+        return self.fp.writeframes(data)
+
+    def close(self):
+        self.fp.close()
+
+class WavWriter(BaseWriter):
+    module = wave
+
+class AuWriter(BaseWriter):
+    module = wave
+
+
+def getReader(filename):
+    if filename.lower().endswith('.wav'):
+        audio = WavReader(open(filename, 'rb'))
+    elif filename.lower().endswith('.au'):
+        audio = AuReader(open(filename, 'rb'))
+    else:
+        raise ValueError("only know .au/.wav files, not %s"%(filename))
+    return audio
+
+def getWriter(filename):
+    if filename.lower().endswith('.wav'):
+        audio = WavWriter(open(filename, 'wb'))
+    elif filename.lower().endswith('.au'):
+        audio = AuWriter(open(filename, 'wb'))
+    else:
+        raise ValueError("only know .au/.wav files, not %s"%(filename))
+    return audio
+
+# For testing porpoises
 def getdev():
+    import ossaudiodev
     dev = ossaudiodev.open('rw')
     dev.speed(8000)
-    dev.nonblock()
+    #dev.nonblock()
     ch = dev.channels(1)
     dev.setfmt(ossaudiodev.AFMT_S16_LE)
     return dev
 
-
-def main(filename):
-    dev = getdev()
-    if filename.lower().endswith('.wav'):
-        audio = WavFile(open(filename, 'rb'))
-    elif filename.lower().endswith('.au'):
-        audio = AuFile(open(filename, 'rb'))
+def test():
+    import sys
+    if len(sys.argv) == 2:
+        inaudio = getReader(sys.argv[1])
+        outaudio = getdev()
+    elif len(sys.argv) == 3:
+        inaudio = getReader(sys.argv[1])
+        outaudio = getWriter(sys.argv[2])
     while True:
-        data = audio.read()
-        dev.write(data)
-        if len(data) < 320:
+        data = inaudio.read()
+        outaudio.write(data)
+        print "len(data)", len(data)
+        if not len(data):
             print "stopping because data len == %d"%(len(data))
             break
 
 
 if __name__ == "__main__":
-    import sys
-    main(sys.argv[1])
+    test()
 
