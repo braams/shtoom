@@ -65,3 +65,19 @@ class ISipPhone(Interface):
         """ Stop sending DTMF digit 'digit'
         """
 
+class AddressBook(Interface):
+    """ Address Book interface
+    """
+
+    def browseAddressBook(self, query=None):
+        """ Pop up the address book, with an optional 'query' (a string
+            to begin the browsing). 
+
+            Returns a Deferred, the callback of which will be called with
+            a string (the URI to call), or the errback if they select nothing
+        """
+
+    def addEntryToAddressBook(self, uri):
+        """ Pop up the address book to add the URI 'uri' (a string).
+        """
+
