@@ -35,7 +35,10 @@ class Wrapper:
         self.close = self._d.close
 
     def read(self):
-        return self._d.read(320)
+        try:
+            return self._d.read(320)
+        except IOError:
+            return None
 
     def __getattr__(self,a):
         return getattr(self._d, a)
