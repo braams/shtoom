@@ -37,6 +37,11 @@ class BaseApplication:
         self.sipListener = reactor.listenUDP(self.getPref('localport') or 5060, p)
         log.msg('sip listener installed')
 
+    def stopSIP(self):
+        self.sipListener.stopListening()
+        del self.sip
+        del self.sipListener
+
     def acceptCall(self, callcookie, calldesc):
         raise NotImplementedError
 
