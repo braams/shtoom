@@ -44,6 +44,17 @@ will do this, but _only_ for DNS packets. Wonderful.
 Going forward, I will hopefully finish the UPnP support so that
 those running firewalls which support this can use this. 
 
+Sound
+-----
+
+The next big issue with shtoom is getting audio to work. There's a
+simple script 'shreadder.py' that uses the shtoom audio layer to
+test with. It reads from the audio device and writes audio back to
+it, spitting out some numbers about the power level of the audio.
+Use this to test your audio setup. Note that under ALSA on Linux,
+all audio devices start muted. Use alsamixer to unmute them. (Yes,
+this is stupid, no, I don't know why they made that choice).
+
 Notes on sound drivers under Linux
 ----------------------------------
 
