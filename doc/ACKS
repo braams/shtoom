@@ -5,14 +5,18 @@ remind me. <wink>
 
     Amir Bakhtiar - much patient debugging, hosting for the project, advice
     Jp Calderone - LoopingCall, debugging, bug fixes
+    Johan Dahlin - much Gtk/Gnome clue
     Phil Frost - bug fixes
     Travis Hartwell - improvements to the Gtk/Gnome UI
+    James Henstridge - Much Gtk/Gnome clue
     Andy Hird - wx UI, bug fixes
     Jamey Hicks - many contributions, see the CHANGES file
     Albert Huang - debugging of stereo devices
-    Lars Immisch - bug fixes
+    Lars Immisch - bug fixes, DirectSound
+    Bob Ippolito - CocoaAudio, CocoaShtoom
     Glyph Lefkowitz - debugging
-    Zooko O'Whielacronx - bug fixes
+    Zooko O'Whielacronx - bug fixes, code
+    Donovan Preston - CocoaAudio, CocoaShtoom, code
     Allen Short - debugging, advice, maintenance of the hosting
     Itamar Shtull-Trauring - original Gtk UI, many bugfixes
     Casper Wilstrup - ALSA interface, new playout code, bugfixes
