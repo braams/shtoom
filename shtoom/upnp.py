@@ -118,7 +118,7 @@ class UPnPProtocol(DatagramProtocol, object):
     def isAvailable(self):
         if hasattr(self, '_discDef'):
             return self._discDef
-        elif hasattr(self, 'controlURL'):
+        elif self.controlURL is not None:
             return defer.succeed(self)
         else:
             return defer.fail(NoUPnPFound())
@@ -135,8 +135,8 @@ class UPnPProtocol(DatagramProtocol, object):
 
     def failedDiscovery(self, err):
         if hasattr(self, '_discDef'):
-            if hasattr(self, 'controlURL'):
-                del self.controlURL
+            if self.controlURL is not None:
+                self.controlURL = None
             d = self._discDef
             del self._discDef
             d.callback(NoUPnPFound())
