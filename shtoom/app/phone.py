@@ -125,7 +125,6 @@ class Phone(BaseApplication):
         self._audio.reopen()
         log.msg("reopened audio")
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
-        self.ui.callConnected(callcookie)
         self._currentCall = callcookie
         cb(callcookie)
 
