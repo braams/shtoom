@@ -11,6 +11,9 @@ from shtoom.doug.events import *
 
 from shtoom.exceptions import CallRejected
 
+from twisted.python import log
+log.FileLogObserver.timeFormat = "%Y/%m/%d %H:%M:%S"
+
 class ConferencingApp(VoiceApp):
 
     announceFile = 'tmp/conf_welcome.raw'
