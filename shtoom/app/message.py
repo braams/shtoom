@@ -16,6 +16,7 @@ STATE_NONE = 0x0
 STATE_SENDING = 0x1
 STATE_RECEIVING = 0x2
 STATE_BOTH = 0x3
+STATE_DONE = 0x4
 
 class Message(BaseApplication):
     __implements__ = ( Application, )
@@ -53,11 +54,12 @@ class Message(BaseApplication):
         calltype = calldesc.get('calltype')
         d = defer.Deferred()
         cookie = self.getCookie()
+        self._calls[cookie] = call
+	print "ACCEPTED", self._calls.keys()
         self.openAudioDevice(cookie)
         d.addCallback(lambda x: self._createRTP(cookie,
                                                 calldesc['fromIP'],
                                                 calldesc['withSTUN']))
-        self._calls[cookie] = call
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
             d.callback('')
@@ -168,16 +170,19 @@ class Message(BaseApplication):
         return self._audioFormats[callcookie], data
 
     def finishedAudio(self, callcookie):
-        self.dropCall(callcookie)
+        if (self._audioStates[callcookie] != STATE_DONE):
+		self.dropCall(callcookie)
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)
 
     def dropCall(self, cookie):
-        call = self._calls[cookie]
+        self._audioStates[cookie] = STATE_DONE
+        call = self._calls.get(cookie)
+        if not call:
+            log.err("Couldn't find cookie %s, have %r, %r, %r"%(cookie, self._calls.keys(), self._audios.keys(), self._audioFormats.keys()))
+            return
         call.dropCall()
-        if self._calls.get(cookie):
-            del self._calls[cookie]
 
     def statusMessage(self, message):
         log.msg("STATUS: "+message)
