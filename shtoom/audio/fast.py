@@ -12,6 +12,7 @@ import fastaudio
 # sibling imports
 import interfaces
 
+from converters import PCM16toULAWConv
 
 class AudioFile:
 
@@ -40,4 +41,4 @@ def getAudioDevice(mode):
     # we ignore mode, result can always both read and write
     # XXX This isn't correct. It's audio format is 'int8', whatever
     # that might be. We need ULAW.
-    return AudioFile(fastaudio.stream(8000, 1, 'int8'))
+    return PCM16toULAWConv(AudioFile(fastaudio.stream(8000, 1, 'int16')))
