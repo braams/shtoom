@@ -96,6 +96,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
 
     def callButton_clicked(self, evt=None):
         sipURL = self._urlentry.get()
+        sipURL = sipURL.strip()
         if not sipURL.startswith('sip:'):
             log.msg("Invalid SIP url %s"%(sipURL))
             return
