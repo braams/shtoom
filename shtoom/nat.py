@@ -171,8 +171,12 @@ def cb_getMapper(res):
     log.msg("No UPnP, and STUN is useless", system="nat")
     return getNullMapper()
 
+_forcedMapper = None
+
 def getMapper():
-    # We prefer UPnP when available, as it's less pissing about (ha!)
+    # We prefer UPnP when available, as it's more robust
+    if _forcedMapper is not None:
+        return defer.succeed(_forcedMapper)
     from shtoom.upnp import getUPnP
     from shtoom.stun import getSTUN
     ud = getUPnP()
@@ -181,6 +185,10 @@ def getMapper():
     dl.addCallback(cb_getMapper).addErrback(log.err)
     return dl
 getMapper = DeferredCache(getMapper, inProgressOnly=False)
+
+def _forceMapper(mapper):
+    global _forcedMapper
+    _forcedMapper = mapper
 
 def isBogusAddress(addr):
     """ Returns true if the given address is bogus, i.e. 0.0.0.0 or
