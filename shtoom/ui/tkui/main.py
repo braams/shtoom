@@ -5,6 +5,8 @@ from twisted.python import log
 from shtoom.ui.base import ShtoomBaseUI
 from shtoom.exceptions import CallRejected
 
+from addressedit import AddressBook
+
 #class AuthDialog(Dialog):
 #
 #    def __init__(self, prompt, parent):
@@ -20,6 +22,22 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._connected = False
 
         self.main = Tk(className='shtoom')
+
+        # Setup the menu bar
+        self._menu = Menu(self.main)
+        self.main.config(menu=self._menu)
+        filemenu = Menu(self._menu)
+        filemenu.add_command(label="Quit", command = self.shutdown)
+        self._menu.add_cascade(label="File", menu=filemenu)
+        
+        editmenu = Menu(self._menu)
+        editmenu.add_command(label="Preferences", command = self.prefmenuitem_selected)
+        self._menu.add_cascade(label="Edit", menu=editmenu)
+
+        helpmenu = Menu(self._menu)
+        helpmenu.add_command(label="About")
+        self._menu.add_cascade(label="Help", menu=helpmenu)
+
         # also do hangup, shutdown reactor, &c
         self.main.protocol("WM_DELETE_WINDOW", self.shutdown)
         self._top1 = Frame(self.main)
@@ -30,9 +48,9 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._urlentry.grid(row=1, column=2, columnspan=4, sticky=W)
         self._urlentry.bind('<Return>', self.callButton_clicked)
         self._urlentry.focus_set()
-        self._prefButton = Button(self._top1, text="Prefs",
-                                  command=self.prefButton_clicked)
-        self._prefButton.grid(row=1, column=6, sticky=E)
+        self._addrButton = Button(self._top1, text="...", command=self.addrButton_clicked)
+        
+        self._addrButton.grid(row=1, column=6, sticky=E)
         self._img = PhotoImage(data=b64logo)
         self._logo = Label(self._top1, image=self._img)
         self._logo.grid(row=1, column=7, rowspan=2, sticky=NE)
@@ -200,7 +218,10 @@ class ShtoomMainWindow(ShtoomBaseUI):
         else:
             return defer.fail(CallRejected())
 
-    def prefButton_clicked(self):
+    def addrButton_clicked(self):
+        dlg = AddressBook(self.main,self)
+
+    def prefmenuitem_selected(self):
         from prefs import PreferencesDialog
         self._p = PreferencesDialog(self.main, self, self.app.getOptions())
 
