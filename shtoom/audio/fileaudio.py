@@ -1,9 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
 
-from converters import MediaLayer
-
-opened = None
-
 class AudioFromFiles:
     def __init__(self, infile, outfile):
         self.infile = infile
@@ -32,13 +28,15 @@ class AudioFromFiles:
         if self._outfp is not None:
             self._outfp.close()
 
-def getAudioDevice(mode):
+opened = None
+def Device():
     from __main__ import app
     global opened
     if opened is None:
-        opened = MediaLayer(AudioFromFiles(app.getPref('audio_infile'), 
-                                           app.getPref('audio_outfile')))
+        if app is not None:
+            opened = MediaLayer(AudioFromFiles(app.getPref('audio_infile'), 
+                                               app.getPref('audio_outfile')))
+        else:
+            raise ValueError("no __main__.app, can't use fileaudio")
     return opened
 
-def getFileAudio(infile, outfile):
-    return MediaLayer(AudioFromFiles(infile, outfile))
