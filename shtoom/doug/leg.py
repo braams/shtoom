@@ -75,4 +75,4 @@ class Leg(object):
                                                             self.cookie))
     
     def hangupCall(self):
-        self._voiceapp.hangupCall(self._cookie)
+        self._voiceapp.va_hangupCall(self._cookie)
