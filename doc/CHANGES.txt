@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - doug is alive. A first working version is checked in. Much much
+    more to do yet.
+  - DTMF sending is hooked up, and works in the tk, qt and gnome UIs
   - A major refactoring of SIP internals and the handling of local and
     remote addresses mean it should be a bit saner and easier to 
     understand.

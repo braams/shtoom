@@ -3,8 +3,8 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
 Before 0.3:
-    - Hook up RTP NTE (RFC2833)
-      Uses SDP of 'a=rtpmap:101 telephone-event/8000'
+    - audio(all) - if the call doesn't close cleanly, the audio isn't closed
+      properly.
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't pass in the RTP PT.
     - options: default some useful stuff
@@ -15,16 +15,22 @@ Before 0.3:
     - ui(tk): A better dialog for incoming calls. 
     - ui(tk): new dialogs that don't block, and have a timeout.
         - A better dialog to prompt for user, password information
-    - ui(tk): windows resize currently sucks.
-    - doug: finish plumbing, event synthesis
+    - ui(tk): window resize currently sucks.
+    - ui(qt): window resize currently sucks
     - doug: reimplement shmessage and shecho in doug
+    - doug: make the incoming call a leg, pass it in at call start
     - doug: create an EchoSource
-    - doug: create application frameworky bit 
+    - doug: test that media record works, write a sample app to use it
+    - doug: implement placeCall
+    - doug: implement leg conferencing (connection)
+    - doug: create application frameworky bit (look at quotient.deployment?)
+    - doug: implement timers
+    - ui(all): multi-tab view for multiple calls
+    - shtoom: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
     - Mac OS CoreAudio support for Mac audio - dp/bob
 
 Future:
-    - doug: write placeCall
     - doug: write MixSource (for conferencing)
     - sip, app: support outbound proxies (e.g. fwdnat.pulver.com:5082, see
       http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
@@ -35,7 +41,7 @@ Future:
     - options, app: Handle changed prefs, re-init whatever's needed
     - sip, app: extract realm from auth challenges and present it
     - sip: app.authCred should cache and re-use auth creds. 
-    - ui(qt): Timeout for incoming call dialog
+    - ui(qt, tk): Timeout for incoming call dialog
     - ui(qt, gnome, text): A prompt for user, password information
     - ui(all): A way to popup an information dialog
     - sip: Connect up and debug shutdown hooks for removing registration and 
@@ -44,7 +50,7 @@ Future:
     - rtp: Integrate existing RTCP code
     - sip: lots more error handling
     - sip, app, ui(all): a seperate debugging log for network level events
-    - shtam: maximum message duration limit, much more configurability
+    - shtam: rewrite in doug
     - UPnP: Hookup the discovery code in shtoom.upnp. 
     - UPnP: Finish forwardPort and cancelForwardPort. 
       Annoyingly, it doesn't seem like responses include some sort 
@@ -56,7 +62,7 @@ Future:
         - retransmits &c
         - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
           into shtoom.sdp, kill shtoom.multicast
-    - Codec switchability - DVI4?, Speex
+    - More codec support - DVI4?, Speex
     - EsounD support for Gnome, aRts for KDE?
       Note that aRts (and, I suspect, esd) only handle playing of audio,
       not the recording of audio.
