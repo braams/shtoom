@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - A conference server is in. There's a top-level script 'conference'
+    that will run it. More work to be done, including enter/leave sounds
+    and the like.
   - There's a new test harness for testing the phone's inbound and
     outbound call. See DEBUGGING.txt for more.
   - There's now some rough code in doug for detecting inband DTMF
