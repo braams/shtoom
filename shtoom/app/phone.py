@@ -24,9 +24,6 @@ class Phone(BaseApplication):
         self.ui = ui
 
     def boot(self, options=None):
-        # Flag for suppressing the loading of config file(s)
-        # Crap. Really should load command line, then load config 
-        # if needed.
         from shtoom.ui.select import findUserInterface
 
         from shtoom.opts import buildOptions
