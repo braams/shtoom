@@ -26,7 +26,11 @@ class Option(object):
         self._shortopt = shortopt
 
     def getValue(self):
-        return self._value
+        if (self._value is NoDefaultOption and 
+            self._default is not NoDefaultOption):
+            return self._default
+        else:
+            return self._value
 
     def getName(self):
         return self._name
@@ -233,7 +237,8 @@ class AllOptions(object):
         for g in self:
             thisblock = {}
             for o in g:
-                if o.getValue() is not o.getDefault() and not o.getDynamic():
+                if o.getValue() not in (NoDefaultOption, o.getDefault()) \
+                                                and not o.getDynamic():
                     thisblock[o.getName()] = o.getValue()
             if thisblock:
                 out.append('[%s]'%g.getName())
@@ -307,7 +312,8 @@ class AllOptions(object):
                 for o in g:
                     if o.getName() == option:
                         o.setValue(value)
-                        del self._cached_options[option]
+                        if option in self._cached_options:
+                            del self._cached_options[option]
                         o.setDynamic(dynamic)
 
     def getValue(self, option, dflt=NoDefaultOption):
