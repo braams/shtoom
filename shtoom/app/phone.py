@@ -186,11 +186,14 @@ class Phone(BaseApplication):
     def debugMessage(self, message):
         self.ui.debugMessage(message)
 
+    def getOptions(self):
+        return self._options
+
     def appSpecificOptions(self, opts):
         import os.path
 
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
-        app = OptionGroup('shtoom', 'Application Settings')
+        app = OptionGroup('shtoom', 'Shtoom')
         app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','tk','text']))
         app.addOption(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port']))
         app.addOption(StringOption('audio_infile','read audio from this file'))
@@ -204,4 +207,12 @@ class Phone(BaseApplication):
             saveFile = '.shtoomrc'
 
         opts.setOptsFile(saveFile)
+
+        self._options = opts
+
+    def updateOptions(self, dict):
+        m = self._options.updateOptions(dict)
+        if m: 
+            self._options.saveOptsFile()
+            self._options.setGlobalPreferences()
 

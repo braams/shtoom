@@ -8,6 +8,7 @@ NoDefaultOption = _NoDefaultOption()
 class Option(object):
     _value = NoDefaultOption
     _default = NoDefaultOption
+    optionType = 'Option'
 
     def __init__(self, name='', description='', default=NoDefaultOption):
         self._name = name
@@ -25,19 +26,24 @@ class Option(object):
         return self._default
 
     def setValue(self, value):
-        if not self.validate(value):
-            raise OptionValueInvalid, value
+        self.validate(value)
         value = self.massageValue(value)
-        self._setValue(value)
+        return self._setValue(value)
 
     def validate(self, value):
-        return True
+        return 
 
     def massageValue(self, value):
         return value
 
     def _setValue(self, value):
+        ovalue = self._value
         self._value = value
+        if ovalue != value:
+            # Modified. Signal that.
+            return True
+        else:
+            return False
 
     def getCmdLineOption(self):
         n = self._name
@@ -46,6 +52,14 @@ class Option(object):
 
     def getCmdLineType(self):
         return None
+
+    def getPrettyName(self):
+        n = self._name
+        n = n.replace('_', ' ')
+        return n
+
+    def getDescription(self):
+        return self._description
 
     def buildOptParse(self, parser):
         t = self.getCmdLineType()
@@ -58,21 +72,22 @@ class Option(object):
 class BooleanOption(Option):
 
     _default = False
+    optionType = 'Boolean'
 
-    def setValue(self, value):
+    def massageValue(self, value):
         if isinstance(value, str):
             if value.lower() in ( 'true', '1', 't', 'y', 'yes' ):
-                self._value = True
+                return True
             elif value.lower() in ( 'false', '0', 'f', 'n', 'no' ):
-                self._value = False
+                return False
             else:
                 raise OptionValueInvalid, value
         elif value in ( True, 1, ):
-            self._value = True
+            return True
         elif value in ( False, 0, ):
-            self._value = False
+            return False
         else:
-            raise OptionValueInvalid, value
+            raise OptionValueInvalid("expected a true/false value, got %r"%(value))
 
     def getCmdLineType(self):
         if self._default is False:
@@ -83,27 +98,38 @@ class BooleanOption(Option):
             raise ValueError, "Boolean must default to True or False, not %r"%self._default
 
 class StringOption(Option):
+    optionType = 'String'
 
     def massageValue(self, value):
         if not isinstance(value, basestring):
             # print a warning
             value = str(value)
+        if not value:
+            value = self._default
         return value
 
+class PasswordOption(StringOption):
+    optionType = 'Password'
 
 class ChoiceOption(Option):
+    optionType = 'Choice'
 
     def __init__(self, name='', description='', default=NoDefaultOption, choices=[]):
         self._choices = choices
         Option.__init__(self, name, description, default)
 
     def validate(self, value):
-        if value in self._choices:
-            return True
-        else:
-            return False
+        if not isinstance(value, basestring):
+            # print a warning
+            value = str(value)
+        if not value in self._choices:
+            raise OptionValueInvalid("%s is not one of %s"%(value, ', '.join(self._choices)))
+
+    def getChoices(self):
+        return self._choices[:]
 
 class NumberOption(Option):
+    optionType = 'Number'
 
     def massageValue(self, value):
         if not isinstance(value, int):
@@ -115,14 +141,13 @@ class NumberOption(Option):
         try:
             int(value)
         except ValueError:
-            return False
-        else:
-            return True
+            raise OptionValueInvalid("expected a number, got %r"%(value))
 
     def getCmdLineType(self):
         return { 'type':'int' }
 
 class OptionGroup(object):
+
     def __init__(self, name='', description=''):
         self._name = name
         self._description = description
@@ -130,6 +155,9 @@ class OptionGroup(object):
 
     def getName(self):
         return self._name
+
+    def getDescription(self):
+        return self._description
 
     def __iter__(self):
         for o in self._options:
@@ -159,13 +187,19 @@ class AllOptions(object):
 
     def handleOptParse(self, opts, args):
         import shtoom.prefs
-
-
         for g in self:
             for o in g:
                 val = getattr(opts, o.getName())
                 if val is not NoDefaultOption and val is not None:
                     o.setValue(val)
+
+    def setGlobalPreferences(self):
+        import shtoom.prefs
+        for group in self:
+            for opt in group:
+                key, val = opt.getName(), opt.getValue()
+                if val is not NoDefaultOption and val is not None:
+                    setattr(shtoom.prefs, key, val)
 
     def emitConfigParser(self):
         out = []
@@ -208,11 +242,19 @@ class AllOptions(object):
             fp.write(ini)
             fp.close()
 
-    def setOptions(self):
-        import shtoom.prefs
-        for group in self:
-            for opt in group:
-                key, val = opt.getName(), opt.getValue()
-                if val is not NoDefaultOption and val is not None:
-                    setattr(shtoom.prefs, key, val)
-
+    def updateOptions(self, dict):
+        modified = {}
+        for k, v in dict.items():
+            print "got %s: %s"%(k, v)
+            
+        for g in self:
+            for o in g:
+                n = o.getName()
+                if dict.get(n) is not None:
+                    print "setting %s to %s"%(n, dict[n])
+                    if o.setValue(dict[n]):
+                        print "modified", o.getName()
+                        modified[n] = dict[n]
+                    else:
+                        print "not modified", o.getName()
+        return modified

@@ -65,9 +65,17 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         self.audiosource = str(fn)
 
     def filePrint(self):
-        from preferencesdialog import PreferencesDialog
-        p =PreferencesDialog()
-        p.show()
+        from prefs import PreferencesDialog
+        self.prefs =PreferencesDialog(self, self.app.getOptions())
+        self.prefs.show()
+
+    def preferences_save(self, options):
+        print "save prefs", options
+        self.app.updateOptions(options)
+        self.prefs.hide()
+
+    def preferences_discard(self):
+        self.prefs.hide()
 
     def incomingCall(self, description, call, defresp):
         from shtoom.exceptions import CallRejected

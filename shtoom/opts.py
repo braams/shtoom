@@ -29,16 +29,16 @@ def buildOptions(app):
     identity.addOption(StringOption('username','use user name USERNAME'))
     opts.addGroup(identity)
     
-    debug = OptionGroup('debug', 'Debugging')
-    debug.addOption(BooleanOption('stdout','Log to stdout', False))
-    opts.addGroup(debug)
-
     register = OptionGroup('register', 'Registration')
     register.addOption(StringOption('register_uri','URI of registration server (e.g. sip:divmod.com:5060)'))
     register.addOption(StringOption('register_user','Username to register with'))
     register.addOption(StringOption('register_authuser','Username to auth with'))
     register.addOption(StringOption('register_authpasswd','Username to auth with'))
     opts.addGroup(register)
+
+    debug = OptionGroup('debug', 'Debugging')
+    debug.addOption(BooleanOption('stdout','Log to stdout', False))
+    opts.addGroup(debug)
 
     return opts
 
@@ -56,5 +56,5 @@ def parseOptions(app):
     Opts.loadOptsFile()
     Opts.handleOptParse(opts, args)
     Opts.saveOptsFile()
+    Opts.setGlobalPreferences()
 
-    Opts.setOptions()
