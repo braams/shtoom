@@ -153,6 +153,7 @@ class Phone(BaseApplication):
 
     def endCall(self, callcookie, reason=''):
         rtp = self._rtp.get(callcookie)
+        print "endCall clearing", callcookie
         self._currentCall = None
         if rtp:
             rtp = self._rtp[callcookie]
@@ -161,7 +162,6 @@ class Phone(BaseApplication):
             if self._calls.get(callcookie):
                 del self._calls[callcookie]
             self.closeAudioDevice()
-        print "ending"
         self.ui.callDisconnected(callcookie, reason)
 
     def openAudioDevice(self):
