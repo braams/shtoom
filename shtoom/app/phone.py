@@ -55,6 +55,7 @@ class Phone(BaseApplication):
     def acceptCall(self, call, **calldesc):
         print "acceptCall for %r"%calldesc
 
+        print "dialog is", calldesc.get('dialog')
         if self._audio is None:
             self.openAudioDevice()
         calltype = calldesc.get('calltype')
