@@ -37,9 +37,9 @@ setup(
                 'shtoom/ui/gnomeui', 'shtoom/ui/qtui',
                 'shtoom/ui/textui', 'shtoom/ui/tkui',
                 # 'shtoom/ui/mfcui', 'shtoom/ui/macui',
-                'shtoom/audio', ],
-    scripts = ['shtoom.py'
-               # 'shtam.py', 'shtoomcu.py'
+                'shtoom/audio', 'shtoom/app' ],
+    scripts = ['shtoom.py', 'shtam.py', 'shmessage.py',
+               # 'shtoomcu.py'
               ],
     classifiers = [
        'Development Status :: 3 - Alpha',
