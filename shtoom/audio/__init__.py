@@ -12,7 +12,7 @@ FMT_DVI4 = 4
 FMT_RAW = 5
 
 def findAudioDevice(audioPref, audioFiles=None):
-    attempts = ( tryOssAudio, tryFastAudio, )
+    attempts = ( tryOssAudio, tryFastAudio,  tryCoreAudio, )
     if audioFiles is not None:
         attempts = ( tryFileAudio, )
     elif audioPref:
@@ -20,6 +20,8 @@ def findAudioDevice(audioPref, audioFiles=None):
             attempts = (tryOssAudio,)
         elif audioPref in ( 'fast', 'port' ):
             attempts = (tryFastAudio,)
+        elif audioPref == 'core':
+            attempts = (tryCoreAudio,)
         else:
             raise ValueError("unknown audio %s"%(audioPref))
     for attempt in attempts:
@@ -42,6 +44,14 @@ def tryOssAudio():
     except ImportError:
         return None
     from ossaudio import getAudioDevice
+    return getAudioDevice
+
+def tryCoreAudio():
+    try:
+        import coreaudio
+    except ImportError:
+        return None
+    from osxaudio import getAudioDevice
     return getAudioDevice
 
 def tryFastAudio():

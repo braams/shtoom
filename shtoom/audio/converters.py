@@ -26,6 +26,9 @@ class NullConv:
     def isClosed(self):
         return self._d.isClosed()
 
+    def __repr__(self):
+        return '<%s wrapped around %r>'%(self.__class__.__name__, self._d)
+
 class PCM16toULAWConv(NullConv):
     """ Wraps an audio device that returns Linear PCM and turns it into
         G711 ulaw
