@@ -1,6 +1,11 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - RTCP decoding is done. RTCP encoding is mostly done. As yet, nothing
+    uses the decoded packets or generates RTCP packets, but it's nice to 
+    see what you're being sent.
+    Firewall issues mean that it's unlikely that two-way RTCP comms will
+    work.
   - doug is alive. A first working version is checked in. Much much
     more to do yet.
   - DTMF sending is hooked up, and works in the tk, qt and gnome UIs

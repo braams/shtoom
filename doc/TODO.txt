@@ -3,14 +3,17 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
 Before 0.3:
-    - stun: timeout the STUN call
+    - sip: Something's not quite right in ACK - IOS is tossing it
+    - stun: timeout the STUN call, print a nice error
     - sip/call: the state should become an object, encapsulating the current state.
       This makes it _much_ easier to handle retransmits and the like.
     - audio(all) - if the call doesn't close cleanly, the audio isn't closed
       properly.
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
-      dynamic payload types. Audio shouldn't pass in the RTP PT.
+      dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - options: default some useful stuff
+    - options: email_address must die, and now, in favour of 'AOR'. Use 
+      'username'@'registerserver'? What to use if no register server?
     - ui(gnome): a new Gtk UI - Nafai
         - Re-hookup the debugging log to the GUI for all GUIs - 
           maybe need a hide/show option
@@ -21,7 +24,8 @@ Before 0.3:
     - ui(tk): window resize currently sucks.
     - ui(qt): window resize currently sucks
     - ui(wx): move the UI and twisted to seperate threads. This will also be
-      needed for mfcui
+      needed for mfcui. Implement through a stub layer that passes events
+      between the event loops.
     - doug: reimplement shmessage and shecho in doug
     - doug: make the incoming call a leg, pass it in at call start
     - doug: API for connecting up a specific Source (e.g. EchoSource)
@@ -35,6 +39,7 @@ Before 0.3:
     - shtoom: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
     - Mac OS CoreAudio support for Mac audio - dp/bob
+    - rtcp: finish RTCP encoding -- RR, SR, PRIV
 
 Future:
     - doug: write MixSource (for conferencing)
@@ -53,7 +58,6 @@ Future:
     - sip: Connect up and debug shutdown hooks for removing registration and 
       closing any open calls (dropCall needs to return a deferred)
     - sip: Handle call failure gracefully - alert the user
-    - rtp: Integrate existing RTCP code
     - sip: lots more error handling
     - sip, app, ui(all): a seperate debugging log for network level events
     - shtam: rewrite in doug
@@ -82,6 +86,7 @@ Later:
     - More clients - shtoomcu (conferencing server)
     - Putting calls on hold, allowing multiple calls to go at once.
     - Alternately, ad-hoc conferencing of new inbound or outbound calls
+    - Generation of RTCP at appropriate times
     - Gnome addressbook integration. Gnome notification bar integration.
     - KDE addressbook integration. KDE panel integration.
     - Mac OS X addressbook integration.
@@ -95,4 +100,5 @@ Later:
     - Crypto for RTP (via codec? what's the standard?)
     - Video. Capture is the tricky bit in a cross-platform way. Mac OSX
       already has a videocapture module.
-
+    - dinsdale: doug's violent brother. VoiceXML.
+      http://www.voicexml.org/tutorials/intro1.html
