@@ -19,8 +19,10 @@ Definite before 0.3:
     - update website
     - create shtoom wiki
     - set svn:executable on the scripts
+    - set up a decent roundup instance, load all entries from TODO into it.
 
 Maybe before 0.3:
+    - G.72x codec
     - doug: placeCall to a broken address doesn't give generate a 
       correct event
     - let doug handle wav and au files natively.
@@ -34,6 +36,7 @@ Maybe before 0.3:
       state, and the state machine. This makes it _much_ easier to handle 
       retransmits and the like.
     - RTCP + NAT == RFC 3605
+    - A codec preference? Allow suppression of codecs, or preferred ordering?
 
 Not before 0.3:
     - ui(qt): finish multiple Call UI, including new tab for incoming call
