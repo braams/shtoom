@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Wed Jan 19 01:12:26 2005
+# Created: Wed Jan 19 01:53:50 2005
 #      by: The PyQt User Interface Compiler (pyuic) 3.13
 #
 # WARNING! All changes made in this file will be lost!
@@ -112,27 +112,27 @@ class ShtoomMainWindow(QMainWindow):
         self.registerButton.setText(self.__tr("Register"))
         self.statusLabel.setText(QString.null)
         self.fileDTMFAction.setText(self.__tr("DTMF"))
-        self.fileDTMFAction.setMenuText(self.__tr("&DTMF"))
+        self.fileDTMFAction.setMenuText(self.__tr("DTMF"))
         self.fileDTMFAction.setToolTip(self.__tr("Show DTMF Window"))
         self.fileDTMFAction.setAccel(self.__tr("Ctrl+D"))
         self.fileDebugAction.setText(self.__tr("Debugging"))
-        self.fileDebugAction.setMenuText(self.__tr("&Debugging..."))
+        self.fileDebugAction.setMenuText(self.__tr("Debugging..."))
         self.fileDebugAction.setAccel(self.__tr("Ctrl+O"))
         self.fileExitAction.setText(self.__tr("Exit"))
-        self.fileExitAction.setMenuText(self.__tr("E&xit"))
+        self.fileExitAction.setMenuText(self.__tr("Exit"))
         self.fileExitAction.setAccel(QString.null)
         self.helpAboutAction.setText(self.__tr("About"))
-        self.helpAboutAction.setMenuText(self.__tr("&About"))
+        self.helpAboutAction.setMenuText(self.__tr("About"))
         self.helpAboutAction.setAccel(QString.null)
         self.editPreferencesAction.setText(self.__tr("Preferences"))
         self.editPreferencesAction.setMenuText(self.__tr("Preferences"))
         self.editPreferencesAction.setAccel(self.__tr("Ctrl+P"))
         if self.MenuBar.findItem(1):
-            self.MenuBar.findItem(1).setText(self.__tr("&File"))
+            self.MenuBar.findItem(1).setText(self.__tr("File"))
         if self.MenuBar.findItem(2):
-            self.MenuBar.findItem(2).setText(self.__tr("&Edit"))
+            self.MenuBar.findItem(2).setText(self.__tr("Edit"))
         if self.MenuBar.findItem(3):
-            self.MenuBar.findItem(3).setText(self.__tr("&Help"))
+            self.MenuBar.findItem(3).setText(self.__tr("Help"))
 
 
     def fileDTMF(self):
