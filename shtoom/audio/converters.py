@@ -73,7 +73,7 @@ class GSMCodec(_Codec):
             return None
         return self.dec.decode(bytes)
 
-class SpeexCodec:
+class SpeexCodec(_Codec):
     "A codec for Speex"
     # XXX completely untested
 
