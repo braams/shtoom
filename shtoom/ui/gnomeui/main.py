@@ -31,6 +31,7 @@ class ShtoomWindow(ShtoomBaseUI):
 
         debug = self.xml.get_widget("debuglog")
         self.logger = DebugTextView(debug.get_buffer())
+        self.logger.set_visible(self.xml.get_widget('debugscroller'))
         #h = self.xml.get_widget('hbox2')
         #h.hide()
 
