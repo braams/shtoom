@@ -78,8 +78,7 @@ class VoiceApp(StateMachine):
         self.__inbandDTMFdetector = None
         super(VoiceApp, self).__init__(defer, **kwargs)
 
-    def va_selectDefaultFormat(self, format, rtpPT):
-        self.__rtpPT = rtpPT
+    def va_selectDefaultFormat(self, format):
         return self.__converter.selectDefaultFormat(format)
 
     def _legConnect(self, target):
@@ -137,13 +136,12 @@ class VoiceApp(StateMachine):
         # returns (format, RTP)
         data = self.__connected.read()
         if data:
-            data = self.__converter.convertOutbound(data)
-            fmt = self.__rtpPT
-            return fmt, data
-        return None, None # comfort noise
+            packet = self.__converter.convertOutbound(data)
+            return packet
+        return None # comfort noise
 
-    def va_receiveRTP(self, format, data):
-        data = self.__converter.convertInbound(format, data)
+    def va_receiveRTP(self, packet):
+        data = self.__converter.convertInbound(packet)
         if self.__inbandDTMFdetector is not None:
             self.__inbandDTMFdetector(data)
         self.__connected.write(data)

@@ -8,11 +8,9 @@ from twisted.internet import defer
 from twisted.python import log
 from twisted.protocols import sip as tpsip
 from shtoom.exceptions import CallFailed
-from shtoom.sdp import rtpPTDict
 import sys, traceback
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
-from shtoom.audio.fileaudio import getFileAudio
 
 nteMap = { 0: '0',  1: '1',  2: '2',  3: '3',  4: '4',  5: '5',  6: '6',
            7: '7',  8: '8',  9: '9', 10: '*', 11: '#', 12: 'A', 13: 'B',
@@ -136,20 +134,9 @@ class DougApplication(BaseApplication):
     def selectDefaultFormat(self, callcookie, sdp):
         md = sdp.getMediaDescription('audio')
         rtpmap = md.rtpmap
-        print "RTP", rtpmap
-        rtp =  self._rtp[callcookie]
         v = self._voiceapps.get(callcookie)
-        for entry,(desc, pt) in rtpmap.items():
-            if pt == PT_PCMU:
-                v.va_selectDefaultFormat(PT_PCMU)
-                break
-            elif pt == PT_PCMU:
-                v.va_selectDefaultFormat(PT_GSM)
-                break
-            else:
-                raise ValueError, "couldn't set to %r"%pt
-        else:
-            raise ValueError, "no working formats"
+        ptlist = [ x[1] for x in  rtpmap.values() ]
+        v.va_selectDefaultFormat(ptlist)
 
     def getSDP(self, callcookie, othersdp=None):
         rtp = self._rtp[callcookie]
