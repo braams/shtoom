@@ -1,30 +1,3 @@
-name: wxShtoom call setup confused
-to reproduce: run shtoom with wx GUI, call it from another shtoom
-details: wx Shtoom opens audio channel before user decides whether to accept or decline call; exceptions in log
-more details: I've spent way too many hours trying to fix this without success.  You are more than welcome to see my patches, but they don't fix it properly -- after my patches audio channel doesn't get opened prematurely, but there is an exception with cookie=None passed to the acceptedCall() callback, so the call never starts at all.
-
-name: reject first call, second call exception
-to reproduce: using test harness I reject a call then have another incoming call
-details: 
-          File "./shtoom/shtoom/test/harness.py", line 168, in main
-            p.start()
-          File "/home/zooko/playground/shtoom/darcsworld/shtoom/shtoom/app/phone.py", line 71, in start
-            reactor.run()
-          File "/usr/lib/python2.3/site-packages/twisted/internet/default.py", line 126, in run
-            self.mainLoop()
-          File "/usr/lib/python2.3/site-packages/twisted/internet/default.py", line 134, in mainLoop
-            self.runUntilCurrent()
-        --- <exception caught here> ---
-          File "/usr/lib/python2.3/site-packages/twisted/internet/base.py", line 423, in runUntilCurrent
-            call.func(*call.args, **call.kw)
-          File "./shtoom/shtoom/test/harness.py", line 88, in checkForCallFile
-            self.dropFakeInbound('foo')
-          File "./shtoom/shtoom/test/harness.py", line 122, in dropFakeInbound
-            self.c.terminateCall()
-          File "./shtoom/shtoom/test/harness.py", line 64, in terminateCall
-            self.sip.app.endCall(self.cookie)
-        exceptions.AttributeError: TestCall instance has no attribute 'cookie'
-
 
 When the audio device is busy, bad things happen:
 
@@ -96,6 +69,7 @@ openDev
             dev = ossaudiodev.open('rw')
         exceptions.IOError: [Errno 16] Device or resource busy: '/dev/dsp'
         
+
 name: dropcall in state 'SENT_RINGING' not handled
 to reproduce: Make a call. Wait until in state 180: Ringing. On the other end, reject the call.
 details:
