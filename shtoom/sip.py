@@ -81,7 +81,6 @@ class Address:
         return self._display
 
     def getURI(self, parsed=True): 
-        print self._uri, type(self._uri)
         if parsed:
             return self._uri
         else:
