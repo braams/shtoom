@@ -1,10 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
 
-# Feed it hostname, port, and an audio file (in 8bit ulaw - sox -t ul)
-# Or skip the audio file and it'll read from the microphone
-# See also rtprecv.py for something that listens to a port and dumps it to
-# the audio device
-#
 # $Id: rtp.py,v 1.40 2004/03/07 14:41:39 anthony Exp $
 #
 
