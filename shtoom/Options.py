@@ -246,9 +246,13 @@ class AllOptions(object):
         if self._filename is None:
             return None
         cfg = SafeConfigParser()
-        if not os.access(self._filename, os.R_OK|os.W_OK):
+        if hasattr(os, 'access'):
+            if not os.access(self._filename, os.R_OK|os.W_OK):
+                return
+        try:
+            cfg.readfp(open(self._filename, 'rU'))
+        except IOError:
             return
-        cfg.readfp(open(self._filename, 'rU'))
         for g in self:
             gname = g.getName()
             if cfg.has_section(gname):

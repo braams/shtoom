@@ -34,7 +34,7 @@ class TestCall:
 
     def acceptedFakeCall(self, cookie):
         print "accepted, got %r"%(cookie,)
-        from shtoom.multicast.SDP import rtpPTDict
+        from shtoom.sdp import rtpPTDict
         self.cookie = cookie
         d, self.d = self.d, None
         self.sip.app.selectFormat(self.cookie,
@@ -119,7 +119,7 @@ class TestSip:
         self.c.terminateCall()
 
 
-from shtoom.multicast.SDP import rtpPTDict
+from shtoom.sdp import rtpPTDict
 
 class EchoRTP:
     "A fake RTP layer that just repeats back any data sent to it"
