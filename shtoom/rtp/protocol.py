@@ -28,6 +28,7 @@ class RTPProtocol(DatagramProtocol):
     _stunAttempts = 0
 
     _cbDone = None
+    LC = None
 
     rtpParser = None
 
@@ -222,8 +223,9 @@ class RTPProtocol(DatagramProtocol):
 
     def stopSendingAndReceiving(self):
         self.Done = 1
-        self.LC.stop()
-        self.LC = None
+        if self.LC: 
+            self.LC.stop()
+            self.LC = None
         d = self.unmapRTP()
         d.addCallback(lambda x: self.rtpListener.stopListening())
         d.addCallback(lambda x: self.rtcpListener.stopListening())
