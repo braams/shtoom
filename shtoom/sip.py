@@ -1,3 +1,5 @@
+"""SIP client code."""
+
 from interfaces import ISipPhone
 
 from twisted.internet.protocol import DatagramProtocol
@@ -9,10 +11,14 @@ import random
 
 import prefs
 
+
 def genCallId():
     return 400000000 + random.randint(0,2000000)
 
+
 class Call(object):
+    """State machine for a phone call."""
+    
     def __init__(self, to):
         self.cseq = random.randint(1000,5000)
         self.rtp = None
@@ -148,9 +154,9 @@ class Call(object):
 
 
 class SipPhone(DatagramProtocol, object):
-    """ A SIP phone
-    """
-    __implements__ = ISipPhone
+    """A SIP phone."""
+    
+    __implements__ = ISipPhone,
 
     def __init__(self, ui, *args, **kwargs):
         self.ui = ui
@@ -177,9 +183,12 @@ class SipPhone(DatagramProtocol, object):
         del self._calls[callid] 
         
     def placeCall(self, url):
-        """ Place a call to 'url'
+        """Place a call.
 
-            Returns callid, a string
+        url should be a string, an address of the person we are calling,
+        e.g. 'sip:foo@example.com'.
+
+        Returns callid, a string
         """
         self.ui.debugMessage("placeCall starting")
         call = self._newCallObject(url)
@@ -191,9 +200,7 @@ class SipPhone(DatagramProtocol, object):
         return call.getCallID()
 
     def dropCall(self, callid):
-        """ Drop call identified by 'callid'
-        """
-
+        """Drop call identified by 'callid'."""
         call = self._getCallObject(callid)
         if not call:
             self.ui.debugMessage("no such call %s"%callid)
@@ -209,12 +216,12 @@ class SipPhone(DatagramProtocol, object):
 
 
     def startDTMF(self, digit):
-        """ Start sending DTMF digit 'digit'
+        """Start sending DTMF digit 'digit'
         """
         self.ui.debugMessage("startDTMF not implemented yet!")
 
     def stopDTMF(self):
-        """ Stop sending DTMF digit 'digit'
+        """Stop sending DTMF digit 'digit'
         """
         self.ui.debugMessage("stopDTMF not implemented yet!")
 
