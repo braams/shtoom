@@ -12,4 +12,4 @@ class AvailTest(unittest.TestCase):
 
     def test_codecAvail(self):
         from shtoom.avail.codecs import listCodecs
-        self.assert_(len(listCodecs()) > 0)
+        self.assert_(len(listCodecs()) > 0, listCodecs())
