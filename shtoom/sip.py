@@ -31,11 +31,13 @@ class Call(object):
     '''State machine for a phone call (inbound or outbound).'''
 
     cookie = _callID = uri = None
+    nonce_count = 1
     sip = None
     _invite = None
     def __init__(self, phone, deferred, uri=None, callid=None):
         self.sip = phone
         self.compDef = deferred
+        self.call_attempts = 0
         self._callID = None
         self.uri = None
         self.state = 'NEW'
@@ -272,12 +274,15 @@ class Call(object):
                                             withSTUN=self.getSTUNState(),
                                                 )
             self.cookie = cookie
-            d.addCallback(lambda x:self.sendInvite(toAddr, init)).addErrback(log.err)
+            d.addCallback(lambda x:self.sendInvite(toAddr, init=init)).addErrback(log.err)
         else:
             self.sendInvite(toAddr, init=0)
 
-    def sendInvite(self, toAddr, init=0):
+    def sendInvite(self, toAddr, auth=None, authhdr=None, init=0):
         print "sendInvite"
+        self._toAddr = toAddr
+        if toAddr is None:
+            toAddr = self._toAddr
         username = self.sip.app.getPref('username')
         email_address = self.sip.app.getPref('email_address')
         invite = tpsip.Request('INVITE', str(self.remote))
@@ -293,6 +298,9 @@ class Call(object):
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', 'sip: %s'%(email_address))
         invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        if auth is not None:
+            print auth, authhdr
+            invite.addHeader(authhdr, auth)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
                                 username, lhost, lport))
@@ -442,12 +450,23 @@ class Call(object):
             self.sendCancel()
             self.setState('SENT_CANCEL')
 
-    def calcAuth(self, authhdr):
+    def _getHashingImplementation(self, algorithm):
+        # lambdas assume digest modules are imported at the top level
+        import md5, sha
+        if algorithm.lower() == 'md5':
+            H = lambda x: md5.new(x).hexdigest()
+        elif algorithm.lower() == 'sha':
+            H = lambda x: sha.new(x).hexdigest()
+        # XXX MD5-sess
+        KD = lambda s, d, H=H: H("%s:%s" % (s, d))
+        return H, KD
+
+    def calcAuth(self, method, uri, authhdr):
         from urllib2 import parse_http_list
         import digestauth
-        method, auth = authhdr.split(' ', 1)
-        if method.lower() != 'digest':
-            raise ValueError, "Unknown auth method %s"%(method)
+        authmethod, auth = authhdr.split(' ', 1)
+        if authmethod.lower() != 'digest':
+            raise ValueError, "Unknown auth method %s"%(authmethod)
         chal = digestauth.parse_keqv_list(parse_http_list(auth))
         print chal
         qop = chal.get('qop')
@@ -468,7 +487,7 @@ class Call(object):
         if user is None or passwd is None:
             raise RuntimeError, "Auth required"
         A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
-        A2 = 'REGISTER:%s'%str(self.regServer)
+        A2 = '%s:%s'%(method, uri)
         self.nonce_count += 1
         ncvalue = '%08x'%(self.nonce_count)
         cnonce = digestauth.generate_nonce(bits=16,
@@ -478,8 +497,8 @@ class Call(object):
         noncebit =  "%s:%s:%s:%s:%s" % (nonce,ncvalue,cnonce,qop,H(A2))
         respdig = KD(H(A1), noncebit)
         base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
-               'response="%s"' % (method, user, realm, nonce, 
-                                  str(self.regServer), respdig)
+               'response="%s"' % (authmethod, user, realm, nonce, 
+                                  uri, respdig)
         if opaque:
             base = base + ', opaque="%s"' % opaque
         if algorithm != 'MD5':
@@ -508,7 +527,40 @@ class Call(object):
             else:
                 self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
-            # XXX Auth failure (401)
+            self.call_attempts += 1
+            if self.call_attempts > 5:
+                print "TOO MANY AUTH FAILURES"
+                self.setState('ABORTED')
+                return
+            if message.code == 401:
+                if state in ( 'SENT_INVITE', ):
+                    a = message.headers.get('www-authenticate')
+                    if a:
+                        auth = self.calcAuth(method='INVITE',
+                                             uri=str(self.remote),
+                                             authhdr=a[0])
+                        self.sendInvite(toAddr=None,
+                                        auth=auth, 
+                                        authhdr='authorization')
+                    else:
+                        # We got bounced and told to bugger off.
+                        print "401, no further possible actions"
+                else:
+                    print "Unknown state '%s' for a 401"%(state)
+            elif message.code == 407:
+                if state in ( 'SENT_INVITE', ):
+                    a = message.headers.get('proxy-authenticate')
+                    if a:
+                        auth = self.calcAuth(method='INVITE',
+                                             uri=str(self.remote),
+                                             authhdr=a[0])
+                        self.sendInvite(toAddr=None,
+                                        auth=auth, 
+                                        authhdr='proxy-authorization')
+                    else:
+                        # We got bounced and told to bugger off.
+                        print "407, no further possible actions"
+
             self.sip.app.debugMessage(message.toString())
             self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
@@ -594,7 +646,9 @@ class Registration(Call):
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
                 a = message.headers.get('www-authenticate')
                 if a:
-                    auth = self.calcAuth(a[0])
+                    auth = self.calcAuth(method='REGISTER',
+                                         uri=str(self.regServer),
+                                         authhdr=a[0])
                     self.sendRegistration(auth=auth, authhdr='authorization')
                 else:
                     # We got bounced and told to bugger off.
@@ -607,9 +661,10 @@ class Registration(Call):
                 print "REGISTRATION FAILED"
                 self.setState('FAILED')
                 return
-            # XXX todo handle proxy-auth
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
-                auth = self.calcAuth(message.headers['proxy-authenticate'][0])
+                auth = self.calcAuth(method='REGISTER',
+                                     uri=str(self.regServer),
+                                     authhdr=message.headers['proxy-authenticate'][0])
                 self.sendRegistration(auth=auth, authhdr='proxy-authorization')
             else:
                 print "Unknown state '%s' for a 401"%(state)
@@ -649,17 +704,6 @@ class Registration(Call):
 
 
 
-            
-    def _getHashingImplementation(self, algorithm):
-        # lambdas assume digest modules are imported at the top level
-        import md5, sha
-        if algorithm.lower() == 'md5':
-            H = lambda x: md5.new(x).hexdigest()
-        elif algorithm.lower() == 'sha':
-            H = lambda x: sha.new(x).hexdigest()
-        # XXX MD5-sess
-        KD = lambda s, d, H=H: H("%s:%s" % (s, d))
-        return H, KD
 
 
 class SipPhone(DatagramProtocol, object):
