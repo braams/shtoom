@@ -3,9 +3,10 @@ Shtoom is a pure-python VoIP client, using SIP.
 At the moment it's functionality is pretty limited, but is growing
 quickly:
 
-  - Qt or Tk user interface (others coming soon)
+  - Qt, Tk, Gnome or text user interface (others coming soon)
   - Can make simple calls and hang them up - tested with kphone, linphone and
-    cisco AS5x00 running 12.3(3a).
+    cisco AS5x00 running 12.3(3a), as well as with Asterisk and Quotient
+  - Can receive calls
   - Uses the G711 ULAW codec by default 
   - It should work on any system with ossaudiodev, or on most other
     systems (with the fastaudio/portaudio module installed, see the
@@ -33,14 +34,6 @@ Note that, for me, portaudio doesn't work - I'm using ALSA on linux.
 The audio produced by portaudio/fastaudio looks like 16 bit linear 
 PCM - need to convert (using audioop.lin2ulaw? Does this get distributed
 with Mac and Windows installers of Python?)
-
-Other dependencies
-------------------
-
-If available, it will make use of the itimer module.
-http://polykoira.megabaud.fi/~torppa/py-itimer/
-It's currently unclear if this is still necessary, after Jp Calderone's
-new LoopingCall construct seems to be getting just as good a result.
 
 
 Shtoom is (C) Copyright 2003 Anthony Baxter and is licensed under
