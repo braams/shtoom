@@ -139,7 +139,7 @@ class RTPProtocol(DatagramProtocol):
     def unmapRTP(self):
         from shtoom.nat import getMapper
         if self.needSTUN is False:
-            return
+            return defer.succeed(None)
         # Currently removing an already-fired trigger doesn't hurt,
         # but this seems likely to change.
         try:
