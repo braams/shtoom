@@ -165,7 +165,7 @@ def cb_getMapper(res):
     if upnp:
         log.msg("using UPnP mapper", system="nat")
         return getUMapper()
-    if not stun.blocked:
+    if stun.useful:
         log.msg("using STUN mapper", system="nat")
         return getSTUNMapper()
     log.msg("No UPnP, and STUN is useless", system="nat")
