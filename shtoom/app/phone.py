@@ -168,7 +168,11 @@ class Phone(BaseApplication):
 
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call!
-        return self._audioFormat, self._audio.read()
+	bytes = self._audio.read()
+	if bytes is None:
+            return None
+        else:
+	    return self._audioFormat, bytes
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)

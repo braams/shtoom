@@ -98,7 +98,7 @@ class MultipleConv(NullConv):
                 indata = self._d.read()
                 if len(indata) != 320:
                     print "GSM: got short read len = %s"%len(indata)
-                    return ''
+                    return None
                 else:
                     outdata = self._gsmencoder.encode(indata)
                     return outdata

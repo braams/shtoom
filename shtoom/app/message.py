@@ -192,10 +192,12 @@ class Message(BaseApplication):
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call!
         if not (self._audioStates[callcookie] & STATE_SENDING):
-            return self._audioFormats[callcookie], '' # XXX comfort noise??
+            return None # XXX comfort noise??
         data = self._audios[callcookie].read()
         if not data:
             self.finishedAudio(callcookie)
+        if data is None:
+            return None
         return self._audioFormats[callcookie], data
 
     def finishedAudio(self, callcookie):
