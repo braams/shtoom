@@ -41,7 +41,6 @@ class PreferencesDialog(wxDialog):
                         style |= wxTE_PASSWORD
                     edit = wxTextCtrl(nbpage, -1, style=style)
                     if val is not NoDefaultOption:
-                        print "val is ", val
                         edit.SetValue(str(val))
                     get = lambda e=edit: str(e.GetValue())
                 elif option.optionType == 'Boolean':
