@@ -10,8 +10,15 @@ class Recorder:
         self._dev = dev
         self._play = play
         self._outfp = outfp
+	import sys
+        if '-q' in sys.argv:
+            self.quiet = True
+        else:
+            self.quiet = False
 
     def analyse(self, samples):
+        if self.quiet: 
+            return
         sampcount = len(samples)
         abssamp = [ abs(x) for x in samples ]
         mean = sum(abssamp)/sampcount
@@ -22,7 +29,6 @@ class Recorder:
         var = reduce(lambda x,y: x+(y*y), deviations)/float(sampcount - 1)
         std = math.sqrt(var)
         print "Mean % 5d  RMS % 5d STD % 3d"%(mean,rms,std)
-
         return 
 
     def sample(self, *args):
@@ -50,10 +56,10 @@ def main(Recorder = Recorder):
     dev.close()
     dev.reopen()
     dev.selectFormat(FMT_RAW)
-    if len(sys.argv) > 1:
-        outfp = open(sys.argv[1], 'wb')
-    else:
-        outfp = None
+    #if len(sys.argv) > 1:
+    #    outfp = open(sys.argv[1], 'wb')
+    #else:
+    outfp = None
     rec = Recorder(dev, play=True, outfp=outfp)
 
     LC = LoopingCall(rec.sample)
