@@ -493,24 +493,24 @@ class Call(object):
                 self.sip.app.debugMessage('Got duplicate OK to our ACK')
                 self.sendAck(message)
             elif state == 'SENT_BYE':
-                self.sip.app.endCall(call.cookie)
+                self.sip.app.endCall(self.cookie)
                 self.sip._delCallObject(self.getCallID())
-                self.sip.app.debugMessage("Hung up on call %s"%callid)
+                self.sip.app.debugMessage("Hung up on call %s"%self.getCallID())
                 self.sip.app.statusMessage("idle")
             else:
                 self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
             # XXX Auth failure (401)
             self.sip.app.debugMessage(message.toString())
-            self.sip.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
         elif message.code - (message.code%100) == 500:
             self.sip.app.debugMessage(message.toString())
-            self.sip.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
         elif message.code - (message.code%100) == 600:
             self.sip.app.debugMessage(message.toString())
-            self.sip.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
         else:
             self.sip.app.debugMessage(message.toString())
