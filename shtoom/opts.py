@@ -34,6 +34,10 @@ def buildOptions(app):
     identity.addOption(StringOption('username','use this user name'))
     opts.addGroup(identity)
 
+    proxy = OptionGroup('proxy', 'SIP Proxy Settings')
+    proxy.addOption(StringOption('outbound_proxy_url','use this proxy for outbound SIP messages'))
+    opts.addGroup(proxy)
+
     register = OptionGroup('register', 'Registration')
     register.addOption(StringOption('register_uri',
                         'URI of registration server (e.g. sip:divmod.com:5060)'))
