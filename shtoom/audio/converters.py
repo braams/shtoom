@@ -125,3 +125,66 @@ class MultipleConv(NullConv):
                 print "No GSM available"
         else:
             raise ValueError, "Unknown format %s"%(format)
+
+class DougConverter:
+    " yeah, yeah, refactor me "
+    def __init__(self, *args, **kwargs):
+        self._fmt = FMT_PCMU
+        if gsm is not None:
+            self._gsmencoder = gsm.gsm(gsm.LITTLE)
+            self._gsmdecoder = gsm.gsm(gsm.LITTLE)
+        else:
+            self._gsmencoder = self._gsmdecoder = None
+
+    def listFormats(self):
+        if gsm is not None:
+            return [FMT_GSM, FMT_PCMU, FMT_RAW,]
+        else:
+            return [FMT_PCMU, FMT_RAW,]
+
+    def selectFormat(self, fmt):
+        if not fmt in self.listFormats():
+            raise ValueError, "unknown format"
+        else:
+            self._fmt = fmt
+
+    def getFormat(self):
+        return self._fmt
+
+    def convertOutbound(self, indata):
+        format = self._fmt
+        if format == FMT_PCMU:
+            return audioop.lin2ulaw(indata, 2)
+        elif format == FMT_RAW:
+            return indata
+        elif format == FMT_GSM:
+            if self._gsmencoder:
+                if len(indata) != 320:
+                    print "GSM: got short read len = %s"%len(indata)
+                    return None
+                else:
+                    outdata = self._gsmencoder.encode(indata)
+                    return outdata
+            else:
+                print "No GSM available"
+        else:
+            raise ValueError, "Unknown format %s"%(format)
+
+    def convertInbound(self, format, indata):
+        if format == FMT_PCMU:
+            return audioop.ulaw2lin(indata, 2)
+        elif format == FMT_RAW:
+            return indata
+        elif format == FMT_GSM:
+            if self._gsmdecoder:
+                if len(indata) != 33:
+                    print "GSM: warning: %d bytes of data, not 33"%len(indata)
+                    return ''
+                else:
+                    decdata = self._gsmdecoder.decode(indata)
+                    return decdata
+            else:
+                print "No GSM available"
+        else:
+            raise ValueError, "Unknown format %s"%(format)
+
