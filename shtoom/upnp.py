@@ -173,6 +173,22 @@ class UPnPProtocol(DatagramProtocol, object):
         reactor.callLater(4, self.stupidrandomdelaytoworkaroundbug, body, loc)
 
     def stupidrandomdelaytoworkaroundbug(self, body, loc):
+        """
+        On Mac (but not on Linux), Twisted seems to drop the ball on 
+        connecTCP().  The TCP connection gets set up (as confirmed by packet 
+        trace showing three-part handshake), but the factory object never gets 
+        buildProtocol().  Eventually (depending on the timeout value), the 
+        factory object gets its connectionFailed() method called instead.
+    
+        Mysteriously, this *always* happens on the urlopen in this method, and 
+        neve on any of the other TCP connections that are made during Shtoom 
+        setup.  Also mysteriously, inserting this stupidrandomdelay of 4 seconds
+        fixes it.
+
+        Surely I should write a minimal test case and then either give the test 
+        case to the Twisted folks or fix it myself, but some other things are 
+        way too urgent today.
+        """
         log.msg("after stupidrandomrelaytoworkaroundbug, got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
             log.msg("already found UPnP, discarding duplicate response", 
