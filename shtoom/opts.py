@@ -8,7 +8,7 @@ def parseOptions():
     parser.add_option('-i', '--localip', dest='localip', 
                       help='use LOCALIP for local ip address', 
                       metavar='LOCALIP')
-    parser.add_option('-p', '--port', dest='port', 
+    parser.add_option('-p', '--port', dest='localport', type='int',
                       help='use PORT for SIP listener', 
                       metavar='PORT')
     parser.add_option('-u', '--ui', dest='ui',
@@ -26,7 +26,7 @@ def parseOptions():
     (opts, args) = parser.parse_args()
     if opts.localip:
         shtoom.prefs.localip = opts.localip
-    if opts.port:
+    if opts.localport:
         shtoom.prefs.localport = opts.localport
     if opts.email:
         shtoom.prefs.email_address = opts.email
