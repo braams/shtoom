@@ -5,12 +5,21 @@ from distutils.core import setup
 
 from shtoom import Version
 
-# patch distutils if it can't cope with the "classifiers" keyword.
-# this just makes it ignore it.
+class DependencyFailed(Exception): pass
+class VersionCheckFailed(DependencyFailed): pass
+
 import sys
-if sys.version < '2.2.3':
-    from distutils.dist import DistributionMetadata
-    DistributionMetadata.classifiers = None
+if sys.version < '2.3':
+    raise VersionCheckFailed, "Python 2.3 is required"
+
+try:
+    import twisted
+except ImportError:
+    raise DependencyFailed, "You need Twisted - http://www.twistedmatrix.com/"
+
+from twisted.copyright import version as tcversion
+if tcversion < '1.1.1':
+    raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
 
 setup(
     name = "shtoom",
