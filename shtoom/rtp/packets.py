@@ -12,12 +12,12 @@ class RTPPacket:
     class Header:
         def __init__(self, ssrc, pt, ct, seq, ts, marker=0, xhdrtype=None, xhdrdata=''):
             """
-            If xhdrtype is not None then it is required to be an int >= 0 and < 2**16 and xhdrdata is required to be a string.
+            If xhdrtype is not None then it is required to be an int >= 0 and < 2**16 and xhdrdata is required to be a string whose length is a multiple of 4.
             """
             assert isinstance(ts, (int, long,)), "ts: %s :: %s" % (ts, type(ts),)
             assert isinstance(ssrc, (int, long,))
             assert xhdrtype is None or isinstance(xhdrtype, int) and xhdrtype >= 0 and xhdrtype < 2**16
-            assert xhdrtype is None or isinstance(xhdrdata, str)
+            assert xhdrtype is None or (isinstance(xhdrdata, str) and len(xhdrdata) % 4 == 0), "xhdrtype: %s, len(xhdrdata): %s, xhdrdata: %s" % (xhdrtype, len(xhdrdata), `xhdrdata`,) # Sorry, RFC standard specifies that len is in 4-byte words, and I'm not going to do the padding and unpadding for you.
 
             self.ssrc, self.pt, self.ct, self.seq, self.ts, self.marker, self.xhdrtype, self.xhdrdata = ssrc, pt, ct, seq, ts, marker, xhdrtype, xhdrdata
 
@@ -26,7 +26,7 @@ class RTPPacket:
             assert isinstance(self.pt, int) and self.pt >= 0 and self.pt < 2**8, "pt is required to be a simple byte, suitable for stuffing into an RTP packet and sending. pt: %s" % self.pt
             if self.xhdrtype is not None:
                 firstbyte = 0x90
-                xhdrnetbytes = struct.pack('!HH', self.xhdrtype, len(self.xhdrdata)) + self.xhdrdata
+                xhdrnetbytes = struct.pack('!HH', self.xhdrtype, len(self.xhdrdata)/4) + self.xhdrdata
             else:
                 firstbyte = 0x80
                 xhdrnetbytes = ''
