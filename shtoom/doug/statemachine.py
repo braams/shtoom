@@ -30,9 +30,6 @@ class StateMachine(object):
         if d:
             d.errback(exc)
 
-    def __start__(self):
-        raise NotImplementedError
-
     def _triggerEvent(self, event):
         if self._doneDeferred is None:
             # We're already done
