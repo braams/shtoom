@@ -54,14 +54,14 @@ class TCPAudioDevice(baseaudio.AudioDevice):
             self.connection.open()
 
     def read(self):
-        print 'read'
+#        print 'read'
         if self.connection is None:
             log.msg("read: no connection yet")
             return ''
         return self.connection.read(320)
 
     def write(self, data):
-        print 'write', repr(data)
+#        print 'write'
         if self.connection is None:
             log.msg("write: no connection yet")
         else:
