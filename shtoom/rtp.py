@@ -5,13 +5,15 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.21 2003/12/17 13:48:15 anthonybaxter Exp $
+# $Id: rtp.py,v 1.22 2003/12/20 10:16:19 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
 from time import sleep, time
 
 from select import select as Select
+
+from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 
 try:
     import itimer
@@ -73,7 +75,8 @@ class RTPProtocol(DatagramProtocol):
     collectStats = 0
     statsIn = []
     statsOut = []
-    expected_PT = rtpPTDict[('PCMU', 8000, 1)]
+    PT_pcmu = rtpPTDict[('PCMU', 8000, 1)]
+    PT_gsm = rtpPTDict[('GSM', 8000, 1)]
 
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
@@ -178,20 +181,38 @@ class RTPProtocol(DatagramProtocol):
 
     def getSDP(self):
         from multicast.SDP import SimpleSDP
+        self.getAudio()
         s = SimpleSDP()
         s.setPacketSize(160)
 	addr = self.getVisibleAddress()
         print "addr = ", addr
         s.setServerIP(addr[0])
         s.setLocalPort(addr[1])
-        s.addRtpMap('PCMU', 8000) # G711 ulaw
-        #s.addRtpMap('GSM', 8000)
-        #s.addRtpMap('DVI4', 8000)
-        #s.addRtpMap('DVI4', 16000)
-        #s.addRtpMap('speex', 8000, payload=110)
-        #s.addRtpMap('speex', 16000, payload=111)
+        fmts = self.infp.listFormats()
+        if FMT_PCMU in fmts:
+            s.addRtpMap('PCMU', 8000) # G711 ulaw
+        if FMT_GSM in fmts:
+            s.addRtpMap('GSM', 8000) # GSM 06.10
+        if FMT_SPEEX in fmts:
+            s.addRtpMap('speex', 8000, payload=110)
+            #s.addRtpMap('speex', 16000, payload=111)
+        if FMT_DVI4 in fmts:
+            s.addRtpMap('DVI4', 8000)
+            #s.addRtpMap('DVI4', 16000)
         return s
 
+    def setFormat(self, rtpmap):
+        for entry in rtpmap:        
+            if entry == self.PT_pcmu:
+                self.infp.setFormat(FMT_PCMU)
+                break
+            elif entry == self.PT_gsm:
+                self.infp.setFormat(FMT_GSM)
+                break
+            else:
+                print "couldn't set to %r"%entry
+        else:
+            raise ValueError, "no working formats"
 
     def whenDone(self, cbDone):
         self._cbDone = cbDone
@@ -221,14 +242,14 @@ class RTPProtocol(DatagramProtocol):
             self.infp = fp
         self.sendFirstData()
 
+    def getAudio(self):
+        self.infp = getAudioDevice('rw')
+        self.infp.close()
+        self.outfp = self.infp
+
     def startSendingAndReceiving(self, dest, fp=None):
         self.dest = dest
-        if fp is None:
-            self.infp = getAudioDevice('rw')
-        else:
-            self.infp = fp
-        self.outfp = self.infp
-        #self.infp = open('tmp/quake.ul','rb')
+        self.infp.reopen()
         self.prevInTime = self.prevOutTime = time()
         self.sendFirstData()
 
@@ -241,7 +262,7 @@ class RTPProtocol(DatagramProtocol):
         self.Done = 0
         self.sent = 0
         try:
-            self.sample = self.infp.read(160)
+            self.sample = self.infp.read()
         except IOError: # stupid sound devices
             self.sample = None
             pass
@@ -266,16 +287,20 @@ class RTPProtocol(DatagramProtocol):
             hdr = struct.unpack('!BBHII', datagram[:12])
             # Don't care about the marker bit.
             PT = hdr[1]&127 
-            if PT == self.expected_PT:
+            fmt = None
+            if PT == 0:
+                fmt = FMT_PCMU
+            elif PT == 3:
+                fmt = FMT_GSM
+            if fmt:
                 try:
-                    self.outfp.write(datagram[12:])
+                    self.outfp.write(datagram[12:], fmt)
                 except IOError:
                     pass
             elif PT in (13, 19):
                 # comfort noise
                 pass
             else:
-                print rtpPTDict.keys()
                 print "unexpected RTP PT %s len %d, HDR: %02x %02x"%(rtpPTDict.get(PT,str(PT)), len(datagram),hdr[0],hdr[1])
 
     def genSSRC(self):
@@ -351,7 +376,7 @@ class RTPProtocol(DatagramProtocol):
         self.ts += 160
         try:
             if self.infp:
-                self.sample = self.infp.read(160)
+                self.sample = self.infp.read()
         except IOError:
             pass
         

@@ -5,6 +5,11 @@ and result will implement shtoom.audio.interfaces.IAudioReader
 and/or IAudioWriter, as appropriate.
 """
 
+FMT_PCMU = 1
+FMT_GSM = 2
+FMT_SPEEX = 3
+FMT_DVI4 = 4
+
 def findAudioDevice():
     from shtoom import prefs
     attempts = ( tryOssAudio, tryFastAudio, )

@@ -16,11 +16,11 @@ class AudioDevice(object):
         self.openDev()
         self._closed = False
 
-    def read(self, bytes):
-        return self.dev.read(bytes)
+    def read(self, format=None):
+        return self.dev.read(format)
 
-    def write(self, data):
-        return self.dev.write(data)
+    def write(self, data, format):
+        return self.dev.write(data, format)
 
     def isClosed(self):
         return self._closed
@@ -28,3 +28,8 @@ class AudioDevice(object):
     def openDev(self):
         raise NotImplementedError
 
+    def listFormats(self):
+        return self.dev.listFormats()
+
+    def setFormat(self, format):
+        return self.dev.setFormat(format)

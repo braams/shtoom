@@ -179,13 +179,12 @@ class Call(object):
         if message.method == 'INVITE' and code == 200:
             sdp = self.rtp.getSDP()
             othersdp = SDP(message.body)
-            print sdp.rtpmap
             sdp.intersect(othersdp)
-            print sdp.rtpmap
             if not sdp.rtpmap:
                 self.sendResponse(message, 406)
                 self.setState('ABORTED')
                 return
+            self.rtp.setFormat(sdp.rtpmap)
         resp = tpsip.Response(code) 
         # XXXXXXX add a branch= ...
         via = tpsip.parseViaHeader(message.headers['via'][0])

@@ -1,6 +1,6 @@
 # Copyright (C) 2003 Anthony Baxter
 
-from converters import NullConv, PCM16toULAWConv
+from converters import MultipleConv
 import baseaudio, ossaudiodev
 
 opened = None
@@ -15,15 +15,12 @@ class OSSAudioDevice(baseaudio.AudioDevice):
         formats = listFormats(dev)
         if not self._wrapped:
             self.dev = dev
-        if 0 and 'AFMT_MU_LAW' in formats:
-            dev.setfmt(ossaudiodev.AFMT_MU_LAW)
-            self.dev = NullConv(dev)
-        elif 'AFMT_S16_LE' in formats:
+        if 'AFMT_S16_LE' in formats:
             dev.setfmt(ossaudiodev.AFMT_S16_LE)
-            self.dev = PCM16toULAWConv(dev)
+            self.dev = MultipleConv(dev)
         else:
             raise ValueError, \
-                "Couldn't find ULAW or signed 16b PCM, got %s"%(
+                "Couldn't find signed 16 bit PCM, got %s"%(
                 ", ".join(formats))
 
 def getAudioDevice(mode, wrapped=1):
