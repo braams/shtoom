@@ -1,6 +1,7 @@
 import struct, socket, time
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
+from twisted.python import log
 from interfaces import StunPolicy
 
 
@@ -31,7 +32,7 @@ class StunProtocol(DatagramProtocol, object):
     def __init__(self, servers=DefaultServers, *args, **kwargs):
         self._pending = {}
         self.servers = servers
-        super(StunProtocol, self, *args, **kwargs)
+        super(StunProtocol, self).__init__(*args, **kwargs)
 
     def datagramReceived(self, dgram, address):
         mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
@@ -39,9 +40,10 @@ class StunProtocol(DatagramProtocol, object):
         if self._pending.has_key(tid):
             del self._pending[tid]
         else:
-            print "error, unknown transaction ID!"
+            log.error("error, unknown transaction ID!")
             return
         if mt == 0x0101:
+            log.msg("got STUN response from %r"%(dgram))
             # response
             remainder = dgram[20:]
             while remainder:
@@ -53,13 +55,13 @@ class StunProtocol(DatagramProtocol, object):
                               'CHANGED-ADDRESS',
                               'SOURCE-ADDRESS'):
                     dummy,family,port,addr = struct.unpack('!cch4s', val)
-                    print "%s: %s %s"%(avtype,socket.inet_ntoa(addr),port)
+                    log.msg("STUN response %s: %s %s"%(avtype,socket.inet_ntoa(addr),port))
                     if avtype == 'MAPPED-ADDRESS':
                         self.gotMappedAddress(socket.inet_ntoa(addr),port)
                 else:
-                    print "unhandled AV %s, val %r"%(avtype, repr(val))
+                    log.msg("STUN: unhandled AV %s, val %r"%(avtype, repr(val)))
         elif mt == 0x0111:
-            print "error!"
+            log.error("STUN got an error response")
         
     def gotMappedAddress(self, addr, port):
         pass
@@ -87,23 +89,30 @@ class StunHook(StunProtocol):
     """Hook a StunHook into a UDP protocol object, and it will discover 
        STUN settings for it
     """
-    def __init__(self, protobj, cbMapped, *args, **kwargs):
-        self._cbMapped = cbMapped
-        self._protocol = protobj
-        super(StunProtocol, self, *args, **kwargs)
+    def __init__(self, prot, *args, **kwargs):
+        self._protocol = prot
+        super(StunHook, self).__init__(*args, **kwargs)
 
     def installStun(self):
         self._protocol._mp_datagramReceived = self._protocol.datagramReceived
         self._protocol.datagramReceived = self.datagramReceived
+        self.transport = self._protocol.transport
+
+    def discoverStun(self):
+        self.installStun()
+        self.sendRequest(self.servers[0])
+        self.deferred = defer.Deferred()
+        return self.deferred
 
     def gotMappedAddress(self, address, port):
-        self._cbMapped(address, port)
+        self.deferred.callback((address, port))
         if not self._pending.keys():
             self.uninstallStun()
         # Check for timeouts here
 
     def uninstallStun(self):
         self._protocol.datagramReceived = self._protocol._mp_datagramReceived
+        del self.transport 
 
 # XXX should move this class somewhere else.
 class NetAddress:
@@ -131,7 +140,6 @@ class NetAddress:
         net = [ int(x) for x in ipstr.split('.') ] + [ 0,0,0 ]
         net = net[:4]
         return  ((((((0L+net[0])<<8) + net[1])<<8) + net[2])<<8) +net[3]
-        
 
     def inet_ntoa(self, ip):
         import socket, struct
@@ -182,11 +190,27 @@ class RFC1918Stun:
     def checkStun(self, localip, remoteip):
         localIsRFC1918 = False
         remoteIsRFC1918 = False
+        # Yay. getPeer() returns a name, not an IP
+        # Since (according to radix), I should use "a non-existant 
+        # high-level interface to twisted.names.client", and I have
+        # no intentions of writing said interface just for this, 
+        # punting to socket.gethostbyname() now.
+        # This is a filthy filthy hack. But I'm screwed either way.
+        if remoteip[0] not in '0123456789':
+            import socket
+            ai = socket.getaddrinfo(remoteip, None)
+            remoteips = [x[4][1] for x in ai]
+        else:
+            remoteips = [remoteip,]
         for net in self.addresses:
             if localip in net:
                 localIsRFC1918 = True
-            if remoteip in net:
-                remoteIsRFC1918 = True
+            # See comments above. Worse, if the host has an address that's
+            # RFC1918, and externally advertised (which is wrong, and broken), 
+            # the STUN check will be incorrect. Bah.
+            for remoteip in remoteips:
+                if remoteip in net:
+                    remoteIsRFC1918 = True
         if localIsRFC1918 and not remoteIsRFC1918:
             return True
         else:
@@ -196,6 +220,9 @@ _defaultPolicy = RFC1918Stun()
 def installPolicy(policy):
     global _defaultPolicy
     _defaultPolicy = policy
+
+def getPolicy():
+    return _defaultPolicy 
 
 
 if __name__ == "__main__":

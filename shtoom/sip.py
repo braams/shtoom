@@ -1,6 +1,6 @@
 # Copyright (C) 2003 Anthony Baxter
 
-"""SIP client code."""
+'''SIP client code.'''
 
 from interfaces import ISipPhone
 
@@ -26,35 +26,35 @@ def genStandardDate(t=None):
     return time.strftime("%a, %d %b %Y %H:%M:%S GMT", t)
 
 class Call(object):
-    """State machine for a phone call."""
+    '''State machine for a phone call.'''
     
-    def __init__(self, phone, deferred, to=None, callid=None):
+    def __init__(self, phone, deferred, uri=None, callid=None):
         self.phone = phone
         self.compDef = deferred
         self._callID = None
-        if to:
-            self.uri = to
-        else:
-            self.uri = None
+        self.uri = None
+        self.state = 'NEW'
+        self.rtp = None
+
+        if uri:
+            self.uri = uri
         if callid:
             self.setCallID(callid)
-        self.state = 'NEW'
         self.cseq = random.randint(1000,5000)
-        self.rtp = None
-        if to:
-            self.setupLocalSIP(to)
 
     def setupLocalSIP(self, uri=None, via=None):
+        ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL (for outbound calls) or 
+            a t.p.sip.Via object (for inbound calls).
+
+            returns a Deferred.
+        '''
         if not via:
-            self.remote = tpsip.parseURL(uri)
+            self.remote = uri
         else:
             self.remote = via
-        ip = self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
-        if not ip:
-            self.abortCall()
-        else:
-            if not self._callID:
-                self.setCallID()
+        self.setupDeferred = defer.Deferred()
+        self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
+        return self.setupDeferred
 
     def abortCall(self):
         # Bail out.
@@ -79,29 +79,50 @@ class Call(object):
         return self._tag
 
     def setLocalIP(self, dest):
-        """ Try and determine the local IP address to use. We do a connect_ex
+        ''' Try and determine the local IP address to use. We do a connect_ex
             in the (faint?) hope that on a machine with multiple interfaces,
             we'll get the right one
-        """
+        '''
         # XXX Allow over-riding
+        from shtoom.stun import StunHook, getPolicy
         host, port = dest
         import prefs
         if prefs.localip is not None:
-            self._localIP = prefs.localip
+            self._localAddress = (prefs.localip, prefs.localport or 5060)
         else:
-            # it is a hack! and won't work for NAT. oh well.
+            # it is a hack! 
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
-                self._localIP = protocol.transport.getHost()[1]
+                locAddress = protocol.transport.getHost()[1:3]
+                remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
-                log.msg("using local IP address %s"%(self._localIP))
+                log.msg("discovered local address %r, remote %r"%(locAddress, remAddress))
             else:
                 self.compDef.errback(ValueError("couldn't connect to %s"%(
                                             host)))
                 self.abortCall()
                 return None
-        return self._localIP
+        if getPolicy().checkStun(locAddress[0], remAddress[0]):
+            log.msg("stun policy says yes, use STUN")
+            SH = StunHook(self.phone)
+            deferred = SH.discoverStun()
+            deferred.addCallback(self.setStunnedLocalIP)
+        else:
+            self._localIP, self._localPort = locAddress
+            if not self._callID:
+                self.setCallID()
+            self.setupDeferred.callback((host,port))
+
+    def setStunnedLocalIP(self, (host, port)):
+        log.msg("according to STUN, local address is %s:%s"%(host, port))
+        self._localIP = host
+        self._localPort = port
+        # XXX Check for multiple firings!
+        if not self._callID:
+            self.setCallID()
+            self.phone.updateCallObject(self, self.getCallID())
+        self.setupDeferred.callback((host,port))
 
     def getCSeq(self, incr=0):
         if incr:
@@ -112,7 +133,7 @@ class Call(object):
         return self._callID
 
     def getLocalSIPAddress(self):
-        return (self._localIP, prefs.localport or 5060)
+        return (self._localIP, self._localPort or 5060)
 
     def getRemoteSIPAddress(self):
         return (self.remote.host, (self.remote.port or 5060))
@@ -139,7 +160,8 @@ class Call(object):
         self.compDef.errback('rejected')
 
     def sendResponse(self, message, code):
-        ''' Send a '200 OK' to a message 
+        ''' Send a response to a message. message is the response body, code is the response code (e.g.
+            200 for OK)
         '''
         from shtoom.multicast.SDP import SDP
         if message.method == 'INVITE' and code == 200:
@@ -211,21 +233,28 @@ class Call(object):
         '''
         # XXX if self.getState() is not 'NEW', send a 488
         self._invite = invite
-        via = tpsip.parseViaHeader(self._invite.headers['via'][0])
         contact = invite.headers['contact']
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        self.to = invite.headers['from'][0]
-        self.setupLocalSIP(via=via)
+        self.uri = invite.headers['from'][0]
         self.sendResponse(invite, 180)
         if self.getState() != 'ABORTED':
             self.setState('SENT_RINGING')
 
+    def startOutboundCall(self, toAddr):
+        d = self.setupLocalSIP(uri=tpsip.parseURL(toAddr))
+        d.addCallback(lambda x:self.sendInvite(toAddr, init=1))
 
-    def sendInvite(self, toAddr):
+    def startInboundCall(self, invite):
+        via = tpsip.parseViaHeader(invite.headers['via'][0])
+        d = self.setupLocalSIP(via=via)
+        d.addCallback(lambda x:self.recvInvite(invite))
+
+    def sendInvite(self, toAddr, init=0):
         from multicast.SDP import SimpleSDP, SDP
-        #self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
+        if init:
+            self.setupRTP()
         invite = tpsip.Request('INVITE', str(self.remote))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
@@ -271,13 +300,13 @@ class Call(object):
         to = okmessage.headers['to']
         if type(to) is list:
             to = to[0]
-        self.to = self.extractURI(to)
+        self.uri = self.extractURI(to)
         uri = tpsip.parseURL(self.uri)
 
         # XXX Check the OK response's SDP, find what codec we 
         # should be using
 
-        ack = tpsip.Request('ACK', self.to)
+        ack = tpsip.Request('ACK', self.uri)
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
@@ -303,7 +332,7 @@ class Call(object):
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
-        bye.addHeader('to', self.to)
+        bye.addHeader('to', self.uri)
         bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             prefs.username, prefs.email_address, self.getTag()))
         bye.addHeader('call-id', self.getCallID())
@@ -351,7 +380,7 @@ class Call(object):
 
 
 class SipPhone(DatagramProtocol, object):
-    """A SIP phone."""
+    '''A SIP phone.'''
     
     __implements__ = ISipPhone,
 
@@ -361,11 +390,16 @@ class SipPhone(DatagramProtocol, object):
         super(SipPhone, self, *args, **kwargs)
 
     def _newCallObject(self, deferred, to=None, callid=None):
-        call = Call(self, deferred, to=to, callid=callid)
+        call = Call(self, deferred, uri=to, callid=callid)
+        print "XXX", call, call.getState(), call.getCallID()
         if call.getState() != 'ABORTED':
-            print "XXX", call.getCallID()
-            self._calls[call.getCallID()] = call
+            if call.getCallID():
+                self._calls[call.getCallID()] = call
             return call
+
+    def updateCallObject(self, call, callid):
+        "Used when Call setup returns a deferred result (e.g. STUN)"
+        self._calls[call.getCallID()] = call
 
     def _getCallObject(self, callid):
         if type(callid) is list:
@@ -382,26 +416,25 @@ class SipPhone(DatagramProtocol, object):
         del self._calls[callid] 
         
     def placeCall(self, uri):
-        """Place a call.
+        '''Place a call.
 
         uri should be a string, an address of the person we are calling,
         e.g. 'sip:foo@example.com'.
 
         Returns a Call object and a Deferred
-        """
+        '''
         self.ui.debugMessage("placeCall starting")
         _d = defer.Deferred()
         call = self._newCallObject(_d, to=uri)
         if call is None:
             return '', _d
-        call.setupRTP()
-        invite = call.sendInvite(uri)
+        invite = call.startOutboundCall(uri)
         # Set up a callLater in case we don't get a response, for a retransmit
         # Set up a timeout for the call completion
         return call, _d
 
     def dropCall(self, call):
-        """Drop call """
+        '''Drop call '''
         # XXX return a deferred.
         state = call.getState()
         print "looking for state %s"%state
@@ -414,13 +447,13 @@ class SipPhone(DatagramProtocol, object):
             call.setState('SENT_CANCEL')
 
     def startDTMF(self, digit):
-        """Start sending DTMF digit 'digit'
-        """
+        '''Start sending DTMF digit 'digit'
+        '''
         self.ui.debugMessage("startDTMF not implemented yet!")
 
     def stopDTMF(self):
-        """Stop sending DTMF digit 'digit'
-        """
+        '''Stop sending DTMF digit 'digit'
+        '''
         self.ui.debugMessage("stopDTMF not implemented yet!")
 
     def datagramReceived(self, datagram, addr):
@@ -465,7 +498,7 @@ class SipPhone(DatagramProtocol, object):
                 defaccept = defer.Deferred()
                 defsetup = defer.Deferred()
                 call = self._newCallObject(defsetup, callid=callid)
-                call.recvInvite(message)
+                call.startInboundCall(message)
                 defaccept.addCallbacks(call.acceptCall, call.rejectCall)
                 if message.headers.has_key('subject'):
                     subj = message.headers['subject'][0]
