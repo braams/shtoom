@@ -26,14 +26,30 @@ The bits that would need touching are shtoom.app.{doug,phone},
 shtoom.rtp, shtoom.audio.converters. shtoo.app.base can be ignored,
 as it's going away soon.
 
+IRC notes:
+
+ the RTP layer is then in charge of all things RTP-ish.
+ So the changes are: 
+ 1. getSDP() and selectFormat() pass the SDP down to the rtp object
+ for it's subsequent use
+ 2. AudioLayer returns format as strings, singletons, or whatever,
+ this is punted across to RTP object
+ 3. RTP takes these format objects and Does The Right Thing.
+ Note that passing an _object_ to/from RTP, with 'payload' and
+ 'payloadType' attributes (or whatever) also means that it's easier to attach
+ RTP timestamps to the data.
+ Which is something that will be needed RSN for the AudioLayer's
+ playout buffering.
+
 Call
 ----
 
 The Big One. The Call object is a creeping disaster. More of it's 
-logic needs to be moved out into the Dialog class, and the state 
-machine logic needs to be made explicit. This is needed to sanely 
-handle retransmits and the like. The state should also become an
-object, and it can be then responsible for handling the retransmits.
+logic (the handling of SIP messages) needs to be moved out into the 
+Dialog class, and the state machine logic needs to be made explicit. 
+This is needed to sanely handle retransmits and the like. The state 
+should also become an object, and it can be then responsible for 
+handling the retransmits.
 
 Credentials
 -----------
