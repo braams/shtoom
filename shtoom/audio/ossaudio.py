@@ -22,7 +22,7 @@ def getAudioDevice(mode, wrapped=1):
         dev.setfmt(ossaudiodev.AFMT_MU_LAW)
         return NullConv(dev)
     elif 'AFMT_S16_LE' in formats:
-        dev.setfmt(ossaudiodev.AFMT_MU_LAW)
+        dev.setfmt(ossaudiodev.AFMT_S16_LE)
         return PCM16toULAWConv(dev)
     else:
         raise ValueError, \
