@@ -26,6 +26,9 @@ http://www.portaudio.com/
 and the fastaudio wrapper for PortAudio, available from 
 http://www.freenet.org.nz/python/pyPortAudio/
 
+Windows installer for Python2.3 fastaudio is available from the 
+shtoom.sf.net website.
+
 Note that, for me, portaudio doesn't work - I'm using ALSA on linux.
 The audio produced by portaudio/fastaudio looks like 16 bit linear 
 PCM - need to convert (using audioop.lin2ulaw? Does this get distributed
