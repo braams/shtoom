@@ -9,6 +9,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
     _pending = None
     _debug = True
     from os import linesep as delimiter
+    sipURL = None
 
     def debugMessage(self, msg):
         if self._debug:
