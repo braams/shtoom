@@ -1,0 +1,27 @@
+
+Shtoom Component Architecture
+-----------------------------
+
+
+Currently, there's a whole pile of objects that can be connected together
+to make a working application. The code to do this is embedded all through
+the application, and is, to be honest, a pain in the clacker. It gets worse
+as more and more objects become available.
+
+If instead we have a component architecture, we can do things much more sanely.
+So, for instance, we'd register an IPreferencesStorage object that knows how to
+save and restore preferences. We can then slot in a replacement and have it
+Just Work. 
+
+Rough API:
+
+    from shtoom.components import getThingy, getAllThingys, registerThingy
+
+    registerThingy(IPreferenceSaver, ShtoomRCSaver('.shtoomrc'))
+
+    ...
+
+    saver = getThingy(IPreferencesSaver)
+    saver.updatePreferences(...)
+
+
