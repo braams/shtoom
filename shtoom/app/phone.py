@@ -2,14 +2,20 @@
 
 # The Phone app.
 
+import threading, os.path
+
+from twisted.internet import defer, protocol
+from twisted.python import log, threadable
+
 from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
-from twisted.internet import defer, protocol
-from twisted.python import log
 from shtoom.exceptions import CallFailed
-
-from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
-from shtoom.audio import getAudioDevice
+from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4, getAudioDevice
+from shtoom.rtp import RTPProtocol
+from shtoom.sdp import SDP, MediaDescription
+from shtoom.ui.select import findUserInterface
+from shtoom.opts import buildOptions
+from shtoom.Options import OptionGroup, StringOption, ChoiceOption
 
 class Phone(BaseApplication):
     __implements__ = ( Application, )
@@ -33,9 +39,6 @@ class Phone(BaseApplication):
         return self.ui.threadedUI
 
     def boot(self, options=None):
-        from shtoom.ui.select import findUserInterface
-
-        from shtoom.opts import buildOptions
         if options is None:
             options = buildOptions(self)
         self.initOptions(options)
@@ -51,21 +54,19 @@ class Phone(BaseApplication):
 
     def start(self):
         "Start the application."
-        from twisted.internet import reactor
-
         self.register()
         if not self._startReactor:
             log.msg("Not starting reactor - test mode?")
             return
         if self.needsThreadedUI():
-            from twisted.python import threadable
-            import threading
             threadable.init(1)
+            from twisted.internet import reactor
             t = threading.Thread(target=reactor.run, kwargs={
                                 'installSignalHandlers':0} )
             t.start()
             self.ui.startUI()
         else:
+            from twisted.internet import reactor
             reactor.run()
 
     def getAuth(self, method, realm):
@@ -73,7 +74,6 @@ class Phone(BaseApplication):
                                                                    realm))
 
     def acceptCall(self, call):
-        from twisted.internet import reactor
         log.msg("dialog is %r"%(call.dialog))
         if self._audio is None:
             self.openAudioDevice()
@@ -101,7 +101,6 @@ class Phone(BaseApplication):
 
     def _createRTP(self, cookie, localIP, withSTUN):
         if self._rtpProtocolClass is None:
-            from shtoom.rtp import RTPProtocol
             rtp = RTPProtocol(self, cookie)
         else:
             rtp = self._rtpProtocolClass(self, cookie)
@@ -128,7 +127,6 @@ class Phone(BaseApplication):
             raise ValueError, "no working formats"
 
     def getSDP(self, callcookie):
-        from shtoom.sdp import SDP, MediaDescription
         rtp =  self._rtp[callcookie]
         s = SDP()
         addr = rtp.getVisibleAddress()
@@ -250,9 +248,6 @@ class Phone(BaseApplication):
         self.ui.debugMessage(message)
 
     def appSpecificOptions(self, opts):
-        import os.path
-
-        from shtoom.Options import OptionGroup, StringOption, ChoiceOption
         app = OptionGroup('shtoom', 'Shtoom')
         app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','wx', 'tk','text']))
         app.addOption(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port']))
