@@ -21,19 +21,22 @@ class IPhoneUIFeedback(Interface):
             UI hint: some sort of text label
         """
 
-    def callConnected(self, url):
-        """ The call to 'url' has been connected
+    def callConnected(self, call):
+        """ The call 'call' has been connected
         """
 
-    def callDisconnected(self, url):
-        """ The call to 'url' has been disconnected
+    def callDisconnected(self, call):
+        """ The call 'call' has been disconnected
         """
 
-    def incomingCall(self, description, deferred):
+    def incomingCall(self, description, call, defresp, defsetup):
         """ An incoming call (described by text 'description') has arrived.
 
-            The UI should call deferred.callback() to accept the call, 
-            and deferred.errback() to reject it.
+            The UI should call defresp.callback() to accept the call, 
+            and defresp.errback() to reject it.
+
+            defsetup is a deferred which will be triggered when call setup
+            is complete or failed, as in the response to placeCall()
             
             XXX should pass reject reasons back.
         """
