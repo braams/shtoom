@@ -22,6 +22,8 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
     MENU_REGISTER = 104
     MENU_ERRORLOG = 105
 
+    COMBO_ADDRESS = 150
+
     BUTT_ADVANCED = 201
     BUTT_CALL = 202
     BUTT_LOOKUP = 203
@@ -45,6 +47,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         EVT_MENU(self, self.MENU_REGISTER, self.DoRegister)
         EVT_BUTTON(self, self.BUTT_ADVANCED, self.OnAdvanced)
         EVT_BUTTON(self, self.BUTT_CALL, self.OnCall)
+        EVT_TEXT_ENTER(self, self.COMBO_ADDRESS, self.PlaceCall)
         
         # Advanced mode - whether to display the dtmf buttons or not
         self.advanced_mode = True
