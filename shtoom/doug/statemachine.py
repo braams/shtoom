@@ -21,21 +21,28 @@ class StateMachine(object):
 
     def returnResult(self, result):
         d, self._doneDeferred = self._doneDeferred, None
-        d.callback(result)
+        if d:
+            d.callback(result)
 
     def returnError(self, exc):
         d, self._doneDeferred = self._doneDeferred, None
-        d.errback(exc)
+        if d:
+            d.errback(exc)
 
     def __start__(self):
         raise NotImplementedError
 
     def _triggerEvent(self, event):
+        if self._doneDeferred is None:
+            # We're already done
+            return
         if not isinstance(event, Event):
             self.returnError(NonEventError("%r is not an Event!"%(event)))
         for e, a in self.getCurrentEvents():
             if isinstance(event, e):
                 action = a
+                if action == IGNORE_EVENT:
+                    return
                 self._doState(action, event)
                 break
         else:
