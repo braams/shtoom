@@ -9,6 +9,8 @@
 from shtoom.doug import VoiceApp
 from shtoom.doug.events import *
 
+from shtoom.exceptions import CallRejected
+
 class RecordingApp(VoiceApp):
 
     announceFile = 'tmp/doug_welcome.raw'
@@ -21,13 +23,26 @@ class RecordingApp(VoiceApp):
         super(RecordingApp, self).__init__(*args, **kwargs)
 
     def __start__(self):
-        return ( (CallStartedEvent, self.playAnnounce),
+        print "voiceapp.__start__"
+        return ( (CallStartedEvent, self.answerCall),
                  #(Event,            self.unknownEvent), 
                )
 
     def unknownEvent(self, event):
         print "Got unhandled event %s"%event
         return ()
+
+    def answerCall(self, event):
+        leg = event.getLeg()
+
+        username = leg._dialog.getCallee().getURI().username
+        print "voiceapp.__start__ to user %s"%(username)
+        if username == 'nope':
+            leg.rejectCall(CallRejected('go away'))
+        else:
+            leg.answerCall(self)
+        return ( (CallAnsweredEvent, self.playAnnounce),
+               )
 
     def playAnnounce(self, event):
         # Begin the call
@@ -56,6 +71,10 @@ class RecordingApp(VoiceApp):
         s = sounds.get(event.digits)
         if s:
             self.mediaPlay('tmp/%s.raw'%s)
+            if event.digits == '2':
+                from shtoom.doug.source import EchoSource
+                self.mediaPlay([EchoSource(delay=1.0)])
+                return ( (DTMFReceivedEvent, self.echoDone), )
         elif event.digits == '#':
             self.mediaPlay('tmp/goodbye.raw')
             return ( (CallEndedEvent, self.allDone),
@@ -70,6 +89,9 @@ class RecordingApp(VoiceApp):
                  (Event,     IGNORE_EVENT), 
                )
     
+    def echoDone(self, event):
+        self.mediaStop()
+
     def allDone(self, event):
         self.returnResult('other end closed')
 
