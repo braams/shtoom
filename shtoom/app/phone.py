@@ -117,6 +117,7 @@ class Phone(BaseApplication):
         if FMT_DVI4 in fmts:
             s.addRtpMap('DVI4', 8000)
             #s.addRtpMap('DVI4', 16000)
+        s.addRtpMap('telephone-event', 8000, payload=101)
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):

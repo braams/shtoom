@@ -19,6 +19,7 @@ from twisted.protocols import sip as tpsip
 from rtp import RTPProtocol
 
 import shtoom
+from shtoom import __version__ as ShtoomVersion
 
 _CACHED_LOCAL_IP = None
 
@@ -244,8 +245,9 @@ class Call(object):
         resp.addHeader('to', toaddr)
         resp.addHeader('date', genStandardDate())
         resp.addHeader('call-id', message.headers['call-id'][0])
-        resp.addHeader('server', 'Shtoom/%s'%shtoom.__version__)
+        resp.addHeader('server', 'Shtoom/%s'%ShtoomVersion)
         resp.addHeader('cseq', message.headers['cseq'][0])
+        resp.addHeader('allow-events', 'telephone-event')
         if message.method == 'INVITE' and code == 200:
             lhost, lport = self.getLocalSIPAddress()
             username = self.sip.app.getPref('username')
@@ -357,7 +359,8 @@ class Call(object):
         invite.addHeader('from', self.getLocalAOR(full=True))
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', self.getLocalAOR())
-        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
+        invite.addHeader('allow-events', 'telephone-event')
+        invite.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         if auth is not None:
             print auth, authhdr
             invite.addHeader(authhdr, auth)
@@ -375,7 +378,7 @@ class Call(object):
         self._remoteAOR = self._callee
         try:
             self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
-            print "Invite sent", invite.toString()
+            #print "Invite sent", invite.toString()
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             self.compDef.errback(e(v))
@@ -412,7 +415,8 @@ class Call(object):
         ack.addHeader('to', str(self._callee))
         ack.addHeader('from', str(self._caller))
         ack.addHeader('call-id', self.getCallID())
-        ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
+        ack.addHeader('allow-events', 'telephone-event')
+        ack.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         ack.addHeader('content-length', 0)
         ack.creationFinished()
         if hasattr(self, 'compDef'):
@@ -440,7 +444,7 @@ class Call(object):
         bye.addHeader('to', str(self._callee))
         bye.addHeader('from', str(self._caller))
         bye.addHeader('call-id', self.getCallID())
-        bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
+        bye.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         bye = bye.toString()
@@ -462,7 +466,7 @@ class Call(object):
         cancel.addHeader('to', str(self._callee))
         cancel.addHeader('from', str(self._caller))
         cancel.addHeader('call-id', self.getCallID())
-        cancel.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
+        cancel.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         cancel.addHeader('content-length', 0)
         cancel.creationFinished()
         cancel = cancel.toString()
@@ -714,7 +718,7 @@ class Registration(Call):
         invite.addHeader('call-id', self.getCallID())
         if auth is not None:
             invite.addHeader(authhdr, auth)
-        invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.__version__)
+        invite.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '<sip:%s@%s:%s>'%(
                                 username, lhost, lport))
@@ -945,7 +949,7 @@ class SipPhone(DatagramProtocol, object):
         if message.response and not call:
             self.app.debugMessage("SIP response refers to unknown call %s %r"%(
                                                     callid, self._calls.keys()))
-            print "unknown", message.toString()
+            #print "unknown", message.toString()
             return
         if message.request and message.method.lower() != 'invite' and not call:
             self.app.debugMessage("SIP request refers to unknown call %s %r"%(
