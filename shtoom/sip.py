@@ -61,7 +61,7 @@ class Call(object):
         if not via:
             self.remote = uri
         else:
-            self.remote = via
+            self.remote = tpsip.URL(host=via.host, port=via.port)
         self.setupDeferred = defer.Deferred()
         self.setLocalIP(dest=(self.remote.host, self.remote.port or 5060))
         return self.setupDeferred
@@ -387,7 +387,6 @@ class Call(object):
         email_address = self.sip.app.getPref('email_address')
         uri = self.remote
         dest = uri.host, (uri.port or 5060)
-        print "BYE options", dest, str(self.remote)
         bye = tpsip.Request('BYE', str(self.remote))
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
