@@ -6,7 +6,7 @@ You can run this with command-line:
   $ trial shtoom.test.test_sdp
 """
 
-from twisted.trial import unittest
+from twisted.trial import unittest, util
 from twisted.internet import reactor, defer
 from twisted.python.failure import Failure
 
@@ -65,16 +65,57 @@ class StateMachineTwo(StateMachineOne):
         self.raiseEvent(DummyEvent2_2())
         return ()
 
+class StateMachineThree(StateMachineTwo):
+    def second(self, evt):
+        from twisted.internet import reactor, defer
+        self._out.append(2)
+        d = defer.Deferred()
+        reactor.callLater(0.1, self._triggerEvent, DummyEvent2_2())
+        reactor.callLater(0.2, d.callback,
+                                 ((DummyEvent2_1, self.thirdish),
+                                  (Event, self.third),)
+                         )
+        return d
+
+class Saver:
+    res = None
+    err = None
+    def save(self, res):
+        self.res = res
+    def error(self, err):
+        self.err = err
+
 class StateMachineTest(unittest.TestCase):
     def testStateMachine(self):
         d = defer.Deferred()
         A = StateMachineOne(d)
         reactor.callLater(0, A._start)
-        self.assertEquals(unittest.deferredResult(d), [0,1,2,3])
+        s = Saver()
+        d.addCallback(s.save)
+        util.wait(d)
+        self.assertEquals(s.res, [0,1,2,3])
+
+    def testStateMachineWithDeferreds(self):
+        d = defer.Deferred()
+        A = StateMachineThree(d)
+        reactor.callLater(0, A._start)
+        class Saver:
+            res = None
+            def save(self, res):
+                self.res = res
+        s = Saver()
+        d.addCallback(s.save)
+        util.wait(d)
+        self.assertEquals(s.res, [0,1,2,3])
+
 
     def testBrokenStateMachine(self):
         d = defer.Deferred()
         A = StateMachineTwo(d)
         reactor.callLater(0, A._start)
-        out = unittest.deferredError(d)
-        out.trap(EventNotSpecifiedError)
+        s = Saver()
+        d.addCallback(s.save)
+        d.addErrback(s.error)
+        util.wait(d)
+        self.assertEquals(s.res, None)
+        self.assert_(isinstance(s.err.value, EventNotSpecifiedError))

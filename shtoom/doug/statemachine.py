@@ -12,13 +12,14 @@
 from shtoom.doug.events import *
 from shtoom.doug.exceptions import *
 
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from twisted.python import log
 
 class StateMachine(object):
 
     def __init__(self, defer, **kwargs):
         self._doneDeferred = defer
+        self._deferredState = None
 
     def returnResult(self, result):
         d, self._doneDeferred = self._doneDeferred, None
@@ -36,6 +37,12 @@ class StateMachine(object):
             return
         if not isinstance(event, Event):
             self.returnError(NonEventError("%r is not an Event!"%(event)))
+        if self._deferredState is not None:
+            # We're waiting for a deferred to trigger to set up the state -
+            # queue the event.
+            self._deferredState.addCallback(lambda x, e=event: 
+                                            self._triggerEvent(e))
+            return
         for e, a in self.getCurrentEvents():
             if isinstance(event, e):
                 action = a
@@ -74,10 +81,17 @@ class StateMachine(object):
             try:
                 i = iter(em)
             except TypeError:
+                if isinstance(em, defer.Deferred):
+                    self._deferredState = em
+                    return em.addCallback(self._cb_doState)
                 print "%s did not return a new state mapping, but %r"%(
                                                 self._curState, em)
                 em = self._curEvents
         self._curEvents = em
+
+    def _cb_doState(self, result):
+        self._deferredState = None
+        self._curEvents = result
 
     def _start(self, callstart=1):
         self._doState(self.__start__)
