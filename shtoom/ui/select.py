@@ -35,8 +35,11 @@ def tryTkInterface(application):
     except ImportError:
         Tkinter = None
     if Tkinter is not None:
-        from shtoom.ui.tkshtoom import main
-        return main(application)
+        try:
+            from shtoom.ui.tkshtoom import main
+            return main(application)
+        except Tkinter.TclError, le:
+            pass
 
 def tryGnomeInterface(application):
     import sys
