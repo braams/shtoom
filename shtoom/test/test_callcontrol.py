@@ -58,6 +58,7 @@ class TestAudio:
         pass
 
 class TestUI:
+    threadedUI = False
 
     def connectApplication(self, app):
         self.app = app
