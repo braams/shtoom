@@ -69,7 +69,8 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         p =PreferencesDialog()
         p.show()
 
-    def incomingCall(self, description, call, defresp, defsetup):
+    def incomingCall(self, description, call, defresp):
+        from shtoom.exceptions import CallRejected
         accept = QMessageBox.information(self, 'Shtoom',
                 'Incoming Call: %s\nAnswer?'%description,
                 'Yes', 'No', '', 0, 1)
@@ -77,11 +78,10 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         if accept == 0:
             self.connected = call
             self.callButton.setEnabled(False)
-            defsetup.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
             defresp.callback('yes')
         else:
             # BOGUS
-            defresp.errback('no')
+            defresp.errback(CallRejected)
 
 
 class Logger:
