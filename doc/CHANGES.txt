@@ -4,6 +4,9 @@ Major changes in the shtoom suite. In reverse chronological order.
   - doug is alive. A first working version is checked in. Much much
     more to do yet.
   - DTMF sending is hooked up, and works in the tk, qt and gnome UIs
+    DTMF sending works when talking to Doug and also talking to ciscos.
+    Right now, though, there's a hardcoded assumption that it's RTP PT 101.
+    This will be fixed before 0.3
   - A major refactoring of SIP internals and the handling of local and
     remote addresses mean it should be a bit saner and easier to 
     understand.
