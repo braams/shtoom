@@ -7,6 +7,7 @@ from shtoom.app.base import BaseApplication
 from twisted.internet import defer
 from twisted.python import log
 from twisted.protocols import sip as tpsip
+from shtoom.exceptions import CallFailed
 import sys
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
@@ -211,5 +212,5 @@ class Message(BaseApplication):
             return defer.succeed((self.getPref('register_authuser'), 
                                  self.getPref('register_authpasswd')))
         else:
-            raise CallFailed, "No auth available"
+            raise defer.fail(CallFailed("No auth available"))
 

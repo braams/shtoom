@@ -6,6 +6,7 @@ from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
 from twisted.internet import defer
 from twisted.python import log
+from shtoom.exceptions import CallFailed
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio import getAudioDevice
@@ -211,5 +212,5 @@ class Phone(BaseApplication):
         elif hasattr(self.ui, 'getAuth'):
             return self.ui.getAuth("Auth needed for %s %s, realm '%s'"%(method, uri, realm))
         else:
-            raise CallFailed, "No auth available"
+            return defer.fail(CallFailed("No auth available"))
 

@@ -547,7 +547,8 @@ class Call(object):
                     if a:
                         uri = str(self.remote)
 
-                        credDef = self.sip.app.authCred('INVITE', uri, retry=(self.call_attempts > 1))
+                        credDef = self.sip.app.authCred('INVITE', uri, 
+                                        retry=(self.call_attempts > 1)).addErrback(log.err)
                         credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('INVITE', 
                                                       uri=uri, 
@@ -662,7 +663,8 @@ class Registration(Call):
                 a = message.headers.get(inH)
                 if a:
                     uri = str(self.regURI)
-                    credDef = self.sip.app.authCred('REGISTER', uri, retry=(self.register_attempts > 1))
+                    credDef = self.sip.app.authCred('REGISTER', uri, 
+                                        retry=(self.register_attempts > 1)).addErrback(log.err)
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('REGISTER', 
                                                       uri=uri, 
