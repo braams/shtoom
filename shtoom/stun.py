@@ -6,11 +6,11 @@ from interfaces import StunPolicy
 
 
 DefaultServers = [
+    ('stun2.wirlab.net', 3478),
     ('tesla.divmod.net', 3478),
     ('erlang.divmod.net', 3478),
     ('tesla.divmod.net', 3479),
     ('erlang.divmod.net', 3479),
-    ('stun.wirlab.net', 3478),
 ]
 
 StunTypes = { 
@@ -43,7 +43,7 @@ class StunProtocol(DatagramProtocol, object):
             log.error("error, unknown transaction ID!")
             return
         if mt == 0x0101:
-            log.msg("got STUN response from %r"%(dgram))
+            log.msg("got STUN response from %s"%repr(address))
             # response
             remainder = dgram[20:]
             while remainder:
@@ -54,8 +54,8 @@ class StunProtocol(DatagramProtocol, object):
                 if avtype in ('MAPPED-ADDRESS',
                               'CHANGED-ADDRESS',
                               'SOURCE-ADDRESS'):
-                    dummy,family,port,addr = struct.unpack('!cch4s', val)
-                    log.msg("STUN response %s: %s %s"%(avtype,socket.inet_ntoa(addr),port))
+                    dummy,family,port,addr = struct.unpack('!ccH4s', val)
+                    #log.msg("STUN response %s: %s %s"%(avtype,socket.inet_ntoa(addr),port))
                     if avtype == 'MAPPED-ADDRESS':
                         self.gotMappedAddress(socket.inet_ntoa(addr),port)
                 else:
@@ -64,7 +64,8 @@ class StunProtocol(DatagramProtocol, object):
             log.error("STUN got an error response")
         
     def gotMappedAddress(self, addr, port):
-        pass
+        log.msg("got address %s %s (should I have been overridden?)"%(addr, 
+                                                                      port))
 
     def sendRequest(self, server, avpairs=()):
         tid = open('/dev/urandom').read(16)
@@ -83,6 +84,7 @@ class StunProtocol(DatagramProtocol, object):
 
     def blatServers(self):
         for s in self.servers:
+            print "sending to", s
             self.sendRequest(s)
 
 class StunHook(StunProtocol):
@@ -98,11 +100,13 @@ class StunHook(StunProtocol):
         self._protocol.datagramReceived = self.datagramReceived
         self.transport = self._protocol.transport
 
-    def discoverStun(self):
+    def discoverStun(self, deferred):
+        ''' Work out STUN settings. Trigger the deferred with (ip,port)
+            when we're done.
+        '''
         self.installStun()
         self.sendRequest(self.servers[0])
-        self.deferred = defer.Deferred()
-        return self.deferred
+        self.deferred = deferred
 
     def gotMappedAddress(self, address, port):
         self.deferred.callback((address, port))
@@ -226,7 +230,9 @@ def getPolicy():
 
 
 if __name__ == "__main__":
+    import sys
     stunClient = StunProtocol()
+    log.startLogging(sys.stdout)
     reactor.listenUDP(5061, stunClient)
-    reactor.callLater(2, stunClient.blatServers)
+    reactor.callLater(1, stunClient.blatServers)
     reactor.run()
