@@ -212,6 +212,7 @@ class MediaLayer(NullConv):
         if self.playout is not None:
             log.msg("duplicate ACK? playout already started")
             return
+        NullConv.reopen(self)
         self.playout = Playout()
         print "initialising playout", self.playout
         self.audioLC = LoopingCall(self.playoutAudio)
@@ -226,6 +227,7 @@ class MediaLayer(NullConv):
             self.audioLC.stop()
             self.audioLC = None
         self.playout = None
+        NullConv.close(self)
 
 class DougConverter(MediaLayer):
     "Specialised converter for Doug."
