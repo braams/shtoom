@@ -146,5 +146,3 @@ def main(shtoomapp):
 
     return wxproxy
 
-if __name__ == "__main__":
-    main()

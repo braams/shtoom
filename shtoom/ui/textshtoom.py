@@ -22,5 +22,3 @@ def main(application):
     log.startLogging(sys.stdout)
     return UI
 
-if __name__ == "__main__":
-    main()

@@ -17,16 +17,10 @@ def main(application):
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
 
-    import sys
-    from twisted.internet import reactor
     from twisted.python import log
-
     from shtoom.ui.gnomeui.main import ShtoomWindow
     UI = ShtoomWindow()
     UI.connectApplication(application)
     log.startLogging(UI.getLogger(), setStdout=False)
     return UI
 
-
-if __name__ == "__main__":
-    main()
