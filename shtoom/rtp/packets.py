@@ -53,32 +53,48 @@ class RTPPacket:
         "Return network-formatted packet."
         return self.header.netbytes() + self.data + self.authtag
 
-def parse_rtppacket(bytes):
-    hdr = struct.unpack('!BBHII', bytes[:12])
-    padding = hdr[0]&32 and 1 or 0
-    cc = hdr[0]&15 and 1 or 0
-    x = hdr[0]&16 and 1 or 0
-    pt = hdr[1]&127
-    marker = hdr[1]&128 and 1 or 0
-    seq = hdr[2]
-    ts = hdr[3]
-    ssrc = hdr[4]
-    headerlen = 12
-    if cc > 1:
-        headerlen = headerlen + 4 * cc
-    data = bytes[headerlen:]
+def parse_rtppacket(bytes, authtaglen=0):
+    # Most variables are named for the fields in the RTP RFC.
+    hdrpieces = struct.unpack('!BBHII', bytes[:12])
+
+    # XXX we ignore v (version)
+    # Padding?
+    p = (hdrpieces[0] & 32) and 1 or 0
+    # Extension header present?
+    x = (hdrpieces[0] & 16) and 1 or 0
+    # CSRC Count
+    cc = hdrpieces[0] & 15
+    # Marker bit
+    marker = hdrpieces[1] & 128
+    # Payload type
+    pt = hdrpieces[1] & 127
+    # Sequence number
+    seq = hdrpieces[2]
+    # Timestamp
+    ts = hdrpieces[3]
+    ssrc = hdrpieces[4]
+    headerlen = 12 + cc * 4
+    # XXX throwing away csrc info for now
+    bytes = bytes[headerlen:]
     if x:
-        # Mmm. Tasty tasty header extensions. We eats them.  Except for the first one.
-        xhdrtype,xhdrlen = struct.unpack('!HH', data[:4])
-        xhdrdata = data[4:4+4*xhdrlen]
-        data = data[4+4*xhdrlen:]
+        # Only one extension header
+        (xhdrtype, xhdrlen,) = struct.unpack('!HH', bytes[:4])
+        xhdrdata = bytes[4:4+xhdrlen*4]
+        bytes = bytes[xhdrlen*4 + 4:]
     else:
         xhdrtype, xhdrdata = None, None
-    if padding:
-        padcount = ord(data[-1])
-        if padcount:
-            data = data[:-padcount]
-    return RTPPacket(ssrc, seq, ts, data, marker=marker, pt=pt, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
+    if authtaglen:
+        authtag = bytes[-authtaglen:]
+        bytes = bytes[:-authtaglen]
+    else:
+        authtag = ''
+    if p:
+        # padding
+        padlen = struct.unpack('!B', bytes[-1])[0]
+        if padlen:
+            bytes = bytes[:-padlen]
+    return RTPPacket(ssrc, seq, ts, bytes, marker=marker, pt=pt, authtag=authtag, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
+
 
 class NTE:
     "An object representing an RTP NTE (rfc2833)"
