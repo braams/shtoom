@@ -2,6 +2,8 @@ from twisted.internet import reactor, defer
 from twisted.python import log
 import twisted.trial.util
 
+TDEBUG=False
+
 callFlowOutboundHorror = """
 For an outbound call:
   UI calls app.placeCall(), which calls sip.SIP.placeCall(), which 
@@ -45,7 +47,7 @@ class TestAudio:
         self.actions = []
     def selectFormat(self, fmt): 
         self.actions.append('select')
-        print "selecting fake audio format"
+        if TDEBUG: print "selecting fake audio format"
 
     def listFormat(self):
         self.actions.append('list')
@@ -53,11 +55,11 @@ class TestAudio:
 
     def reopen(self):
         self.actions.append('reopen')
-        print "reopening fake audio"
+        if TDEBUG: print "reopening fake audio"
 
     def close(self):
         self.actions.append('close')
-        print "closing fake audio"
+        if TDEBUG: print "closing fake audio"
 
     def read(self):
         self.actions.append('read')
@@ -80,31 +82,31 @@ class TestUI:
     def callStarted(self, cookie):
         self.actions.append(('start',cookie))
         self.cookie = cookie
-        print "callStarted", self.cookie
+        if TDEBUG: print "callStarted", self.cookie
 
     def cb_callFailed(self, cookie, message=None):
         self.actions.append(('failed',cookie))
-        print "callFailed", self.cookie
+        if TDEBUG: print "callFailed", self.cookie
 
     def cb_callConnected(self, cookie):
-        print "callConnected", self.cookie
+        if TDEBUG: print "callConnected", self.cookie
         self.actions.append(('connected',cookie))
 
     def callDisconnected(self, cookie, reason):
         self.actions.append(('disconnected',cookie))
-        print "callDisconnected", self.cookie
+        if TDEBUG: print "callDisconnected", self.cookie
         if self.stopOnDisconnect:
             self.compdef.callback(None)
 
     def incomingCall(self, description, cookie, defsetup):
-        print "incoming"
+        if TDEBUG: print "incoming"
         self.actions.append(('incoming',cookie))
         defsetup.addCallbacks(self.cb_callConnected, 
                        self.cb_callFailed).addErrback(log.err)
         defsetup.addCallback(lambda x: cookie)
 
     def fakeCall(self):
-        print "placing a call"
+        if TDEBUG: print "placing a call"
         d = self.app.placeCall('sip:foo@bar')
         d.addCallbacks(self.cb_callConnected, 
                        self.cb_callFailed).addErrback(log.err)
@@ -149,22 +151,22 @@ class TestCall:
         md = MediaDescription()
         s.addMediaDescription(md)
         md.setLocalPort(9876)
-        print "accepted, got %r"%(cookie,)
+        if TDEBUG: print "accepted, got %r"%(cookie,)
         self.cookie = cookie
         d, self.d = self.d, None
         self.sip.app.startCall(self.cookie, s, d.callback)
 
     def rejectedFakeCall(self, e):
-        print "rejected, got %r"%(e,)
+        if TDEBUG: print "rejected, got %r"%(e,)
         d, self.d = self.d, None
         d.errback(e)
 
     def dropCall(self):
-        print "drop"
+        if TDEBUG: print "drop"
         self.sip.app.endCall(self.cookie)
 
     def terminateCall(self):
-        print "remote end closed call"
+        if TDEBUG: print "remote end closed call"
         self.sip.app.endCall(self.cookie)
 
 
@@ -189,11 +191,11 @@ class TestSip:
         return d
 
     def dropFakeInbound(self, result):
-        print "remote bye"
+        if TDEBUG: print "remote bye"
         self.c.terminateCall()
 
     def dropCall(self, cookie):
-        print "dropCall"
+        if TDEBUG: print "dropCall"
         self.c.dropCall()
 
 class TestRTP:
@@ -239,7 +241,7 @@ class TestCallControl(unittest.TestCase):
             self.assertEquals(au.actions, ['reopen', 'close'])
             self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
             actions = ui.actions
-            print actions
+            if TDEBUG: print actions
             cookie = actions[0][1]
             for a,c in actions[1:]:
                 self.assertEquals(cookie,c)
@@ -272,7 +274,7 @@ class TestCallControl(unittest.TestCase):
             self.assertEquals(cookie,c)
         actions = [x[0] for x in actions]
         self.assertEquals(actions, ['start', 'connected', 'drop', 'disconnected'])
-        print actions
+        if TDEBUG: print actions
 
     def testInboundRemoteBye(self):
         from shtoom.app.phone import Phone
@@ -290,14 +292,12 @@ class TestCallControl(unittest.TestCase):
         d =  p.sip.fakeInbound()
         d.addCallback(p.sip.dropFakeInbound)
         p.start()
-        print "looping"
         twisted.trial.util.wait(testdef)
-        print "done"
         self.assertEquals(au.actions, ['reopen', 'close'])
         self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
         actions = ui.actions
         cookie = actions[0][1]
-        print actions
+        if TDEBUG: print actions
         for a,c in actions[1:]:
             self.assertEquals(cookie,c)
         actions = [x[0] for x in actions]
