@@ -3,44 +3,42 @@
 
 [Setup]
 AppName=Shtoom
-AppVerName=Shtoom 0.1
+AppVerName=Shtoom 0.2
 AppPublisher=Anthony Baxter
-AppPublisherURL=http://shtoom.sf.net/
-AppSupportURL=http://shtoom.sf.net/
-AppUpdatesURL=http://shtoom.sf.net/
+AppPublisherURL=http://shtoom.divmod.org/
+AppSupportURL=http://shtoom.divmod.org/
+AppUpdatesURL=http://shtoom.divmod.org/
 DefaultDirName={pf}\Shtoom
 DefaultGroupName=Shtoom
 AllowNoIcons=yes
-LicenseFile=D:\Projects\shtoom\sf\LICENSE
-InfoAfterFile=D:\Projects\shtoom\sf\README.txt
+LicenseFile=D:\Projects\shtoom\cur\LICENSE
+InfoBeforeFile=D:\Projects\shtoom\cur\README.txt
+InfoAfterFile=D:\Projects\shtoom\cur\README.txt
 
 [Tasks]
 ; NOTE: The following entry contains English phrases ("Create a desktop icon" and "Additional icons"). You are free to translate them into another language if required.
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"; Flags: unchecked
 
 [Files]
-Source: "D:\Projects\shtoom\sf\dist\shtoom\shtoom.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\select.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\_socket.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\_sre.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\_ssl.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\_tkinter.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\_winreg.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\fastaudio.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\libsndfile.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\python23.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\PyWinTypes23.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\win32process.pyd"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\tcl84.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\tk84.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Projects\shtoom\sf\dist\shtoom\tcl\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "D:\Projects\shtoom\cur\dist\shtoom.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\Projects\shtoom\cur\dist\*.*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[INI]
+Filename: "{app}\shtoom.url"; Section: "InternetShortcut"; Key: "URL"; String: "http://shtoom.divmod.org/"
 
 [Icons]
 Name: "{group}\Shtoom"; Filename: "{app}\shtoom.exe"
+; NOTE: The following entry contains an English phrase ("on the Web"). You are free to translate it into another language if required.
+Name: "{group}\Shtoom on the Web"; Filename: "{app}\shtoom.url"
+; NOTE: The following entry contains an English phrase ("Uninstall"). You are free to translate it into another language if required.
+Name: "{group}\Uninstall Shtoom"; Filename: "{uninstallexe}"
 Name: "{userdesktop}\Shtoom"; Filename: "{app}\shtoom.exe"; Tasks: desktopicon
 
 [Run]
 ; NOTE: The following entry contains an English phrase ("Launch"). You are free to translate it into another language if required.
 Filename: "{app}\shtoom.exe"; Description: "Launch Shtoom"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+Type: files; Name: "{app}\shtoom.url"
 
