@@ -23,8 +23,8 @@ def genCallId():
 class Call(object):
     """State machine for a phone call."""
     
-    def __init__(self, transport, deferred, to=None, callid=None):
-        self.transport = transport
+    def __init__(self, phone, deferred, to=None, callid=None):
+        self.phone = phone
         self.compDef = deferred
         self.state = 'NEW'
         self.cseq = random.randint(1000,5000)
@@ -123,8 +123,8 @@ class Call(object):
         self.setLocalIP(dest=(self.url.host, self.url.port or 5060))
         invite = tpsip.Request('INVITE', str(self.url))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s;rport'%(
-                                    self.getLocalSIPAddress()[0]))
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
+                                                self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s INVITE'%self.getCSeq(incr=1))
         invite.addHeader('to', str(self.url))
         invite.addHeader('content-type', 'application/sdp')
@@ -133,8 +133,9 @@ class Call(object):
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', 'sip%s'%(prefs.email_address))
         invite.addHeader('user-agent', 'Shtoom/0.0')
-        invite.addHeader('contact', '"%s" <sip:%s;transport=udp>'%(
-                                prefs.username, self.getLocalSIPAddress()[0]))
+        lhost, lport = self.getLocalSIPAddress()
+        invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
+                                prefs.username, lhost, lport))
         s = SimpleSDP()
         s.setPacketSize(160)
         s.setServerIP(self.getLocalSIPAddress()[0])
@@ -150,7 +151,7 @@ class Call(object):
         invite.bodyDataReceived(sdp)
         invite.creationFinished()
         try:
-            self.transport.write(invite.toString(), self.getRemoteSIPAddress())
+            self.phone.transport.write(invite.toString(), self.getRemoteSIPAddress())
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             self.compDef.errback(e(v))
@@ -179,7 +180,7 @@ class Call(object):
         url = tpsip.parseURL(to)
         ack = tpsip.Request('ACK', contact)
         # XXX refactor all the common headers and the like
-        ack.addHeader('via', 'SIP/2.0/UDP %s;rport'%self.getLocalSIPAddress()[0])
+        ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
         ack.addHeader('to', to)
         ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
@@ -193,14 +194,14 @@ class Call(object):
         if hasattr(self, 'compDef'):
             self.compDef.callback(self)
             del self.compDef
-        self.transport.write(ack.toString(), (url.host, (url.port or 5060)))
+        self.phone.transport.write(ack.toString(), (url.host, (url.port or 5060)))
         self.setState('SENT_ACK')
 
     def sendBye(self):
         url = tpsip.parseURL(self.to)
         bye = tpsip.Request('BYE', self.contact)
         # XXX refactor all the common headers and the like
-        bye.addHeader('via', 'SIP/2.0/UDP %s;rport'%self.getLocalSIPAddress()[0])
+        bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
         bye.addHeader('to', self.to)
         bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
@@ -210,7 +211,7 @@ class Call(object):
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         bye, dest = bye.toString(), (url.host, (url.port or 5060))
-        self.transport.write(bye, dest)
+        self.phone.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
     def sendCancel(self):
@@ -219,8 +220,33 @@ class Call(object):
         '''
         raise NotImplementedError
 
-    def recvInvite(self, message):
+    def recvBye(self, message):
+        ''' An in-progress call got a BYE from the other end. Hang up
+            call, send a 200.
+        '''
         pass
+
+    def recvCancel(self, message):
+        ''' The remote UAC changed it's mind about the new call and 
+            gave up.
+        '''
+
+    def recvAck(self, message):
+        ''' The remote UAC has ACKed our response to their INVITE. 
+            Start sending and receiving audio.
+        '''
+
+    def recvInvite(self, message):
+        ''' An newly-created call got an INVITE from another UAC. Notify
+            the UI layer, send a 180 (Ringing) response.
+        '''
+        pass
+
+    def recvOptions(self, message):
+        ''' Received an OPTIONS request from a remote UA.
+            Put together a 200 response if we're ok with the Require headers,
+            otherwise an error (XXXXX)
+        '''
 
 
 class SipPhone(DatagramProtocol, object):
@@ -234,7 +260,7 @@ class SipPhone(DatagramProtocol, object):
         super(SipPhone, self, *args, **kwargs)
 
     def _newCallObject(self, deferred, to=None, callid=None):
-        call = Call(self.transport, deferred, to=to, callid=callid)
+        call = Call(self, deferred, to=to, callid=callid)
         if call.getState() != 'ABORTED':
             self._calls[call.getCallID()] = call
             return call
