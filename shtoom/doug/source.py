@@ -9,6 +9,21 @@ class Source(object):
     def getVoiceApp(self):
         return self.app
 
+    def isPlaying(self):
+        return NotImplementedError
+
+    def isRecording(self):
+        return NotImplementedError
+
+    def read(self):
+        return NotImplementedError
+
+    def close(self):
+        return NotImplementedError
+
+    def write(self, bytes):
+        return NotImplementedError
+
 class SilenceSource(Source):
     "A SilenceSource generates silence and eats all audio given to it"
     def __init__(self):
