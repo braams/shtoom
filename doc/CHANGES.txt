@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - Audio interfaces have been refactored to be a little more sane.
+  - A simple playout buffer has been created. This should hopefully
+    help with the creeping delay problem.
   - massive changes to RTP and SDP handling, to fix a lot of the ugliness
     under the hood. Amongst other things, we now handle dynamic payload 
     types correctly. Plus, we can do more intelligent things with the RTP
