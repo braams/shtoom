@@ -3,12 +3,13 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
+    - go through and make sure Doug is up-to-date with recent refactorings
     - all interfaces must be current and correct
-    - doug: use dropCall()'s deferred to generate correct events
+    - Asterisk is rejecting our ACK - e.g. to 613@fwd.pulver.com
     - doug: implement leg bridging (inbound and outbound)
+    - doug: use dropCall()'s deferred to generate correct events
     - doug: s.d.conferencing's entrance soundburst bug
     - ui(qt): hide multiple call support for now
-    - MediaLayer: playout buffer
     - Some sort of "debug dump" command that dumps relevant info (ui, audio,
       &c) for bugreports.
     - package for Mac, Windows
@@ -22,6 +23,8 @@ Definite before 0.3:
 Maybe before 0.3:
     - doug: placeCall to a broken address doesn't give generate a 
       correct event
+    - let doug handle wav and au files natively.
+    - MediaLayer: a more sophisticated playout buffer
     - cocoa native UI into it's own thread to workaround broken cfreactor
     - stun: timeout the STUN call, generate a nice error 
     - sip: retry registration failures (e.g. for testcall)
