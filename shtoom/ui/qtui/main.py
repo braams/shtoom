@@ -8,7 +8,7 @@ from twisted.python import log
 from qt import *
 
 class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
-    
+
     sending = False
     audiosource = None
     connected = False
@@ -69,8 +69,8 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         p.show()
 
     def incomingCall(self, description, call, defresp, defsetup):
-        accept = QMessageBox.information(self, 'Shtoom', 
-                'Incoming Call: %s\nAnswer?'%description, 
+        accept = QMessageBox.information(self, 'Shtoom',
+                'Incoming Call: %s\nAnswer?'%description,
                 'Yes', 'No', '', 0, 1)
         print "accept is", accept
         if accept == 0:
@@ -85,7 +85,7 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
 class Logger:
     def __init__(self, textwidget):
         self._t = textwidget
-    def flush(self): 
+    def flush(self):
         pass
     def write(self, text):
         self._t.append(text)

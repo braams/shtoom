@@ -29,6 +29,4 @@ def getAudioDevice(mode):
     global opened
     if opened is None:
         opened = MultipleConv(AudioFromFiles(prefs.audio_infile, prefs.audio_outfile))
-    return opened 
-
-
+    return opened

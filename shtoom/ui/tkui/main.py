@@ -21,10 +21,10 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._urlentry.focus_set()
         self._top2 = Frame(self.main)
         self._top2.pack(side=TOP, fill=X)
-        self._callButton = Button(self._top2, text="Call", 
+        self._callButton = Button(self._top2, text="Call",
                                   command=self.callButton_clicked)
         self._callButton.pack(side=LEFT)
-        self._hangupButton = Button(self._top2, text="Hang up", 
+        self._hangupButton = Button(self._top2, text="Hang up",
                                     command=self.hangupButton_clicked,
                                     state=DISABLED)
         self._hangupButton.pack(side=LEFT)
@@ -82,4 +82,3 @@ class ShtoomMainWindow(ShtoomBaseUI):
             defresp.callback('yes')
         else:
             defresp.errback('no')
-

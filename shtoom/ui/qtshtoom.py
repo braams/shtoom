@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: qtshtoom.py,v 1.6 2004/01/10 14:36:37 anthonybaxter Exp $
+# $Id: qtshtoom.py,v 1.7 2004/01/10 14:54:53 anthonybaxter Exp $
 #
 
 
@@ -28,7 +28,7 @@ def main():
     UI.show()
     log.startLogging(UI.getLogger())
     #log.startLogging(sys.stdout)
-    
+
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
 

@@ -27,7 +27,7 @@ class FastAudioDevice(baseaudio.AudioDevice):
         if self._rdev is None:
             # Thanks to dotz for putting me on the track of the magic
             # options 160, 2
-            self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1, 
+            self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1,
                                                            'int16', 160, 2))
         self._rdev.open()
         self.dev = MultipleConv(self._rdev)
@@ -65,4 +65,3 @@ def getAudioDevice(mode):
     if opened.isClosed():
         opened.reopen()
     return opened
-

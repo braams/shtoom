@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.26 2004/01/10 11:32:12 anthonybaxter Exp $
+# $Id: rtp.py,v 1.27 2004/01/10 14:54:53 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -31,7 +31,7 @@ class RTPProtocol(DatagramProtocol):
 
     Also manages a RTCP instance.
     """
-    
+
     _stunAttempts = 0
 
     if itimer:
@@ -51,9 +51,9 @@ class RTPProtocol(DatagramProtocol):
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
 
-	    Returns a Deferred, which is triggered when the sockets are 
-	    connected, and any STUN has been completed. The deferred 
-	    callback will be passed (extIP, extPort). (The port is the RTP
+            Returns a Deferred, which is triggered when the sockets are
+            connected, and any STUN has been completed. The deferred
+            callback will be passed (extIP, extPort). (The port is the RTP
             port.) We don't guarantee a working RTCP port, just RTP.
         """
         self.needSTUN=needSTUN
@@ -98,26 +98,26 @@ class RTPProtocol(DatagramProtocol):
             # The pain can stop right here
             self._extRTPPort = rtpPort
             self._extIP = locIP
-            d = self._socketCompleteDef 
-            del self._socketCompleteDef 
+            d = self._socketCompleteDef
+            del self._socketCompleteDef
             d.callback((locIP, rtpPort))
         else:
-            # If the NAT is doing port translation as well, we will just 
+            # If the NAT is doing port translation as well, we will just
             # have to try STUN and hope that the RTP/RTCP ports are on
             # adjacent port numbers. Please, someone make the pain stop.
             self.discoverStun()
 
     def getVisibleAddress(self):
-	''' returns the local IP address used for RTP (as visible from the
-	    outside world if STUN applies) as ( 'w.x.y.z', rtpPort)
-	'''
+        ''' returns the local IP address used for RTP (as visible from the
+            outside world if STUN applies) as ( 'w.x.y.z', rtpPort)
+        '''
         return (self._extIP, self._extRTPPort)
 
     def discoverStun(self):
-	''' Uses STUN to discover the external address for the RTP/RTCP
-            ports. deferred is a Deferred to be triggered when STUN is 
+        ''' Uses STUN to discover the external address for the RTP/RTCP
+            ports. deferred is a Deferred to be triggered when STUN is
             complete.
-	'''
+        '''
         # See above comment about port translation.
         # We have to do STUN for both RTP and RTCP, and hope we get a sane
         # answer.
@@ -132,7 +132,7 @@ class RTPProtocol(DatagramProtocol):
         stunrtcp.discoverStun(rtcpDef)
 
     def setStunnedAddress(self, results):
-        ''' Handle results of the rtp/rtcp STUN. We have to check that 
+        ''' Handle results of the rtp/rtcp STUN. We have to check that
             the results have the same IP and usable port numbers
         '''
         print "got STUN back!", results
@@ -140,7 +140,7 @@ class RTPProtocol(DatagramProtocol):
         if rtpres[0] != defer.SUCCESS or rtcpres[0] != defer.SUCCESS:
             # barf out.
             print "uh oh, stun failed", results
-        else:    
+        else:
             code1, rtp = rtpres
             code2, rtcp = rtcpres
             if rtp[0] != rtcp[0]:
@@ -163,8 +163,8 @@ class RTPProtocol(DatagramProtocol):
                 print "discovered sane NAT for RTP/RTCP"
                 self._extIP, self._extRTPPort = rtp
                 self._stunAttempts = 0
-                d = self._socketCompleteDef 
-                del self._socketCompleteDef 
+                d = self._socketCompleteDef
+                del self._socketCompleteDef
                 d.callback(rtp)
 
     def getSDP(self):
@@ -172,7 +172,7 @@ class RTPProtocol(DatagramProtocol):
         self.getAudio()
         s = SimpleSDP()
         s.setPacketSize(160)
-	addr = self.getVisibleAddress()
+        addr = self.getVisibleAddress()
         print "addr = ", addr
         s.setServerIP(addr[0])
         s.setLocalPort(addr[1])
@@ -190,7 +190,7 @@ class RTPProtocol(DatagramProtocol):
         return s
 
     def setFormat(self, rtpmap):
-        for entry in rtpmap:        
+        for entry in rtpmap:
             if entry == self.PT_pcmu:
                 self.infp.setFormat(FMT_PCMU)
                 break
@@ -274,7 +274,7 @@ class RTPProtocol(DatagramProtocol):
         if self.outfp:
             hdr = struct.unpack('!BBHII', datagram[:12])
             # Don't care about the marker bit.
-            PT = hdr[1]&127 
+            PT = hdr[1]&127
             fmt = None
             if PT == 0:
                 fmt = FMT_PCMU
@@ -367,9 +367,7 @@ class RTPProtocol(DatagramProtocol):
                 self.sample = self.infp.read()
         except IOError:
             pass
-        
+
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
-
-

@@ -5,11 +5,11 @@ def parseOptions():
     import optparse, sys
     import shtoom.prefs
     parser = optparse.OptionParser(version='%prog 0.1')
-    parser.add_option('-i', '--localip', dest='localip', 
-                      help='use LOCALIP for local ip address', 
+    parser.add_option('-i', '--localip', dest='localip',
+                      help='use LOCALIP for local ip address',
                       metavar='LOCALIP')
     parser.add_option('-p', '--port', dest='localport', type='int',
-                      help='use PORT for SIP listener', 
+                      help='use PORT for SIP listener',
                       metavar='PORT')
     parser.add_option('-u', '--ui', dest='ui',
                       help='use UI interface (qt, tk, ...)',
@@ -52,5 +52,3 @@ def parseOptions():
         shtoom.prefs.audio_outfile = opts.audio_outfile
     if opts.stdout:
         shtoom.prefs.stdout = True
-
-    

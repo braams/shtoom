@@ -10,7 +10,7 @@ from twisted.trial import unittest
 
 
 class SDPGeneration(unittest.TestCase):
-    
+
     def testSimpleSDP(self):
         from shtoom.multicast.SDP import SDP, SimpleSDP
         s = SimpleSDP()

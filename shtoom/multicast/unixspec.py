@@ -6,7 +6,7 @@
 from socket import *
 
 def leaveGroup(sock,addr):
-    """Join a multicast group. 
+    """Join a multicast group.
        arguments:
        sock = an already open socket.
        addr = either a string, which will be passed to gethostbyname(), or
@@ -21,15 +21,15 @@ def _addr2mreq(addr):
     from socket import *
 
     if type(addr) is type(""):
-	group = gethostbyname(addr)
-	grpaddr = netnum.dq2num(group)
+        group = gethostbyname(addr)
+        grpaddr = netnum.dq2num(group)
     else:
-	grpaddr = addr
+        grpaddr = addr
     mreq = struct.pack('ll', grpaddr, INADDR_ANY)
     return mreq
 
 def joinGroup(sock,addr):
-    """Join a multicast group. 
+    """Join a multicast group.
        arguments:
        sock = an already open socket.
        addr = either a string, which will be passed to gethostbyname(), or
@@ -37,5 +37,3 @@ def joinGroup(sock,addr):
 """
     mreq = _addr2mreq(addr)
     sock.setsockopt(IPPROTO_IP, IP_ADD_MEMBERSHIP, mreq)
-
-

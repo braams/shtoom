@@ -28,4 +28,3 @@ class IAudio(Interface):
 
     def write(self, data):
         '''Writes audio.'''
-

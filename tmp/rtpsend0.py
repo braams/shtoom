@@ -131,7 +131,7 @@ def main():
     else:
         from twisted.internet import reactor
         reactor.callLater(0.02, C.nextpacketTwisted)
-        
+
     start = time()
     if USE_SETITIMER:
         try:

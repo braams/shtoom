@@ -11,4 +11,3 @@ else:
 
 def ntp2delta(ticks):
     return (ticks - 220898800)
-

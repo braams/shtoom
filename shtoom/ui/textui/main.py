@@ -67,7 +67,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def callConnected(self, call):
         log.msg("Call to %s CONNECTED"%(self.sipURL))
-        
+
     def callDisconnected(self, call):
         log.msg("Call to %s DISCONNECTED"%(self.sipURL))
 

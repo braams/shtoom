@@ -32,12 +32,12 @@ class IPhoneUIFeedback(Interface):
     def incomingCall(self, description, call, defresp, defsetup):
         """ An incoming call (described by text 'description') has arrived.
 
-            The UI should call defresp.callback() to accept the call, 
+            The UI should call defresp.callback() to accept the call,
             and defresp.errback() to reject it.
 
             defsetup is a deferred which will be triggered when call setup
             is complete or failed, as in the response to placeCall()
-            
+
             XXX should pass reject reasons back.
         """
 
@@ -71,7 +71,7 @@ class AddressBook(Interface):
 
     def browseAddressBook(self, query=None):
         """ Pop up the address book, with an optional 'query' (a string
-            to begin the browsing). 
+            to begin the browsing).
 
             Returns a Deferred, the callback of which will be called with
             a string (the URI to call), or the errback if they select nothing
@@ -82,8 +82,7 @@ class AddressBook(Interface):
         """
 
 class StunPolicy(Interface):
-	""" A STUNPolicy decides when STUN is applied """
+    """ A STUNPolicy decides when STUN is applied """
 
-	def checkStun(self, localip, remoteip):
-		""" return True/False for whether STUN should apply """
-
+    def checkStun(self, localip, remoteip):
+        """ return True/False for whether STUN should apply """

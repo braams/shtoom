@@ -112,4 +112,3 @@ class MultipleConv(NullConv):
                 print "No GSM available"
         else:
             raise ValueError, "Unknown format %s"%(format)
-

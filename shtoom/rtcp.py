@@ -3,7 +3,7 @@
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
 
-# Placeholder until I get time to integrate old rtcp code into new 
+# Placeholder until I get time to integrate old rtcp code into new
 # codebase
 
 class RTCPProtocol(DatagramProtocol):
@@ -11,4 +11,3 @@ class RTCPProtocol(DatagramProtocol):
         print "got RTCP from", addr
     def sendDatagram(self, packet):
         self.transport.write(packet)
-

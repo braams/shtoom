@@ -32,7 +32,7 @@ BadAnnounce = "Bad Announcement"
 
 class Announcement:
     def __init__(self,text):
-	lines = text.split('\n')
+        lines = text.split('\n')
         self._d = {}
         self._a = {}
         for line in lines:
@@ -55,47 +55,47 @@ class Announcement:
 
 class SDP:
     def __init__(self,text=None,sdrcompat=0):
-	self._SDRcompat = sdrcompat
-	self._id = None
-	if text:
-	    self.text = text
-	    self.splitText()
-	    self.assertSanity()
-	else:
-	    # new SDP
-	    pass
+        self._SDRcompat = sdrcompat
+        self._id = None
+        if text:
+            self.text = text
+            self.splitText()
+            self.assertSanity()
+        else:
+            # new SDP
+            pass
 
     def name(self):
-	return self._sessionName
+        return self._sessionName
 
     def info(self):
-	return self._sessionInfo
+        return self._sessionInfo
 
     def version(self):
-	return self._o_version
+        return self._o_version
 
     def id(self):
-	if not self._id:
-	    self._id = (self._o_username, self._o_sessid, self._o_nettype,
-		self._o_addrtype, self._o_addr)
-	return self._id
+        if not self._id:
+            self._id = (self._o_username, self._o_sessid, self._o_nettype,
+                self._o_addrtype, self._o_addr)
+        return self._id
 
     def splitText(self):
-	"split the announcement into fields and handle them"
-	ann = Announcement(self.text)
-	self._version = ann.get("v")
-	self.parseO(ann.get("o"))
-	self._sessionName = ann.get("s")
-	self._sessionInfo = self.parseI(ann.get("i",optional=1))
-	self._uri = ann.get("u",optional=1)
-	self._email = ann.get("e",optional=1)
-	self._phone = ann.get("p",optional=1)
-	# bloody SDR gets e and p in the wrong order.
-	if not self._email and self._SDRcompat:
-	    self._email = ann.get("e",optional=1)
-	self._sessionC = self.parseC(ann.get("c",optional=1))
-	self._sessionB = self.parseB(ann.get("b",optional=1))
-	self._sessionM = self.parseM(ann.get("m",optional=1))
+        "split the announcement into fields and handle them"
+        ann = Announcement(self.text)
+        self._version = ann.get("v")
+        self.parseO(ann.get("o"))
+        self._sessionName = ann.get("s")
+        self._sessionInfo = self.parseI(ann.get("i",optional=1))
+        self._uri = ann.get("u",optional=1)
+        self._email = ann.get("e",optional=1)
+        self._phone = ann.get("p",optional=1)
+        # bloody SDR gets e and p in the wrong order.
+        if not self._email and self._SDRcompat:
+            self._email = ann.get("e",optional=1)
+        self._sessionC = self.parseC(ann.get("c",optional=1))
+        self._sessionB = self.parseB(ann.get("b",optional=1))
+        self._sessionM = self.parseM(ann.get("m",optional=1))
         self._ann = ann
         self.rtpmap = [(int(x.split()[0]),x) for x in self.get('a', 'rtpmap')]
 
@@ -115,9 +115,9 @@ class SDP:
             self.port = int(port)
 
     def parseB(self,value):
-	pass
+        pass
     def parseC(self,value):
-	pass
+        pass
     def parseI(self,value):
         if value:
             return value[0]
@@ -132,7 +132,7 @@ class SDP:
             self.ipaddr = self._o_addr
 
     def assertSanity(self):
-	pass
+        pass
 
 class SimpleSDP:
     """ a much simpler SDP class. For building announcements for RTSP.
@@ -149,11 +149,11 @@ class SimpleSDP:
     def setTransport(self, transport):
         self.transport = transport
     def setPacketSize(self,l):
-	self.packetsize = l
+        self.packetsize = l
     def setServerIP(self, l):
-	self.serverIP = l
+        self.serverIP = l
     def setLocalPort(self, l):
-	self.localPort = l
+        self.localPort = l
 
     def clearRtpMap(self):
         self.rtpmap = []
@@ -173,28 +173,28 @@ class SimpleSDP:
             raise ValueError, "attempt to set payload to %s, should be %s"%(
                                 payload, p)
         self.rtpmap.append((payload,"%d %s/%d%s%s"%(
-                                          payload, encname, clockrate, 
-                                          ((encparams and '/') or ""), 
+                                          payload, encname, clockrate,
+                                          ((encparams and '/') or ""),
                                            encparams or "")))
     def show(self):
-	out = []
-	out.append("v=0")
-	out.append("o=- 0 0 IN IP4 %s"%self.serverIP)
-	out.append("s=<No title>")
-	out.append("i=<No author> <No copyright>")
-	out.append("t=0 0")
+        out = []
+        out.append("v=0")
+        out.append("o=- 0 0 IN IP4 %s"%self.serverIP)
+        out.append("s=<No title>")
+        out.append("i=<No author> <No copyright>")
+        out.append("t=0 0")
         payloads = ' '.join([ str(x[0]) for x in self.rtpmap ])
-	out.append("m=%s %s %s %s"%(self.media, self.localPort, 
+        out.append("m=%s %s %s %s"%(self.media, self.localPort,
                                     self.transport,payloads))
         out.append("c=IN IP4 %s"%(self.serverIP))
-	out.append("a=control:streamid=0")
+        out.append("a=control:streamid=0")
         for payload,mapentry in self.rtpmap:
             out.append("a=rtpmap:%s"%(mapentry))
-	out.append('a=AvgPacketSize:integer;%d'%self.packetsize)
-	out.append('a=MaxPacketSize:integer;%d'%self.packetsize)
-	out.append('')
-	s = '\n'.join(out)
-	return s
+        out.append('a=AvgPacketSize:integer;%d'%self.packetsize)
+        out.append('a=MaxPacketSize:integer;%d'%self.packetsize)
+        out.append('')
+        s = '\n'.join(out)
+        return s
 
     def intersect(self, other):
         from twisted.python.util import OrderedDict
@@ -210,7 +210,7 @@ class SimpleSDP:
                 outmap.append((code,e))
         print map1, map2, outmap
         self.rtpmap = outmap
-            
+
 def ntp2delta(ticks):
     return (ticks - 220898800)
 
@@ -224,4 +224,4 @@ def rtpmap2canonical(code, entry):
         if len(desc) == 2:
             desc.append('1') # default channels
         name,rate,channels = desc
-        return (name.lower(),rate,channels) 
+        return (name.lower(),rate,channels)

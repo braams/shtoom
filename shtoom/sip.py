@@ -29,7 +29,7 @@ def genStandardDate(t=None):
 
 class Call(object):
     '''State machine for a phone call.'''
-    
+
     def __init__(self, phone, deferred, uri=None, callid=None):
         self.phone = phone
         self.compDef = deferred
@@ -46,7 +46,7 @@ class Call(object):
         self.cseq = random.randint(1000,5000)
 
     def setupLocalSIP(self, uri=None, via=None):
-        ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL 
+        ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL
             (for outbound calls) or a t.p.sip.Via object (for inbound calls).
 
             returns a Deferred that will be triggered when the local SIP
@@ -74,7 +74,7 @@ class Call(object):
         self.state = state
 
     def getState(self):
-        return self.state 
+        return self.state
 
     def getTag(self):
         if not hasattr(self, '_tag'):
@@ -83,8 +83,8 @@ class Call(object):
         return self._tag
 
     def setLocalIP(self, dest):
-        ''' Try and determine the local IP address to use. We use a 
-            ConnectedDatagramProtocol in the (faint?) hope that on a machine 
+        ''' Try and determine the local IP address to use. We use a
+            ConnectedDatagramProtocol in the (faint?) hope that on a machine
             with multiple interfaces, we'll get the right one
         '''
         # XXX Allow over-riding
@@ -94,14 +94,14 @@ class Call(object):
         if prefs.localip is not None:
             self._localAddress = (prefs.localip, prefs.localport or 5060)
         else:
-            # it is a hack! 
+            # it is a hack!
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
                 locAddress = (protocol.transport.getHost()[1], prefs.localport or 5060)
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
-                log.msg("discovered local address %r, remote %r"%(locAddress, 
+                log.msg("discovered local address %r, remote %r"%(locAddress,
                                                                   remAddress))
             else:
                 self.compDef.errback(ValueError("couldn't connect to %s"%(
@@ -148,10 +148,10 @@ class Call(object):
 
     def setupRTP(self, cb):
         ''' Create local RTP socket. At this point, we have already set up
-            the local SIP socket, so we can cheat a bit for STUN &c 
+            the local SIP socket, so we can cheat a bit for STUN &c
         '''
         self.rtp = RTPProtocol()
-        d = self.rtp.createRTPSocket(self.getLocalSIPAddress()[0], 
+        d = self.rtp.createRTPSocket(self.getLocalSIPAddress()[0],
                                      self._needSTUN)
         d.addCallback(cb)
 
@@ -175,8 +175,8 @@ class Call(object):
         self.compDef.errback('rejected')
 
     def sendResponse(self, message, code):
-        ''' Send a response to a message. message is the response body, 
-	    code is the response code (e.g.  200 for OK)
+        ''' Send a response to a message. message is the response body,
+            code is the response code (e.g.  200 for OK)
         '''
         from shtoom.multicast.SDP import SDP
         if message.method == 'INVITE' and code == 200:
@@ -188,7 +188,7 @@ class Call(object):
                 self.setState('ABORTED')
                 return
             self.rtp.setFormat(sdp.rtpmap)
-        resp = tpsip.Response(code) 
+        resp = tpsip.Response(code)
         # XXXXXXX add a branch= ...
         via = tpsip.parseViaHeader(message.headers['via'][0])
         branch = via.branch
@@ -225,7 +225,7 @@ class Call(object):
             e,v,t = sys.exc_info()
             #self.compDef.errback(e(v))
             self.setState('ABORTED')
-        
+
     def startOutboundCall(self, toAddr):
         uri = uri=tpsip.parseURL(toAddr)
         d = self.setupLocalSIP(uri=uri)
@@ -237,7 +237,7 @@ class Call(object):
         d.addCallback(lambda x:self.recvInvite(invite))
 
     def recvInvite(self, invite):
-        ''' Received an INVITE from another UA. If we're already on a 
+        ''' Received an INVITE from another UA. If we're already on a
             call, it's an attempt to modify - send a 488 in this case.
         '''
         # XXX if self.getState() is not 'NEW', send a 488
@@ -306,7 +306,7 @@ class Call(object):
         self.uri = self.extractURI(contact)
         uri = tpsip.parseURL(self.uri)
 
-        # XXX Check the OK response's SDP, find what codec we 
+        # XXX Check the OK response's SDP, find what codec we
         # should be using
 
         ack = tpsip.Request('ACK', self.uri)
@@ -348,7 +348,7 @@ class Call(object):
 
     def sendCancel(self):
         ''' Sends a CANCEL message to kill a call that's in the process of
-            being established 
+            being established
         '''
         raise NotImplementedError
 
@@ -359,12 +359,12 @@ class Call(object):
         self.sendResponse(message, 200)
 
     def recvCancel(self, message):
-        ''' The remote UAC changed it's mind about the new call and 
+        ''' The remote UAC changed it's mind about the new call and
             gave up.
         '''
 
     def recvAck(self, message):
-        ''' The remote UAC has ACKed our response to their INVITE. 
+        ''' The remote UAC has ACKed our response to their INVITE.
             Start sending and receiving audio.
         '''
         from shtoom.multicast.SDP import SDP
@@ -384,7 +384,7 @@ class Call(object):
 
 class SipPhone(DatagramProtocol, object):
     '''A SIP phone.'''
-    
+
     __implements__ = ISipPhone,
 
     def __init__(self, ui, *args, **kwargs):
@@ -416,8 +416,8 @@ class SipPhone(DatagramProtocol, object):
             callid = callid[0]
         if callid.startswith('<') and callid.endswith('>'):
             callid = callid[1:-1]
-        del self._calls[callid] 
-        
+        del self._calls[callid]
+
     def placeCall(self, uri):
         '''Place a call.
 
@@ -523,14 +523,14 @@ class SipPhone(DatagramProtocol, object):
                     call.recvInvite(message)
                 elif message.method == 'ACK':
                     call.recvAck(message)
-                
+
 
         elif message.response:
             print "handling response", message.code
             if message.code in ( 100, 180, 181, 182 ):
                 return
             elif message.code == 200:
-                state = call.getState() 
+                state = call.getState()
                 if state == 'SENT_INVITE':
                     self.ui.debugMessage(message.body)
                     call.sendAck(message, startRTP=1)
@@ -558,5 +558,3 @@ class SipPhone(DatagramProtocol, object):
                 pass
             else:
                 self.ui.debugMessage(message.toString())
-
-

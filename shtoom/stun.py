@@ -13,7 +13,7 @@ DefaultServers = [
     ('erlang.divmod.net', 3479),
 ]
 
-StunTypes = { 
+StunTypes = {
    0x0001: 'MAPPED-ADDRESS',
    0x0002: 'RESPONSE-ADDRESS ',
    0x0003: 'CHANGE-REQUEST',
@@ -73,9 +73,9 @@ class StunProtocol(DatagramProtocol, object):
                     log.msg("STUN: unhandled AV %s, val %r"%(avtype, repr(val)))
         elif mt == 0x0111:
             log.error("STUN got an error response")
-        
+
     def gotMappedAddress(self, addr, port):
-        log.msg("got address %s %s (should I have been overridden?)"%(addr, 
+        log.msg("got address %s %s (should I have been overridden?)"%(addr,
                                                                       port))
 
     def sendRequest(self, server, avpairs=()):
@@ -99,7 +99,7 @@ class StunProtocol(DatagramProtocol, object):
             self.sendRequest(s)
 
 class StunHook(StunProtocol):
-    """Hook a StunHook into a UDP protocol object, and it will discover 
+    """Hook a StunHook into a UDP protocol object, and it will discover
        STUN settings for it
     """
     def __init__(self, prot, *args, **kwargs):
@@ -127,7 +127,7 @@ class StunHook(StunProtocol):
 
     def uninstallStun(self):
         self._protocol.datagramReceived = self._protocol._mp_datagramReceived
-        del self.transport 
+        del self.transport
 
 # XXX should move this class somewhere else.
 class NetAddress:
@@ -162,9 +162,9 @@ class NetAddress:
 
     def __repr__(self):
         return '<NetAddress %s/%s (%s-%s) at %#x>'%(self.inet_ntoa(self.net),
-                                           self.inet_ntoa(self.mask), 
-                                           self.inet_ntoa(self.start), 
-                                           self.inet_ntoa(self.end), 
+                                           self.inet_ntoa(self.mask),
+                                           self.inet_ntoa(self.start),
+                                           self.inet_ntoa(self.end),
                                            id(self))
 
     def check(self, ip):
@@ -197,9 +197,9 @@ class RFC1918Stun:
     "A sane default policy"
     __implements__ = StunPolicy
 
-    addresses = ( NetAddress('10/8'), 
-                  NetAddress('172.16/12'), 
-                  NetAddress('192.168/16'), 
+    addresses = ( NetAddress('10/8'),
+                  NetAddress('172.16/12'),
+                  NetAddress('192.168/16'),
                   NetAddress('127/8') )
     localhost = NetAddress('127/8')
 
@@ -208,9 +208,9 @@ class RFC1918Stun:
         remoteIsRFC1918 = False
         remoteIsLocalhost = False
         # Yay. getPeer() returns a name, not an IP
-        # Since (according to radix), I should use "a non-existant 
+        # Since (according to radix), I should use "a non-existant
         # high-level interface to twisted.names.client", and I have
-        # no intentions of writing said interface just for this, 
+        # no intentions of writing said interface just for this,
         # punting to socket.gethostbyname() now.
         # This is a filthy filthy hack. But I'm screwed either way.
         if remoteip[0] not in '0123456789':
@@ -223,7 +223,7 @@ class RFC1918Stun:
             if localip in net:
                 localIsRFC1918 = True
             # See comments above. Worse, if the host has an address that's
-            # RFC1918, and externally advertised (which is wrong, and broken), 
+            # RFC1918, and externally advertised (which is wrong, and broken),
             # the STUN check will be incorrect. Bah.
             for remoteip in remoteips:
                 if remoteip in net:
@@ -241,7 +241,7 @@ def installPolicy(policy):
     _defaultPolicy = policy
 
 def getPolicy():
-    return _defaultPolicy 
+    return _defaultPolicy
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ setup(
     author = "Anthony Baxter",
     author_email = "anthony@interlink.com.au",
     url = 'http://sourceforge.net/projects/shtoom/',
-    packages = ['shtoom', 'shtoom/multicast', 
+    packages = ['shtoom', 'shtoom/multicast',
                 'shtoom/ui', 'shtoom/ui/qtui',
                 'shtoom/ui/gnomeui', 'shtoom/ui/qtui',
                 'shtoom/ui/textui', 'shtoom/ui/tkui',

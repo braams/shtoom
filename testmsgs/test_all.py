@@ -479,4 +479,3 @@ class SIPParser(unittest.TestCase):
 
     def cb_parse42(self, m):
         self.parsed = 1
-
