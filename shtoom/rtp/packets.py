@@ -57,7 +57,7 @@ class RTPParser:
         if x:
             # Mmm. Tasty tasty header extensions. We eats them.
             xhdrtype,xhdrlen = struct.unpack('!HH', data[:4])
-            data = data[4+xhdrlen:]
+            data = data[4+4*xhdrlen:]
         if padding:
             padcount = ord(data[-1])
             if padcount:
