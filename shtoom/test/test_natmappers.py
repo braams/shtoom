@@ -9,6 +9,8 @@ from twisted.trial import util
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import Protocol, Factory, DatagramProtocol
 
+from shtoom.test.test_upnp import checkUPnP
+
 import random
 
 def logerr(failure):
@@ -51,21 +53,11 @@ class MapperTest(unittest.TestCase):
         import shtoom.nat
         shtoom.nat.clearCache()
 
-    def noUPnP(self, failure):
-        print failure
-        raise unittest.SkipTest('no UPnP available')
-
-    def checkUPnP(self):
-        from shtoom.upnp import getUPnP
-        d = getUPnP()
-        d.addErrback(self.noUPnP)
-        util.wait(d)
-
     def test_upnp_mapper(self):
         from shtoom.upnp import UPnPMapper
         ae = self.assertEquals
         ar = self.assertRaises
-        self.checkUPnP()
+        checkUPnP()
         mapper = UPnPMapper()
         uprot = DatagramProtocol()
         uport = reactor.listenUDP(random.randint(10000,26000), uprot)

@@ -11,6 +11,15 @@ from twisted.internet.protocol import Protocol, Factory, DatagramProtocol
 
 import random
 
+def checkUPnP():
+    from shtoom.upnp import getUPnP
+    d = getUPnP()
+    s = Saver()
+    d.addCallback(s.save)
+    util.wait(d)
+    if s.val is None:
+	raise unittest.SkipTest('no UPnP available')
+
 class TestUPnP:
 
     def discovered(self, prot):
@@ -59,6 +68,12 @@ class TestUPnP:
         d.addCallback(self.gotexternal2)
         return d
 
+class Saver:
+    def __init__(self):
+        self.val = None
+    def save(self, val):
+        self.val = val
+
 class TestMapper:
     def __init__(self, mapper, port):
         self.port = port
@@ -82,18 +97,9 @@ class TestMapper:
 
 class UPnPTest(unittest.TestCase):
 
-    def noUPnP(self, failure):
-        print failure
-        raise unittest.SkipTest('no UPnP available')
-
-    def checkUPnP(self):
-        from shtoom.upnp import getUPnP
-        d = getUPnP()
-        d.addErrback(self.noUPnP)
-        util.wait(d)
 
     def test_upnp(self):
-        self.checkUPnP()
+        checkUPnP()
         test = TestUPnP()
         d = test.go()
         util.wait(d)
@@ -102,7 +108,7 @@ class UPnPTest(unittest.TestCase):
         from shtoom.upnp import UPnPMapper
         ae = self.assertEquals
         ar = self.assertRaises
-        self.checkUPnP()
+        checkUPnP()
         mapper = UPnPMapper()
         uprot = DatagramProtocol()
         uport = reactor.listenUDP(random.randint(10000,20000), uprot)

@@ -20,8 +20,11 @@ def main():
     sd = getSTUN()
     ld = getLocalIPAddress()
     dl = defer.DeferredList([ud, sd, ld])
-    dl.addCallback(gotResults)
+    dl.addCallback(gotResults).addErrback(didntGetResults)
 
+def didntGetResults(*res):
+    print "FAILED with", res
+    return res
 
 def gotResults(natresults):
     from twisted.internet import reactor
@@ -42,7 +45,7 @@ def gotResults(natresults):
     print "Available audio interfaces:", ', '.join(audio.listAudio())
     print "Available codecs:", ', '.join(codecs.listCodecs())
     print "Local IP address:", locIP
-    if ures:
+    if upnp:
         manuf = upnp.upnpInfo.get('manufacturer', 'unknown')
         model = upnp.upnpInfo.get('friendlyName', 'unknown')
         print "UPnP discovered a %s (%s) device"%(model, manuf)

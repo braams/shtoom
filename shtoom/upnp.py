@@ -129,14 +129,14 @@ class UPnPProtocol(DatagramProtocol, object):
                 del self.controlURL
             d = self._discDef
             del self._discDef
-            d.errback(err)
+            d.callback(NoUPnPFound())
 
     def timeoutDiscovery(self):
         if hasattr(self, '_discDef'):
             if self.urlbase is None:
                 d = self._discDef
                 del self._discDef
-                d.errback(NoUPnPFound())
+                d.callback(NoUPnPFound())
 
     def listenMulticast(self):
         from twisted.internet.error import CannotListenError
@@ -404,7 +404,6 @@ def getUPnP():
     if _cached_upnp is None:
         prot = UPnPProtocol()
         prot.listenMulticast()
-        _cached_upnp = prot
         d = prot.discoverUPnP()
         d.addCallback(_cb_gotUPnP)
         return d
@@ -413,6 +412,8 @@ def getUPnP():
 getUPnP = DeferredCache(getUPnP)
 
 def _cb_gotUPnP(upnp):
+    if isinstance(upnp, NoUPnPFound):
+        return None
     # A little bit of tricksiness here. If we got the same upnp server,
     # keep the UPnPMapper alive, so that unmap of existing entries work 
     # correctly. Otherwise, kill it.
