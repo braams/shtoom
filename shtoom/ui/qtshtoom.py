@@ -3,8 +3,6 @@
 #
 
 
-def shutdown():
-
 def main(application):
     import qt
     from twisted.internet import qtreactor
