@@ -63,9 +63,13 @@ class PreferencesDialog:
         #self.dialog.add(vbox)
 
         for group in self.opts:
+            if not group.getGUI():
+                continue
             tab = gtk.VBox(False,8)
             tab.set_border_width(8)
             #print "tab", tab
+            desc = gtk.Label(group.getDescription())
+            tab.pack_start(desc, gtk.FALSE, gtk.FALSE)
 
             for optnumber, option in enumerate(group):
                 optBox = gtk.HBox(spacing=8)
