@@ -1,0 +1,46 @@
+This file contains information on some refactorings needed in shtoom.
+These are sections of the code that *need* a solid smack to the head
+with the big refactoring stick.
+
+Note that these tasks probably make the situation seem gloomier than
+it actually is - the code as it is works, but could be done better. 
+Most of them are also going to be necessary to move forward in some
+areas that are currently blocked.
+
+[xxx work in progress]
+
+SDP/RTP/Payload Types refactoring
+---------------------------------
+
+At the moment, the responsibility for the handling of RTP payload
+types is smeared over a few pieces of code. This means, for instance,
+that we can't handle dynamically allocated payload types (such as, 
+for instance, speex). It also makes for nasty code. Ideally, the
+code would pass an object to the RTP layer that has both the data
+*and* the payload type, and similarly, receive an object from the RTP
+layer with both the data and the payload type. This then gets passed
+to the AudioLayer object. 
+
+Call
+----
+
+The Big One. The Call object is a creeping disaster. More of it's 
+logic needs to be moved out into the Dialog class, and the state 
+machine logic needs to be made explicit. This is needed to sanely 
+handle retransmits and the like. The state should also become an
+object, and it can be then responsible for handling the retransmits.
+
+Credentials
+-----------
+
+There should be a cleaner interface for the handling of credentials. 
+It's a bit of a mess right now.
+
+Import testing
+--------------
+
+There's a bunch of try: import foo except: foo = None stanzas buried 
+in the code. I'd like to move all of that out to a seperate module 
+that does *all* of the import tests in one place.
+
+
