@@ -1,10 +1,11 @@
 Before 0.1:
-    - Move SDP generation into the RTP code
-    - Hook up STUN for RTP/RTCP
+    - Fix problem of call close closing the audio device (and not allowing
+      it to be re-opened)
     - Test and fix Windows audio
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
+    - lots more error handling
 
 Before 0.2:
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
