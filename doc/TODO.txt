@@ -1,30 +1,34 @@
-Mac installer: bundlebuilder
+Mac installer: py2app roxors!
 Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net. 
 Linux installer: rpmbuilder??, deb?
 
-Definite before 0.3:
-    - Handle a CANCEL and withdraw any incoming-call-dialog
-    - go through and make sure Doug is up-to-date with recent refactorings
+New to-do before 0.3:
+    - firewall-seeding OPTIONS
+    - make registration wait for NAT discovery
+    - merge wizard and preference objects
+    - clean up i18n, i18n textui and prefs help
+    - finish auth cleanup
+    - hook up lwc code
     - all interfaces must be current and correct
-    - doug: use dropCall()'s deferred to generate correct events
-    - doug: move the DTMF code from shtoom.app.doug to shtoom.doug.leg.Leg
+    - (maybe) DirectSound interface
     - doug: s.d.conferencing's entrance soundburst bug
-    - doug: after a connectLegs(), forward on DTMF? How?
-    - doug: flesh out leg tests, then voiceapp tests
-    - ui(qt): hide multiple call support for now
-    - shtoom.avail.ui
-    - use OptionDict for a new 'registrations' tab
+    - phone: when on a call, decline a second incoming call?
+    - set up a decent roundup instance, load all entries from TODO into it.
     - write prefs UI for an OptionDict
     - finish credcache
-    - fix brokenness with acceptCall deferreds
-    - package for Mac, Windows
-    - phone: when on a call, decline a second incoming call?
+    - package for Windows
+
+Old to-do before 0.3:
+    - Handle a CANCEL and withdraw any incoming-call-dialog
+    - go through and make sure Doug is up-to-date with recent refactorings
+    - doug: use dropCall()'s deferred to generate correct events
+    - doug: after a connectLegs(), forward on DTMF? How?
+    - doug: flesh out leg tests, then voiceapp tests
+    - use OptionDict for a new 'registrations' tab
     - documentation, documentation, documentation
     - document Doug API
     - update website
     - create shtoom wiki
-    - set svn:executable on the scripts
-    - set up a decent roundup instance, load all entries from TODO into it.
 
 Maybe before 0.3:
     - G.72x codec
@@ -32,10 +36,8 @@ Maybe before 0.3:
       correct event
     - let doug handle wav and au files natively.
     - MediaLayer: a more sophisticated playout buffer
-    - cocoa native UI into it's own thread to workaround broken cfreactor
     - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
-    - ui(tk): new dialogs that don't block, and have a timeout.
     - sip/call: the state should become an object, encapsulating the current 
       state, and the state machine. This makes it _much_ easier to handle 
       retransmits and the like.
