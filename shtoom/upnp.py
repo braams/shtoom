@@ -1,3 +1,7 @@
+#
+# Copyright (C) 2004 Anthony Baxter
+# $Id: upnp.py,v 1.2 2004/01/13 14:20:52 anthonybaxter Exp $
+# 
 # UPnP support.
 
 # We have three modes. No UPnP at all, UPnP only for the SIP port, or 

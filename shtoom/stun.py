@@ -1,3 +1,6 @@
+# Copyright (C) 2004 Anthony Baxter
+# $Id: stun.py,v 1.10 2004/01/13 14:20:52 anthonybaxter Exp $
+
 import struct, socket, time
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol

@@ -1,3 +1,5 @@
+# Copyright (C) 2004 Anthony Baxter
+
 # Feed it hostname, port, and an audio file (in 8bit ulaw - sox -t ul)
 # Or skip the audio file and it'll read from the microphone
 # See also rtprecv.py for something that listens to a port and dumps it to
@@ -5,7 +7,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.27 2004/01/10 14:54:53 anthonybaxter Exp $
+# $Id: rtp.py,v 1.28 2004/01/13 14:20:52 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
