@@ -52,3 +52,7 @@ Thanks to folks who've contributed:
    Jp Calderone
 and thanks to everyone on the Twisted project for producing such a 
 high quality framework.
+
+Thanks also to Mike Barnes for providing Mac OSX hardware, and Amir
+Bakhtiar of Divmod for a UPnP-capable router.
+
