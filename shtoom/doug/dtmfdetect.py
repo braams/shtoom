@@ -64,7 +64,7 @@ class DtmfDetector:
         from sets import Set
         a = numarray.fromstring(sample, numarray.Int16)
         if len(a) != 320:
-            raise ValueError("samples length %d != 320 (40ms)"%(len(a))
+            raise ValueError("samples length %d != 320 (40ms)"%len(a))
         peaks = self.getpeaks(a)
         matched = Set()
         for p in peaks:
