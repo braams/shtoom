@@ -3,6 +3,7 @@
 
 
 def tryQtInterface():
+    import sys
     try:
         import qt
     except ImportError:
@@ -14,7 +15,6 @@ def tryQtInterface():
 
 def main():
     import sys
-    sys.real_stdout = sys.stdout
     tryQtInterface()
     # Other interfaces here
     print "Error: Couldn't load _any_ userinterfaces"
