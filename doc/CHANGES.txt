@@ -1,6 +1,10 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.2: NOT YET RELEASED
+  - gnome UI cleanup, tk UI cleanup
+  - New 'Register' button to register (after you edit registration 
+    settings).
+  - You can hang up a call that's in progress or failed
   - Additional (non-phone) applications available - shmessage, shtam
   - Tk interface more featureful - has most of the same stuff as the
     Qt interface.
