@@ -84,7 +84,6 @@ class DtmfDetector:
         # If we got a None, that means there was a significant component
         # that wasn't a DTMF frequency.
         if None in matched:
-            print "mismatched: peaks were %r"%(peaks,)
             return ''
         else:
             m = list(matched)
