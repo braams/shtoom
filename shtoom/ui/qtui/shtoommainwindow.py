@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Wed Jan 19 01:53:50 2005
+# Created: Wed Jan 19 15:16:20 2005
 #      by: The PyQt User Interface Compiler (pyuic) 3.13
 #
 # WARNING! All changes made in this file will be lost!
@@ -105,18 +105,19 @@ class ShtoomMainWindow(QMainWindow):
 
     def languageChange(self):
         self.setCaption(self.__tr("Shtoom"))
-        self.textLabel1.setText(self.__tr("Address:"))
+        self.textLabel1.setText(self.__tr("Address"))
         self.lookupButton.setText(self.__tr("..."))
         self.callButton.setText(self.__tr("Call"))
-        self.hangupButton.setText(self.__tr("Hangup"))
+        self.hangupButton.setText(self.__tr("Hang Up"))
         self.registerButton.setText(self.__tr("Register"))
         self.statusLabel.setText(QString.null)
         self.fileDTMFAction.setText(self.__tr("DTMF"))
         self.fileDTMFAction.setMenuText(self.__tr("DTMF"))
         self.fileDTMFAction.setToolTip(self.__tr("Show DTMF Window"))
         self.fileDTMFAction.setAccel(self.__tr("Ctrl+D"))
-        self.fileDebugAction.setText(self.__tr("Debugging"))
-        self.fileDebugAction.setMenuText(self.__tr("Debugging..."))
+        self.fileDebugAction.setText(self.__tr("Debug Log"))
+        self.fileDebugAction.setMenuText(self.__tr("Debug Log"))
+        self.fileDebugAction.setToolTip(self.__tr("Show Debugging Log"))
         self.fileDebugAction.setAccel(self.__tr("Ctrl+O"))
         self.fileExitAction.setText(self.__tr("Exit"))
         self.fileExitAction.setMenuText(self.__tr("Exit"))

@@ -115,7 +115,7 @@
                         </sizepolicy>
                     </property>
                     <property name="text">
-                        <string>Hangup</string>
+                        <string>Hang Up</string>
                     </property>
                 </widget>
                 <widget class="QPushButton">
@@ -194,10 +194,13 @@
             <bool>true</bool>
         </property>
         <property name="text">
-            <string>Debugging</string>
+            <string>Debug Log</string>
         </property>
         <property name="menuText">
-            <string>Debugging...</string>
+            <string>Debug Log</string>
+        </property>
+        <property name="toolTip">
+            <string>Show Debugging Log</string>
         </property>
         <property name="accel">
             <string>Ctrl+O</string>

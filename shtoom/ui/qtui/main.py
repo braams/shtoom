@@ -15,9 +15,6 @@ import sys
 from twisted.python import log
 from qt import *
 
-
-
-
 import sys
 from twisted.python import log
 
@@ -99,6 +96,8 @@ class DTMF(DTMF):
     def dtmfButton0_released(self):
         self.main.stopDTMF('0')
 
+    def __tr(self, str):
+        return QString(_(str))
 
 class Debugging(Debugging):
     def debuggingCloseButton_clicked(self):
@@ -106,6 +105,9 @@ class Debugging(Debugging):
 
     def debuggingClearButton_clicked(self):
         self.debuggingTextEdit.clear()
+
+    def __tr(self, str):
+        return QString(_(str))
 
 class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
 
@@ -121,7 +123,6 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.dtmf.main = self
         self.debugging = Debugging()
         ShtoomBaseWindow.__init__(self, *args, **kwargs)
-        print "init done", self.dtmf, self.debugging
 
     def debugMessage(self, message):
         print message
@@ -131,7 +132,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.statusLabel.setText(message)
 
     def errorMessage(self, message, exception=None):
-        log.msg("ERROR: %s"%message, system='ui')
+        log.msg("%s: %s"%(_('ERROR'), message), system='ui')
 
     def hangupButton_clicked(self):
         self.app.dropCall(self.cookie)
@@ -157,22 +158,23 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         print "started", cookie
         self.cookie = cookie
         self.hangupButton.setEnabled(True)
-        self.statusMessage('Calling...')
+        self.statusMessage(_('Calling...'))
 
     def callFailed(self, e, message=None):
         self.errorMessage("call failed", e.getErrorMessage())
+        self.statusMessage(_('Call Failed'))
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
 
     def callConnected(self, cookie):
         self.hangupButton.setEnabled(True)
-        self.statusMessage('Call Connected')
+        self.statusMessage(_('Call Connected'))
         if self._muted:
             self.app.muteCall(self.cookie)
 
     def callDisconnected(self, cookie, message):
-        self.statusMessage('Call disconnected: %s'%message)
+        self.statusMessage('%s: %s'%(_('Call Disconnected'), message))
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
@@ -187,7 +189,6 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.prefs.show()
 
     def preferences_save(self, options):
-        print "save prefs", options
         self.app.updateOptions(options)
         self.prefs.hide()
 
@@ -235,6 +236,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def fileDebugging(self, *args):
         self.debugging.show()
 
+    def __tr(self, str):
+        return QString(_(str))
+
 class Logger:
     def __init__(self, textwidget):
         self._t = textwidget
@@ -243,8 +247,8 @@ class Logger:
     def write(self, text):
         self._t.append(text)
 
-if __name__ == "__main__":
-    from twisted.internet import reactor
-    UI = ShtoomMainWindow()
-    UI.show()
-    reactor.run()
+#if __name__ == "__main__":
+    #from twisted.internet import reactor
+    #UI = ShtoomMainWindow()
+    #UI.show()
+    #reactor.run()

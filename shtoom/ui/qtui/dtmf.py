@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dtmf.ui'
 #
-# Created: Wed Jan 19 01:12:26 2005
+# Created: Wed Jan 19 01:53:50 2005
 #      by: The PyQt User Interface Compiler (pyuic) 3.13
 #
 # WARNING! All changes made in this file will be lost!
