@@ -13,8 +13,14 @@ from popups import PopupNotice
 class ShtoomWindow(ShtoomBaseUI):
 
     def __init__(self):
+        import gettext, shtoom.i18n
         self.cookie = False
-        self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"))
+        d = shtoom.i18n.getLocaleDir()
+        domain = gettext.textdomain()
+        gtk.glade.bindtextdomain(domain, d)
+        gtk.glade.textdomain(domain)
+        self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"), None,
+                                                        gettext.textdomain())
         self.xml.signal_autoconnect(self)
         self.xml.get_widget("callwindow").connect("destroy",
                                                 lambda w: reactor.stop())
