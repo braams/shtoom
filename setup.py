@@ -23,7 +23,7 @@ except ImportError:
     raise DependencyFailed("You need Twisted - http://www.twistedmatrix.com/")
 
 from twisted.copyright import version as tcversion
-if tcversion < '1.3':
+if not tcversion.startswith('SVN') and tcversion < '1.3':
     raise VersionCheckFailed("Twisted 1.3 or later is required")
 
 #try:
