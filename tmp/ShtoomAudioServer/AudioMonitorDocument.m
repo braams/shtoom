@@ -62,11 +62,14 @@ static double _db_to_scalar ( Float32 decibels )
 // ------------------- ioTarget methods ---------------
 - (OSStatus) recordIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
+    /*
     unsigned framesQueued = [outConverter writeFromAudioBufferList:inInputData timestamp:inInputTime];
     printf("queuedFramesToConverter = %d\n", framesQueued);
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelectorOnMainThread:@selector(sendDataFromConverter:) withObject:nil waitUntilDone:NO];
     [pool release];
+    */
+    
     return noErr;
 }
 
@@ -74,11 +77,7 @@ static double _db_to_scalar ( Float32 decibels )
 {
     unsigned framesRead = [inConverter readToAudioBufferList:outOutputData timestamp:inOutputTime];
     printf("readFramesFromConverter = %d\n", framesRead);
-    /*
-    if (framesRead > 0) {
-        printf("\n");
-    }
-    */
+    
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelectorOnMainThread:@selector(flushDataForConverter:) withObject:nil waitUntilDone:NO];
     [pool release];
@@ -229,28 +228,42 @@ static double _db_to_scalar ( Float32 decibels )
 - (void) _flushDataForConverter:(MTConversionBuffer *)converter
 {
     // empty queue
-    if (receiveQueue == nil || [receiveQueue length] < sizeof(Float32)) return;
+    if ([receiveQueue count] == 0) return;
     AudioBufferList myList;
     myList.mNumberBuffers = 1;
     AudioBuffer *buffer = myList.mBuffers;
-    buffer->mData = (void *)[receiveQueue bytes];
-    unsigned bytesLeft = [receiveQueue length];
-    unsigned bytesRemoved = 0;
-    while (bytesLeft > 0) {
-        // make sure it's an even Float32 big
-        buffer->mDataByteSize = bytesLeft - (bytesLeft % sizeof(Float32));
-        unsigned bytesRead = [converter writeFromAudioBufferList:&myList timestamp:NULL] * sizeof(Float32);
-        printf("bytesRead = %d bytesLeft = %d\n", bytesRead, bytesLeft);
-        if (bytesRead == 0) {
-            printf("no bytes read\n");
-            break;
-        }
-        buffer->mData += bytesRead;
-        bytesRemoved += bytesRead;
-        bytesLeft -= bytesRead;
+    buffer->mNumberChannels = 1;
+    NSMutableData *allData = [NSMutableData dataWithCapacity:SHTOOM_NETBUFFER_LENGTH];
+    NSEnumerator *queueEnumerator = [receiveQueue objectEnumerator];
+    NSData *data;
+    while ((data = [queueEnumerator nextObject]) != nil) {
+        [allData appendData:data];
     }
-    if (bytesRemoved) {
-        [receiveQueue replaceBytesInRange:NSMakeRange(0, bytesRemoved) withBytes:NULL length:0];
+    
+    [receiveQueue removeAllObjects];
+    unsigned data_length = [allData length];
+    unsigned slop_bytes = data_length % sizeof(Float32);
+
+    /*
+    static Float32 period = 0.0;
+    unsigned i;
+    Float32 curPeriod = period;
+    Float32 incPeriod = ((M_PI * 2) * 440.0) / 8000.0;
+    SInt16 *outBytes = (SInt16 *)[allData mutableBytes];
+    for (i=0; i<(data_length / sizeof(SInt16)); i++) {
+        outBytes[i] = (SInt16)(SHRT_MAX * sinf(curPeriod));
+        curPeriod += incPeriod;
+    }
+    */
+            
+    buffer->mDataByteSize = data_length - slop_bytes;
+    buffer->mData = (void *)[allData bytes];
+    unsigned bytesRead = [converter writeFromAudioBufferList:&myList timestamp:NULL] * sizeof(Float32);
+    //period += (incPeriod * bytesRead) / sizeof(SInt16);
+    unsigned leftInBuffer = [allData length] - bytesRead;
+    printf("bytesRead = %d leftInBuffer = %d slop_bytes=%d\n", bytesRead, [allData length] - bytesRead, slop_bytes);
+    if (leftInBuffer > 0) {
+        [receiveQueue addObject:[NSData dataWithBytes:[allData bytes]+bytesRead length:leftInBuffer]];
     }
 }
 
@@ -263,8 +276,9 @@ static double _db_to_scalar ( Float32 decibels )
     SInt16 *inData = (SInt16 *)[inDataContainer mutableBytes];
     unsigned len = [s read:(uint8_t *)inData maxLength:[inDataContainer length]];
     if (len == 0) return;
+    [inDataContainer setLength:len];
     
-    [receiveQueue appendData:inDataContainer];
+    [receiveQueue addObject:inDataContainer];
     [self flushDataForConverter:inConverter];
 }
 
@@ -279,7 +293,7 @@ static double _db_to_scalar ( Float32 decibels )
         if (bytesWritten <= 0) {
             break;
         } else if (bytesWritten < dataLength) {
-            [data replaceBytesInRange:NSMakeRange(0, bytesWritten) withBytes:NULL length:0];
+            [sendQueue replaceObjectAtIndex:0 withObject:[NSData dataWithBytes:[data bytes]+bytesWritten length:dataLength-bytesWritten]];
             break;
         } else {            
             [sendQueue removeObjectAtIndex:0];
@@ -305,7 +319,7 @@ static double _db_to_scalar ( Float32 decibels )
 {
     if (streamEvent & NSStreamEventOpenCompleted) {
         if ([stream isEqualTo:outputStream]) sendQueue = [[NSMutableArray alloc] init];
-        if ([stream isEqualTo:inputStream])  receiveQueue = [[NSMutableData alloc] initWithCapacity:SHTOOM_NETBUFFER_LENGTH];
+        if ([stream isEqualTo:inputStream])  receiveQueue = [[NSMutableArray alloc] init];
     }
     if (streamEvent & NSStreamEventHasBytesAvailable) {
         [self streamReadyToRead:inputStream];

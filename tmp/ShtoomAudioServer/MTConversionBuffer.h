@@ -19,6 +19,8 @@
 	Float32 * gainArray;
     AudioStreamBasicDescription inDescription;
     AudioStreamBasicDescription outDescription;    
+    
+    Float32 period;
 }
 
 + (AudioStreamBasicDescription)descriptionForDevice:(MTCoreAudioDevice *)device forDirection:(MTCoreAudioDirection)direction;

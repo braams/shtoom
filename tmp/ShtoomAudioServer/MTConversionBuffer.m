@@ -63,10 +63,25 @@ static OSStatus _FillComplexBufferProc (
         if (actuallyRead != framesToCopy) {
             printf("MISMATCH! %d != %d\n", framesToCopy, actuallyRead);
         }
+
         unsigned numberCopied = (actuallyRead * sizeof(Float32) * ioData->mBuffers[0].mNumberChannels) / inDescription.mBytesPerFrame;
         printf("(actuallyRead * sizeof(Float32) * ioData->mBuffers[0].mNumberChannels) / inDescription.mBytesPerFrame = %d\n", numberCopied);
         *ioNumberFrames = numberCopied;
-	}
+        
+        /*
+        if (inDescription.mBytesPerFrame == 2) {
+            printf("$$$$$$$$$$$$$\n");
+            SInt16 *outPtr = (SInt16*)ioData->mBuffers[0].mData;
+            float inc = ((M_PI * 2) * 440) / inDescription.mSampleRate;
+            unsigned i;
+            for (i=0; i<numberCopied; i++) {
+                outPtr[i] = (SInt16)(SHRT_MAX * sinf(period));
+                period += inc;
+            }
+        }
+        */
+        
+    }
 	else
 	{
         // DEBUG_PRINT_JUNK
@@ -125,8 +140,8 @@ static OSStatus _FillComplexBufferProc (
 	primeMethod = kConverterPrimeMethod_None;
 	srcQuality = kAudioConverterQuality_Max;
 	
-	(void) AudioConverterSetProperty ( converter, kAudioConverterPrimeMethod, sizeof(UInt32), &primeMethod );
 	(void) AudioConverterSetProperty ( converter, kAudioConverterSampleRateConverterQuality, sizeof(UInt32), &srcQuality );
+	(void) AudioConverterSetProperty ( converter, kAudioConverterPrimeMethod, sizeof(UInt32), &primeMethod );
 	
 	// if the input is mono, try to route to all channels.
 	if (( 1 == srcChans ) && ( dstChans > srcChans ))
@@ -153,12 +168,14 @@ static OSStatus _FillComplexBufferProc (
 
 - initWithSourceDescription:(AudioStreamBasicDescription)srcDescription bufferFrames:(UInt32)srcFrames destinationDescription:(AudioStreamBasicDescription)dstDescription bufferFrames:(UInt32)dstFrames
 {
+	self = [super init];
+    
 	double conversionFactor;
 	UInt32 effectiveDstFrames;
 	UInt32 totalBufferFrames;
 	UInt32 conversionChannels;
 	
-	self = [super init];
+    period = 0.0;
 
     UInt32 srcChans = srcDescription.mChannelsPerFrame;
     UInt32 dstChans = dstDescription.mChannelsPerFrame;
@@ -314,7 +331,24 @@ static OSStatus _FillComplexBufferProc (
          */
         printf("-- real framesRead = %d\n", framesRead);
         floatFramesRead = ((framesRead * outDescription.mBytesPerFrame) / outDescription.mChannelsPerFrame) / sizeof(Float32);
-		MTAudioBufferListCopy ( outputBufferList, 0, dst, 0, floatFramesRead );
+/*
+ if (outDescription.mBytesPerFrame == 8) {
+            Float32 *outPtr = (Float32*)dst->mBuffers[0].mData;
+            Float32 *inPtr = (Float32*)outputBufferList->mBuffers[0].mData;
+            float inc = ((M_PI * 2) * 440) / outDescription.mSampleRate;
+            unsigned i;
+//            for (i=0; i<floatFramesRead; i++) {
+//                outPtr[1+(2*i)] = outPtr[(2*i)] = sinf(period);
+//                period += inc;
+//            }
+            for (i=0; i<floatFramesRead*2; i+=2) {
+                printf("%d %f %f\n", i, inPtr[i], inPtr[i+1]);
+                outPtr[i] = inPtr[i];
+                outPtr[i+1] = inPtr[i+1];
+            }
+        }
+ */
+        MTAudioBufferListCopy ( outputBufferList, 0, dst, 0, floatFramesRead );
 	}
     UInt32 newFrameCount =  MTAudioBufferListFrameCount(outputBufferList);
     if (newFrameCount != outFrameCount) {
@@ -323,7 +357,7 @@ static OSStatus _FillComplexBufferProc (
     }
     free(bufBackup);
     printf("-- floatFramesRead = %d\n", floatFramesRead);
-    return framesRead;
+    return floatFramesRead;
 }
 
 - (void) dealloc

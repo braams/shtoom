@@ -39,7 +39,7 @@
     AudioBufferList *outBuffer;
     NSInputStream *inputStream;
     NSOutputStream *outputStream;
-    NSMutableData *receiveQueue;
+    NSMutableArray *receiveQueue;
     NSMutableArray *sendQueue;
 }
 
