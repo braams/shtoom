@@ -13,11 +13,7 @@ import sys
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio.fileaudio import getFileAudio
 
-STATE_NONE = 0x0
-STATE_SENDING = 0x1
-STATE_RECEIVING = 0x2
-STATE_BOTH = 0x3
-STATE_DONE = 0x4
+from shtoom.app.base import STATE_NONE, STATE_SENDING, STATE_RECEIVING, STATE_BOTH, STATE_DONE
 
 class Message(BaseApplication):
     __implements__ = ( Application, )

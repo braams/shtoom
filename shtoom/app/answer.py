@@ -10,7 +10,7 @@ from twisted.python import log
 from twisted.protocols import sip as tpsip
 import sys, time, os
 
-from shtoom.app.message import STATE_SENDING, STATE_RECEIVING
+from shtoom.app.base import STATE_SENDING, STATE_RECEIVING
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio.fileaudio import getFileAudio
@@ -101,7 +101,6 @@ class AnsweringMachine(Message):
         else:
             self._audioStates[callcookie] = STATE_RECEIVING
         
-
     def appSpecificOptions(self, opts):
         import os.path
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption

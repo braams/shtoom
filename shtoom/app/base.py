@@ -1,6 +1,13 @@
 
 from twisted.python import log
 
+STATE_NONE = 0x0
+STATE_SENDING = 0x1
+STATE_RECEIVING = 0x2
+STATE_BOTH = 0x3
+STATE_DONE = 0x4
+
+
 class BaseApplication:
     """ Base class for all applications. """
 
