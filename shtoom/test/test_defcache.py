@@ -197,16 +197,9 @@ class DefcacheTests(unittest.TestCase):
         ae = self.assertEquals
         ar = self.assertRaises
 
-        class Dectest:
-            @DeferredCache(inProgressOnly=False)
-            def foo(self, *args): 
-                return defer.succeed(args)
-            @DeferredCache(inProgressOnly=True, hashableArgs=True)
-            def foo2(self, *args): 
-                return defer.succeed(args)
-            @DeferredCache
-            def foo3(self, *args): 
-                return defer.succeed(args)
+	# Has to be elsewhere to avoid SyntaxErrors :-(
+	from shtoom.test.decorated_defcache_test import Dectest
+
         # XXX actually test the stupid things?!
         d = Dectest()
         ae(d.foo.cache_inProgressOnly, False)

@@ -112,7 +112,7 @@ class UPnPTest(unittest.TestCase):
             ar(ValueError, mapper.info, port)
             t = TestMapper(mapper, port)
             d = t.go()
-            util.wait(d)
+            util.wait(d, timeout=5)
             ae(len(t.map_res), 2)
             ae(t.map_res, t.info_res)
             ae(t.unmap_res, None)

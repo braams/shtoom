@@ -12,7 +12,7 @@ from twisted.internet.protocol import Protocol, Factory, DatagramProtocol
 def logerr(failure):
     print "logerr", failure
     print failure.value
-    return args
+    return failure
 
 class TestMapper:
     def __init__(self, mapper, port):
@@ -76,7 +76,7 @@ class MapperTest(unittest.TestCase):
             t = TestMapper(mapper, port)
             d = t.go()
             d.addErrback(logerr)
-            util.wait(d)
+            util.wait(d, timeout=5)
             ae(len(t.map_res), 2)
             ae(t.map_res, t.info_res)
             ae(t.unmap_res, None)
