@@ -255,5 +255,5 @@ if __name__ == "__main__":
     stunClient = StunProtocol()
     log.startLogging(sys.stdout)
     reactor.listenUDP(5061, stunClient)
-    reactor.callLater(1, stunClient.blatServers)
+    reactor.callLater(0, stunClient.blatServers)
     reactor.run()
