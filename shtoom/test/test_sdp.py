@@ -1,3 +1,4 @@
+# Copyright (C) 2003 Anthony Baxter
 """Tests for SDP.
 
 You can run this with command-line:

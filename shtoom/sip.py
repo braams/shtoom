@@ -1,3 +1,5 @@
+# Copyright (C) 2003 Anthony Baxter
+
 """SIP client code."""
 
 from interfaces import ISipPhone

@@ -1,4 +1,6 @@
 
+# Copyright (C) 2003 Anthony Baxter
+
 from distutils.core import setup
 
 from shtoom import Version

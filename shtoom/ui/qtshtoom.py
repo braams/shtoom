@@ -1,12 +1,6 @@
 
-# Feed it hostname, port, and an audio file (in 8bit ulaw - sox -t ul)
-# Or skip the audio file and it'll read from the microphone
-# See also rtprecv.py for something that listens to a port and dumps it to
-# the audio device
-#
-# Set option 'use_setitimer' for better results - needs
-# http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: qtshtoom.py,v 1.2 2003/11/16 06:28:16 anthonybaxter Exp $
+# Copyright (C) 2003 Anthony Baxter
+# $Id: qtshtoom.py,v 1.3 2003/11/16 06:49:58 anthonybaxter Exp $
 #
 
 import time, signal, socket, struct

@@ -1,3 +1,5 @@
+# Copyright (C) 2003 Anthony Baxter
+
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
 

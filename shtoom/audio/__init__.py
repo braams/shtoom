@@ -1,4 +1,4 @@
-
+# Copyright (C) 2003 Anthony Baxter
 
 def findAudioDevice():
     for attempt in ( tryOssAudio, ):

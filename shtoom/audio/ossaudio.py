@@ -1,3 +1,5 @@
+# Copyright (C) 2003 Anthony Baxter
+
 def getAudioDevice(mode):
     import ossaudiodev
     dev = ossaudiodev.open(mode)

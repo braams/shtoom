@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Copyright (C) 2003 Anthony Baxter
+
 
 
 def tryQtInterface():

@@ -1,6 +1,6 @@
 #
 #
-# Copyright (c) 1998 Anthony Baxter.
+# Copyright (c) 2003 Anthony Baxter.
 #
 
 def dq2num(addr,pad=0):
