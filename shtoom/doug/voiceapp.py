@@ -187,7 +187,9 @@ class VoiceApp(StateMachine):
         if old.isPlaying():
             old.close()
             self.__playoutList = []
-        if old.isRecording():
+            if old.isRecording():
+                self.__recordDest = None
+        elif old.isRecording():
             old.close()
             self.__recordDest = None
 
