@@ -16,6 +16,8 @@ from shtoom.ui.logo import b64logo
 class ShtoomMainWindow(ShtoomBaseUI):
     def __init__(self):
         self.cookie = False
+        self._muted = False
+        self._connected = False
 
         self.main = Tk(className='shtoom')
         # also do hangup, shutdown reactor, &c
@@ -46,6 +48,10 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._registerButton = Button(self._top3, text="Register",
                                   command=self.registerButton_clicked)
         self._registerButton.grid(row=1, column=3, sticky=NW)
+        self._muteButton = Checkbutton(self._top3, text="Mute",
+                                  variable=self._muted,
+                                  command=self.muteButton_clicked)
+        self._muteButton.grid(row=1, column=4, sticky=W)
         self._top3.grid(row=2,column=1,columnspan=2, sticky=NW)
         self._statusF = Frame(self._top1)
         self._statusL = Label(self._statusF, text="Status:")
@@ -109,9 +115,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
 
     def callConnected(self, cookie):
         self.statusMessage("Call connected")
+        self._connected = True
+        if self._muted:
+            self.app.muteCall(self.cookie)
 
     def callDisconnected(self, cookie, message):
         status = "Call disconnected"
+        self._connected = False
         if message:
             status = "%s: %r"%(status, message)
         self.statusMessage(status)
@@ -125,6 +135,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
 
     def callFailed(self, e, message=None):
         self.statusMessage("call failed %s"%e.getErrorMessage())
+        self._connected = False
         self._hangupButton.config(state=DISABLED)
         self._callButton.config(state=NORMAL)
         self.cookie = None
@@ -134,6 +145,15 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._callButton.config(state=NORMAL)
         self._hangupButton.config(state=DISABLED)
         self.cookie = False
+
+    def muteButton_clicked(self):
+        self._muted = not self._muted
+        if self._connected:
+            if self._muted:
+                self.app.muteCall(self.cookie)
+            else:
+                self.app.unmuteCall(self.cookie)
+            
 
     def shutdown(self):
         # XXX Hang up any calls
