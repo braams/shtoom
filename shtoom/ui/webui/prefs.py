@@ -8,93 +8,112 @@ from nevow import entities
 from nevow import inevow
 from nevow import flat
 from nevow import static
+from nevow.url import here
 from formless import annotate, webform, iformless
 
 from shtoom import Options
 
 import os
 
+## The stylesheet which is used for all pages.
+stylesheet = T.style(type="text/css")["""
+@import "css";
 
-def switcher(*args):
+body { margin: 0px; font-family: "gill sans" sans-serif; background-color: #f5f5f5; }
+h1 { background-color: #dddddd; font-size: large; }
+h2 { font-size: medium; }
+h1,h2,form,table { padding: 7px; margin: 0px; }
+form { background-color: #f5f5f5; }
+p { margin: 5px; }
+label { margin-left: 5px; cursor: pointer; }
+
+#message {
+    margin-bottom: 0.25em;
+    padding: 0.25em;
+    color: green;
+    background-color: #efefef; }
+
+.tab {
+    background-color: #f5f5f5; }
+
+.tab-selected {
+    background-color: #ccccee;
+    text-decoration: underline; }
+
+.tab,.tab-selected {
+    cursor: pointer;
+    display: inline-block;
+    padding: 15px;
+    padding-top: 4px;
+    padding-bottom: 4px; }
+    
+img { border: 0px; }
+
+.header-line {
+    white-space: nowrap;
+    padding-top: 4px; }
+
+.mode-switch { float: right; }
+
+table { width: 100%; }
+th { text-align: left; }
+"""]
+
+## A list of preference panes we are interested in viewing on the Advanced page.
+interesting = ["identity", "proxy", "register"]
+
+
+def switcher(ctx, *args):
     """Take any number of (interface, (badgeName, headerText), body) tuples, and return html which
     will render a tabbed widget. There will be a series of tabs, which will each show a badge and some
     header text. Each tab has a body which will be shown when that tab is selected.
 
     interface: If the avatar cannot be adapted to the given interface, that tab will not be shown.
-    badgeName: The name of an image in the /images/badges/ directory which will be rendered
+    badgeName: The name of an image in the /images/ directory which will be rendered
         inside of the tab.
     headerText: The text which will be rendered inside of the tab.
     body: The stan which will be shown when this tab is selected.
     """
-    def render(ctx, avatar):
-        interfaces, headers, bodies = zip(*args)
-        currentView = ctx.arg('currentView', headers[0][1])
-        if currentView:
-            for (i, (badge, description)) in enumerate(headers):
-                if description == currentView:
-                    currentIndex = i
-                    break
-            else:
-                raise Exception("Bad view: %s" % currentView)
+    headers, bodies = zip(*args)
+    currentView = ctx.arg('currentView', headers[0][1])
+    if currentView:
+        for (i, (badge, description)) in enumerate(headers):
+            if description == currentView:
+                currentIndex = i
+                break
         else:
-            currentIndex = 0
+            raise Exception("Bad view: %s" % currentView)
+    else:
+        currentIndex = 0
 
-        yield T.inlineJS("""
-    var current = 'switch_%s';
-    function switchIt(what) {
-        document.getElementById(current).style.display = 'none';
-        document.getElementById(what).style.display = 'block';
-        document.getElementById(current + '_tab').className = 'tab';
-        document.getElementById(what + '_tab').className = 'tab-selected';
-        current = what;
-    }""" % currentIndex)
+    def genheaders():
+        for i, head in enumerate(headers):
+            badge, description = head
+            if currentView == description:
+                klas = 'tab-selected'
+            else:
+                klas = 'tab'
 
+            yield T.a(href=here.add('currentView', description))[
+                T.span(_class="%s" % klas)[
+                    T.img(src="/images/%s.png" % badge, style="margin-right: 5px;"), description]]
 
-        def genheaders():
-            for i, head in enumerate(headers):
-                if interfaces[i](avatar, None) is None:
-                    ## This avatar does not have this interface. Don't render the tab.
-                    continue
-                badge, description = head
-                if currentView == description:
-                    klas = 'tab-selected'
-                else:
-                    klas = 'tab'
-                
-                yield entities.nbsp, entities.nbsp, entities.nbsp, entities.nbsp, 
-                if badge is None:
-                    image = ''
-                else:
-                    image = T.img(src="/images/%s.png" % badge, style="margin-right: 5px;")
-                yield T.span(_class="%s" % klas, id="switch_%s_tab" % i, onclick="switchIt('switch_%s')" % i)[
-                    image, description]
+    yield T.div(_class="header-line")[ genheaders() ]
 
-        yield T.div(style="white-space: nowrap;")[ genheaders() ]
+    def genbodies():
+        style = None
+        for i, body in enumerate(bodies):
+            def remember(ctx, data):
+                ctx.remember([('replace', ['currentView', headers[i][1]], {})], inevow.IViewParameters)
+                return ctx.tag
 
-        def genbodies():
-            style = None
-            for i, body in enumerate(bodies):
-                if interfaces[i](avatar, None) is None:
-                    ## This avatar does not have this interface. Don't render the tab.
-                    continue
+            if currentView != headers[i][1]:
+                continue
 
-                def remember(ctx, data):
-                    ctx.remember([('replace', ['currentView', headers[i][1]], {})], inevow.IViewParameters)
-                    return ctx.tag
+            yield T.div(id="switch_%s" % i, style=style, render=remember)[
+                body ]
 
-                if currentView != headers[i][1]:
-                    style = 'display: none'
-                else:
-                    style = None
-
-                yield T.div(id="switch_%s" % i, style=style, render=remember)[
-                    body ]
-
-        yield T.div(_class="switcher-body")[ genbodies() ]
-    return render
-
-
-def ALWAYS(data, default): return True
+    yield T.div(style="margin-top: 4px")[ genbodies() ]
 
 
 def noDefault(ctx, data):
@@ -112,9 +131,12 @@ class PreferencesPage(rend.Page):
     def render_switcher(self, ctx, allOptions):
         def genSwitchers():
             for opt in allOptions:
-                yield (ALWAYS, (opt.getName(), opt.getDescription()), T.invisible(render=self.render_option, data=opt))
+                name = opt.getName()
+                print name
+                if name in interesting:
+                    yield ((name, opt.getDescription()), T.invisible(render=self.render_option, data=opt))
 
-        return switcher(*list(genSwitchers()))
+        return switcher(ctx, *list(genSwitchers()))
 
     def render_option(self, ctx, opt):
         optType = type(opt)
@@ -160,39 +182,16 @@ class PreferencesPage(rend.Page):
     def render_passwordOption(self, ctx, password):
         return T.input(type="password", name=password.getName())
 
-    child_images = static.File(os.path.join(os.path.dirname(__file__), 'images'))
-
     docFactory = loaders.stan(T.html[
     T.head[
-        T.title["Shtoom Settings"]],
-        T.style(type="text/css")["""
-body {
-    font-family: gill sans; 
-    padding: 0px; }
-
-#message {
-    margin-bottom: 0.25em;
-    padding: 0.25em;
-    color: green;
-    background-color: #efefef; }
-
-.tab {
-    background-color: #efefef; }
-
-.tab-selected {
-    background-color: #dddddd;
-    text-decoration: underline; }
-
-.tab,.tab-selected {
-    cursor: pointer;
-    display: inline-block;
-    padding: 10px;
-    padding-top: 4px;
-    padding-bottom: 4px; }
-
-.switcher-body { margin-top: -4px }
-"""],
+        T.title["Shtoom Settings"],
+        stylesheet],
     T.body[
+        T.h1[
+            T.span(_class="mode-switch")[
+                T.a(href="/")[T.span(_class="tab")["Basic"]],
+                T.a(href="/advanced")[T.span(_class="tab-selected")["Advanced"]]],
+                "Shtoom Configuration"],
         render_switcher,
         render_message]])
 
@@ -218,8 +217,22 @@ class Configure(rend.Page):
         return '<html><body>Options set. <a href="/">Go back.</a></body></html>'
 
 
+
+def getConfigurationChoices(ctx, data):
+    rcd = os.path.expanduser('~/.shtoomrc.d')
+    if not os.path.exists(rcd):
+        os.mkdir(rcd)
+    rv = os.listdir(rcd)
+    rv = [x for x in rv if not x.startswith('.')]
+    if not rv: return ['No current configurations']
+    return rv
+
+
 class IWizardConfiguration(annotate.TypedInterface):
-    currentConfiguration = annotate.Choice(choicesAttribute='configurationChoices')
+    currentConfiguration = annotate.Choice(getConfigurationChoices)
+
+
+labelClick = "document.getElementById(window.event.target.parentNode.getAttribute('for')).click(); true"
 
 
 currentConfigFilename = os.path.expanduser('~/.shtoomrc.d/.currentConfigName')
@@ -229,18 +242,11 @@ class WizardConfiguration(rend.Page):
     def child_add_config(self, ctx):
         return ConfigurationWizard(self.original)
 
-    child_css = webform.defaultCSS
+    def child_advanced(self, ctx):
+        return PreferencesPage(self.original)
 
-    def getConfigurationChoices(self):
-        print "get configuration choices"
-        rcd = os.path.expanduser('~/.shtoomrc.d')
-        if not os.path.exists(rcd):
-            os.mkdir(rcd)
-        rv = os.listdir(rcd)
-        rv = [x for x in rv if not x.startswith('.')]
-        if not rv: return ['No current configurations']
-        return rv
-    configurationChoices = property(getConfigurationChoices)
+    child_images = static.File(os.path.join(os.path.dirname(__file__), 'images'))
+    child_css = webform.defaultCSS
 
     def getCurrentConfig(self):
         if os.path.exists(currentConfigFilename):
@@ -248,51 +254,63 @@ class WizardConfiguration(rend.Page):
         return ''
     def setCurrentConfig(self, new):
         open(currentConfigFilename, 'w').write(new)
-        open(os.path.expanduser('~/.shtoomrc'), 'w').write(open(os.path.expanduser('~/.shtoomrc.d/%s' % new)).read())
+        rcname = os.path.expanduser('~/.shtoomrc')
+        open(rcname, 'w').write(open(os.path.expanduser('~/.shtoomrc.d/%s' % new)).read())
+        self.original.setValue('created_by_wizard', '')
         ## reload app options
         self.original.loadOptsFile()
+        print "OPTS LOADED", open(rcname).read()
     currentConfiguration = property(getCurrentConfig, setCurrentConfig)
 
     def render_currentConfiguration(self, ctx, data):
-        if not os.path.exists(currentConfigFilename):
-            noConfig = True
+        eml = self.original.getValue('email_address')
+        if eml:
+            ctx.fillSlots('current',
+                ctx.onePattern('current'
+                ).fillSlots('email', eml
+                ).fillSlots('host', self.original.getValue('register_uri')))
         else:
-            currentConfigFile = open(currentConfigFilename).read().strip()
-            configFilename = os.path.expanduser('~/.shtoomrc.d/%s' % (currentConfigFile, ))
-            if not os.path.exists(configFilename):
-                noConfig = True
-            else:
-                noConfig = False
-
-        if noConfig:
-        #    import pdb; pdb.Pdb().set_trace()
-            return "No current configurations. Please add one below."
-        return T.h2[currentConfigFile]
+            ctx.fillSlots('current', '')
+        return ctx.tag
 
     docFactory = loaders.stan(T.html[
     T.head[
-        T.title["Shtoom Configuration"]],
-        T.body[
-            T.h1["Shtoom Configuration"],
-            webform.renderForms()[
-                T.form(pattern='freeform-form',
-                action=T.slot('form-action'),
-                enctype="multipart/form-data",
-                method="POST",
-                id=T.slot('form-id'))[
-                    T.slot('form-arguments'),
-                    T.span(pattern="binding")[
-                        T.strong[T.slot('label')],
-                        T.span(style="margin-left: 15px")[T.select(pattern='selector', onchange='submit();'), T.slot('input')]]]],
-            render_currentConfiguration,
-            T.h1["Add a Configuration"],
-            T.form(action="add_config")[
-                T.p[T.input(type="radio", name="config_type", value="divmod")["Divmod account"]],
-                T.p[T.input(type="radio", name="config_type", value="fwd")["Free world dialup account"]],
-                T.p[T.input(type="radio", name="config_type", value="manual")["Manual configuration"]],
-                T.input(type="submit", name="configure", value="Create configuration")
-                ]
-            ]])
+        T.title["Shtoom Configuration"],
+        stylesheet],
+    T.body[
+        T.h1[
+            T.span(_class="mode-switch")[
+                T.a(href="/")[T.span(_class="tab-selected")["Basic"]],
+                T.a(href="/advanced")[T.span(_class="tab")["Advanced"]]],
+                "Shtoom Configuration"],
+        webform.renderForms(bindingNames=['currentConfiguration'])[
+            T.form(pattern='freeform-form',
+            action=T.slot('form-action'),
+            enctype="multipart/form-data",
+            method="POST",
+            id=T.slot('form-id'))[
+                T.slot('form-arguments'),
+                T.span(pattern="binding")[
+                    T.strong[T.slot('label')],
+                    T.slot('input'),
+                    webform.ChoiceRenderer.default_select.clone()(
+                        style="margin-left: 15px", pattern="selector", onchange='submit();')]]],
+        T.div(render=render_currentConfiguration)[
+            T.slot('current')[
+                T.table(pattern="current")[
+                    T.tr[
+                        T.th["Account"], T.th["Host"]],
+                    T.tr[
+                        T.td[T.slot('email')], T.td[T.slot('host')]]]]],
+        T.h1["Add a Configuration"],
+        T.form(action="add_config")[
+            T.p[
+                T.input(type="radio", name="config_type", id="divmod_radio", value="divmod"),
+                T.label(_for="divmod_radio", onclick=labelClick)["Divmod account"]],
+            T.p[
+                T.input(type="radio", name="config_type", id="fwd_radio", value="fwd"),
+                T.label(_for="fwd_radio", onclick=labelClick)["Free world dialup account"]],
+            T.input(type="submit", name="configure", value="Create configuration")]]])
 
 
 class IConfigurationWizard(annotate.TypedInterface):
@@ -312,14 +330,6 @@ class IConfigurationWizard(annotate.TypedInterface):
         pass
     fwd = annotate.autocallable(fwd, action="Create")
 
-    def manual(self, req=annotate.Request(), name=annotate.String(label="Configuration Name"), username=annotate.String(), password=annotate.PasswordEntry()):
-        """Manual
-        
-        Add a configuration manually.
-        """
-        pass
-    manual = annotate.autocallable(manual, action="Create")
-
 
 class ConfigurationWizard(rend.Page):
     __implements__ = IConfigurationWizard, rend.Page.__implements__
@@ -335,7 +345,7 @@ class ConfigurationWizard(rend.Page):
     docFactory = loaders.stan(T.html[
     T.head[
         T.title["Configuration Wizard"],
-        T.link(rel="stylesheet", type="text/css", href="css")],
+        stylesheet],
     T.body[
         T.span(render=render_result),
         T.h1["Add configuration"],
@@ -351,21 +361,27 @@ class ConfigurationWizard(rend.Page):
             register_user=username,
             register_authuser=username,
             register_authpasswd=password))
+        self.pokeOptsFile(name)
+        req.setComponent(iformless.IRedirectAfterPost, '/')
+
+    def fwd(self, req, name, username, password):
+        self.original.updateOptions(dict(username=username,
+            email_address='%s@fwd.pulver.com' % (username, ),
+            outbound_proxy_url='sip:fwdnat.pulver.com:5082',
+            register_uri='sip:fwd.pulver.com:5060',
+            register_authuser=username,
+            register_user=username,
+            register_authpasswd=password))
+        self.pokeOptsFile(name)
+        req.setComponent(iformless.IRedirectAfterPost, '/')
+
+    def pokeOptsFile(self, name):
         self.original.saveOptsFile()
         self.original.loadOptsFile()
         self.original.setOptsFile('.shtoomrc.d/%s' % (name, ))
         self.original.saveOptsFile()
         self.original.setOptsFile('.shtoomrc')
         open(currentConfigFilename, 'w').write(name)
-        req.setComponent(iformless.IRedirectAfterPost, '/')
-
-    def fwd(self, req, name, username, password):
-        req.setComponent(iformless.IRedirectAfterPost, '/')
-        return "Sorry, the free world dialup wizard is not yet implemented"
-
-    def manual(self, req, name, username, password):
-        req.setComponent(iformless.IRedirectAfterPost, '/')
-        return "Sorry, the free advanced wizard is not yet implemented"
 
 
 class Reloader(rend.Page):
