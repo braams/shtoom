@@ -74,15 +74,15 @@ class DougApplication(BaseApplication):
         self.dropCall(callcookie)
 
     def acceptCall(self, call, **calldesc):
+        from shtoom.doug.leg import Leg
         print "acceptCall for %r"%calldesc
 
+        print "dialog is", calldesc.get('dialog')
         calltype = calldesc.get('calltype')
         d = defer.Deferred()
         cookie = self.getCookie()
         self._calls[cookie] = call
-        print "ACCEPTED", self._calls.keys()
         self.initVoiceapp(cookie)
-        print "CREATED APP"
         d.addCallback(lambda x: self._createRTP(cookie,
                                                 calldesc['localIP'],
                                                 calldesc['withSTUN']))
@@ -91,11 +91,20 @@ class DougApplication(BaseApplication):
             d.callback(cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
-            log.msg("accepting incoming call from %s"%calldesc['desc'])
-            d.callback(cookie)
+            log.msg("starting incoming call from %s"%calldesc['desc'])
+            d.addErrback(lambda x: self.rejectedCall(cookie, x))
+            inbound = Leg(cookie, calldesc['dialog'])
+            inbound.incomingCall(d)
+            self._voiceapps[cookie].va_callstart(inbound)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
         return d
+
+    def rejectedCall(self, callcookie, reason):
+        print "rejectedCall", callcookie, reason
+        del self._calls[callcookie]
+        del self._voiceapps[callcookie] 
+        return reason
 
     def _createRTP(self, cookie, fromIP, withSTUN):
         from shtoom.rtp import RTPProtocol
@@ -144,8 +153,9 @@ class DougApplication(BaseApplication):
 
     def startCall(self, callcookie, remoteAddr, cb):
         # create an inboundLeg
-        self._voiceapps[callcookie].va_callstart(None)
+        from shtoom.doug.leg import Leg
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
+        self._voiceapps[callcookie].va_callanswered()
         log.msg("call %s connected"%callcookie)
         cb(callcookie)
 

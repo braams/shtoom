@@ -78,13 +78,24 @@ class                MediaRecordStoreFailedEvent(MediaRecordDoneEvent):
     """ A media record failed because the storage didn't work
     """
 
-class    CallStartedEvent(Event):
-    """ A call started
+class    CallLegEvent(Event):
+    """ A call event associated with a Leg
     """
     def __init__(self, leg):
         self.leg = leg
 
-class    CallEndedEvent(Event):
+    def getLeg(self):
+        return self.leg
+
+class      CallStartedEvent(CallLegEvent):
+    """ A call started
+    """
+
+class      CallAnsweredEvent(CallLegEvent):
+    """ A call was connected
+    """
+
+class      CallEndedEvent(CallLegEvent):
     """ A call started
     """
     def __init__(self, leg):

@@ -93,10 +93,13 @@ class Address:
         return formatAddress((self._display, self._uri, self._params))
                 
 class Dialog:
+    _contact = None
+
     def __init__(self, callid=None, caller=None, callee=None):
         self._callid = callid
         self._caller = caller
         self._callee = callee
+        self._cseq = random.randint(1000,5000)
 
     def setCaller(self, address):
         if not isinstance(address, Address):
@@ -113,10 +116,64 @@ class Dialog:
             callid = getCallId()
         self._callid = callid
 
+    def setContact(self, username, ip, port):
+        self._contact = tpsip.URL(ip, username=username, port=port)
+
+    def getContact(self):
+        return self._contact 
+
+    def getCaller(self):
+        return self._caller
+
+    def getCallee(self):
+        return self._callee
+
+    def getCallID(self):
+        return self._callid
+
+    def getCSeq(self, incr=0):
+        if incr:
+            self._cseq += 1
+        return self._cseq
+
+    def formatResponse(self, message, code, body, bodyCT='application/sdp'):
+        resp = tpsip.Response(code)
+        vias = message.headers['via']
+        for via in vias:
+            resp.addHeader('via', via)
+        # XXX copy Record-Route headers
+        if not self.getCallee():
+            addr = message.headers['to'][0]
+            self.setCallee(Address(addr, ensureTag=True))
+        if not self.getCaller():
+            addr = message.headers['from'][0]
+            self.setCaller(Address(addr))
+        resp.addHeader('to', str(self.getCallee()))
+        resp.addHeader('from', str(self.getCaller()))
+        resp.addHeader('date', genStandardDate())
+        resp.addHeader('call-id', message.headers['call-id'][0])
+        resp.addHeader('server', 'Shtoom/%s'%ShtoomVersion)
+        resp.addHeader('cseq', message.headers['cseq'][0])
+        resp.addHeader('allow-events', 'telephone-event')
+        if message.method == 'INVITE' and code == 200:
+            resp.addHeader('contact', str(self.getContact()))
+            # We include SDP here
+            resp.addHeader('content-length', len(body))
+            resp.addHeader('content-type', bodyCT)
+            resp.bodyDataReceived(body)
+        else:
+            resp.addHeader('content-length', 0)
+        resp.creationFinished()
+        return resp.toString()
+
+    def __repr__(self):
+        return "<Dialog %s->%s, %s>"%(self.getCaller(),self.getCallee(),self.getCallID())
+
+
 class Call(object):
     '''State machine for a phone call (inbound or outbound).'''
 
-    cookie = _callID = uri = None
+    cookie = uri = None
     nonce_count = 1
     sip = None
     _invite = None
@@ -124,19 +181,16 @@ class Call(object):
         self.sip = phone
         self.compDef = deferred
         self.call_attempts = 0
-        self._callID = None
         self._remoteURI = None
         self._remoteAOR = None
         self._localAOR = None
         self._outboundProxyURI = None
-        self._caller = None
-        self._callee = None
+        self.dialog = Dialog()
         self.state = 'NEW'
         self._needSTUN = False
         self.cancel_trigger = None
         if callid:
             self.setCallID(callid)
-        self.cseq = random.randint(1000,5000)
 
     def setupLocalSIP(self, uri=None, via=None):
         ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL
@@ -166,9 +220,9 @@ class Call(object):
 
     def setCallID(self, callid=None):
         if callid:
-            self._callID = callid
+            self.dialog.setCallID(callid)
         else:
-            self._callID = '%s@%s'%(genCallId(), self.getLocalSIPAddress()[0])
+            self.dialog.setCallID('%s@%s'%(genCallId(), self.getLocalSIPAddress()[0]))
 
     def setState(self, state):
         self.state = state
@@ -222,7 +276,7 @@ class Call(object):
             deferred = SH.discoverStun(deferred)
         elif useStun is False:
             self._localIP, self._localPort = locAddress
-            if not self._callID:
+            if not self.dialog.getCallID():
                 self.setCallID()
             self.sip.updateCallObject(self, self.getCallID())
             self.setupDeferred.callback((self._localIP, self._localPort))
@@ -240,18 +294,13 @@ class Call(object):
         self._localIP = host
         self._localPort = port
         # XXX Check for multiple firings!
-        if not self._callID:
+        if not self.dialog.getCallID():
             self.setCallID()
             self.sip.updateCallObject(self, self.getCallID())
         self.setupDeferred.callback((host,port))
 
-    def getCSeq(self, incr=0):
-        if incr:
-            self.cseq += 1
-        return self.cseq
-
     def getCallID(self):
-        return self._callID
+        return self.dialog.getCallID()
 
     def getLocalSIPAddress(self):
         return (self._localIP, self._localPort or 5060)
@@ -279,6 +328,9 @@ class Call(object):
     def acceptedCall(self, cookie):
         print "acceptedCall setting cookie to", cookie
         self.cookie = cookie
+        lhost, lport = self.getLocalSIPAddress()
+        username = self.sip.app.getPref('username')
+        self.dialog.setContact(username, lhost, lport)
         self.sendResponse(self._invite, 200)
         self.setState('INVITE_OK')
 
@@ -295,7 +347,9 @@ class Call(object):
         ''' Send a response to a message. message is the response body,
             code is the response code (e.g.  200 for OK)
         '''
+
         from shtoom.multicast.SDP import SDP
+        body = None
         if message.method == 'INVITE' and code == 200:
             sdp = self.sip.app.getSDP(self.cookie)
             othersdp = SDP(message.body)
@@ -304,48 +358,17 @@ class Call(object):
                 self.sendResponse(message, 406)
                 self.setState('ABORTED')
                 return
+            body = sdp.show()
             self.sip.app.selectFormat(self.cookie, sdp.rtpmap)
-        resp = tpsip.Response(code)
-        #via = tpsip.parseViaHeader(message.headers['via'][0])
-        #branch = via.branch
-        #if branch:
-        #    branch = ';branch=%s'%branch
-        #else:
-        #    branch = ''
+
+        resp = self.dialog.formatResponse(message, code, body)
+
         vias = message.headers['via']
-        for via in vias:
-            resp.addHeader('via', via)
-        if not self._callee:
-            addr = message.headers['to'][0]
-            self._callee = Address(addr, ensureTag=True)
-        if not self._caller:
-            addr = message.headers['from'][0]
-            self._caller = Address(addr)
-        resp.addHeader('to', str(self._callee))
-        resp.addHeader('from', str(self._caller))
-        resp.addHeader('date', genStandardDate())
-        resp.addHeader('call-id', message.headers['call-id'][0])
-        resp.addHeader('server', 'Shtoom/%s'%ShtoomVersion)
-        resp.addHeader('cseq', message.headers['cseq'][0])
-        resp.addHeader('allow-events', 'telephone-event')
-        if message.method == 'INVITE' and code == 200:
-            lhost, lport = self.getLocalSIPAddress()
-            username = self.sip.app.getPref('username')
-            resp.addHeader('contact', '<sip:%s@%s:%s>'%(
-                                        username, lhost, lport))
-            # We include SDP here
-            resp.addHeader('content-type', 'application/sdp')
-            sdp = sdp.show()
-            resp.addHeader('content-length', len(sdp))
-            resp.bodyDataReceived(sdp)
-        else:
-            resp.addHeader('content-length', 0)
-        resp.creationFinished()
         try:
             via0 = tpsip.parseViaHeader(vias[0])
             viaAddress = (via0.host, via0.port)
-            self.sip.transport.write(resp.toString(),viaAddress)
-            self.sip.app.debugMessage("Response sent to %r\n%s"%(viaAddress,resp.toString()))
+            self.sip.transport.write(resp,viaAddress)
+            self.sip.app.debugMessage("Response sent to %r\n%s"%(viaAddress,resp))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             #self.compDef.errback(e(v))
@@ -358,8 +381,8 @@ class Call(object):
         uri = tpsip.parseURL(toAddr)
         self._remoteAOR = uri
         # XXX Display name? needs an option
-        self._callee = Address(uri, ensureTag=False)
-        self._caller = self.getLocalAOR()
+        self.dialog.setCallee(Address(uri, ensureTag=False))
+        self.dialog.setCaller(self.getLocalAOR())
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)
                                                         ).addErrback(log.err)
@@ -373,10 +396,10 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        self._caller = Address(invite.headers['from'][0])
-        self._callee = Address(invite.headers['to'][0], ensureTag=True)
+        self.dialog.setCaller(Address(invite.headers['from'][0]))
+        self.dialog.setCallee(Address(invite.headers['to'][0], ensureTag=True))
         self._remoteURI = Address(self.contact).getURI(parsed=True)
-        self._remoteAOR = self._callee.getURI()
+        self._remoteAOR = self.dialog.getCallee().getURI()
         d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
         if invite.headers.has_key('subject'):
             desc = invite.headers['subject'][0]
@@ -391,10 +414,11 @@ class Call(object):
                                               withSTUN=self.getSTUNState() ,
                                               toAddr=invite.headers.get('to'),
                                               fromAddr=invite.headers.get('from'),
+                                              dialog=self.dialog,
                                               ).addCallbacks(
                                                    self.acceptedCall, 
                                                    self.rejectCall).addErrback(log.err)
-                      and None)
+                      and None).addErrback(log.msg)
         #self.app.incomingCall(subj, call, defaccept, defsetup)
 
     def recvInvite(self, invite):
@@ -418,6 +442,7 @@ class Call(object):
                                         calltype='outbound',
                                         localIP=self.getLocalSIPAddress()[0],
                                         withSTUN=self.getSTUNState(),
+                                        dialog=self.dialog,
                                         )
             d.addCallback(lambda x:self.sendInvite(toAddr, cookie=x, init=init)
                                                         ).addErrback(log.err)
@@ -428,6 +453,9 @@ class Call(object):
         if cookie:
             print "sendinvite setting cookie to", cookie
             self.cookie = cookie
+        lhost, lport = self.getLocalSIPAddress()
+        username = self.sip.app.getPref('username')
+        self.dialog.setContact(username, lhost, lport)
         if self.getState() == "ABORTED":
             d = self.compDef
             del self.compDef
@@ -437,10 +465,10 @@ class Call(object):
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
-        invite.addHeader('cseq', '%s INVITE'%self.getCSeq(incr=1))
-        invite.addHeader('to', str(self._callee))
+        invite.addHeader('cseq', '%s INVITE'%self.dialog.getCSeq(incr=1))
+        invite.addHeader('to', str(self.dialog.getCallee()))
         invite.addHeader('content-type', 'application/sdp')
-        invite.addHeader('from', str(self._caller))
+        invite.addHeader('from', str(self.dialog.getCaller()))
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', str(self.getLocalAOR(full=True)))
         invite.addHeader('allow-events', 'telephone-event')
@@ -448,16 +476,13 @@ class Call(object):
         if auth is not None:
             print auth, authhdr
             invite.addHeader(authhdr, auth)
-        lhost, lport = self.getLocalSIPAddress()
-        username = self.sip.app.getPref('username')
-        invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
-                                username, lhost, lport))
+        invite.addHeader('contact', str(self.dialog.getContact()))
         s = self.sip.app.getSDP(self.cookie)
         sdp = s.show()
         invite.addHeader('content-length', len(sdp))
         invite.bodyDataReceived(sdp)
         invite.creationFinished()
-        self._remoteAOR = self._callee.getURI()
+        self._remoteAOR = self.dialog.getCallee().getURI()
         try:
             self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
             #print "Invite sent", invite.toString()
@@ -489,13 +514,13 @@ class Call(object):
             contact = contact[0]
         self.contact = contact
         self._remoteURI = Address(self.extractURI(contact)).getURI(parsed=True)
-        self._callee = Address(okmessage.headers['to'][0])
+        self.dialog.setCallee(Address(okmessage.headers['to'][0]))
         ack = tpsip.Request('ACK', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
-        ack.addHeader('cseq', '%s ACK'%self.getCSeq())
-        ack.addHeader('to', str(self._callee))
-        ack.addHeader('from', str(self._caller))
+        ack.addHeader('cseq', '%s ACK'%self.dialog.getCSeq())
+        ack.addHeader('to', str(self.dialog.getCallee()))
+        ack.addHeader('from', str(self.dialog.getCaller()))
         ack.addHeader('call-id', self.getCallID())
         ack.addHeader('allow-events', 'telephone-event')
         ack.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
@@ -522,9 +547,9 @@ class Call(object):
         bye = tpsip.Request('BYE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
-        bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
-        bye.addHeader('to', str(self._callee))
-        bye.addHeader('from', str(self._caller))
+        bye.addHeader('cseq', '%s BYE'%self.dialog.getCSeq(incr=1))
+        bye.addHeader('to', str(self.dialog.getCallee()))
+        bye.addHeader('from', str(self.dialog.getCaller()))
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         bye.addHeader('content-length', 0)
@@ -544,9 +569,9 @@ class Call(object):
         cancel = tpsip.Request('CANCEL', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         cancel.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
-        cancel.addHeader('cseq', '%s CANCEL'%self.getCSeq(incr=1))
-        cancel.addHeader('to', str(self._callee))
-        cancel.addHeader('from', str(self._caller))
+        cancel.addHeader('cseq', '%s CANCEL'%self.dialog.getCSeq(incr=1))
+        cancel.addHeader('to', str(self.dialog.getCallee()))
+        cancel.addHeader('from', str(self.dialog.getCaller()))
         cancel.addHeader('call-id', self.getCallID())
         cancel.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         cancel.addHeader('content-length', 0)
@@ -732,7 +757,7 @@ class Call(object):
                         # In this case, retry without an auth header to get another
                         # challenge.
                         if self.call_attempts > 1:
-                            self.sendInvite(str(self._callee))
+                            self.sendInvite(str(self.dialog.getCallee()))
                         else:
                             print "401/407 and no auth header"
                 else:
@@ -769,6 +794,7 @@ class Registration(Call):
         self.state = 'NEW'
         self._needSTUN = False
         self.cseq = random.randint(1000,5000)
+        self.dialog = Dialog()
         self.nonce_count = 0
         self.cancel_trigger = None
         self.register_attempts = 0
@@ -794,7 +820,7 @@ class Registration(Call):
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
-        invite.addHeader('cseq', '%s REGISTER'%self.getCSeq(incr=1))
+        invite.addHeader('cseq', '%s REGISTER'%self.dialog.getCSeq(incr=1))
         invite.addHeader('to', str(self.regAOR))
         invite.addHeader('from', str(self.regAOR))
         state =  self.getState()

@@ -105,7 +105,11 @@ class VoiceApp(StateMachine):
         self._start(callstart=0)
 
     def va_callstart(self, inboundLeg):
+        self._inbound = inboundLeg
         self._triggerEvent(CallStartedEvent(inboundLeg))
+
+    def va_callanswered(self):
+        self._triggerEvent(CallAnsweredEvent(self._inbound))
 
     def va_abort(self):
         self.mediaStop()
