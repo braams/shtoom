@@ -46,15 +46,15 @@ class Recorder:
             self._outfp.write(packet.data)
         if self._play:
             self._dev.write(packet)
-        if len(packet.data) != 320:
-            print "discarding bad length (%d) packet"%(len(packet.data))
-        else:
-            self.analyse(struct.unpack('160h', packet.data))
+        #if len(packet.data) != 320:
+        #    print "discarding bad length (%d) packet"%(len(packet.data))
+        #else:
+        #    self.analyse(struct.unpack('160h', packet.data))
 
 
 def main(Recorder = Recorder):
     from shtoom.audio import getAudioDevice
-    from shtoom.rtp.formats import PT_RAW
+    from shtoom.rtp import formats
     from twisted.internet.task import LoopingCall
     from twisted.internet import reactor
     import sys
@@ -62,10 +62,14 @@ def main(Recorder = Recorder):
     dev = getAudioDevice('rw')
     dev.close()
     dev.reopen()
-    dev.selectDefaultFormat(PT_RAW)
-    #if len(sys.argv) > 1:
-    #    outfp = open(sys.argv[1], 'wb')
-    #else:
+    if len(sys.argv) > 1:
+        fmt = sys.argv[1]
+        if not hasattr(formats, fmt):
+            print "unknown PT marker %s"%(fmt)
+            sys.exit(1)
+        dev.selectDefaultFormat(getattr(formats,fmt))
+    else:
+        dev.selectDefaultFormat(formats.PT_RAW)
     outfp = None
     rec = Recorder(dev, play=True, outfp=outfp)
 
