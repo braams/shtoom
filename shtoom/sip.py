@@ -8,7 +8,7 @@
 # warranty on your brain. 
 
 # And yes, a redesign (to make it unit testable, for one thing) is very
-# much planned. 
+# much planned and it is gradually being refactored.
 
 from interfaces import SIP as ISip
 
@@ -666,16 +666,20 @@ class Call(object):
         print "dropcall in state", state
         if state == 'NONE':
             self.sip.app.debugMessage("no call to drop")
+            return defer.succeed('no call to drop')
         elif state in ( 'CONNECTED', ):
             self.sendBye()
-            self.setState('SENT_BYE')
+            self.dropDef = defer.Deferred()
+            return self.dropDef
             # XXX callLater to give up...
         elif state in ( 'SENT_INVITE', ):
             self.sendCancel()
             self.setState('SENT_CANCEL')
+            return defer.succeed('cancelled')
             # XXX callLater to give up...
         elif state in ( 'NEW', ):
             self.setState('ABORTED')
+            return defer.succeed('aborted')
 
     def _getHashingImplementation(self, algorithm):
         # lambdas assume digest modules are imported at the top level
@@ -750,6 +754,8 @@ class Call(object):
                 self.sip._delCallObject(self.getCallID())
                 self.sip.app.debugMessage("Hung up on call %s"%self.getCallID())
                 self.sip.app.statusMessage("Call Disconnected")
+                d, self.dropDef = self.dropDef, None
+                d.callback('call disconnected')
             else:
                 self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
@@ -776,7 +782,8 @@ class Call(object):
                         uri = str(self._remoteAOR)
 
                         credDef = self.sip.app.authCred('INVITE', uri,
-                                        retry=(self.call_attempts > 1)).addErrback(log.err)
+                                                retry=(self.call_attempts > 1)
+                                                          ).addErrback(log.err)
                         credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('INVITE',
                                                       uri=uri,
@@ -799,18 +806,30 @@ class Call(object):
                 else:
                     print "Unknown state '%s' for a 401/407"%(state)
             else:
+                if self.state == 'SENT_BYE':
+                    d, self.dropDef = self.dropDef, None
+                    # XXX failed to drop call. need exception here
+                    d.errback(message.code)
                 self.sip.app.debugMessage(message.toString())
                 self.terminateCall(message)
                 self.sip._delCallObject(self.getCallID())
                 self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
                                                              message.phrase))
         elif message.code - (message.code%100) == 500:
+            if self.state == 'SENT_BYE':
+                d, self.dropDef = self.dropDef, None
+                # XXX failed to drop call. need exception here
+                d.errback(message.code)
             self.sip.app.debugMessage(message.toString())
             self.terminateCall(message)
             self.sip._delCallObject(self.getCallID())
             self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
                                                              message.phrase))
         elif message.code - (message.code%100) == 600:
+            if self.state == 'SENT_BYE':
+                d, self.dropDef = self.dropDef, None
+                # XXX failed to drop call. need exception here
+                d.errback(message.code)
             self.sip.app.debugMessage(message.toString())
             self.terminateCall(message)
             #self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
@@ -905,7 +924,8 @@ class Registration(Call):
                 if a:
                     uri = str(self.regURI)
                     credDef = self.sip.app.authCred('REGISTER', uri,
-                                        retry=(self.register_attempts > 1)).addErrback(log.err)
+                                            retry=(self.register_attempts > 1)
+                                            ).addErrback(log.err)
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('REGISTER',
                                                       uri=uri,

@@ -253,7 +253,7 @@ class DougApplication(BaseApplication):
         if not call:
             log.err("Couldn't find cookie %s, have %r, %r"%(cookie, self._calls.keys(), self._voiceapps.keys(), ))
             return
-        call.dropCall()
+        d = call.dropCall()
 
     def statusMessage(self, message):
         log.msg("STATUS: "+message, system='doug')

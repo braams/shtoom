@@ -4,7 +4,7 @@ Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
     - deal with stupid devices that only work in stereo
-    - sip: dropCall() must return a deferred
+    - doug: use dropCall()'s deferred to generate correct events
     - doug: implement a leg.hangup() method (and it's events)
     - doug: implement leg bridging (inbound and outbound)
     - doug: s.d.conferencing's entrance soundburst bug
@@ -23,6 +23,9 @@ Maybe before 0.3:
     - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
     - ui(tk): new dialogs that don't block, and have a timeout.
+    - sip/call: the state should become an object, encapsulating the current 
+      state, and the state machine. This makes it _much_ easier to handle 
+      retransmits and the like.
 
 Not before 0.3:
     - ui(qt): finish multiple Call UI, including new tab for incoming call
@@ -36,8 +39,6 @@ Not before 0.3:
     - sip: retransmit and timeout of BYE
     - rtcp: notice when we get an RTCP BYE and close the connection
     - rtcp: generate a goodbye packet. should at least have an SDES and a BYE
-    - sip/call: the state should become an object, encapsulating the current state.
-      This makes it _much_ easier to handle retransmits and the like.
     - audio(all) - if the call doesn't close cleanly, the audio isn't closed
       properly.
     - options: default some useful stuff
