@@ -20,6 +20,7 @@ class DougApplication(BaseApplication):
     __implements__ = ( Application, )
 
     configFileName = '.dougrc'
+    needLogging = True
 
     def __init__(self, voiceapp, ui=None, audio=None):
         # Mapping from callcookies to rtp object
@@ -36,7 +37,10 @@ class DougApplication(BaseApplication):
         if options is None:
             options = buildOptions(self)
         self.initOptions(options, args)
-        if not self.getPref('logfile'):
+        if not self.needLogging:
+            # Need to leave things alone when under trial
+            pass
+        elif not self.getPref('logfile'):
             print "logging to stdout"
             log.startLogging(sys.stdout)
         else:
@@ -48,6 +52,7 @@ class DougApplication(BaseApplication):
     def start(self):
         "Start the application."
         from twisted.internet import reactor
+        import sys
         vargs = self.getPref('dougargs')
         if vargs:
             kwargs = [x.split('=') for x in vargs.split(',') ]
@@ -57,10 +62,12 @@ class DougApplication(BaseApplication):
         if register_uri is not None:
             d = self.sip.register()
             d.addCallback(log.err).addErrback(log.err)
-        reactor.run()
+        # Don't start reactor if it's already running. Ugh.
+        if not hasattr(reactor,'running') or not reactor.running:
+            reactor.run()
 
     def initVoiceapp(self, callcookie):
-        print "creating voiceapp", self._voiceappClass
+        log.msg("creating voiceapp %r"%(self._voiceappClass,), system='doug')
         d = defer.Deferred()
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x),
                        lambda x: self.acceptErrors(callcookie,x))
@@ -69,18 +76,20 @@ class DougApplication(BaseApplication):
             v.va_start()
         except:
             ee,ev,et = sys.exc_info()
-            print "voiceapp error", ee, ev, traceback.extract_tb(et)
+            log.err("voiceapp error", ee, ev, traceback.extract_tb(et))
             v = None
         if v:
-            print "new voiceapp", v
+            log.msg("new voiceapp %r"%(v), system='doug')
             self._voiceapps[callcookie] = v
 
     def acceptResults(self, callcookie, results):
-        print "callcookie %s ended with result %s"%(callcookie, results)
+        log.msg("callcookie %s ended with result %s"%(callcookie, results),
+                                                                system='doug')
         self.dropCall(callcookie)
 
     def acceptErrors(self, callcookie, error):
-        print "callcookie %s ended with ERROR %r"%(callcookie, error)
+        log.msg("callcookie %s ended with ERROR %r"%(callcookie, error),
+                                                                system='doug')
         self.dropCall(callcookie)
 
     def startVoiceApp(self):
@@ -88,11 +97,10 @@ class DougApplication(BaseApplication):
         cookie = self.getCookie()
         self.initVoiceapp(cookie)
         self._voiceapps[cookie].va_callstart(None)
-        print self._voiceapps.keys()
 
     def acceptCall(self, call):
         from shtoom.doug.leg import Leg
-        print "dialog is", call.dialog
+        log.msg("acceptCall dialog is %r"%(call.dialog), system='doug')
         calltype = call.dialog.getDirection()
         if call.cookie is None:
             cookie = self.getCookie()
@@ -119,7 +127,6 @@ class DougApplication(BaseApplication):
         return d
 
     def rejectedCall(self, callcookie, reason):
-        print "rejectedCall", callcookie, reason
         del self._calls[callcookie]
         del self._voiceapps[callcookie]
         return reason
@@ -175,7 +182,6 @@ class DougApplication(BaseApplication):
             data = packet.data
             key = ord(data[0])
             start = (ord(data[1]) & 128) and True or False
-            print "got dtmf", key, start
             if start:
                 v.va_startDTMFevent(nteMap[key], callcookie)
             else:
@@ -196,7 +202,7 @@ class DougApplication(BaseApplication):
         nleg.setCookie(ncookie)
         self._voiceapps[cookie].setLeg(nleg, ncookie)
         self._voiceapps[ncookie] = self._voiceapps[cookie]
-        print "connecting %s to %s"%(ncookie, cookie), self._voiceapps.keys()
+        log.msg("connecting %s to %s"%(ncookie, cookie), system='doug')
         d = self.sip.placeCall(sipURL, fromURI, cookie=ncookie)
         d.addCallbacks(
             lambda x: self.outboundCallConnected(nleg, cookie, x),
@@ -205,7 +211,8 @@ class DougApplication(BaseApplication):
         return d
 
     def outboundCallConnected(self, leg, voiceappCookie, outboundCookie):
-        print "outbound connected!", voiceappCookie, outboundCookie
+        log.msg("outbound connected %r->%r"%(voiceappCookie, outboundCookie),
+                                                    system='doug')
         call = self._calls[outboundCookie]
         leg.setDialog(call.dialog)
         leg.outgoingCall()
@@ -213,14 +220,15 @@ class DougApplication(BaseApplication):
 
     def outboundCallFailed(self, leg, voiceappCookie, outboundCookie, exc):
         from shtoom.doug.leg import Leg
-        print "outbound failed!", voiceappCookie, outboundCookie
+        log.msg("outbound failed %r->%r"%(voiceappCookie, outboundCookie),
+                                                    system='doug')
         call = self._calls[outboundCookie]
         leg.setDialog(call.dialog)
         leg.outgoingCall()
         self._voiceapps[voiceappCookie].va_callrejected(leg)
 
     def dropCall(self, cookie):
-        print "dropCall", cookie
+        log.msg("dropCall %r"%(cookie), system='doug')
         call = self._calls.get(cookie)
         if not call:
             log.err("Couldn't find cookie %s, have %r, %r"%(cookie, self._calls.keys(), self._voiceapps.keys(), ))
@@ -242,7 +250,8 @@ class DougApplication(BaseApplication):
         app.addOption(StringOption('dougargs',
                                 'pass these arguments to the voiceapp'))
         opts.addGroup(app)
-        opts.setOptsFile(self.configFileName)
+        if self.configFileName is not None:
+            opts.setOptsFile(self.configFileName)
 
     def authCred(self, method, uri, realm='unknown', retry=False):
         "Place holder for now"
