@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Thu May 6 22:59:52 2004
+# Created: Thu May 6 23:15:35 2004
 #      by: The PyQt User Interface Compiler (pyuic) 3.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -268,6 +268,7 @@ class ShtoomMainWindow(QMainWindow):
         self.clearButton.setProperty("text",QVariant(self.__tr("Clear")))
         self.pushButton17.setProperty("text",QVariant(self.__tr("Register")))
         self.callButton.setProperty("text",QVariant(self.__tr("Call")))
+        self.callButton.setProperty("accel",QVariant(self.__tr("Return")))
         self.hangupButton.setProperty("text",QVariant(self.__tr("Hang Up")))
         self.textLabel1.setProperty("text",QVariant(self.__tr("Call:")))
         self.fileNewAction.setProperty("text",QVariant(self.__tr("New")))

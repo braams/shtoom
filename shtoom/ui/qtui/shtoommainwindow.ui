@@ -515,6 +515,9 @@
         <property name="text">
             <string>Call</string>
         </property>
+        <property name="accel">
+            <string>Return</string>
+        </property>
     </widget>
     <widget class="QPushButton">
         <property name="name">
