@@ -6,7 +6,7 @@
 
 
 #import tphttp as http
-from twisted.protocols import http, basic
+from twisted.protocols import basic
 from twisted.internet import defer, protocol
 from twisted.python import log
 from urllib2 import Request as URLRequest
