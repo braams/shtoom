@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Hack hack hack.
 import sys, os

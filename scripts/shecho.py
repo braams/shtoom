@@ -1,4 +1,5 @@
-#
+#!/usr/bin/env python
+
 # Hack hack hack.
 import sys, os
 f = sys.path.pop(0)

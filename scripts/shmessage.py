@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Hack hack hack.
 # This thing allows the script to be run from a subdirectory of the

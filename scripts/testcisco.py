@@ -1,9 +1,4 @@
-#
-# This is a test-bed for working out _how_ a VoiceApp would look.
-#
-# This is _one_ way of spelling it. A more sophisticated approach
-# would be to use PEAK. The PEAK docs make my brain hurt right now,
-# so I'm going to come back to that later.
+#!/usr/bin/env python
 #
 
 # Hack hack hack.
