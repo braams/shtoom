@@ -47,6 +47,9 @@ class Phone(BaseApplication):
 
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
+        l = self.getPref('logfile')
+        if l is not None:
+            log.startLogging(open(l, 'aU'), setStdout=False)
         BaseApplication.boot(self)
 
     def register(self):
@@ -221,6 +224,7 @@ class Phone(BaseApplication):
         app.addOption(StringOption('audio_infile','read audio from this file'))
         app.addOption(StringOption('audio_outfile','write audio to this file'))
         app.addOption(StringOption('ringing_command','run this command when a call comes in'))
+        app.addOption(StringOption('logfile','log to this file'))
         opts.addGroup(app)
         opts.setOptsFile('.shtoomrc')
 

@@ -13,12 +13,13 @@ def main(application):
     import sys
     from twisted.internet import reactor
     from twisted.python import log
+    from __main__ import app
 
     from shtoom.ui.textui import ShtoomMain
     UI = ShtoomMain()
     UI.connectApplication(application)
     stdio.StandardIO(UI)
-    #log.startLogging(UI.getLogger())
-    log.startLogging(sys.stdout)
+    if not app.getPref('logfile'):
+        log.startLogging(sys.stdout, setStdout=False)
     return UI
 
