@@ -56,8 +56,9 @@ class VoicemailApp(VoiceApp):
 
     def answerCall(self, event):
         self.leg = event.getLeg()
-        destURI = self.leg._dialog.getCallee().getURI(parsed=True)
-        self.sender = self.leg._dialog.getCaller().getURI(parsed=True)
+        dialog = self.leg.getDialog()
+        destURI = dialog.getCallee().getURI(parsed=True)
+        self.sender = dialog.getCaller().getURI(parsed=True)
         user, host = destURI.username, destURI.host
         if '+' in user:
             d = self.destination = user.replace('+','@')

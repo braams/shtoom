@@ -49,7 +49,7 @@ class PlayingApp(VoiceApp):
 
         self.leg = leg
         self.leg.hijackLeg(self)
-        username = leg._dialog.getCallee().getURI().username
+        username = leg.getDialog().getCallee().getURI().username
         print "voiceapp.__start__ to user %s"%(username)
         self.mediaPlay(self.announceFile)
         return ( (MediaDoneEvent, self.messageDone),

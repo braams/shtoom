@@ -34,7 +34,7 @@ class EchoApp(VoiceApp):
 
     def answerCall(self, event):
         leg = event.getLeg()
-        username = leg._dialog.getCallee().getURI().username
+        username = leg.getDialog().getCallee().getURI().username
         print "voiceapp.__start__ to user %s"%(username)
         if username == 'nope':
             leg.rejectCall(CallRejected('go away'))

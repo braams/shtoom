@@ -71,7 +71,7 @@ class PlayingApp(VoiceApp):
         self.dtmfMode(single=True, inband=True)
         self.leg = leg
         self.leg.hijackLeg(self)
-        username = leg._dialog.getCallee().getURI().username
+        username = leg.getDialog().getCallee().getURI().username
         print "voiceapp.__start__ to user %s"%(username)
         if self.saveFile is not None:
             self.mediaRecord(self.saveFile)
