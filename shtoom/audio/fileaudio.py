@@ -25,8 +25,9 @@ class AudioFromFiles:
         self._outfp.close()
 
 def getAudioDevice(mode):
-    from shtoom import prefs
+    from __main__ import app
     global opened
     if opened is None:
-        opened = MultipleConv(AudioFromFiles(prefs.audio_infile, prefs.audio_outfile))
+        opened = MultipleConv(AudioFromFiles(app.getPref('audio_infile'), app.getPref('audio_outfile')))
     return opened
+

@@ -20,7 +20,7 @@ def buildOptions(app):
     network = OptionGroup('network', 'Network Settings')
     network.addOption(StringOption('localip','use LOCALIP for local ip address'))
     network.addOption(NumberOption('listenport','use PORT for sip listener'))
-    network.addOption(ChoiceOption('stun_policy','STUN policy', 'rfc1918',choices=['never','always','rfc1918']))
+    network.addOption(ChoiceOption('stun_policy','STUN policy', 'rfc1918', choices=['never','always','rfc1918']))
     network.addOption(BooleanOption('use_upnp','Use UPnP', False))
     opts.addGroup(network)
 
@@ -45,8 +45,8 @@ def buildOptions(app):
 
 def parseOptions(app):
     import optparse, sys
-    import shtoom.prefs, shtoom
-    Opts = buildOptions(app)
+    import shtoom
+    Opts = app.getOptions()
 
     parser = optparse.OptionParser(version='%%prog %s'%shtoom.Version)
 
@@ -56,5 +56,24 @@ def parseOptions(app):
     Opts.loadOptsFile()
     Opts.handleOptParse(opts, args)
     Opts.saveOptsFile()
-    Opts.setGlobalPreferences()
+    Opts.setOptions(app.getSettings())
+
+def defaultSettings():
+    class _settings: 
+        pass
+    o = _settings()
+    o.localip = None
+    o.localport = None
+    o.username = None
+    o.userdetail = None
+    o.email_address = None
+    o.ui = None
+    o.audio = None
+    o.audio_infile = None
+    o.audio_outfile = None
+    o.register_time = 900
+    o.register_uri = None
+    o.register_authuser = None
+    o.register_authpasswd = None
+    return o
 

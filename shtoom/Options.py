@@ -1,3 +1,10 @@
+# Copyright (C) 2004 Anthony Baxter
+
+# Generic option handling. This will eventually become a package, 
+# with the UI-specific preferences handling as a part of it.
+
+import os
+
 class OptionValueInvalid(Exception): 
     pass
 
@@ -132,12 +139,16 @@ class NumberOption(Option):
     optionType = 'Number'
 
     def massageValue(self, value):
+        if value is NoDefaultOption:
+            return value
         if not isinstance(value, int):
             # print a warning
             value = int(value)
         return value
 
     def validate(self, value):
+        if value is NoDefaultOption:
+            return
         try:
             int(value)
         except ValueError:
@@ -186,20 +197,18 @@ class AllOptions(object):
             g.buildOptParse(parser)
 
     def handleOptParse(self, opts, args):
-        import shtoom.prefs
         for g in self:
             for o in g:
                 val = getattr(opts, o.getName())
                 if val is not NoDefaultOption and val is not None:
                     o.setValue(val)
 
-    def setGlobalPreferences(self):
-        import shtoom.prefs
+    def setOptions(self, opts):
         for group in self:
             for opt in group:
                 key, val = opt.getName(), opt.getValue()
                 if val is not NoDefaultOption and val is not None:
-                    setattr(shtoom.prefs, key, val)
+                    setattr(opts, key, val)
 
     def emitConfigParser(self):
         out = []
@@ -216,13 +225,16 @@ class AllOptions(object):
         return '\n'.join(out)
 
     def setOptsFile(self, filename):
-        self._filename = filename
+        d = findOptionsDir()
+        self._filename = os.path.join(d, filename)
 
     def loadOptsFile(self):
         from ConfigParser import SafeConfigParser
         if self._filename is None:
             return None
         cfg = SafeConfigParser()
+        if not os.access(self._filename, os.R_OK|os.W_OK):
+            return
         cfg.readfp(open(self._filename, 'rU'))
         for g in self:
             gname = g.getName()
@@ -252,9 +264,19 @@ class AllOptions(object):
                 n = o.getName()
                 if dict.get(n) is not None:
                     print "setting %s to %s"%(n, dict[n])
-                    if o.setValue(dict[n]):
+                    if dict[n] == '' and o.optionType == 'Number':
+                        o.setValue(o.getDefault())
+                    elif o.setValue(dict[n]):
                         print "modified", o.getName()
                         modified[n] = dict[n]
                     else:
                         print "not modified", o.getName()
         return modified
+
+def findOptionsDir():
+    try:
+        saveDir = os.path.expanduser('~%s'%os.getlogin())
+    except:
+        saveDir = os.getcwd()
+    return saveDir
+

@@ -1,5 +1,4 @@
 # Copyright (C) 2004 Anthony Baxter
-# This file is necessary to make this directory a package
 
 # The Phone app.
 
@@ -24,13 +23,15 @@ class Phone(BaseApplication):
         self._audioFormat = None
         self.ui = ui
 
-    def boot(self, prefs=None):
+    def boot(self, options=None, settings=None):
         from shtoom.ui.select import findUserInterface
-        self.connectPrefs(prefs)
+        from shtoom.opts import parseOptions, buildOptions
+        options = buildOptions(self)
+        self.installOptions(options, settings)
+        parseOptions(self)
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
         BaseApplication.boot(self)
-
 
     def start(self):
         "Start the application."
@@ -186,9 +187,6 @@ class Phone(BaseApplication):
     def debugMessage(self, message):
         self.ui.debugMessage(message)
 
-    def getOptions(self):
-        return self._options
-
     def appSpecificOptions(self, opts):
         import os.path
 
@@ -199,20 +197,11 @@ class Phone(BaseApplication):
         app.addOption(StringOption('audio_infile','read audio from this file'))
         app.addOption(StringOption('audio_outfile','write audio to this file'))
         opts.addGroup(app)
-
-        try:
-            saveDir = os.path.expanduser('~%s'%os.getlogin())
-            saveFile = os.path.join(saveDir, '.shtoomrc')
-        except:
-            saveFile = '.shtoomrc'
-
-        opts.setOptsFile(saveFile)
-
-        self._options = opts
+        opts.setOptsFile('.shtoomrc')
 
     def updateOptions(self, dict):
         m = self._options.updateOptions(dict)
         if m: 
             self._options.saveOptsFile()
-            self._options.setGlobalPreferences()
+            self._options.setOptions(self.getSettings())
 

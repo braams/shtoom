@@ -7,28 +7,34 @@ class BaseApplication:
     __cookieCount = 0
 
     def __init__(self, prefs=None):
-        pass
+        self._options = _dummy()
 
     def boot(self):
         self.connectSIP()
 
-    def connectPrefs(self, prefs):
-        if prefs:
-            self._prefs = prefs
+    def installOptions(self, options, settings):
+        from shtoom.opts import defaultSettings
+        if settings:
+            self._settings = settings
         else:
-            from shtoom import prefs
-            self._prefs = prefs
+            self._settings = defaultSettings()
+        self._options = options
+
+    def getOptions(self):
+        return self._options
+
+    def getSettings(self):
+        return self._settings
 
     def getPref(self, pref):
-        return getattr(self._prefs, pref, None)
+        return getattr(self._settings, pref, None)
 
     def connectSIP(self):
-        from shtoom import prefs
         from twisted.internet import reactor
         from shtoom import sip
         p = sip.SipPhone(self)
         self.sip = p
-        self.sipListener = reactor.listenUDP(prefs.localport or 5060, p)
+        self.sipListener = reactor.listenUDP(self.getPref('localport') or 5060, p)
         log.msg('sip listener installed')
 
     def acceptCall(self, callcookie, calldesc):

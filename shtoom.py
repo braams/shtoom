@@ -5,14 +5,13 @@
 # Hack hack hack.
 import sys ; sys.path.append(sys.path.pop(0))
 
+app = None
+
 def main():
-    from shtoom.opts import parseOptions
     from shtoom.app.phone import Phone
+    global app
 
     app = Phone()
-
-    parseOptions(app)
-
     app.boot()
 
     app.start()
