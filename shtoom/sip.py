@@ -589,7 +589,7 @@ class Call(object):
         cancel = tpsip.Request('CANCEL', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
         cancel.addHeader('via', 'SIP/2.0/UDP %s:%s'%self.getLocalSIPAddress())
-        cancel.addHeader('cseq', '%s CANCEL'%self.dialog.getCSeq(incr=1))
+        cancel.addHeader('cseq', '%s CANCEL'%self.dialog.getCSeq())
         cancel.addHeader('to', str(self.dialog.getCallee()))
         cancel.addHeader('from', str(self.dialog.getCaller()))
         cancel.addHeader('call-id', self.getCallID())
