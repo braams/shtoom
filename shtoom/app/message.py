@@ -36,7 +36,10 @@ class Message(BaseApplication):
         if options is None:
             options = buildOptions(self)
         self.initOptions(options)
-        log.startLogging(sys.stdout)
+	if not self.getPref('logfile'):
+            log.startLogging(sys.stdout)
+        else:
+            log.startLogging(open(self.getPref('logfile'), 'aU'))
         BaseApplication.boot(self)
 
     def start(self):
@@ -196,6 +199,7 @@ class Message(BaseApplication):
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
         app = OptionGroup('shtoom', 'Shtoom')
         app.addOption(StringOption('audio_infile','read audio from this file'))
+        app.addOption(StringOption('logfile','log to this file'))
         opts.addGroup(app)
         opts.setOptsFile('.shmessagerc')
 
