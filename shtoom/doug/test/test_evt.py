@@ -6,7 +6,7 @@ You can run this with command-line:
   $ trial shtoom.test.test_sdp
 """
 
-#from twisted.trial import unittest
+from twisted.trial import unittest
 from twisted.internet import reactor, defer
 
 from shtoom.doug.events import Event, CallStartedEvent
@@ -17,8 +17,14 @@ class DummyEvent2(Event): pass
 class DummyEvent2_1(DummyEvent2): pass
 class DummyEvent2_2(DummyEvent2): pass
 
+class UnknownEventError(Exception): pass
 
-class EventLoop(VoiceApp):
+
+class TestStateMachine(VoiceApp):
+    def __init__(self, defer, **kwargs):
+        self._out = []
+        super(TestStateMachine, self).__init__(defer, **kwargs)
+
     def __start__(self):
         print "starting"
         return ( (CallStartedEvent, self.begin),
@@ -26,40 +32,41 @@ class EventLoop(VoiceApp):
                )
 
     def unknown(self, evt):
-        print "got unknown event %s"%(evt.getEventName())
-        reactor.stop()
-        return ()
+        raise ValueError, "got unknown event %s"%(evt.getEventName())
 
     def begin(self, evt):
-        print "beginning", evt
+        self._out.append(0)
         self.raiseEvent(DummyEvent1())
         return ( (DummyEvent1, self.first),
                  (Event, self.unknown),
                )
 
     def first(self, evt):
-        print "stage the first", evt
+        self._out.append(1)
         self.raiseEvent(DummyEvent2_1())
         return ( (DummyEvent2, self.second),
                  (Event, self.unknown),
                )
 
     def second(self, evt):
-        print "stage the second", evt
+        self._out.append(2)
         self.raiseEvent(DummyEvent2_2())
-        return ( (DummyEvent2_1, self.third),
-                 (Event, self.unknown),
+        return ( (DummyEvent2_1, self.thirdish),
+                 (Event, self.third),
                )
 
+    def thirdish(self, evt):
+        raise ValueError, "wrong event hit"
+
     def third(self, evt):
-        print "third (should not be hit)", evt
-        return ()
+        self._out.append(3)
+        self.returnResult(self._out)
 
-def test():
-    d = defer.Deferred()
-    A = EventLoop(d)
-    reactor.callLater(0, A._start)
-    reactor.run()
 
-if __name__ == "__main__":
-    test()
+class StateMachineTest(unittest.TestCase):
+    def testStateMachine(self):
+        d = defer.Deferred()
+        A = TestStateMachine(d)
+        reactor.callLater(0, A._start)
+        self.assertEquals(unittest.deferredResult(d), [0,1,2,3])
+
