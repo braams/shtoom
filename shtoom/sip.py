@@ -635,7 +635,7 @@ class Call(object):
                         # In this case, retry without an auth header to get another
                         # challenge.
                         if self.call_attempts > 1:
-                            self.sendInvite()
+                            self.sendInvite(str(self._callee))
                         else:
                             print "401/407 and no auth header"
                 else:
