@@ -110,3 +110,13 @@ high quality framework.
 Thanks also to Mike Barnes for providing Mac OSX hardware, and Amir
 Bakhtiar of Divmod for a UPnP-capable router.
 
+License
+-------
+
+This collective work is Copyright (C)2004 by Anthony Baxter.
+Individual portions may be copyright by individual contributors, and
+are included in this collective work with permission of the copyright 
+owners.
+
+The license for this work can be found in the file LICENSE.
+
