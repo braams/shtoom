@@ -1,6 +1,6 @@
 #
 #
-# Copyright (c) 2003 Anthony Baxter.
+# Copyright (c) 2004 Anthony Baxter.
 #
 
 import socket

@@ -1,4 +1,4 @@
-# Copyright (C) 2003 Anthony Baxter
+# Copyright (C) 2004 Anthony Baxter
 from shtoommainwindow import *
 
 from shtoom.ui.base import ShtoomBaseUI

@@ -1,5 +1,5 @@
-# Copyright (C) 2003 Anthony Baxter
-# $Id: textshtoom.py,v 1.1 2003/12/20 06:12:40 anthonybaxter Exp $
+# Copyright (C) 2004 Anthony Baxter
+# $Id: textshtoom.py,v 1.2 2004/01/10 14:36:37 anthonybaxter Exp $
 #
 
 from twisted.internet import stdio

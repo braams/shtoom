@@ -1,5 +1,5 @@
-# Copyright (C) 2003 Anthony Baxter
-# $Id: qtshtoom.py,v 1.5 2004/01/07 13:50:59 anthonybaxter Exp $
+# Copyright (C) 2004 Anthony Baxter
+# $Id: qtshtoom.py,v 1.6 2004/01/10 14:36:37 anthonybaxter Exp $
 #
 
 

@@ -1,6 +1,6 @@
 
-# Copyright (C) 2003 Anthony Baxter
-# $Id: tkshtoom.py,v 1.1 2003/11/16 07:57:35 anthonybaxter Exp $
+# Copyright (C) 2004 Anthony Baxter
+# $Id: tkshtoom.py,v 1.2 2004/01/10 14:36:37 anthonybaxter Exp $
 #
 
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2003 Anthony Baxter
+# Copyright (C) 2004 Anthony Baxter
 
 class AudioDevice(object):
     def __init__(self, mode, wrapped=1):

@@ -1,5 +1,5 @@
 # -*- test-case-name: shtoom.test.test_sdp -*-#
-# Copyright (C) 2003 Anthony Baxter
+# Copyright (C) 2004 Anthony Baxter
 #
 
 rtpPTDict = {

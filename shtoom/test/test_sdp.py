@@ -1,4 +1,4 @@
-# Copyright (C) 2003 Anthony Baxter
+# Copyright (C) 2004 Anthony Baxter
 """Tests for SDP.
 
 You can run this with command-line:
