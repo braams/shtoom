@@ -19,7 +19,9 @@ Later:
     Preferences storage
 
     UPnP support in order to bust out of NAT - specs? I (Anthony) don't
-    have anything that does uPnP to test against.
+    have anything that does uPnP to test against. Specs are available from
+    http://www.upnp.org/resources/standards.asp
+    See also http://icepick.info/index.php?p=175
 
     New codec support: 
         - http://www.freenet.org.nz/python/pySpeex/
