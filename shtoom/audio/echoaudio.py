@@ -15,7 +15,7 @@ class EchoAudio:
         return sample
 
     def write(self, bytes):
-        self._data += bytes 
+        self._data += bytes
 
     def reopen(self):
         self._data = ''
@@ -25,4 +25,3 @@ class EchoAudio:
 
 def getEchoAudio():
     return MultipleConv(EchoAudio())
-

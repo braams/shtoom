@@ -69,4 +69,3 @@ class BaseApplication:
     def getCookie(self):
         self.__cookieCount += 1
         return "CallCookie%d"%(self.__cookieCount)
-

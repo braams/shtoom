@@ -279,4 +279,3 @@ class RTPProtocol(DatagramProtocol):
 
     def stopDTMF(self, digit):
         print "stop sending %s"%digit
-

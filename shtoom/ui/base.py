@@ -15,4 +15,3 @@ class ShtoomBaseUI:
             return
         rusage = resource.getrusage(resource.RUSAGE_SELF)
         print "%fs user, %fs system"%(rusage[0], rusage[1])
-

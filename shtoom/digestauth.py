@@ -5,7 +5,7 @@ def generate_nonce(bits, randomness=None):
     "This could be stronger"
     if bits%8 != 0:
         raise ValueError, "bits must be a multiple of 8"
-    nonce = sha.new(str(randomness) + str(time.time()) + 
+    nonce = sha.new(str(randomness) + str(time.time()) +
             str(random.random()) ).hexdigest()
     nonce = nonce[:bits/4]
     return nonce
@@ -69,21 +69,21 @@ class DigestAuthServer:
         # We should save off the nonce to make sure it's one we've
         # offered already. And check for replay attacks :-(
         chal = 'realm="%s", nonce="%s", ' \
-               'algorithm=%s, qop="auth"'%(realm, 
-					   generate_nonce(bits=208), 
-					   self.algorithm)
+               'algorithm=%s, qop="auth"'%(realm,
+                                           generate_nonce(bits=208),
+                                           self.algorithm)
         return chal
 
 # Firebird
-# username="anthony", realm="TestAuth", 
-# nonce="9da7db19648f95bd71f26a07b3423d91917b5205", uri="/test/foo", 
-# algorithm=MD5, response="f61ca0cb8a85e9bd985b7ab808978f1e", 
+# username="anthony", realm="TestAuth",
+# nonce="9da7db19648f95bd71f26a07b3423d91917b5205", uri="/test/foo",
+# algorithm=MD5, response="f61ca0cb8a85e9bd985b7ab808978f1e",
 # qop=auth, nc=00000001, cnonce="424a1ed1ddaa76ca"
 
 # Konqi
-# username="anthony", realm="TestAuth", 
-# nonce="7c8bdda0ed44db7de74bee97cec8dfd4fb59af0f", uri="/test/foo", 
-# algorithm="MD5", qop="auth", cnonce="ODQwMTk=", nc=00000001, 
+# username="anthony", realm="TestAuth",
+# nonce="7c8bdda0ed44db7de74bee97cec8dfd4fb59af0f", uri="/test/foo",
+# algorithm="MD5", qop="auth", cnonce="ODQwMTk=", nc=00000001,
 # response="1bebadb47d2aa5eab53cb419b94599f3"
 
     def check_auth(self, header, method='GET'):
@@ -92,7 +92,7 @@ class DigestAuthServer:
         H, KD = self.get_algorithm_impls()
         resp = parse_keqv_list(parse_http_list(header))
         if resp.get('algorithm', 'MD5').upper() != self.algorithm:
-            return False, "unknown algo %s"%algorithm 
+            return False, "unknown algo %s"%algorithm
         user = resp['username']
         realm = resp['realm']
         nonce = resp['nonce']
@@ -114,4 +114,3 @@ class DigestAuthServer:
             return False, "response incorrect"
         print "all ok"
         return True, "OK"
-

@@ -41,4 +41,3 @@ def getAudioDevice(mode):
 
 def getFileAudio(infile, outfile):
     return MultipleConv(AudioFromFiles(infile, outfile))
-

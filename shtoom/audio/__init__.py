@@ -61,4 +61,3 @@ def getAudioDevice(mode, audioPref=None, audioFiles=None):
         if _audioGet is None:
             raise NoAudioDevice, "No working audio interface found"
     return _audioGet('rw')
-

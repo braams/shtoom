@@ -174,11 +174,11 @@ class Phone(BaseApplication):
 
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call!
-	bytes = self._audio.read()
-	if bytes is None:
+        bytes = self._audio.read()
+        if bytes is None:
             return None
         else:
-	    return self._audioFormat, bytes
+            return self._audioFormat, bytes
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)
@@ -221,10 +221,9 @@ class Phone(BaseApplication):
         user = self.getPref('register_authuser')
         passwd = self.getPref('register_authpasswd')
         if user is not None and passwd is not None and retry is False:
-            return defer.succeed((self.getPref('register_authuser'), 
+            return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
         elif hasattr(self.ui, 'getAuth'):
             return self.ui.getAuth("Auth needed for %s %s, realm '%s'"%(method, uri, realm))
         else:
             return defer.fail(CallFailed("No auth available"))
-

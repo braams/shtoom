@@ -1,10 +1,10 @@
 #
 # Copyright (C) 2004 Anthony Baxter
 # $Id: upnp.py,v 1.4 2004/01/23 06:34:23 anthony Exp $
-# 
+#
 # UPnP support.
 
-# We have three modes. No UPnP at all, UPnP only for the SIP port, or 
+# We have three modes. No UPnP at all, UPnP only for the SIP port, or
 # UPnP for the SIP port, followed by UPnP for the RTP/RTCP ports.
 
 # XXX refactor to use twisted.web.client
@@ -15,8 +15,8 @@
 # Theory of operation:
 #
 # Multicast address for SSDP is 239.255.255.250 port 1900 (multicast)
-#    Listen for SSDP NOTIFYs on mcast 
-#    Send an M_SEARCH request to query for any IGDs that are out there - 
+#    Listen for SSDP NOTIFYs on mcast
+#    Send an M_SEARCH request to query for any IGDs that are out there -
 #       send 3 packets, listen for a response.
 
 
@@ -88,7 +88,7 @@ class UPnPProtocol(DatagramProtocol, object):
             if ':' in host:
                 host, port = host.split(':')
                 port = int(port)
-                protocol.ClientCreator(reactor, UPnPHTTP, 
+                protocol.ClientCreator(reactor, UPnPHTTP,
                                             self, url, (host,port)
                                       ).connectTCP(host, port)
 
@@ -99,7 +99,7 @@ class UPnPProtocol(DatagramProtocol, object):
         while remaining:
             line, remaining = remaining.split('\r\n', 1)
             line = line.strip()
-            if not line: 
+            if not line:
                 body = remaining
                 break
             key, val = line.split(':', 1)
@@ -111,11 +111,11 @@ class UPnPProtocol(DatagramProtocol, object):
         """Sets up a port forward. Returns a deferred that will be triggered
            with the external (host,port).
         """
-        
+
     def cancelForwardedPort(self, port):
         """Sets up a port forward. Returns a deferred.
         """
-        
+
 
     def discoverUPnP(self):
         "Discover UPnP devices. Returns a Deferred"
@@ -145,7 +145,7 @@ class UPnPProtocol(DatagramProtocol, object):
         dom = parseString(body, namespaces=0)
         devices = self.findDevicesFromXML(dom)
         if hasattr(self, '_discDef'):
-            d = self._discDef 
+            d = self._discDef
             del self._discDef
             d.callback(self.upnpconfig)
 
@@ -193,7 +193,7 @@ class UPnPProtocol(DatagramProtocol, object):
                                     self.upnpconfig.serviceMap[serviceType] = ctrlURL
 
             elif dev.nodeName == 'deviceList':
-                # Process the deviceList. 
+                # Process the deviceList.
                 # We're looking for a WANDevice
                 devices = dev.childNodes
                 for subdev in devices:
@@ -201,7 +201,7 @@ class UPnPProtocol(DatagramProtocol, object):
                         continue
                     elif subdev.nodeName == 'device':
                         self._processDeviceEntry(subdev)
-            
+
 
 class UPnPHTTP(http.HTTPClient):
     def __init__(self, upnp, url, (host, port)):

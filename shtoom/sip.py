@@ -178,7 +178,7 @@ class Call(object):
         ''' Accept currently pending call.
         '''
         from shtoom.exceptions import CallRejected
-	print "rejecting because", message
+        print "rejecting because", message
         self.sendResponse(self._invite, 603)
         self.setState('ABORTED')
         self.compDef.errback(CallRejected)
@@ -241,7 +241,7 @@ class Call(object):
             self.setState('ABORTED')
 
     def startOutboundCall(self, toAddr):
-        # XXX Set up a callLater in case we don't get a response, for a 
+        # XXX Set up a callLater in case we don't get a response, for a
         # retransmit
         # XXX Set up a timeout for the call completion
         uri = tpsip.parseURL(toAddr)
@@ -293,7 +293,7 @@ class Call(object):
         print "startSendInvite", init
         if init:
             d = self.sip.app.acceptCall(self,
-                                        calltype='outbound', 
+                                        calltype='outbound',
                                         localIP=self.getLocalSIPAddress()[0],
                                         withSTUN=self.getSTUNState(),
                                         )
@@ -324,7 +324,7 @@ class Call(object):
         invite.addHeader('to', str(self.uri))
         invite.addHeader('content-type', 'application/sdp')
         invite.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            username, email_address, 
+                            username, email_address,
                             self.getTag()))
         invite.addHeader('call-id', self.getCallID())
         invite.addHeader('subject', 'sip: %s'%(email_address))
@@ -469,7 +469,7 @@ class Call(object):
         self.setState('CONNECTED')
         if hasattr(self, 'compDef'):
             d, self.compDef = self.compDef, None
-            self.sip.app.startCall(self.cookie, (sdp.ipaddr,sdp.port), 
+            self.sip.app.startCall(self.cookie, (sdp.ipaddr,sdp.port),
                                    d.callback)
 
     def recvOptions(self, message):
@@ -480,9 +480,9 @@ class Call(object):
 
     def installTeardownTrigger(self):
         if 0 and self.cancel_trigger is None:
-            t = reactor.addSystemEventTrigger('before', 
-                                              'shutdown', 
-                                              self.dropCall, 
+            t = reactor.addSystemEventTrigger('before',
+                                              'shutdown',
+                                              self.dropCall,
                                               appTeardown=True)
             self.cancel_trigger = t
 
@@ -490,7 +490,7 @@ class Call(object):
         '''Drop call '''
         # XXX return a deferred, and handle responses properly
         if not appTeardown and self.cancel_trigger is not None:
-                reactor.removeSystemEventTrigger(self.cancel_trigger)
+            reactor.removeSystemEventTrigger(self.cancel_trigger)
         state = self.getState()
         print "dropcall in state", state
         if state == 'NONE':
@@ -550,7 +550,7 @@ class Call(object):
             noncebit =  "%s:%s" % (nonce,H(A2))
             respdig = KD(H(A1), noncebit)
         base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
-               'response="%s"' % (authmethod, user, realm, nonce, 
+               'response="%s"' % (authmethod, user, realm, nonce,
                                   uri, respdig)
         if opaque:
             base = base + ', opaque="%s"' % opaque
@@ -602,16 +602,16 @@ class Call(object):
                     if a:
                         uri = str(self.remote)
 
-                        credDef = self.sip.app.authCred('INVITE', uri, 
+                        credDef = self.sip.app.authCred('INVITE', uri,
                                         retry=(self.call_attempts > 1)).addErrback(log.err)
                         credDef.addCallback(lambda c, uri=uri, chal=a[0]:
-                                        self.calcAuth('INVITE', 
-                                                      uri=uri, 
-                                                      authchal=chal, 
+                                        self.calcAuth('INVITE',
+                                                      uri=uri,
+                                                      authchal=chal,
                                                       cred=c)
-                            ).addCallback(lambda a, h=outH: 
-                                        self.sendInvite(toAddr=None, 
-                                                        auth=a, 
+                            ).addCallback(lambda a, h=outH:
+                                        self.sendInvite(toAddr=None,
+                                                        auth=a,
                                                         authhdr=h)
                             ).addErrback(log.err)
                     else:
@@ -621,7 +621,7 @@ class Call(object):
                         # challenge.
                         if self.call_attempts > 1:
                             self.sendInvite()
-                        else: 
+                        else:
                             print "401/407 and no auth header"
                 else:
                     print "Unknown state '%s' for a 401/407"%(state)
@@ -680,7 +680,7 @@ class Registration(Call):
         invite.addHeader('cseq', '%s REGISTER'%self.getCSeq(incr=1))
         invite.addHeader('to', '"%s" <%s>'%(username,str(self.regAOR)))
         invite.addHeader('from', '"%s" <%s>'%(username,str(self.regAOR)))
-        state =  self.getState() 
+        state =  self.getState()
         if state in ( 'NEW', 'SENT_REGISTER', 'REGISTERED' ):
             invite.addHeader('expires', 900)
         elif state in ( 'CANCEL_REGISTER' ):
@@ -724,14 +724,14 @@ class Registration(Call):
                 a = message.headers.get(inH)
                 if a:
                     uri = str(self.regURI)
-                    credDef = self.sip.app.authCred('REGISTER', uri, 
+                    credDef = self.sip.app.authCred('REGISTER', uri,
                                         retry=(self.register_attempts > 1)).addErrback(log.err)
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
-                                        self.calcAuth('REGISTER', 
-                                                      uri=uri, 
-                                                      authchal=chal, 
+                                        self.calcAuth('REGISTER',
+                                                      uri=uri,
+                                                      authchal=chal,
                                                       cred=c)
-                            ).addCallback(lambda a, h=outH: 
+                            ).addCallback(lambda a, h=outH:
                                         self.sendRegistration(auth=a, authhdr=h)
                             ).addErrback(log.err)
 
@@ -759,8 +759,8 @@ class Registration(Call):
                 self.setState('REGISTERED')
                 reactor.callLater(840, self.sendRegistration)
                 if 0 and self.cancel_trigger is None:
-                    t = reactor.addSystemEventTrigger('before', 
-                                                      'shutdown', 
+                    t = reactor.addSystemEventTrigger('before',
+                                                      'shutdown',
                                                       self.cancelRegistration)
                     self.cancel_trigger = t
             elif state == 'CANCEL_REGISTER':
@@ -783,7 +783,7 @@ class Registration(Call):
                 log.err("don't know about %s for registration"%(message.code))
 
     def cancelRegistration(self):
-        # Cancel this outstanding registration. Should return a deferred 
+        # Cancel this outstanding registration. Should return a deferred
         # to pause the shutdown until we're done.
         # Send a registration with expires:0
         d = defer.Deferred()
@@ -954,4 +954,3 @@ class SipPhone(DatagramProtocol, object):
         elif message.response:
             print "handling response", message.code
             call.recvResponse(message)
-

@@ -63,4 +63,3 @@ def findUserInterface(application, prefui):
             return ui
     # Other interfaces here
     raise RuntimeError,  "Couldn't load _any_ userinterfaces"
-

@@ -31,10 +31,10 @@ class FastAudioDevice(baseaudio.AudioDevice):
             self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1,
                                                            'int16', 160, 2))
         self._rdev.open()
-	if self.dev is None:
-	    self.dev = MultipleConv(self._rdev)
-	else: 
-	    self.dev.setDevice(self._rdev)
+        if self.dev is None:
+            self.dev = MultipleConv(self._rdev)
+        else:
+            self.dev.setDevice(self._rdev)
 
 
 class FastAudioWrapper(object):
@@ -47,8 +47,8 @@ class FastAudioWrapper(object):
         self.buffer = ''
 
     def write(self, bytes):
-	if bytes:
-	    self._f.write(bytes)
+        if bytes:
+            self._f.write(bytes)
 
     def open(self):
         self._f.open()
@@ -59,17 +59,17 @@ class FastAudioWrapper(object):
         self._f.close()
 
     def read(self, length=320):
-        fc = 0 
+        fc = 0
         while len(self.buffer) < length:
             nb = self._f.read()
             if nb:
-	        self.buffer += nb
+                self.buffer += nb
             else:
                 fc += 1
                 if fc > 4:
                     # just give up, for now
                     print "audio is not ready. wah"
-		    return ''
+                    return ''
         result, self.buffer = self.buffer[:length], self.buffer[length:]
         return result
 

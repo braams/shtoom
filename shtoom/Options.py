@@ -1,11 +1,11 @@
 # Copyright (C) 2004 Anthony Baxter
 
-# Generic option handling. This will eventually become a package, 
+# Generic option handling. This will eventually become a package,
 # with the UI-specific preferences handling as a part of it.
 
 import os
 
-class OptionValueInvalid(Exception): 
+class OptionValueInvalid(Exception):
     pass
 
 class _NoDefaultOption: pass
@@ -39,7 +39,7 @@ class Option(object):
         return self._setValue(value)
 
     def validate(self, value):
-        return 
+        return
 
     def massageValue(self, value):
         return value
@@ -271,7 +271,7 @@ class AllOptions(object):
         modified = {}
         if dict is None:
             dict = kw
-            
+
         for g in self:
             for o in g:
                 n = o.getName()
@@ -295,7 +295,7 @@ class AllOptions(object):
         if val is NoDefaultOption:
             val = dflt
         return val
-                    
+
     def optionsStartup(self, version='%prog'):
         import optparse
         parser = optparse.OptionParser(version=version)
@@ -313,4 +313,3 @@ def findOptionsDir():
     except:
         saveDir = os.getcwd()
     return saveDir
-

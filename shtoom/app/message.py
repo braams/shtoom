@@ -17,7 +17,7 @@ from shtoom.app.base import STATE_NONE, STATE_SENDING, STATE_RECEIVING, STATE_BO
 
 class Message(BaseApplication):
     __implements__ = ( Application, )
-    startingState = STATE_SENDING 
+    startingState = STATE_SENDING
 
     def __init__(self, ui=None, audio=None):
         # Mapping from callcookies to rtp object
@@ -35,7 +35,7 @@ class Message(BaseApplication):
         if options is None:
             options = buildOptions(self)
         self.initOptions(options)
-	if not self.getPref('logfile'):
+        if not self.getPref('logfile'):
             log.startLogging(sys.stdout)
         else:
             log.startLogging(open(self.getPref('logfile'), 'aU'))
@@ -57,7 +57,7 @@ class Message(BaseApplication):
         d = defer.Deferred()
         cookie = self.getCookie()
         self._calls[cookie] = call
-	print "ACCEPTED", self._calls.keys()
+        print "ACCEPTED", self._calls.keys()
         self.openAudioDevice(cookie)
         d.addCallback(lambda x: self._createRTP(cookie,
                                                 calldesc['localIP'],
@@ -127,7 +127,7 @@ class Message(BaseApplication):
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
-        self._audioStates[callcookie] = self.startingState 
+        self._audioStates[callcookie] = self.startingState
         self._audios[callcookie].reopen()
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         log.msg("call %s connected"%callcookie)
@@ -157,7 +157,7 @@ class Message(BaseApplication):
     def receiveRTP(self, callcookie, payloadType, payloadData):
         # Yuk. If we're answering, the other end sets the PT!
         # XXX tofix!
-	if payloadType == 101:
+        if payloadType == 101:
             key = ord(payloadData[0])
             start = (ord(payloadData[1]) & 128) and True or False
             d = self._dtmf
@@ -173,7 +173,7 @@ class Message(BaseApplication):
                 self.stopDTMF(key)
             return
         if not (self._audioStates[callcookie] & STATE_RECEIVING):
-            return 
+            return
         fmt = None
         if payloadType == 0:
             fmt = FMT_PCMU
@@ -203,7 +203,7 @@ class Message(BaseApplication):
 
     def finishedAudio(self, callcookie):
         if (self._audioStates[callcookie] != STATE_DONE):
-		self.dropCall(callcookie)
+            self.dropCall(callcookie)
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)
@@ -237,8 +237,7 @@ class Message(BaseApplication):
         user = self.getPref('register_authuser')
         passwd = self.getPref('register_authpasswd')
         if user is not None and passwd is not None and retry is False:
-            return defer.succeed((self.getPref('register_authuser'), 
+            return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
         else:
             raise defer.fail(CallFailed("No auth available"))
-

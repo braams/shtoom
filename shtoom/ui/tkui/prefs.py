@@ -43,14 +43,14 @@ class PreferencesDialog(Dialog):
                     self.choiceoptions[name] = val
                     for c in option.getChoices():
                         if c == val:
-                            E = 1 
+                            E = 1
                         else:
-                            E = 0 
-                        b = Radiobutton(rbf, text=c, indicatoron=1, 
-                                        variable=self.choiceoptions[name], 
-                                        value=c, 
+                            E = 0
+                        b = Radiobutton(rbf, text=c, indicatoron=1,
+                                        variable=self.choiceoptions[name],
+                                        value=c,
                                         command=lambda o=self.choiceoptions, n=name, c=c: o.__setitem__(n,c) )
-                        if E: 
+                        if E:
                             b.select()
                         else:
                             b.deselect()
@@ -68,14 +68,14 @@ class PreferencesDialog(Dialog):
                     b.pack(side=RIGHT, fill=BOTH)
                     edit = b
                     get = lambda opt=name: self.booloptions[opt]
-                else: 
+                else:
                     raise ValueError, "unknown option type %s"%(option.optionType)
                 optf.pack(fill=X, side=TOP)
                 if edit is not None:
                     self.options[option.getName()] = ( option.optionType, get, edit )
             notebook.add_screen(tab, group.getName())
         return notebook()
-        
+
     def apply(self):
         out = {}
         for o, (t,get,edit)  in self.options.items():

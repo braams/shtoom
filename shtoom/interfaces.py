@@ -46,7 +46,7 @@ class UI(Interface):
 
 class SIP(Interface):
     """ This describes the interface to the SIP layer that the Application
-        uses. 
+        uses.
     """
 
     def placeCall(self, sipURL):
@@ -64,7 +64,7 @@ class RTP(Interface):
     def createRTPSocket(self, localIP, withSTUN):
         """ Create the RTP socket. Use 'localIP' as this end's IP address
             (note that it may be a different address to the system's - it's
-            the externally visible address, as reported by STUN. If 
+            the externally visible address, as reported by STUN. If
             withSTUN is true, use STUN to discover the external port numbers
             for RTP/RTCP
         """
@@ -89,7 +89,7 @@ class RTP(Interface):
         """ Stop sending digit 'digit'
         """
 
-    
+
 
 class AddressBook(Interface):
     """ Address Book interface

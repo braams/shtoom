@@ -23,11 +23,10 @@ class EchoServer(AnsweringMachine):
 
     def finishedAudio(self, callcookie):
         pass
-        
+
     def appSpecificOptions(self, opts):
         from shtoom.Options import OptionGroup, StringOption
         app = OptionGroup('echotest', 'Echo Test')
         app.addOption(StringOption('logfile','log to this file'))
         opts.addGroup(app)
         opts.setOptsFile('.shechorc')
-

@@ -180,10 +180,10 @@ class SimpleSDP:
                                           ((encparams and '/') or ""),
                                            encparams or "")))
     def show(self):
-	from time import time
+        from time import time
         out = []
         out.append("v=0")
-	sess = int(time()%1000 * 100)
+        sess = int(time()%1000 * 100)
         out.append("o=root %d %d IN IP4 %s"%(sess, sess, self.serverIP))
         out.append("s=session")
         #out.append("i=<No author> <No copyright>")

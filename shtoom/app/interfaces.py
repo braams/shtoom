@@ -4,26 +4,26 @@
 from twisted.python.components import Interface
 
 class ApplicationSIPInterface(Interface):
-    """This interface describes the interface to the Application that 
+    """This interface describes the interface to the Application that
        the SIP layer uses.
     """
 
     def acceptCall(self, call, **calldesc):
-        """ Setup a new call. 
-            calldesc describes the new call, it's a dictionary with the 
+        """ Setup a new call.
+            calldesc describes the new call, it's a dictionary with the
             following entries:
                 calltype : 'outbound' or 'inbound'
 
-            Returns  deferred - .callback() will be invoked if 
-            the call is to be accepted, or .errback() if the call is to be 
-            rejected.  The callback will return the callcookie - callcookie 
-            is a unique identifier used for all dealings with the Application 
+            Returns  deferred - .callback() will be invoked if
+            the call is to be accepted, or .errback() if the call is to be
+            rejected.  The callback will return the callcookie - callcookie
+            is a unique identifier used for all dealings with the Application
             in the future about this call.
         """
 
     def startCall(self, callcookie, cb):
-        """ Call setup is complete, the call is now live. Accepts a callback 
-            which is invoked when the application wishes to terminate the call. 
+        """ Call setup is complete, the call is now live. Accepts a callback
+            which is invoked when the application wishes to terminate the call.
             The callback is passed a reason for the call teardown.
         """
 
@@ -54,8 +54,8 @@ class ApplicationUIInterface(Interface):
 
     def placeCall(self, sipURL):
         """ Place a call. returns a a deferred. The deferred's callback
-            will be passed a call cookie when the call is setup. The 
-            UI should use the call cookie in all future communications 
+            will be passed a call cookie when the call is setup. The
+            UI should use the call cookie in all future communications
             with the Application to indicate which call it is handling.
             The deferred's errback will be called if the call setup fails.
         """
@@ -70,13 +70,11 @@ class ApplicationUIInterface(Interface):
         """ Stop sending DTMF digit 'digit' """
 
 
-class Application(ApplicationSIPInterface, 
-                  ApplicationRTPInterface, 
+class Application(ApplicationSIPInterface,
+                  ApplicationRTPInterface,
                   ApplicationUIInterface):
 
     def __init__(self):
         """ Create the application. The application should create the SIP
             listener and any user interface that's needed.
         """
-
-

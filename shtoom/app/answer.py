@@ -1,6 +1,6 @@
 # Copyright (C) 2004 Anthony Baxter
 
-# The Answering Machine app. Accepts all calls, plays a message 
+# The Answering Machine app. Accepts all calls, plays a message
 # (based on the 'to' address) then records a message for them.
 
 from shtoom.app.interfaces import Application
@@ -68,11 +68,11 @@ class AnsweringMachine(Message):
         if os.path.isdir(da):
             announceFile = os.path.join(da, '%s.wav'%touser)
             if os.path.exists(announceFile):
-                messageFile = os.path.join(messageDir, 
+                messageFile = os.path.join(messageDir,
                         '%s@%s_%s@%s_%d.raw'%(touser, todomain,
                                               fromuser, fromdomain,
                                               time.time()))
-                
+
             else:
                 announceFile = self.getPref('fallback_message')
                 messageFile = None
@@ -100,7 +100,7 @@ class AnsweringMachine(Message):
             self.dropCall(callcookie)
         else:
             self._audioStates[callcookie] = STATE_RECEIVING
-        
+
     def appSpecificOptions(self, opts):
         import os.path
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
@@ -110,4 +110,3 @@ class AnsweringMachine(Message):
         app.addOption(StringOption('fallback_message','fallback message when no announcement can be found', default='/tmp/fallback.wav'))
         opts.addGroup(app)
         opts.setOptsFile('.shtamrc')
-
