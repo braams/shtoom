@@ -35,12 +35,12 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
             return
         self.callButton.setEnabled(False)
         self.connected, defer = self.sip.placeCall(sipURL)
-        defer.addCallbacks(self.call_connected, self.call_failed)
+        defer.addCallbacks(self.callConnected, self.callDisconnected)
 
-    def call_connected(self, call):
+    def callConnected(self, call):
         self.hangupButton.setEnabled(True)
 
-    def call_failed(self, e):
+    def callDisconnected(self, e):
         self.errorMessage("call failed", e)
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
@@ -67,6 +67,20 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         from preferencesdialog import PreferencesDialog
         p =PreferencesDialog()
         p.show()
+
+    def incomingCall(self, description, call, defresp, defsetup):
+        accept = QMessageBox.information(self, 'Shtoom', 
+                'Incoming Call: %s\nAnswer?'%description, 
+                'Yes', 'No', '', 0, 1)
+        print "accept is", accept
+        if accept == 0:
+            self.connected = call
+            self.callButton.setEnabled(False)
+            defsetup.addCallbacks(self.callConnected, self.callDisconnected)
+            defresp.callback('yes')
+        else:
+            defresp.errback('no')
+
 
 class Logger:
     def __init__(self, textwidget):

@@ -48,13 +48,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
             return
         self._callButton.config(state=DISABLED)
         self.connected, deferred = self.sip.placeCall(sipURL)
-        deferred.addCallbacks(self.call_connected, self.call_failed)
+        deferred.addCallbacks(self.callConnected, self.callFailed)
 
-    def call_connected(self, call):
+    def callConnected(self, call):
         self._hangupButton.config(state=NORMAL)
 
-    def call_failed(self, e):
-        self.errorMessage("call failed", e)
+    def callDisconnected(self, call):
+        self.errorMessage("call failed", call)
         self._hangupButton.config(state=DISABLED)
         self._callButton.config(state=NORMAL)
 
@@ -69,4 +69,17 @@ class ShtoomMainWindow(ShtoomBaseUI):
         from twisted.internet import reactor
         reactor.stop()
         self.main.quit()
+
+
+    def incomingCall(self, description, call, defresp, defsetup):
+        import tkMessageBox
+        answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
+        print "GOT ANSWER", answer
+        if answer:
+            self.connected = call
+            self._callButton.config(state=DISABLED)
+            defsetup.addCallbacks(self.callConnected, self.callDisconnected)
+            defresp.callback('yes')
+        else:
+            defresp.errback('no')
 
