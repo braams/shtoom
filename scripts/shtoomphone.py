@@ -26,4 +26,6 @@ def main():
     app.start()
 
 if __name__ == "__main__":
+    from shtoom import i18n
+    i18n.install()
     main()
