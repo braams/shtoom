@@ -234,7 +234,11 @@ class RTCPCompound:
             count = ord(bytes[0]) & 31
             pt = ord(bytes[1])
             PT = rtcpPTdict.get(pt, 'UNKNOWN')
-            length, = struct.unpack('!H', bytes[2:4])
+            try:
+                length, = struct.unpack('!H', bytes[2:4])
+            except struct.error:
+                print "struct.unpack got bad number of bytes"
+                return
             offset = 4*(length+1)
             body, bytes = bytes[4:offset], bytes[offset:]
             p = RTCPPacket(PT, ptcode=pt)

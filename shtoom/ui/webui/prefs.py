@@ -326,11 +326,18 @@ class ConfigurationWizard(rend.Page):
     def render_configBody(self, ctx, data):
         return webform.renderForms(bindingNames=[ctx.arg('config_type')])
 
+    def render_result(self, ctx, data):
+        result = inevow.IHand(ctx, default=None)
+        if result is not None:
+            return result
+        return ''
+
     docFactory = loaders.stan(T.html[
     T.head[
         T.title["Configuration Wizard"],
         T.link(rel="stylesheet", type="text/css", href="css")],
     T.body[
+        T.span(render=render_result),
         T.h1["Add configuration"],
         render_configBody,
         T.form(action=".")[
@@ -353,10 +360,12 @@ class ConfigurationWizard(rend.Page):
         req.setComponent(iformless.IRedirectAfterPost, '/')
 
     def fwd(self, req, name, username, password):
-        pass
+        req.setComponent(iformless.IRedirectAfterPost, '/')
+        return "Sorry, the free world dialup wizard is not yet implemented"
 
     def manual(self, req, name, username, password):
-        pass
+        req.setComponent(iformless.IRedirectAfterPost, '/')
+        return "Sorry, the free advanced wizard is not yet implemented"
 
 
 class Reloader(rend.Page):

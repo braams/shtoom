@@ -106,4 +106,5 @@ class BacklogPlayout(_Playout):
         return '\0'*320
 
 
-Playout = BrainDeadPlayout
+#Playout = BrainDeadPlayout
+Playout = BacklogPlayout
