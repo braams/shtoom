@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-from shtoommainwindow import *
+from shtoommainwindow import ShtoomMainWindow as ShtoomBaseWindow
 
 from shtoom.ui.base import ShtoomBaseUI
 
@@ -7,11 +7,15 @@ import sys
 from twisted.python import log
 from qt import *
 
-class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
+class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
 
     sending = False
     audiosource = None
     cookie = None
+    def __init__(self, *args, **kwargs):
+        ShtoomBaseWindow.__init__(self, *args, **kwargs)
+        from shtoom.ui.logo import logoGif
+        self.pixmapLogo.setPixmap(QPixmap(QByteArray(logoGif)))
 
     def debugMessage(self, message):
         log.msg(message)

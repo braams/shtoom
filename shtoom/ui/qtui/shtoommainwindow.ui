@@ -560,6 +560,25 @@
             </property>
         </widget>
     </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>pixmapLogo</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>420</x>
+                <y>16</y>
+                <width>51</width>
+                <height>51</height>
+            </rect>
+        </property>
+        <property name="pixmap">
+            <pixmap></pixmap>
+        </property>
+        <property name="scaledContents">
+            <bool>true</bool>
+        </property>
+    </widget>
 </widget>
 <menubar>
     <property name="name">

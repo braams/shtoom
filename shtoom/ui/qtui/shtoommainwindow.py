@@ -161,6 +161,10 @@ class ShtoomMainWindow(QMainWindow):
         dtmfButtonHash_font = QFont(self.dtmfButtonHash.font())
         self.dtmfButtonHash.setFont(dtmfButtonHash_font)
 
+        self.pixmapLogo = QLabel(self.centralWidget(),"pixmapLogo")
+        self.pixmapLogo.setProperty("geometry",QVariant(QRect(420,16,51,51)))
+        self.pixmapLogo.setProperty("scaledContents",QVariant(QVariant(1,0)))
+
         self.fileNewAction = QAction(self,"fileNewAction")
         self.fileNewAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileOpenAction = QAction(self,"fileOpenAction")

@@ -32,7 +32,7 @@ void ShtoomMainWindow::fileSaveAs()
 }
 
 
-void ShtoomMainWindow::filePrint()
+void ShtoomMainWindow::filePrefs()
 {
 
 }
