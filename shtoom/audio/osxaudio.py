@@ -34,19 +34,16 @@ class OSXAudio(object):
         self.running = False
         self.reopen()
 
-    def read(self, bytes=320, buffer=320*3):
+    def read(self, bytes=320, buffer=320*0):
         if self.prevtime is None:
             delta = 0
         else:
             delta = 1000*(time() - self.prevtime)
         self.prevtime = time()
         if len(self.outbuffer) < (buffer + bytes):
-            #print "sent silence"
             return ''
         else:
-            #sound, self.outbuffer = self.outbuffer[:bytes], self.outbuffer[bytes:]
             sound, self.outbuffer = self.outbuffer[:bytes], self.outbuffer[bytes:]
-        #print "[%d] sent %d to the network, %s remaining"%(delta, len(sound), len(self.outbuffer))
         return sound
 
     def write(self, data):
