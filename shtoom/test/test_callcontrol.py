@@ -68,7 +68,8 @@ class TestAudio:
 class TestUI:
     threadedUI = False
 
-    def __init__(self):
+    def __init__(self, stopOnDisconnect=True):
+        self.stopOnDisconnect = stopOnDisconnect
         self.actions = []
 
     def connectApplication(self, app):
@@ -86,17 +87,19 @@ class TestUI:
     def cb_callConnected(self, cookie):
         print "callConnected", self.cookie
         self.actions.append(('connected',cookie))
-        reactor.callLater(0, self.dropCall)
 
     def callDisconnected(self, cookie, reason):
         self.actions.append(('disconnected',cookie))
         print "callDisconnected", self.cookie
-        reactor.stop()
+        if self.stopOnDisconnect:
+            reactor.stop()
 
-    def incomingCall(self, description, cookie):
+    def incomingCall(self, description, cookie, defsetup):
         print "incoming"
         self.actions.append(('incoming',cookie))
-        return defer.succeed(cookie)
+        defsetup.addCallbacks(self.cb_callConnected, 
+                       self.cb_callFailed).addErrback(log.err)
+        defsetup.addCallback(lambda x: cookie)
 
     def fakeCall(self):
         print "placing a call"
@@ -105,10 +108,9 @@ class TestUI:
                        self.cb_callFailed).addErrback(log.err)
 
     def dropCall(self):
-        print "dropping connected call"
         self.actions.append(('drop',self.cookie))
         self.app.dropCall(self.cookie)
-        print "dropped"
+        
 
 class TestCall:
     "A fake Call object"
@@ -153,6 +155,10 @@ class TestCall:
         print "drop"
         self.sip.app.endCall(self.cookie)
 
+    def terminateCall(self):
+        print "remote end closed call"
+        self.sip.app.endCall(self.cookie)
+
 
 class TestSip:
     "Just like shtoom.sip.SipPhone, only not"
@@ -175,7 +181,8 @@ class TestSip:
         return d
 
     def dropFakeInbound(self, result):
-        self.c.dropCall()
+        print "remote bye"
+        self.c.terminateCall()
 
     def dropCall(self, cookie):
         print "dropCall"
@@ -189,7 +196,7 @@ class TestRTP:
 
     def createRTPSocket(self, ip, stun):
         self.actions.append('create')
-        return defer.succeed('ok')
+        return defer.succeed(self.cookie)
 
     def startSendingAndReceiving(self, remote):
         self.actions.append('start')
@@ -202,7 +209,35 @@ class TestRTP:
 from twisted.trial import unittest
 
 class TestCallControl(unittest.TestCase):
-    def testOutbound(self):
+
+    def testOutboundLocalBye(self, loopcount=4):
+        from shtoom.app.phone import Phone
+        ui = TestUI()
+        au = TestAudio()
+        p = Phone(ui=ui, audio=au)
+        p._rtpProtocolClass = TestRTP
+        ui.connectApplication(p)
+        p.connectSIP = lambda x=None: None 
+        p.boot()
+        p.sip = TestSip(p)
+        for l in range(loopcount):
+            TestRTP.actions = []
+            reactor.callLater(0, ui.fakeCall)
+            reactor.callLater(0, ui.dropCall)
+            p.start()
+            self.assertEquals(au.actions, ['reopen', 'close'])
+            self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
+            actions = ui.actions
+            print actions
+            cookie = actions[0][1]
+            for a,c in actions[1:]:
+                self.assertEquals(cookie,c)
+            actions = [x[0] for x in actions]
+            self.assertEquals(actions, ['start', 'connected', 'drop', 'disconnected'])
+            ui.actions = []
+            au.actions = []
+
+    def NtestOutboundRemoteBye(self):
         from shtoom.app.phone import Phone
         ui = TestUI()
         au = TestAudio()
@@ -225,7 +260,7 @@ class TestCallControl(unittest.TestCase):
         self.assertEquals(actions, ['start', 'connected', 'drop', 'disconnected'])
         print actions
 
-    def testInbound(self):
+    def testInboundRemoteBye(self):
         from shtoom.app.phone import Phone
         ui = TestUI()
         au = TestAudio()
@@ -243,6 +278,7 @@ class TestCallControl(unittest.TestCase):
         self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
         actions = ui.actions
         cookie = actions[0][1]
+        print actions
         for a,c in actions[1:]:
             self.assertEquals(cookie,c)
         actions = [x[0] for x in actions]

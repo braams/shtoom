@@ -49,8 +49,12 @@ class TestCall:
 
     def dropCall(self):
         print "drop"
-        self.sip.app.endCall(self.cookie)
+        if hasattr(self,'cookie'):
+            self.sip.app.endCall(self.cookie)
+        else:
+            print "'cancelling' non-started call"
         self.sip.callEndedRestartChecking()
+
 
     def terminateCall(self):
         print "remote end closed call"
@@ -97,7 +101,7 @@ class TestSip:
         return d
 
     def dropCall(self, cookie):
-        print "dropCall"
+        print "Sip.dropCall"
         self.c.dropCall()
         del self.c
 
