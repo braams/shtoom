@@ -2,13 +2,16 @@ Mac installer: bundlebuilder
 Windows installer: Innoconda
 
 Before 0.2:
-    - Break out the application layer beneath the RTP lib
+    - Write test driver using new shtoom.app layer. Should be able to
+      just slot in a UI layer and have it Just Work (hm. Need to hook up
+      audio as well).
     - Fix the fastaudio windows distribution - it needs to include the 
       libsndfile.dll file. I might need to switch to using Inno Setup -
       but how does Inno Setup know where to install the executable? How
       does wininst.exe build an installer? Default to C:\Python23 ?
-    - SIP registration. We can use STUN to allow the INVITEs back from the
-      server that we register with.
+    - Test SIP registration. 
+    - Connect up and debug shutdown hooks for removing registration and 
+      closing any open calls (dropCall needs to return a deferred)
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
@@ -25,11 +28,11 @@ Before 0.2:
       of response cookie to indicate which query it is for.
     - Handle more of SIP 
         - Lookup servers/proxies using multicast, SRV
-        - redirects, auth
+        - redirects
         - retransmits &c
         - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
           into shtoom.sdp, kill shtoom.multicast
-    - Codec switchability - DVI4?, Speex, GSM
+    - Codec switchability - DVI4?, Speex
 
 Later:
 
