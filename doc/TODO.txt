@@ -5,6 +5,10 @@ Linux installer: rpmbuilder??, deb?
       http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
 
 Definite before 0.3:
+    - sip: dropCall() must return a deferred
+    - doug: implement a leg.hangup() method (and it's events)
+    - doug: implement leg connection (inbound and outbound)
+    - doug: hook up and debug s.d.conferencing 
     - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
     - ui(gnome): a new Gtk UI - Nafai
@@ -12,7 +16,6 @@ Definite before 0.3:
           maybe need a hide/show option
         - Prefs support
     - ui(qt): finish multiple Call UI, including new tab for incoming call
-    - doug: implement leg conferencing (connection)
     - doug: sending of DTMF
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't need to pass in the RTP PT.
