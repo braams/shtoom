@@ -96,6 +96,26 @@ class _BeautifulSaxParser(ContentHandler, Tag):
         #print "characters", content
         self.currentData += content
 
+    def _checkContents(self, obj, name):
+        results = []
+        for i in obj.contents:
+            if isinstance(i, Tag):
+                if ':' in i.name:
+                    ns, uname = i.name.rsplit(':')
+                    if uname == name:
+                        results.append(i)
+                elif name == i.name:
+                    results.append(i)
+                if i.contents: 
+                    results.extend(self._checkContents(i, name))
+        return results
+
+    def fetchNameNoNS(self, name):
+        "A much stupider version of fetch that only ignores XML namespaces"
+        return self._checkContents(self, name)
+
+            
+
 
 def BeautifulSax(data):
     bs = _BeautifulSaxParser()
@@ -170,11 +190,12 @@ def SOAPResponseFactory(request, response):
         if data[-1] == chr(0):
             data = data[:-1]
         bs = BeautifulSoap(data)
-        key = 'u:%sResponse'%(request.soapMethod)
+        key = '%sResponse'%(request.soapMethod)
         log.msg('response for %s'%request.soapMethod, system='SOAP')
-        r = bs.first(key)
+        r = bs.fetchNameNoNS(key)
         if not r:
             raise SOAPError("couldn't find %s in response"%(key))
+        r = r[0]
         out = {}
         for c in r.contents:
             if isinstance(c, Tag): 
