@@ -36,6 +36,7 @@ class Phone(BaseApplication):
         self._currentCall = None
         self._muted = False
         self._rtpProtocolClass = None
+        self._debugrev = 10
 
     def needsThreadedUI(self):
         return self.ui.threadedUI

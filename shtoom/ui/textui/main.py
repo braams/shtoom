@@ -37,7 +37,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         defsetup.addCallback(lambda x: defresp)
 
     def connectionMade(self):
-        self.transport.write("Welcome to shtoom\n>> \n")
+        self.transport.write("Welcome to shtoom, debug rev. %s\n>> \n" % self.app._debugrev)
 
     def lineReceived(self, line):
         args = line.strip().split()
