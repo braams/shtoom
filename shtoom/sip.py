@@ -401,16 +401,13 @@ class Call(object):
         '''
         body = None
         if message.method == 'INVITE' and code == 200:
-            sdp = self.sip.app.getSDP(self.cookie)
             othersdp = SDP(message.body)
-            sdp.intersect(othersdp)
+            sdp = self.sip.app.getSDP(self.cookie, othersdp)
             if not sdp.hasMediaDescriptions():
                 self.sendResponse(message, 406)
                 self.setState('ABORTED')
                 return
             body = sdp.show()
-            self.sip.app.selectFormat(self.cookie, sdp)
-
         resp = self.dialog.formatResponse(message, code, body)
 
         vias = message.headers['via']
@@ -540,13 +537,11 @@ class Call(object):
     def sendAck(self, okmessage, startRTP=0):
         username = self.sip.app.getPref('username')
         oksdp = SDP(okmessage.body)
-        sdp = self.sip.app.getSDP(self.cookie)
-        sdp.intersect(oksdp)
+        sdp = self.sip.app.getSDP(self.cookie, oksdp)
         if not sdp.hasMediaDescriptions():
             self.sendResponse(message, 406)
             self.setState('ABORTED')
             return
-        self.sip.app.selectFormat(self.cookie, sdp)
         contact = okmessage.headers['contact']
         if type(contact) is list:
             contact = contact[0]

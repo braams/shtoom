@@ -78,12 +78,9 @@ class VoiceApp(StateMachine):
         self.__inbandDTMFdetector = None
         super(VoiceApp, self).__init__(defer, **kwargs)
 
-    def va_listFormats(self):
-        return self.__converter.listFormats()
-
-    def va_selectFormat(self, format, rtpPT):
+    def va_selectDefaultFormat(self, format, rtpPT):
         self.__rtpPT = rtpPT
-        return self.__converter.selectFormat(format)
+        return self.__converter.selectDefaultFormat(format)
 
     def _legConnect(self, target):
         target.app = self

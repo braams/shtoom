@@ -1,6 +1,6 @@
 # Copyright (C) 2004 Anthony Baxter
 
-from converters import AudioLayer
+from converters import MediaLayer
 
 opened = None
 
@@ -36,8 +36,9 @@ def getAudioDevice(mode):
     from __main__ import app
     global opened
     if opened is None:
-        opened = AudioLayer(AudioFromFiles(app.getPref('audio_infile'), app.getPref('audio_outfile')))
+        opened = MediaLayer(AudioFromFiles(app.getPref('audio_infile'), 
+                                           app.getPref('audio_outfile')))
     return opened
 
 def getFileAudio(infile, outfile):
-    return AudioLayer(AudioFromFiles(infile, outfile))
+    return MediaLayer(AudioFromFiles(infile, outfile))

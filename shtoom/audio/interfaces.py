@@ -7,7 +7,7 @@ class IAudio(Interface):
     def getFormats(self):
         '''Retuns a list of the supported audio formats'''
 
-    def selectFormat(self, format):
+    def selectDefaultFormat(self, format):
         '''Select a particular format for audio. This format is used for
            both reading and writing.
         '''

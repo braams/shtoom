@@ -11,11 +11,12 @@ from shtoom.exceptions import CallFailed
 from shtoom.sdp import rtpPTDict
 import sys, traceback
 
-from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
+from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 from shtoom.audio.fileaudio import getFileAudio
 
-nteMap = { 0: '0', 1: '1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9',
-           10: '*', 11: '#', 12: 'A', 13: 'B', 14:'C', 15:'D', 16:'flash' }
+nteMap = { 0: '0',  1: '1',  2: '2',  3: '3',  4: '4',  5: '5',  6: '6', 
+           7: '7',  8: '8',  9: '9', 10: '*', 11: '#', 12: 'A', 13: 'B', 
+          14: 'C', 15: 'D', 16: 'flash' }
 
 class DougApplication(BaseApplication):
     __implements__ = ( Application, )
@@ -126,58 +127,34 @@ class DougApplication(BaseApplication):
         return reason
 
     def _createRTP(self, cookie, fromIP, withSTUN):
-        from shtoom.rtp import RTPProtocol
+        from shtoom.rtp.protocol import RTPProtocol
         rtp = RTPProtocol(self, cookie)
         self._rtp[cookie] = rtp
         d = rtp.createRTPSocket(fromIP,withSTUN)
         return d
 
-    def selectFormat(self, callcookie, sdp):
+    def selectDefaultFormat(self, callcookie, sdp):
         md = sdp.getMediaDescription('audio')
         rtpmap = md.rtpmap
         print "RTP", rtpmap
         rtp =  self._rtp[callcookie]
         v = self._voiceapps.get(callcookie)
-        for entry,desc in rtpmap:
-            if entry == rtp.PT_pcmu:
-                v.va_selectFormat(FMT_PCMU, entry)
+        for entry,(desc, pt) in rtpmap.items():
+            if pt == PT_PCMU:
+                v.va_selectDefaultFormat(PT_PCMU)
                 break
-            elif entry == rtp.PT_gsm:
-                v.va_selectFormat(FMT_GSM, entry)
+            elif pt == PT_PCMU:
+                v.va_selectDefaultFormat(PT_GSM)
                 break
             else:
-                raise ValueError, "couldn't set to %r"%entry
+                raise ValueError, "couldn't set to %r"%pt
         else:
             raise ValueError, "no working formats"
 
-    def getSDP(self, callcookie):
-        from shtoom.sdp import SDP, MediaDescription
-        from shtoom.rtp import RTP_PT_CN
-        rtp =  self._rtp[callcookie]
-        s = SDP()
-        addr = rtp.getVisibleAddress()
-        s.setServerIP(addr[0])
-        md = MediaDescription()
-        s.addMediaDescription(md)
-        md.setServerIP(addr[0])
-        md.setLocalPort(addr[1])
-        fmts = self._voiceapps[callcookie].va_listFormats()
-        if FMT_PCMU in fmts:
-            md.addRtpMap('PCMU', 8000) # G711 ulaw
-        if FMT_GSM in fmts:
-            md.addRtpMap('GSM', 8000) # GSM 06.10
-        if FMT_SPEEX in fmts:
-            md.addRtpMap('speex', 8000, payload=110)
-            #md.addRtpMap('speex', 16000, payload=111)
-        if FMT_DVI4 in fmts:
-            md.addRtpMap('DVI4', 8000)
-            #md.addRtpMap('DVI4', 16000)
-        if RTP_PT_CN:
-            print "added comfort noise"
-            md.addRtpMap('CN', 8000)
-        md.addRtpMap('telephone-event', 8000, payload=101)
-        # a=fmtp:101 0-16
-        return s
+    def getSDP(self, callcookie, othersdp=None):
+        rtp = self._rtp[callcookie]
+        sdp = rtp.getSDP(othersdp)
+        return sdp
 
     def startCall(self, callcookie, remoteSDP, cb):
         # create an inboundLeg
@@ -204,39 +181,28 @@ class DougApplication(BaseApplication):
             self._voiceapps[callcookie].va_abort()
             del self._voiceapps[callcookie]
 
-    def receiveRTP(self, callcookie, payloadType, payloadData):
-        # Yuk. If we're answering, the other end sets the PT!
-        # XXX tofix!
+    def receiveRTP(self, callcookie, packet):
+        from shtoom.rtp.formats import PT_NTE
         v = self._voiceapps[callcookie]
-        if payloadType == 101:
-            key = ord(payloadData[0])
-            start = (ord(payloadData[1]) & 128) and True or False
+        if packet.pt is PT_NTE:
+            data = packet.data
+            key = ord(data[0])
+            start = (ord(data[1]) & 128) and True or False
             print "got dtmf", key, start
             if start:
                 v.va_startDTMFevent(nteMap[key])
             else:
                 v.va_stopDTMFevent(nteMap[key])
             return
-        fmt = None
-        if payloadType == 0:
-            fmt = FMT_PCMU
-        elif payloadType == 3:
-            fmt = FMT_GSM
-        if fmt:
-            try:
-                self._voiceapps[callcookie].va_receiveRTP(fmt,payloadData)
-            except IOError:
-                pass
-        elif payloadType in (13, 19):
-            # comfort noise
+        try:
+            self._voiceapps[callcookie].va_receiveRTP(packet)
+        except IOError:
             pass
-        else:
-            print "unexpected RTP PT %s len %d"%((payloadType,str(payloadType)), len(payloadData))
 
     def giveRTP(self, callcookie):
         v = self._voiceapps[callcookie]
-        fmt, data = v.va_giveRTP()
-        return fmt, data
+        packet = v.va_giveRTP()
+        return packet
 
     def placeCall(self, cookie, sipURL, fromURI=None):
         ncookie = self.getCookie()

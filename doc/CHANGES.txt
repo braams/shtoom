@@ -1,9 +1,11 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - massive changes to RTP and SDP handling, to fix a lot of the ugliness
+    under the hood.
   - even under ALSA, some audio devices used by ossaudiodev can only do
     stereo. Handle these broken/idiotic/annoying drivers.
-  - p0 means 'listen on any random port', not 'default port'. Useful for
+  - -p0 means 'listen on any random port', not 'default port'. Useful for
     clients where you don't care about the port (for instance, if you're
     running many many clients from the command line)
   - shtam, shecho and shmessage have been rewritten as doug applications. 
@@ -43,8 +45,7 @@ Major changes in the shtoom suite. In reverse chronological order.
     see what you're being sent.
     Firewall issues mean that it's unlikely that two-way RTCP comms will
     work.
-  - doug is alive. A first working version is checked in. Much much
-    more to do yet.
+  - doug is alive. 
   - DTMF sending is hooked up, and works in the tk, qt and gnome UIs
     DTMF sending works when talking to Doug and also talking to ciscos.
     Right now, though, there's a hardcoded assumption that it's RTP PT 101.
@@ -55,11 +56,13 @@ Major changes in the shtoom suite. In reverse chronological order.
   - A wxWidgets UI was checked in. Thanks to Andy Hird for writing this.
   - The fastaudio driver, used on windows, received some TLC and should
     work on a lot more systems.
-  - The return of RTP's connected port, after it was removed from 0.2 
-    release
+  - The return of RTP's ConnectedDatagramProtocol, after it was removed 
+    from the 0.2 release. This means that if a remote machine abruptly 
+    "goes away", we don't keep spamming them with RTP packets for the
+    rest of time.
   - A major refactoring of the use of deferreds mean that things actually
-    work a lot more sanely now. I'm chaining deferreds and using them to
-    return data in a more orderly fashion now. 
+    work a lot more sanely. I'm chaining deferreds and using them to
+    return data in a more orderly fashion. 
 
 0.2: 
   - RTP now uses a ConnectedDatagramProtocol. This allows for the

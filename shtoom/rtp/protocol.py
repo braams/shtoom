@@ -11,7 +11,11 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.task import LoopingCall
 from twisted.python import log
 
-from shtoom.sdp import rtpPTDict
+from shtoom.rtp.formats import SDPGenerator, PT_CN
+from shtoom.rtp.packets import RTPPacket, RTPParser
+
+TWO_TO_THE_16TH = 2<<16
+TWO_TO_THE_32ND = 2<<32
 
 # Sane systems
 RTP_PT_CN=13
@@ -20,56 +24,7 @@ RTP_PT_CN=13
 # No comfort noise at all
 #RTP_PT_CN=None
 
-class NTE:
-    "An object representing an RTP NTE (rfc2833)"
-    def __init__(self, key, startTS):
-        self.startTS = startTS
-        self.ending = False
-        self.counter = 3
-        self.key = key
-        if key >= '0' and key <= '9':
-            self._payKey = chr(int(key))
-        elif key == '*':
-            self._payKey = chr(10)
-        elif key == '#':
-            self._payKey = chr(11)
-        elif key >= 'A' and key <= 'D':
-            # A - D are 12-15
-            self._payKey = chr(ord(key)-53)
-        elif key == 'flash':
-            self._payKey = chr(16)
-        else:
-            raise ValueError, "%s is not a valid NTE"%(key)
-
-    def getKey(self):
-        return self.key
-
-    def end(self):
-        self.ending = True
-        self.counter = 1
-
-    def getPayload(self, ts):
-        if self.counter > 0:
-            if self.ending:
-                end = 128
-            else:
-                end = 0
-            payload = self._payKey + chr(10|end) + \
-                                struct.pack('!H', ts - self.startTS)
-            self.counter -= 1
-            return payload
-        else:
-            return None
-
-    def isDone(self):
-        if self.ending and self.counter < 1:
-            return True
-        else:
-            return False
-
-    def __repr__(self):
-        return '<NTE %s%s>'%(self.key, self.ending and ' (ending)' or '')
-
+from shtoom.rtp.packets import NTE
 
 class RTPProtocol(DatagramProtocol):
     """Implementation of the RTP protocol.
@@ -80,14 +35,32 @@ class RTPProtocol(DatagramProtocol):
     _stunAttempts = 0
 
     _cbDone = None
-    PT_pcmu = rtpPTDict[('PCMU', 8000, 1)]
-    PT_gsm = rtpPTDict[('GSM', 8000, 1)]
+
+    rtpParser = None
 
     def __init__(self, app, cookie, *args, **kwargs):
         self.app = app
         self.cookie = cookie
         self._pendingDTMF = []
         #DatagramProtocol.__init__(self, *args, **kwargs)
+
+    def getSDP(self, othersdp=None):
+        sdp = SDPGenerator().getSDP(self)
+        if othersdp: 
+            sdp.intersect(othersdp)
+        self.setSDP(sdp)
+        return sdp
+
+    def setSDP(self, sdp):
+        "This is the canonical SDP for the call"
+        from shtoom.rtp.packets import RTPParser
+        self.app.selectDefaultFormat(self.cookie, sdp)
+        rtpmap = sdp.getMediaDescription('audio').rtpmap
+        ptdict = {}
+        for pt, (text, marker) in rtpmap.items():
+            ptdict[pt] = marker
+            ptdict[marker] = pt
+        self.rtpParser = RTPParser(ptdict)
 
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
@@ -105,7 +78,7 @@ class RTPProtocol(DatagramProtocol):
 
     def _socketCreationAttempt(self, locIP=None):
         from twisted.internet.error import CannotListenError
-        import rtcp
+        from shtoom.rtp import rtcp
         self.RTCP = rtcp.RTCPProtocol()
 
         # RTP port must be even, RTCP must be odd
@@ -272,12 +245,12 @@ class RTPProtocol(DatagramProtocol):
         if hasattr(self.transport, 'connect'):
             self.transport.connect(*self.dest)
 
-    def datagramReceived(self, datagram, addr, unpack=struct.unpack):
-        hdr = struct.unpack('!BBHII', datagram[:12])
-        # Don't care about the marker bit.
-        PT = hdr[1]&127
-        data = datagram[12:]
-        self.app.receiveRTP(self.cookie, PT, data)
+    def datagramReceived(self, datagram, addr):
+        if self.rtpParser is None:
+            log.msg("early(?) rtp packet, no rtpParser available")
+            return 
+        packet = self.rtpParser.fromnet(datagram, addr)
+        self.app.receiveRTP(self.cookie, packet)
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
@@ -338,18 +311,21 @@ class RTPProtocol(DatagramProtocol):
             return
         self.ts += 160
         self.packets += 1
-        if self.sample is not None and self.sample[1] is not None:
-            fmt, sample = self.sample
+        # We need to keep track of whether we were in silence mode or not -
+        # when we go from silent->talking, set the marker bit. Other end 
+        # can use this as an excuse to adjust playout buffer.
+        if self.sample is not None:
+            packet = self.sample
             self.sent += 1
-            hdr = pack('!BBHII', 0x80, fmt, self.seq, self.ts, self.ssrc)
-            self.transport.write(hdr+sample, self.dest)
+            data = self.rtpParser.tonet(packet, self.seq, self.ts, self.ssrc)
+            self.transport.write(data, self.dest)
             self.sample = None
         else:
             if (self.packets - self.sent) % 100 == 0:
-                if RTP_PT_CN is not None:
-                    hdr = struct.pack('!BBHII', 0x80, RTP_PT_CN, self.seq, 
-                                                  self.ts, self.ssrc)
-                    self.transport.write(hdr+chr(127), self.dest)
+                if self.rtpParser.haspt(PT_CN):
+                    cn = RTPPacket(PT_CN, chr(127), 0)
+                    cn = self.rtpParser.tonet(cn, self.seq, self.ts, self.ssrc)
+                    self.transport.write(cn, self.dest)
         self.seq += 1
         # Now send any pending DTMF keystrokes
         if self._pendingDTMF:
@@ -365,4 +341,11 @@ class RTPProtocol(DatagramProtocol):
             self.sample = self.app.giveRTP(self.cookie)
         except IOError:
             pass
+
+        # Wrapping
+        if self.seq >= TWO_TO_THE_16TH:
+            self.seq = self.seq - TWO_TO_THE_16TH
+
+        if self.ts >= TWO_TO_THE_32ND:
+            self.ts = self.ts - TWO_TO_THE_32ND
 

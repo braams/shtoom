@@ -10,12 +10,15 @@ from twisted.python import log, threadable
 from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
 from shtoom.exceptions import CallFailed
-from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4, getAudioDevice
-from shtoom.rtp import RTPProtocol
+from shtoom.audio import getAudioDevice
+from shtoom.rtp.protocol import RTPProtocol
 from shtoom.sdp import SDP, MediaDescription
 from shtoom.ui.select import findUserInterface
 from shtoom.opts import buildOptions
 from shtoom.Options import OptionGroup, StringOption, ChoiceOption
+
+from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
+from shtoom.audio import getAudioDevice
 
 class Phone(BaseApplication):
     __implements__ = ( Application, )
@@ -108,46 +111,31 @@ class Phone(BaseApplication):
         d = rtp.createRTPSocket(localIP,withSTUN)
         return d
 
-    def selectFormat(self, callcookie, sdp):
+    def selectDefaultFormat(self, callcookie, sdp, format=None):
+        if not sdp:
+            self._audio.selectDefaultFormat(format)
+            return
         md = sdp.getMediaDescription('audio')
         rtpmap = md.rtpmap
-        rtp =  self._rtp[callcookie]
-        for entry,desc in rtpmap:
-            if entry == rtp.PT_pcmu:
-                self._audio.selectFormat(FMT_PCMU)
+        rtp = self._rtp[callcookie]
+        for entry,(desc,pt) in rtpmap.items():
+            if pt == PT_PCMU:
+                self._audio.selectDefaultFormat(PT_PCMU)
                 self._audioFormat = entry
                 break
-            elif entry == rtp.PT_gsm:
-                self._audio.selectFormat(FMT_GSM)
+            elif pt == PT_GSM:
+                self._audio.selectDefaultFormat(PT_GSM)
                 self._audioFormat = entry
                 break
             else:
-                raise ValueError, "couldn't set to %r"%entry
+                raise ValueError, "couldn't set to %r"%pt
         else:
             raise ValueError, "no working formats"
 
-    def getSDP(self, callcookie):
-        rtp =  self._rtp[callcookie]
-        s = SDP()
-        addr = rtp.getVisibleAddress()
-        s.setServerIP(addr[0])
-        md = MediaDescription()
-        s.addMediaDescription(md)
-        md.setServerIP(addr[0])
-        md.setLocalPort(addr[1])
-        fmts = self._audio.listFormats()
-        if FMT_GSM in fmts:
-            md.addRtpMap('GSM', 8000) # GSM 06.10
-        if FMT_PCMU in fmts:
-            md.addRtpMap('PCMU', 8000) # G711 ulaw
-        if FMT_SPEEX in fmts:
-            md.addRtpMap('speex', 8000, payload=110)
-            #md.addRtpMap('speex', 16000, payload=111)
-        if FMT_DVI4 in fmts:
-            md.addRtpMap('DVI4', 8000)
-            #s.addRtpMap('DVI4', 16000)
-        md.addRtpMap('telephone-event', 8000, payload=101)
-        return s
+    def getSDP(self, callcookie, othersdp=None):
+        rtp = self._rtp[callcookie]
+        sdp = rtp.getSDP(othersdp)
+        return sdp
 
     def startCall(self, callcookie, remoteSDP, cb):
         log.msg("startCall reopening %r %r"%(self._currentCall, self._audio))
@@ -193,34 +181,24 @@ class Phone(BaseApplication):
         self._audioFormat = None
         #self._audio = None
 
-    def receiveRTP(self, callcookie, payloadType, payloadData):
+    def receiveRTP(self, callcookie, packet):
+        # XXX the mute/nonmute should be in the AudioLayer
         if self._currentCall != callcookie:
             return None
-        fmt = None
-        if payloadType == 0:
-            fmt = FMT_PCMU
-        elif payloadType == 3:
-            fmt = FMT_GSM
-        if fmt:
-            try:
-                self._audio.write(payloadData, fmt)
-            except IOError:
-                pass
-        elif payloadType in (13, 19):
-            # comfort noise
+        try:
+            self._audio.write(packet)
+        except IOError:
             pass
-        else:
-            log.err("unexpected RTP PT %s len %d"%((payloadType,str(payloadType)), len(payloadData)))
 
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call
         if self._currentCall != callcookie or self._muted:
             return None # comfort noise
-        bytes = self._audio.read()
-        if bytes is None:
+        packet = self._audio.read()
+        if packet is None:
             return None
         else:
-            return self._audioFormat, bytes
+            return packet
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)

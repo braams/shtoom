@@ -4,6 +4,7 @@
 import struct, math, sys
 sys.path.append(sys.path.pop(0))
 import shtoom.audio
+from shtoom.rtp import formats
 
 app = None
 
@@ -35,24 +36,25 @@ class Recorder:
 
     def sample(self, *args):
         try:
-            data = self._dev.read()
+            packet = self._dev.read()
         except IOError:
             return
-        if not data:
+        if not packet:
             print "no audio, skipping"
             return
         if self._outfp:
-            self._outfp.write(data)
+            self._outfp.write(packet.data)
         if self._play:
-            self._dev.write(data, shtoom.audio.FMT_RAW)
-        if len(data) != 320:
-            print "discarding bad length (%d) packet"%(len(data))
+            self._dev.write(packet)
+        if len(packet.data) != 320:
+            print "discarding bad length (%d) packet"%(len(packet.data))
         else:
-            self.analyse(struct.unpack('160h', data))
+            self.analyse(struct.unpack('160h', packet.data))
 
 
 def main(Recorder = Recorder):
-    from shtoom.audio import getAudioDevice, FMT_RAW
+    from shtoom.audio import getAudioDevice
+    from shtoom.rtp.formats import PT_RAW
     from twisted.internet.task import LoopingCall
     from twisted.internet import reactor
     import sys
@@ -60,7 +62,7 @@ def main(Recorder = Recorder):
     dev = getAudioDevice('rw')
     dev.close()
     dev.reopen()
-    dev.selectFormat(FMT_RAW)
+    dev.selectDefaultFormat(PT_RAW)
     #if len(sys.argv) > 1:
     #    outfp = open(sys.argv[1], 'wb')
     #else:

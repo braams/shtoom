@@ -41,7 +41,7 @@ setup(
     author_email = "anthony@interlink.com.au",
     url = 'http://shtoom.divmod.org/',
     packages = ['shtoom', 'shtoom.multicast',
-                'shtoom.ui', 'shtoom.ui.qtui',
+                'shtoom.ui', 'shtoom.rtp', 'shtoom.ui.qtui',
                 'shtoom.ui.gnomeui', 'shtoom.ui.qtui',
                 'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',

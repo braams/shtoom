@@ -133,6 +133,10 @@ class ShtoomMainWindow(ShtoomBaseUI):
         status = "Call disconnected"
         self._connected = False
         if message:
+            lines = message.split('\n')
+            message = message[0]
+            if len(message) > 30:
+                message = message[:30]
             status = "%s: %r"%(status, message)
         self.statusMessage(status)
         self._hangupButton.config(state=DISABLED)

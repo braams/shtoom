@@ -6,7 +6,7 @@ class RTCPdecodeCase(unittest.TestCase):
 
     def testRoundtripBYE(self):
         testpacket = '\x81\xcb\x00\x01\x03\xe2)\xfa'
-        from shtoom.rtcp import RTCPCompound
+        from shtoom.rtp.rtcp import RTCPCompound
         R = RTCPCompound(testpacket)
         ae = self.assertEqual
         ae(len(R),1)
@@ -18,7 +18,7 @@ class RTCPdecodeCase(unittest.TestCase):
         ae(enc, testpacket)
 
     def testByeWithReason(self):
-        from shtoom.rtcp import RTCPPacket, RTCPCompound
+        from shtoom.rtp.rtcp import RTCPPacket, RTCPCompound
         p = RTCPPacket(pt='BYE', contents=((1000001, 10000002), 'just because'))
         out = p.encode()
         ae = self.assertEqual
@@ -32,7 +32,7 @@ class RTCPdecodeCase(unittest.TestCase):
 
     def testSDESdecode(self):
         testpacket = '\x81\xca\x00\x07\x03\xe2)\xfa\x01\x140.0.0@192.168.41.250\x00\x00'
-        from shtoom.rtcp import RTCPCompound
+        from shtoom.rtp.rtcp import RTCPCompound
 
         R = RTCPCompound(testpacket)
         ae = self.assertEqual
@@ -45,7 +45,7 @@ class RTCPdecodeCase(unittest.TestCase):
 
     def testCompoundRTCP(self):
         testpacket = '\x81\xc9\x00\x07\x03\xe2)\xfa\xb5\x96\x9d\xdd\x06\x00\x00\x18\x00\x00\xdd8\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x81\xca\x00\x07\x03\xe2)\xfa\x01\x140.0.0@192.168.41.250\x00\x00\x81\xcb\x00\x01\x03\xe2)\xfa'
-        from shtoom.rtcp import RTCPCompound
+        from shtoom.rtp.rtcp import RTCPCompound
         R = RTCPCompound(testpacket)
         ae = self.assertEqual
         ae(len(R),3)
@@ -60,7 +60,7 @@ class RTCPdecodeCase(unittest.TestCase):
 
     def FAILINGtestCompoundRTCP2(self):
         testpacket = '\x81\xc8\x00\x0c\x1d%)\xfa\xc4E\xd4\x88\x97\xffU\x01\x00\x00\x00\x00\x00\x00\x00\xce\x00\x00\x80\xc0\xe1*c\x96\x00\x00\x00\x18\x00\x01\x03\xf2\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x81\xca\x00\x14\x1d%)\xfa\x01\x140.0.0@192.168.41.250\x02\x17Cisco IOS, VoIP Gateway\x06\x17Cisco IOS, VoIP Gateway\x00\x00\x00\x00'
-        from shtoom.rtcp import RTCPCompound
+        from shtoom.rtp.rtcp import RTCPCompound
         R = RTCPCompound(testpacket)
         ae = self.assertEqual
         ae(len(R),2)

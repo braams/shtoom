@@ -34,14 +34,15 @@ class TestCall:
 
     def acceptedFakeCall(self, cookie):
         print "accepted, got %r"%(cookie,)
-        from shtoom.sdp import rtpPTDict
+        from shtoom.rtp.formats import PT_PCMU, SDPGenerator
         self.cookie = cookie
         d, self.d = self.d, None
-        self.sip.app.selectFormat(self.cookie,
-                                    ((rtpPTDict[('PCMU', 8000, 1)],'PCMU'), )
-                                 )
-        self.sip.app.startCall(self.cookie, ('127.0.0.1', 9876), d.callback)
+        self.sip.app.selectDefaultFormat(self.cookie, sdp=None,format=PT_PCMU)
+        sdp = SDPGenerator().getSDP(self)
+        self.sip.app.startCall(self.cookie, sdp, d.callback)
 
+    def getVisibleAddress(self):
+        return  ('127.0.0.1', 9876)
     def rejectedFakeCall(self, e):
         print "rejected, got %r"%(e,)
         d, self.d = self.d, None
@@ -119,12 +120,8 @@ class TestSip:
         self.c.terminateCall()
 
 
-from shtoom.sdp import rtpPTDict
-
 class EchoRTP:
     "A fake RTP layer that just repeats back any data sent to it"
-    PT_pcmu = rtpPTDict[('PCMU', 8000, 1)]
-    PT_gsm = rtpPTDict[('GSM', 8000, 1)]
 
     actions = []
     def __init__(self, app, cookie):
@@ -152,10 +149,10 @@ class EchoRTP:
     def nextpacket(self):
         from twisted.internet import reactor
         self.echo = self.app.giveRTP(self.cookie)
-        if self.echo is not None and self.echo[1] is not None:
-            PT, data = self.echo
+        if self.echo is not None:
+            packet = self.echo
             reactor.callLater(0, lambda : self.app.receiveRTP(self.cookie, 
-                                                              PT, data))
+                                                              packet))
 
 def main():
     from shtoom.app.phone import Phone

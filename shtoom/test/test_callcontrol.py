@@ -46,7 +46,7 @@ callFlowInboundHorror = """
 class TestAudio:
     def __init__(self):
         self.actions = []
-    def selectFormat(self, fmt): 
+    def selectDefaultFormat(self, fmt): 
         self.actions.append('select')
         if TDEBUG: print "selecting fake audio format"
 

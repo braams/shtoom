@@ -13,6 +13,7 @@ from shtoom.doug.events import *
 from shtoom.doug.exceptions import *
 
 from twisted.internet import reactor
+from twisted.python import log
 
 class StateMachine(object):
 
@@ -46,8 +47,8 @@ class StateMachine(object):
                 self._doState(action, event)
                 break
         else:
-            print "No matching event for %s in state %s"%(
-                            event.getEventName(), self.getCurrentState())
+            log.msg("No matching event for %s in state %s"%(
+                            event.getEventName(), self.getCurrentState()))
             self.returnError(EventNotSpecifiedError(
                             "No matching event for %s in state %s"
                             %(event.getEventName(), self.getCurrentState())))

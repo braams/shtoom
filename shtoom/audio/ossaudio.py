@@ -1,6 +1,6 @@
 # Copyright (C) 2004 Anthony Baxter
 
-from converters import AudioLayer
+from converters import MediaLayer
 import baseaudio, ossaudiodev
 
 opened = None
@@ -21,7 +21,7 @@ class OSSAudioDevice(baseaudio.AudioDevice):
         if 'AFMT_S16_LE' in formats:
             dev.setfmt(ossaudiodev.AFMT_S16_LE)
             if self.dev is None:
-                self.dev = AudioLayer(Wrapper(dev, ch))
+                self.dev = MediaLayer(Wrapper(dev, ch))
             else:
                 self.dev.setDevice(Wrapper(dev, ch))
         else:

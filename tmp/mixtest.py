@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.3
 
 import shtoom.audio
+import shtoom.rtp.formats
 import struct, math, sys, time
 
 from twisted.internet import reactor
@@ -190,7 +191,7 @@ class Recorder:
         new = self.mix(samples)
         if self._outfp is not None:
             self._outfp.write(indata)
-        self._dev.write(new, shtoom.audio.FMT_RAW)
+        self._dev.write(new, shtoom.rtp.formats.PT_RAW)
 
     def stop(self):
         print "Stopping"
@@ -201,7 +202,7 @@ class Recorder:
         reactor.stop()
 
 def main(Recorder = Recorder):
-    from shtoom.audio import getAudioDevice, FMT_RAW
+    from shtoom.audio import getAudioDevice, formats
     from twisted.internet.task import LoopingCall
     import sys
     global LC
@@ -209,7 +210,7 @@ def main(Recorder = Recorder):
     dev = getAudioDevice('rw')
     dev.close()
     dev.reopen()
-    dev.selectFormat(FMT_RAW)
+    dev.selectDefaultFormat(formats.PT_RAW)
     #outfp = open(sys.argv[1], 'wb')
     mixins = [ open(x, 'rb') for x in sys.argv[2:] ]
     rec = Recorder(dev, mixins=mixins, outfp=None)

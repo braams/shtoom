@@ -2,33 +2,12 @@
 # Copyright (C) 2004 Anthony Baxter
 # Copyright (C) 2004 Jamey Hicks
 #
-rtpPTDict = {
-    0: ('PCMU',8000,1),
-    3: ('GSM',8000,1),
-    4: ('G723',8000,1),
-    5: ('DVI4',8000,1),
-    6: ('DVI4',16000,1),
-    7: ('LPC',8000,1),
-    8: ('PCMA',8000,1),
-    9: ('G722',8000,1),
-    10: ('L16',44100,2),
-    11: ('L16',44100,1),
-    12: ('QCELP',8000,1),
-    13: ('CN',8000,1),
-    15: ('G728',8000,1),
-    16: ('DVI4',11025,1),
-    17: ('DVI4',22050,1),
-    18: ('G729',8000,1),
-    19: ('xCN',8000,1),
-}
 
-# XXX todo - rtpmaps should be ordereddicts or somesuch.
+from shtoom.rtp.formats import RTPDict, PTMarker
+from twisted.python.util import OrderedDict
 
-for key,value in rtpPTDict.items():
-    rtpPTDict[value] = key
-del key,value
-
-BadAnnounce = "Bad Announcement"
+class BadAnnounceError(Exception):
+    "Bad Announcement"
 
 def get(obj,typechar,optional=0):
     return obj._d.get(typechar)
@@ -58,13 +37,14 @@ def parse_o(obj, o, value):
     if value:
         l = value.split()
         if len(l) != 6:
-            raise BadAnnounce,"wrong # fields in o=`%s'"%value
+            raise BadAnnounceError("wrong # fields in o=`%s'"%value)
         ( obj._o_username, obj._o_sessid, obj._o_version,
             obj._o_nettype, obj._o_addrfamily, obj._o_ipaddr ) = tuple(l)
 
 def unparse_o(obj, o):
-    return ['%s %s %s %s %s %s' % ( obj._o_username, obj._o_sessid, obj._o_version,
-                                    obj._o_nettype, obj._o_addrfamily, obj._o_ipaddr )]
+    return ['%s %s %s %s %s %s' % ( obj._o_username, obj._o_sessid, 
+                                    obj._o_version, obj._o_nettype, 
+                                    obj._o_addrfamily, obj._o_ipaddr )]
 
 def parse_a(obj, a, text):
     words = text.split(':')
@@ -72,14 +52,24 @@ def parse_a(obj, a, text):
         attr, attrvalue = words
     else:
         attr, attrvalue = text, None
-    obj._a.setdefault(attr, []).append(attrvalue)
     if attr == 'rtpmap':
         payload,info = attrvalue.split(' ')
-        obj.rtpmap.append((int(payload),attrvalue))
+        entry = rtpmap2canonical(int(payload), attrvalue)
+        try:
+            fmt = RTPDict[entry]
+        except KeyError:
+            name,clock,params = entry
+            fmt = PTMarker(name, None, clock, params)
+        obj.rtpmap[int(payload)] = (attrvalue, fmt)
+        obj._a.setdefault(attr, OrderedDict())[int(payload)] = attrvalue
+    else:
+        obj._a.setdefault(attr, []).append(attrvalue)
         
 def unparse_a(obj, k):
     out = []
     for (a,vs) in obj._a.items():
+        if isinstance(vs, OrderedDict):
+            vs = vs.values()
         for v in vs:
             if v:
                 out.append('%s:%s' % (a, v))
@@ -98,11 +88,12 @@ def parse_m(obj, m, value):
     if value:
         els = value.split()
         (obj.media, port, obj.transport) = els[:3]
-        obj.formats = els[3:]
+        obj.setFormats(els[3:])
         obj.port = int(port)
 
 def unparse_m(obj, m):
-    return ['%s %s %s %s' % (obj.media, str(obj.port), obj.transport, ' '.join(obj.formats))]
+    return ['%s %s %s %s' % (obj.media, str(obj.port), obj.transport, 
+                            ' '.join(obj.formats))]
 
 parsers = [
     ('v', 1, parse_singleton, unparse_singleton),
@@ -142,6 +133,7 @@ for (key, required, parseFcn, unparseFcn) in mdparsers:
 del key,required,parseFcn,unparseFcn
 
 class MediaDescription:
+    "The MediaDescription encapsulates all of the SDP media descriptions"
     def __init__(self, text=None):
         self.media = None
         self.nettype = 'IN'
@@ -152,13 +144,27 @@ class MediaDescription:
         self.formats = []
         self._d = {}
         self._a = {}
-        self.rtpmap = []
+        self.rtpmap = OrderedDict()
         self.media = 'audio'
         self.transport = 'RTP/AVP'
         self.keyManagement = None
         if text:
             parse_m(self, 'm', text)
    
+    def setFormats(self, formats):
+        if self.media in ( 'audio', 'video'):
+            for pt in formats:
+                pt = int(pt)
+                if pt < 97:
+                    try:
+                        PT = RTPDict[pt]
+                    except KeyError:
+                        # We don't know this one - hopefully there's an
+                        # a=rtpmap entry for it.
+                        continue
+                    self.addRtpMap(PT)
+        self.formats = formats
+            
     def setMedia(self, media):
         self.media = media
     def setTransport(self, transport):
@@ -172,51 +178,48 @@ class MediaDescription:
         parse_a('keymgmt', keyManagement)
 
     def clearRtpMap(self):
-        self.rtpmap = []
-    def addRtpMap(self, encname, clockrate, encparams=None, payload=None):
-        if self.media == 'audio' and encparams is None:
-            # default to a single channel
-            encparams = 1
-        if self.media != 'audio' and payload is None:
-            raise ValueError, "Don't know payloads for %s"%(self.media)
-        p = rtpPTDict.get((encname.upper(),clockrate,encparams))
-        if payload is None:
-            if p is None:
-                raise ValueError, "Don't know payload for %s/%s/%s"%(
-                    encname.upper(),clockrate,encparams)
-            payload = p
-        if p is not None and payload != p:
-            raise ValueError, "attempt to set payload to %s, should be %s"%(
-                                payload, p)
-        rtpmap = "%d %s/%d%s%s"%(payload, encname, clockrate,
-                                 ((encparams and '/') or ""),
-                                 encparams or "")
-        self.rtpmap.append((int(payload),rtpmap))
-        self._a.setdefault('rtpmap', []).append(rtpmap)
+        self.rtpmap = OrderedDict()
+
+    def addRtpMap(self, fmt):
+        if fmt.pt is None:
+            pts = self.rtpmap.keys()
+            if pts and pts[-1] > 100:
+                payload = pts[-1] + 1
+            else:
+                payload = 101
+        else:
+            payload = fmt.pt
+        rtpmap = "%d %s/%d%s%s"%(payload, fmt.name, fmt.clock,
+                                 ((fmt.params and '/') or ""),
+                                 fmt.params or "")
+        self.rtpmap[int(payload)] = (rtpmap, fmt)
+        self._a.setdefault('rtpmap', OrderedDict())[payload] = rtpmap
         self.formats.append(str(payload))
 
     def intersect(self, other):
-        from twisted.python.util import OrderedDict
         map1 = self.rtpmap
         d1 = {}
-        for code,e in map1:
+        for code,(e,fmt) in map1.items():
             d1[rtpmap2canonical(code,e)] = e
         map2 = other.rtpmap
-        outmap = []
+        outmap = OrderedDict()
         # XXX quadratic - make rtpmap an ordereddict
-        for code, e in map2:
-            if d1.has_key(rtpmap2canonical(code,e)):
-                outmap.append((code,e))
+        for code, (e, fmt) in map2.items():
+            canon = rtpmap2canonical(code,e)
+            if d1.has_key(canon):
+                outmap[code] = (e, fmt)
         self.rtpmap = outmap
-        self._a['rtpmap'] = [ e for (code, e) in outmap ]
+        self.formats = [ str(x) for x in self.rtpmap.keys() ]
+        self._a['rtpmap'] = OrderedDict([ (code,e) for (code, (e, fmt)) in outmap.items() ])
 
 class SDP:
-    def __init__(self,text=None):
+    def __init__(self, text=None):
         from time import time
         self._id = None
         self._d = {'v': '0', 't': '0 0', 's': 'shtoom'}
-        self._a = {}
+        self._a = OrderedDict()
         self.mediaDescriptions = []
+        # XXX Use the username preference
         self._o_username = 'root'
         self._o_sessid = self._o_version = str(int(time()%1000 * 100))
         self._o_nettype = self.nettype = 'IN'
@@ -241,7 +244,8 @@ class SDP:
 
     def id(self):
         if not self._id:
-            self._id = (self._o_username, self._o_sessid, self.nettype, self.addrfamily, self.ipaddr)
+            self._id = (self._o_username, self._o_sessid, self.nettype, 
+                        self.addrfamily, self.ipaddr)
         return self._id
 
     def parse(self, text):
@@ -281,7 +285,7 @@ class SDP:
                 return md
         return None
     def hasMediaDescriptions(self):
-        return len(self.mediaDescriptions)
+        return bool(len(self.mediaDescriptions))
 
     def show(self):
         out = []
@@ -317,6 +321,8 @@ def ntp2delta(ticks):
 
 
 def rtpmap2canonical(code, entry):
+    if not isinstance(code, int):
+        raise ValueError(code)
     if code < 96:
         return code
     else:
@@ -325,4 +331,4 @@ def rtpmap2canonical(code, entry):
         if len(desc) == 2:
             desc.append('1') # default channels
         name,rate,channels = desc
-        return (name.lower(),rate,channels)
+        return (name.lower(),int(rate),int(channels))
