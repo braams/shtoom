@@ -58,6 +58,10 @@ Optional:
 
     pygsm (see below)
 
+    pySpeex. This is needed for the speex codec, but not required otherwise.
+
+    http://www.freenet.org.nz/python/pySpeex/
+
 Audio
 =====
 
@@ -87,10 +91,12 @@ Codecs
 
 At the moment G711 ULAW (aka PCMU) is supported with the standard
 Python audioop module. If you install Itamar Shtull-Trauring's 
-pygsm module (available from shtoom CVS as module 'pygsm', or from the
-'Files' section of the shtoom website), it will also handle GSM 06.10. 
-Additional codecs will be added later.
+pygsm module (available from shtoom SVN as module 'pygsm', or from the
+'Files' section of the shtoom.sf.net website), it will also handle 
+GSM 06.10. 
 
+If you install David McNab's pySpeex package, you can handle speex 
+audio.
 
 Shtoom is (C) Copyright 2004 Anthony Baxter and is licensed under
 the GNU Lesser General Public License - see the file LICENSE for
