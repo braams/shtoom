@@ -11,15 +11,9 @@
 
 from shtoom.doug.source import SilenceSource, convertToSource
 from shtoom.doug.events import *
+from shtoom.doug.exceptions import *
 
 from twisted.internet import reactor
-
-class StateMachineError(Exception):
-    pass
-class EventNotSpecifiedError(StateMachineError):
-    pass
-class NonEventError(StateMachineError):
-    pass
 
 class VoiceApp(object):
 
@@ -80,6 +74,10 @@ class VoiceApp(object):
         d, self._doneDeferred = self._doneDeferred, None
         d.callback(result)
 
+    def returnError(self, exc):
+        d, self._doneDeferred = self._doneDeferred, None
+        d.errback(exc)
+
     def cleanUp(self):
         # XXX keep track of stuff
         pass
@@ -89,14 +87,17 @@ class VoiceApp(object):
 
     def _triggerEvent(self, event):
         if not isinstance(event, Event):
-            raise NonEventError("%r is not an Event!"%(event))
+            self.returnError(NonEventError("%r is not an Event!"%(event)))
         for e, a in self.getCurrentEvents():
             if isinstance(event, e):
                 action = a
                 break
         else:
-            raise EventNotSpecifiedError("No matching event for %s in state %s"
-                            %(event.getEventName(), self.getCurrentState()))
+            print "fell off the end"
+            self.returnError(EventNotSpecifiedError(
+                            "No matching event for %s in state %s"
+                            %(event.getEventName(), self.getCurrentState())))
+            return
         self._doState(action, event)
 
     def getCurrentState(self):
