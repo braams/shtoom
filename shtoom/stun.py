@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: stun.py,v 1.10 2004/01/13 14:20:52 anthonybaxter Exp $
+# $Id: stun.py,v 1.11 2004/01/14 17:08:00 itamar Exp $
 
 import struct, socket, time
 from twisted.internet import reactor, defer
@@ -115,9 +115,9 @@ class StunHook(StunProtocol):
         self.transport = self._protocol.transport
 
     def discoverStun(self, deferred):
-        ''' Work out STUN settings. Trigger the deferred with (ip,port)
+        """ Work out STUN settings. Trigger the deferred with (ip,port)
             when we're done.
-        '''
+        """
         self.installStun()
         self.sendRequest(self.servers[0])
         self.deferred = deferred

@@ -87,10 +87,10 @@ class Call(object):
         return self._tag
 
     def setLocalIP(self, dest):
-        ''' Try and determine the local IP address to use. We use a
+        """ Try and determine the local IP address to use. We use a
             ConnectedDatagramProtocol in the (faint?) hope that on a machine
             with multiple interfaces, we'll get the right one
-        '''
+        """
         # XXX Allow over-riding
         from shtoom.stun import StunHook, getPolicy
         host, port = dest
@@ -369,9 +369,9 @@ class Call(object):
         self.setState('SENT_BYE')
 
     def sendCancel(self):
-        ''' Sends a CANCEL message to kill a call that's in the process of
+        """ Sends a CANCEL message to kill a call that's in the process of
             being established
-        '''
+        """
         raise NotImplementedError
 
     def recvBye(self, message):
@@ -381,9 +381,9 @@ class Call(object):
         self.sendResponse(message, 200)
 
     def recvCancel(self, message):
-        ''' The remote UAC changed it's mind about the new call and
+        """ The remote UAC changed it's mind about the new call and
             gave up.
-        '''
+        """
 
     def recvAck(self, message):
         ''' The remote UAC has ACKed our response to their INVITE.
@@ -398,10 +398,10 @@ class Call(object):
                                    d.callback)
 
     def recvOptions(self, message):
-        ''' Received an OPTIONS request from a remote UA.
+        """ Received an OPTIONS request from a remote UA.
             Put together a 200 response if we're ok with the Require headers,
             otherwise an error (XXXXX)
-        '''
+        """
 
     def dropCall(self):
         '''Drop call '''
@@ -453,13 +453,13 @@ class SipPhone(DatagramProtocol, object):
         del self._calls[callid]
 
     def placeCall(self, uri):
-        '''Place a call.
+        """Place a call.
 
         uri should be a string, an address of the person we are calling,
         e.g. 'sip:foo@example.com'.
 
         Returns a Call object and a Deferred
-        '''
+        """
         self.app.debugMessage("placeCall starting")
         _d = defer.Deferred()
         call = self._newCallObject(_d, to=uri)
@@ -472,13 +472,13 @@ class SipPhone(DatagramProtocol, object):
 
 
     def startDTMF(self, digit):
-        '''Start sending DTMF digit 'digit'
-        '''
+        """Start sending DTMF digit 'digit'
+        """
         self.app.debugMessage("startDTMF not implemented yet!")
 
     def stopDTMF(self):
-        '''Stop sending DTMF digit 'digit'
-        '''
+        """Stop sending DTMF digit 'digit'
+        """
         self.app.debugMessage("stopDTMF not implemented yet!")
 
     def datagramReceived(self, datagram, addr):
