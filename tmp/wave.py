@@ -1,3 +1,7 @@
+# This is a fork of the sunau module from Python's stdlib, to add more
+# codec support and fix a bunch of endian issues. It will almost certainly
+# be folded back into the stdlib for Python 2.5
+
 """Stuff to parse WAVE files.
 
 Usage.
