@@ -41,7 +41,7 @@ def tryTkInterface(application):
 def tryGnomeInterface(application):
     import sys
     try:
-        import pygtk
+        import pygtk, gnome.ui
         pygtk.require("2.0")
     except ImportError:
         pass
