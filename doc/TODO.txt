@@ -3,8 +3,8 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
+    - all interfaces must be current and correct
     - deal with stupid devices that only work in stereo
-    - -p0 should mean 'listen on any random port', not 'default'
     - doug: use dropCall()'s deferred to generate correct events
     - doug: implement a leg.hangup() method (and it's events)
     - doug: implement leg bridging (inbound and outbound)
@@ -53,7 +53,6 @@ Not before 0.3:
     - ui(tk): A better dialog for incoming calls. 
     - ui(qt): window resize currently sucks
     - ui(qt, wx, gtk): save call history
-    - doug: reimplement shmessage and shecho in doug
     - doug: create application frameworky bit (look at quotient.deployment?)
     - ui(all): multi-tab view for multiple calls
     - shtoom: ringing tone for incoming call?

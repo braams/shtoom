@@ -1,8 +1,12 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
-  - shtam and shecho have been rewritten as doug applications. shtam now
-    sends the voicemail as an email when it's collected.
+  - p0 means 'listen on any random port', not 'default port'. Useful for
+    clients where you don't care about the port (for instance, if you're
+    running many many clients from the command line)
+  - shtam, shecho and shmessage have been rewritten as doug applications. 
+    shtam now sends the voicemail as an email when it's collected. The old
+    shtoom.app.* modules have been removed from the codebase.
   - OSX audio hooked up, using audio code from Donovan Preston.
   - the main phone application is now called shtoomphone. Too many import
     horrors with 'import shtoom' getting the script, rather than the 
