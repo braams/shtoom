@@ -24,8 +24,8 @@ class RecordingApp(VoiceApp):
         super(self, RecordingApp).__init__(self, **kwargs)
 
     def __start__(self):
-        return ( (CallStartedEvent: self.playAnnounce),
-                 (Event:            self.unknownEvent), )
+        return ( (CallStartedEvent, self.playAnnounce),
+                 (Event,            self.unknownEvent), )
 
     def unknownEvent(self, event):
         print "Got unhandled event %s"%event
@@ -36,32 +36,32 @@ class RecordingApp(VoiceApp):
         # We want to receive the DTMF one keystroke at a time.
         self.dtmfMode(single=True)
         self.mediaPlay(self.announceFile)
-        return ( (MediaDoneEvent: self.recordDraft), 
-                 (CallDoneEvent:  self.discardDone),
-                 (DTMFEvent:      self.recordDraft),
-                 (Event:          self.unknownEvent), )
+        return ( (MediaDoneEvent, self.recordDraft), 
+                 (CallDoneEvent,  self.discardDone),
+                 (DTMFEvent,      self.recordDraft),
+                 (Event,          self.unknownEvent), )
 
     def recordDraft(self, event):
         if self.isPlaying():
             self.mediaStop()
         self.draftFile = self.getTempFile()
         self.mediaRecord(self.draftFile)
-        return ( (CallDoneEvent: self.saveDone),
-                 (DTMFEvent: self.playDraftMenu),
-                 (Event:     self.unknownEvent), )
+        return ( (CallDoneEvent, self.saveDone),
+                 (DTMFEvent, self.playDraftMenu),
+                 (Event,     self.unknownEvent), )
 
     def playDraft(self, event):
         self.mediaPlay(self.draftFile)
-        return ( (MediaDoneEvent: self.playDraftMenu),
-                 (CallDoneEvent:  self.saveDone),
-                 (DTMFEvent:      self.processDraftMenu), 
-                 (Event:          self.unknownEvent), )
+        return ( (MediaDoneEvent, self.playDraftMenu),
+                 (CallDoneEvent,  self.saveDone),
+                 (DTMFEvent,      self.processDraftMenu), 
+                 (Event,          self.unknownEvent), )
 
     def playDraftMenu(self, event):
         self.mediaPlay(self.menuFile)
-        return ( (DTMFEvent:      self.processDraftMenu),
-                 (CallDoneEvent:  self.saveDone),
-                 (Event:          self.unknownEvent), )
+        return ( (DTMFEvent,      self.processDraftMenu),
+                 (CallDoneEvent,  self.saveDone),
+                 (Event,          self.unknownEvent), )
 
     def processDraftMenu(self, event):
         if self.isRecording():
