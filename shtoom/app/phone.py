@@ -186,6 +186,9 @@ class Phone(BaseApplication):
 
     def receiveRTP(self, callcookie, packet):
         # XXX the mute/nonmute should be in the AudioLayer
+        from shtoom.rtp.formats import PT_NTE
+        if packet.header.pt == PT_NTE:
+            return None
         if self._currentCall != callcookie:
             return None
         try:
