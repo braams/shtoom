@@ -4,7 +4,7 @@
 
 from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
-from twisted.internet import defer
+from twisted.internet import defer, protocol
 from twisted.python import log
 from shtoom.exceptions import CallFailed
 
@@ -68,6 +68,7 @@ class Phone(BaseApplication):
                                                                    realm))
 
     def acceptCall(self, call):
+        from twisted.internet import reactor
         print "dialog is", call.dialog
         if self._audio is None:
             self.openAudioDevice()
@@ -80,7 +81,12 @@ class Phone(BaseApplication):
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
             # Otherwise we chain callbacks
-            # XXX call some sort of 'make a ringing sound' thing here.
+            ringingCommand = self.getPref('ringing_command')
+            # Commented out until I test it
+            if 0 and ringingCommand:
+                args = ringingCommand.split(' ')
+                cmdname = args[0]
+                reactor.spawnProcess(protocol.ProcessProtocol(), cmd, args)
             self.ui.incomingCall(call.dialog.getCaller(), cookie, d)
         elif calltype == 'outbound':
             d.addCallback(lambda x, cookie=cookie: cookie )
@@ -245,8 +251,9 @@ class Phone(BaseApplication):
         app = OptionGroup('shtoom', 'Shtoom')
         app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','wx', 'tk','text']))
         app.addOption(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port']))
-        app.addOption(StringOption('audio_infile','read audio from this file'))
-        app.addOption(StringOption('audio_outfile','write audio to this file'))
+        #app.addOption(StringOption('audio_infile','read audio from this file'))
+        #app.addOption(StringOption('audio_outfile','write audio to this file'))
+        app.addOption(StringOption('ringing_command','run this command when a call comes in'))
         opts.addGroup(app)
         opts.setOptsFile('.shtoomrc')
 
