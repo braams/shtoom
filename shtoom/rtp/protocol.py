@@ -138,6 +138,8 @@ class RTPProtocol(DatagramProtocol):
 
     def unmapRTP(self):
         from shtoom.nat import getMapper
+        if self.needSTUN is False:
+            return
         # Currently removing an already-fired trigger doesn't hurt,
         # but this seems likely to change.
         try:
@@ -308,11 +310,9 @@ class RTPProtocol(DatagramProtocol):
         return ts
 
     def startDTMF(self, digit):
-        print "startSending", digit
         self._pendingDTMF.append(NTE(digit, self.ts))
 
     def stopDTMF(self, digit):
-        print "stopSending", digit
         if self._pendingDTMF[-1].getKey() == digit:
             self._pendingDTMF[-1].end()
 
