@@ -191,31 +191,33 @@ class DougApplication(BaseApplication):
         packet = v.va_giveRTP(callcookie)
         return packet
 
-    def placeCall(self, cookie, sipURL, fromURI=None):
+    def placeCall(self, cookie, nleg, sipURL, fromURI=None):
         ncookie = self.getCookie()
+        nleg.setCookie(ncookie)
+        self._voiceapps[cookie].setLeg(nleg, ncookie)
         self._voiceapps[ncookie] = self._voiceapps[cookie]
         print "connecting %s to %s"%(ncookie, cookie), self._voiceapps.keys()
         d = self.sip.placeCall(sipURL, fromURI, cookie=ncookie)
         d.addCallbacks(
-            lambda x: self.outboundCallConnected(cookie, x),
-            lambda x: self.outboundCallFailed(cookie, ncookie, x)).addErrback(log.err)
+            lambda x: self.outboundCallConnected(nleg, cookie, x),
+            lambda x: self.outboundCallFailed(nleg, cookie, ncookie, x)
+                                                    ).addErrback(log.err)
         return d
 
-    def outboundCallConnected(self, voiceappCookie, outboundCookie):
-        from shtoom.doug.leg import Leg
+    def outboundCallConnected(self, leg, voiceappCookie, outboundCookie):
         print "outbound connected!", voiceappCookie, outboundCookie
         call = self._calls[outboundCookie]
-        outbound = Leg(outboundCookie, call.dialog)
-        outbound.outgoingCall()
-        self._voiceapps[voiceappCookie].va_callanswered(outbound)
+        leg.setDialog(call.dialog)
+        leg.outgoingCall()
+        self._voiceapps[voiceappCookie].va_callanswered(leg)
 
-    def outboundCallFailed(self, voiceappCookie, outboundCookie, exc):
+    def outboundCallFailed(self, leg, voiceappCookie, outboundCookie, exc):
         from shtoom.doug.leg import Leg
         print "outbound failed!", voiceappCookie, outboundCookie
         call = self._calls[outboundCookie]
-        outbound = Leg(outboundCookie, call.dialog)
-        outbound.outgoingCall()
-        self._voiceapps[voiceappCookie].va_callrejected(outbound)
+        leg.setDialog(call.dialog)
+        leg.outgoingCall()
+        self._voiceapps[voiceappCookie].va_callrejected(leg)
 
     def dropCall(self, cookie):
         print "dropCall", cookie
