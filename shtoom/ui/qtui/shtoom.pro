@@ -3,7 +3,34 @@ unix {
   MOC_DIR = .moc
   OBJECTS_DIR = .obj
 }
-FORMS	= shtoommainwindow.ui
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TEMPLATE	= app
+LANGUAGE	= C++
+
+CONFIG	+= qt warn_on release
+
+
+FORMS	= shtoommainwindow.ui \
+	preferencesdialog.ui
 IMAGES	= images/filenew \
 	images/fileopen \
 	images/filesave \
@@ -15,6 +42,4 @@ IMAGES	= images/filenew \
 	images/editpaste \
 	images/filefind.png \
 	images/icon-network.png
-TEMPLATE	=app
-CONFIG	+= qt warn_on release
-LANGUAGE	= C++
+
