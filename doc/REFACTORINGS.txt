@@ -10,11 +10,81 @@ areas that are currently blocked.
 [xxx work in progress - please give me comments on details if 
 you're interested in looking at any of these]
 
-Audio Jihad
+Call
+----
+
+The Big One. The Call object is a creeping disaster. More of it's 
+logic (the handling of SIP messages) needs to be moved out into the 
+Dialog class, and the state machine logic needs to be made explicit. 
+This is needed to sanely handle retransmits and the like. The state 
+should also become an object, and it can be then responsible for 
+handling the retransmits.
+
+Credentials
 -----------
+
+There should be a cleaner interface for the handling of credentials. 
+It's a bit of a mess right now.
+
+Accept Call? Deferred
+---------------------
+
+The UI layer is passed a deferred to use to signal whether an 
+incoming call should be accepted or rejected. The UI/app then
+triggers .callback() for yes, .errback() for no. This is bogus.
+The UI/app should create the deferred itself, and return it. It
+should call the callback with True/False for yes/no, and reserve
+the .errback for, well, errors.
+
+
+Import testing
+--------------
+
+There's a bunch of try: import foo except: foo = None stanzas buried 
+in the code. I'd like to move all of that out to a seperate module 
+that does *all* of the import tests in one place.
+
+There's now a module shtoom.avail for encapsulating all these icky 
+bits. Right now it only has audio codecs in it.
+
+Going forward, it should probably do something like:
+
+try: 
+    import foobarbaz
+except ImportError:
+    # some sort of debugging?
+    foobarbaz = None
+    _removeModule('foobarbaz')
+except: 
+    log.err('got a funny exception ...')
+    foobarbaz = None
+    _removeModule('foobarbaz')
+
+Audio testing and codec testing are implemented in shtoom.avail.audio
+and shtoom.avail.codecs, respectively. shtoom.avail.ui is a stub, so
+far.
+
+
+Doug: Leg Refactoring - COMPLETED
+---------------------------------
+
+A bunch of the logic in voiceapp needs to move out to the legs. 
+This is needed to allow multiple legs in a call (e.g. inbound and
+outbound legs). This also gives me an opportunity to refactor and
+unit test a lot of the code. Excellent!
+
+More detail: Most everything in doug/voiceapp.py more properly
+belongs to the Leg class - mediaPlay/Record &c are leg-specific.
+
+This has been done, as of r809. Leg bridging is implemented, as well.
+
+Audio Jihad - COMPLETED
+-----------------------
 
 The audio devices are inside out - they are an object that wraps
 a MediaLayer around themselves. This is nuts.
+
+This has been fixed.
 
 SDP/RTP/Payload Types refactoring - COMPLETED
 ---------------------------------------------
@@ -48,57 +118,4 @@ as it's going away soon.
 
 This refactoring was completed the branch rtp-sdp-refactor, branched
 at r677, and merged at r717.
-
-Call
-----
-
-The Big One. The Call object is a creeping disaster. More of it's 
-logic (the handling of SIP messages) needs to be moved out into the 
-Dialog class, and the state machine logic needs to be made explicit. 
-This is needed to sanely handle retransmits and the like. The state 
-should also become an object, and it can be then responsible for 
-handling the retransmits.
-
-Credentials
------------
-
-There should be a cleaner interface for the handling of credentials. 
-It's a bit of a mess right now.
-
-Import testing
---------------
-
-There's a bunch of try: import foo except: foo = None stanzas buried 
-in the code. I'd like to move all of that out to a seperate module 
-that does *all* of the import tests in one place.
-
-There's now a module shtoom.avail for encapsulating all these icky 
-bits. Right now it only has audio codecs in it.
-
-Going forward, it should probably do something like:
-
-try: 
-    import foobarbaz
-except ImportError:
-    # some sort of debugging?
-    foobarbaz = None
-    _removeModule('foobarbaz')
-except: 
-    log.err('got a funny exception ...')
-    foobarbaz = None
-    _removeModule('foobarbaz')
-
-
-Doug: Leg Refactoring
----------------------
-
-A bunch of the logic in voiceapp needs to move out to the legs. 
-This is needed to allow multiple legs in a call (e.g. inbound and
-outbound legs). This also gives me an opportunity to refactor and
-unit test a lot of the code. Excellent!
-
-More detail: Most everything in doug/voiceapp.py more properly
-belongs to the Leg class - mediaPlay/Record &c are leg-specific.
-
-This has been done, as of r809. Leg bridging is implemented, as well.
 
