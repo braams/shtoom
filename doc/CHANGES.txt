@@ -1,6 +1,8 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - even under ALSA, some audio devices used by ossaudiodev can only do
+    stereo. Handle these broken/idiotic/annoying drivers.
   - p0 means 'listen on any random port', not 'default port'. Useful for
     clients where you don't care about the port (for instance, if you're
     running many many clients from the command line)

@@ -4,9 +4,7 @@ Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
     - all interfaces must be current and correct
-    - deal with stupid devices that only work in stereo
     - doug: use dropCall()'s deferred to generate correct events
-    - doug: implement a leg.hangup() method (and it's events)
     - doug: implement leg bridging (inbound and outbound)
     - doug: s.d.conferencing's entrance soundburst bug
     - ui(qt): hide multiple call support for now
