@@ -9,7 +9,7 @@ bugs reported without this are likely to just get a response saying
 "please run this script and include the output". There's also a lot
 of information in the file DEBUGGING.txt - particularly on the
 subjects of firewalls/NATs and audio. Please make sure you've read
-this before reporting a bug
+this before reporting a bug.
 
 Highlights
 ----------
