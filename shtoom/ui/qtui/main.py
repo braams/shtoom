@@ -13,11 +13,25 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     audiosource = None
     cookie = None
     _muted = False
+    _currentTab = None
+    _newCallTab = None
+    _tabcount = 1
 
     def __init__(self, *args, **kwargs):
         ShtoomBaseWindow.__init__(self, *args, **kwargs)
         from shtoom.ui.logo import logoGif
         self.pixmapLogo.setPixmap(QPixmap(QByteArray(logoGif)))
+        self._currentTab = self.tab1
+        self._newCallTab = self.tab1
+        self._connectedCalls = {}
+        del self.tab1
+
+    def _makeNewCallTab(self):
+        self._tabcount = self._tabcount + 1
+        tab = QWidget(self.callSelectionTab, 
+                            "tab%d"%self._tabcount)
+        self.callSelectionTab.insertTab(tab, QString("New Call"))
+        self._newCallTab = tab
 
     def debugMessage(self, message):
         log.msg(message)
@@ -40,19 +54,25 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def callButton_clicked(self):
         sipURL = str(self.addressComboBox.currentText())
         if not sipURL.startswith('sip:'):
-            log.msg("Invalid SIP url %s"%(sipURL))
-            return
+            sipURL = 'sip:'+ sipURL
+        self.callSelectionTab.setTabToolTip(self._newCallTab, QString(sipURL))
         self.callButton.setEnabled(False)
         defer = self.app.placeCall(sipURL)
         defer.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
 
     def callStarted(self, cookie):
+        print "started", cookie
         self.cookie = cookie
         self.hangupButton.setEnabled(True)
         self.statusMessage('Calling...')
+        self.callSelectionTab.changeTab(self._newCallTab, QString(cookie))
+        self._connectedCalls[cookie] = self._newCallTab
+        self._connectedCalls[self._newCallTab] = cookie
+        self._makeNewCallTab()
 
     def callFailed(self, e, message=None):
         self.errorMessage("call failed", e.getErrorMessage())
+        self.callSelectionTab.setTabToolTip(self._newCallTab, QString(''))
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
@@ -68,6 +88,13 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
+        tab = self._connectedCalls[cookie] 
+        print "removing tab", tab
+        self.callSelectionTab.showPage(self._newCallTab)
+        self.callSelectionTab.changeTab(tab, QString('closing'))
+        self.callSelectionTab.removePage(tab)
+        del self._connectedCalls[cookie] 
+        del self._connectedCalls[tab] 
 
     def setAudioSource(self, fn):
         self.audiosource = fn
@@ -219,6 +246,16 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
                 self.app.muteCall(self.cookie)
             else:
                 self.app.unmuteCall(self.cookie)
+
+    def callSelectionTab_currentChanged(self, tab):
+        cookie = self._connectedCalls.get(tab)
+        if cookie:
+            print "switching to", cookie
+            self.app.switchCallAudio(cookie)
+        elif tab == self._newCallTab:
+            print "selected 'new call' tab"
+        else:
+            print "ERROR, no widget %r, have %r"%(tab, self._connectedCalls)
 
 class Logger:
     def __init__(self, textwidget):
