@@ -1,5 +1,7 @@
 
-Before 0.1:
+Before 0.2:
+    - SIP registration. We can use STUN to allow the INVITEs back from the
+      server that we register with.
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
@@ -7,9 +9,7 @@ Before 0.1:
     - Hang up a phone call that is still "ringing":
       1. doesn't seem to stop RTP/RTCP udp ports
       2. if called broken address (e.g. "sip:") can't hang up
-
-Before 0.2:
-    - EsounD support for Gnome, aRts for KDE
+    - EsounD support for Gnome, aRts for KDE?
       Note that aRts (and, I suspect, esd) only handle playing of audio,
       not the recording of audio.
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
@@ -19,7 +19,6 @@ Before 0.2:
       UPnP could be used just for the SIP port, then STUN for the RTP/RTCP,
       or else use UPnP for all 3.
     - Handle more of SIP 
-        - registration
         - Lookup servers/proxies using multicast, SRV
         - redirects, auth
         - retransmits &c

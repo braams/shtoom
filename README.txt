@@ -6,17 +6,29 @@ quickly:
   - Qt, Tk, Gnome or text user interface (others coming soon)
   - Can make simple calls and hang them up - tested with kphone, linphone and
     cisco AS5x00 running 12.3, as well as with Asterisk and Quotient.
-  - Can receive calls
+  - Can receive calls.
   - Uses the G711 ULAW codec by default, or GSM 06.10 (with additional
     pygsm module installed).
   - It should work on any system with ossaudiodev, or on most other
     systems (with the fastaudio/portaudio module installed, see the
     dependencies section, below)
 
+It's been tested (by me) on Linux (Fedora Core 1) using ossaudio, and 
+Windows XP (using portaudio/fastaudio). It _should_ work Mac OS X - but
+this is untested so far.
+
 Dependencies
 ------------
 
-Python 2.3, Twisted 1.1.1
+Required:
+    Python 2.3. It might work on 2.2, but I have no real interest in 
+    maintaining that.
+    Twisted 1.1.1. Note that Twisted 1.1.1 or later is REQUIRED.
+
+Optional:
+
+    Portaudio/fastaudio (see below)
+    pygsm (see below)
 
 Audio
 =====
@@ -34,15 +46,16 @@ Windows installer for Python2.3 fastaudio is available from the
 shtoom.sf.net website. If someone wants to package up a Mac OSX 
 installer, that would be great.
 
-Note that, for me, portaudio doesn't work - I'm using ALSA on linux.
+Note that, for me, portaudio doesn't work - I'm using ALSA on Linux.
 
 Codecs
 ======
 
 At the moment G711 ULAW (aka PCMU) is supported with the standard
 Python audioop module. If you install Itamar Shtull-Trauring's 
-pygsm module (available from shtoom CVS as module 'pygsm', it will
-also handle GSM 06.10. Additional codecs will be added later.
+pygsm module (available from shtoom CVS as module 'pygsm', or from the
+'Files' section of the shtoom website), it will also handle GSM 06.10. 
+Additional codecs will be added later.
 
 
 Shtoom is (C) Copyright 2004 Anthony Baxter and is licensed under
