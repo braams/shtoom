@@ -59,7 +59,7 @@ def main(Recorder = Recorder):
     from twisted.internet import reactor
     import sys
 
-    dev = getAudioDevice('rw')
+    dev = getAudioDevice()
     dev.close()
     dev.reopen()
     if len(sys.argv) > 1:

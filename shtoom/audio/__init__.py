@@ -39,11 +39,13 @@ def findAudioInterface():
 
 _device = None
 
-def getAudioDevice(mode='ignored', *ignored):
+def getAudioDevice(_testAudioInt=None):
     global _device
+    if _testAudioInt is not None:
+        return MediaLayer(_testAudioInt.Device())
+
     if _device is None:
         audioint = findAudioInterface()
-        print "using", audioint
         dev = audioint.Device()
         _device = MediaLayer(dev)
     return _device

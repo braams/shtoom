@@ -207,7 +207,7 @@ def main(Recorder = Recorder):
     import sys
     global LC
 
-    dev = getAudioDevice('rw')
+    dev = getAudioDevice()
     dev.close()
     dev.reopen()
     dev.selectDefaultFormat(formats.PT_RAW)
