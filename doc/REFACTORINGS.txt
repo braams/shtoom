@@ -10,6 +10,12 @@ areas that are currently blocked.
 [xxx work in progress - please give me comments on details if 
 you're interested in looking at any of these]
 
+Audio Jihad
+-----------
+
+The audio devices are inside out - they are an object that wraps
+a MediaLayer around themselves. This is nuts.
+
 SDP/RTP/Payload Types refactoring - COMPLETED
 ---------------------------------------------
 
@@ -40,7 +46,7 @@ as it's going away soon.
  ``Import testing'' section, below.
 
 
-This refactoring is in progress on the branch rtp-sdp-refactor, branched
+This refactoring was completed the branch rtp-sdp-refactor, branched
 at r677, and merged at r717.
 
 Call
