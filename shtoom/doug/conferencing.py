@@ -128,7 +128,6 @@ class Room:
             raise ConferenceClosedError()
 
     def mixAudio(self):
-        print "mixAudio", self
         import audioop
         # short-circuit this case
         self._audioOut = {}
