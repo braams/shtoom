@@ -14,6 +14,9 @@ import sys, traceback
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio.fileaudio import getFileAudio
 
+nteMap = { 0: '0', 1: '1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9',
+           10: '*', 11: '#', 12: 'A', 13: 'B', 14:'C', 15:'D', 16:'flash' }
+
 class DougApplication(BaseApplication):
     __implements__ = ( Application, )
 
@@ -49,8 +52,8 @@ class DougApplication(BaseApplication):
     def initVoiceapp(self, callcookie):
         print "creating voiceapp", self._voiceappClass
         d = defer.Deferred()
-        d.addCallbacks(self.acceptResults, self.acceptErrors)
-        # xxx pass keyword args
+        d.addCallbacks(lambda x: self.acceptResults(callcookie,x), 
+                       lambda x: self.acceptErrors(callcookie,x))
         try:
             v = self._voiceappClass(d)
             v.va_start()
@@ -62,11 +65,13 @@ class DougApplication(BaseApplication):
             print "new voiceapp", v
             self._voiceapps[callcookie] = v
 
-    def acceptResults(self, results):
-        pass
+    def acceptResults(self, callcookie, results):
+        print "callcookie %s ended with result %s"%(callcookie, results)
+        self.dropCall(callcookie)
 
-    def acceptErrors(self, error):
-        pass
+    def acceptErrors(self, callcookie, error):
+        print "callcookie %s ended with ERROR %r"%(callcookie, error)
+        self.dropCall(callcookie)
 
     def acceptCall(self, call, **calldesc):
         print "acceptCall for %r"%calldesc
@@ -163,10 +168,11 @@ class DougApplication(BaseApplication):
         if payloadType == 101:
             key = ord(payloadData[0])
             start = (ord(payloadData[1]) & 128) and True or False
+            print "got dtmf", key, start
             if start:
-                v.va_startDTMFevent(key)
+                v.va_startDTMFevent(nteMap[key])
             else:
-                v.va_stopDTMFevent(key)
+                v.va_stopDTMFevent(nteMap[key])
             return
         fmt = None
         if payloadType == 0:
