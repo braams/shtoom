@@ -119,7 +119,7 @@ class TestSip:
                     self.dropFakeInbound('foo')
                 else:
                     print "new incoming call starting"
-                    uri = open(self.callFile).readline()
+                    uri = open(self.callFile).readline().strip()
                     d = self.fakeInbound(uri)
                     d.addCallbacks(self._cb_fakeInbound, 
                                    self._eb_fakeInbound).addErrback(log.err)
