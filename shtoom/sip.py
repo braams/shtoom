@@ -100,6 +100,9 @@ class Call(object):
         getPref = self.sip.app.getPref
         if getPref('localip') is not None:
             self._localAddress = (getPref('localip'), getPref('localport') or 5060)
+            locAddress = self._localAddress
+            remAddress = ( host, port )
+            # Argh. Do a DNS lookup on remAddress
         else:
             # it is a hack!
             protocol = ConnectedDatagramProtocol()
