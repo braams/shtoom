@@ -2,8 +2,8 @@
 
 Apparently this means it'll work on 'Windows, Macintosh (8,9,X),
 Unix (OSS), SGI, and BeOS'.
-
-Requires http://www.freenet.org.nz/python/pyPortAudio/fastaudio.tar.gz
+Requires fastaudio.tar.gz and PortAudio available from
+http://www.freenet.org.nz/python/pyPortAudio/
 """
 
 # system imports
@@ -38,5 +38,6 @@ class AudioFile:
 
 def getAudioDevice(mode):
     # we ignore mode, result can always both read and write
-    # XXX no idea if these inputs are correct
-    return AudioFile(fastaudio.stream(8000, channels=1))
+    # XXX This isn't correct. It's audio format is 'int8', whatever
+    # that might be. We need ULAW.
+    return AudioFile(fastaudio.stream(8000, 1, 'int8'))
