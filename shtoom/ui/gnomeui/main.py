@@ -215,37 +215,20 @@ class ShtoomWindow(ShtoomBaseUI):
     def save_preferences(self, options):
         self.app.updateOptions(options)
 
-    def constrain_debug_widget(self, widget, event):
-        appbar = self.xml.get_widget("appbar")
-        x,y,aw,ah = appbar.get_allocation()
-        x,y,w,h = widget.get_allocation()
-        print "constraining", w, h, aw, 100
-        widget.set_size(aw, 100)
-        
 
     def on_debugButton_clicked(self, widget):
         if not hasattr(self, 'debugview'):
-            self.debugview = gtk.HBox()
-            layout = gtk.Layout()
-            self.debugview.pack_start(layout, expand=gtk.TRUE, fill=gtk.TRUE)
-            layout.set_size(255,200)
-            #layout.connect("size-allocate", self.constrain_debug_widget)
-            self.debugtext = gtk.TextView(self.logger.buffer)
-            self.debugtext.set_wrap_mode(gtk.WRAP_CHAR)
-            self.debugvscroll = gtk.VScrollbar(None)
-            self.debugview.pack_start(self.debugvscroll, 
-                                        fill=gtk.TRUE, expand=gtk.FALSE)
-            vadjust = layout.get_vadjustment()
-            self.debugvscroll.set_adjustment(vadjust)
-            layout.put(self.debugtext,10,0)
-            self.debugview.show_all()
+            sw = gtk.ScrolledWindow()
+            sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+            text = gtk.TextView(self.logger.buffer)
+            text.set_wrap_mode(gtk.WRAP_CHAR)
+            sw.add(text)
+            self.debugview = sw
             vbox = self.xml.get_widget("vbox2")
-            vbox.pack_start(self.debugview, expand=gtk.TRUE, fill=gtk.TRUE)
-            vbox.reorder_child(self.debugview, -2)
-            vbox.show_all()
+            vbox.pack_start(sw, expand=gtk.TRUE, fill=gtk.TRUE)
             window = self.xml.get_widget("callwindow")
             x,y,w,h = window.get_allocation()
-            window.resize(w, h+100)
+            window.resize(w, h+200)
             window.show_all()
         else:
             x,y,ww,wh = self.debugview.get_allocation()
