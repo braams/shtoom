@@ -76,17 +76,19 @@ class StunProtocol(DatagramProtocol, object):
                               'CHANGED-ADDRESS',
                               'SOURCE-ADDRESS'):
                     dummy,family,port,addr = struct.unpack('!ccH4s', val)
-                    #log.msg("STUN response %s: %s %s"%(avtype,socket.inet_ntoa(addr),port), system='stun')
                     if avtype == 'MAPPED-ADDRESS':
                         self.gotMappedAddress(socket.inet_ntoa(addr),port)
                 else:
-                    log.msg("STUN: unhandled AV %s, val %r"%(avtype, repr(val)), system='stun')
+                    log.msg("STUN: unhandled AV %s, val %r"%(avtype, 
+                                                             repr(val)), 
+                                                             system='stun')
         elif mt == 0x0111:
             log.error("STUN got an error response")
 
     def gotMappedAddress(self, addr, port):
         log.msg("got address %s %s (should I have been overridden?)"%(addr,
-                                                                      port), system='stun')
+                                                                port), 
+                                                                system='stun')
 
     def sendRequest(self, server, avpairs=()):
         tid = getRandomTID()
@@ -256,21 +258,34 @@ def installPolicy(policy):
 def getPolicy():
     return _defaultPolicy
 
-def giveUpInteractive():
-    print """Time's Up. If you didn't get any responses, then your firewall
-is probably not going to work with SIP."""
-    reactor.stop()
 
 
 if __name__ == "__main__":
     import sys
     class TestStunProtocol(StunProtocol):
+        responses = None
         def gotMappedAddress(self, addr, port):
             log.msg("got address %s %s"%(addr, port))
+            if self.responses is None:
+                self.responses = [(addr, port)]
+            else:
+                self.responses.append((addr, port))
+
+        def stunTimedOut(self):
+            if self.responses:
+                print "Time's up. Got the following responses"
+                for addr,port in self.responses:
+                    print "%s:%s"%(addr, port)
+            else:
+                print "Time's up. No STUN responses were seen - your "\
+                      "firewall is not letting packets back and is "\
+                      "unlikely to work with SIP"
+            reactor.stop()
+
         
     stunClient = TestStunProtocol()
     log.startLogging(sys.stdout)
     reactor.listenUDP(5061, stunClient)
-    reactor.callLater(10, giveUpInteractive)
+    reactor.callLater(10, stunClient.stunTimedOut)
     reactor.callLater(0, stunClient.blatServers)
     reactor.run()
