@@ -224,7 +224,7 @@ class Call(object):
         resp.creationFinished()
         try:
             self.sip.transport.write(resp.toString(), self.getRemoteSIPAddress())
-            self.sip.app.debugMessage("Response sent\n"+resp.toString)
+            self.sip.app.debugMessage("Response sent\n"+resp.toString())
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             #self.compDef.errback(e(v))
