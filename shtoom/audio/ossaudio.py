@@ -2,13 +2,19 @@
 
 from converters import NullConv, PCM16toULAWConv
 
+opened = None
 
 def getAudioDevice(mode, wrapped=1):
     import ossaudiodev
-    dev = ossaudiodev.open(mode)
-    dev.speed(8000)
-    dev.nonblock()
-    dev.channels(1)
+    global opened
+    if opened is None:
+        dev = ossaudiodev.open(mode)
+        dev.speed(8000)
+        dev.nonblock()
+        dev.channels(1)
+        opened = dev
+    else:
+        dev = opened
     formats = listFormats(dev)
     if not wrapped:
         return dev
