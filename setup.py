@@ -51,11 +51,10 @@ setup(
                 'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
                 'shtoom.audio', 'shtoom.app', 'shtoom.doug', 'shtoom.compat' ],
-    requires = ( 'twisted', 'python-2.3' ),
-    provides = ( 'shtoom-%s'%__version__, ),
     scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py',
                'scripts/shmessage.py', 'scripts/shecho.py',
               ],
+    package_data = {'': ['*.glade','*.gladep','*.gif', '*.png']},
     classifiers = [
        'Development Status :: 3 - Alpha',
        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
@@ -68,3 +67,6 @@ setup(
     ],
     **addnl
 )
+
+if sys.version_info < (2, 4):
+    print "You'll need to install the .glade file from shtoom/ui/gnomeui by hand :-("
