@@ -71,14 +71,18 @@ class ShtoomWindow(ShtoomBaseUI):
 
     # event callbacks
     def callConnected(self, cookie):
-        self.cookie = cookie
-        self.hangupButton.set_sensitive(1)
+        self.statusMessage("Call Connected")
 
     def callDisconnected(self, cookie, reason):
         self.cookie = None
         self.hangupButton.set_sensitive(0)
+        self.address.set_sensitive(1)
         self.callButton.set_sensitive(1)
         print "closed: ", reason
+
+    def callStarted(self, cookie):
+        self.cookie = cookie
+        self.hangupButton.set_sensitive(1)
 
     def callFailed(self, reason):
         self.statusMessage("Call failed: %s" % reason.value)
