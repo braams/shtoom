@@ -1,6 +1,6 @@
 #
 # Copyright (C) 2004 Anthony Baxter
-# $Id: upnp.py,v 1.3 2004/01/14 14:44:54 anthonybaxter Exp $
+# $Id: upnp.py,v 1.4 2004/01/23 06:34:23 anthony Exp $
 # 
 # UPnP support.
 
@@ -112,7 +112,7 @@ class UPnPProtocol(DatagramProtocol, object):
            with the external (host,port).
         """
         
-    def cancelForwardedPort(self, port)
+    def cancelForwardedPort(self, port):
         """Sets up a port forward. Returns a deferred.
         """
         
