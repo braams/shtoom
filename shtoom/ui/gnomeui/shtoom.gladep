@@ -2,6 +2,7 @@
 <!DOCTYPE glade-project SYSTEM "http://glade.gnome.org/glade-project-2.0.dtd">
 
 <glade-project>
-  <name></name>
-  <program_name></program_name>
+  <name>Gnomeui</name>
+  <program_name>gnomeui</program_name>
+  <translatable_strings_file>shtoom.i18n</translatable_strings_file>
 </glade-project>

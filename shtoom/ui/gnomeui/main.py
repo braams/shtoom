@@ -7,6 +7,7 @@ from twisted.python import util, log
 from twisted.internet import reactor, defer
 
 from shtoom.ui.base import ShtoomBaseUI
+from popups import PopupNotice
 
 
 class ShtoomWindow(ShtoomBaseUI):
@@ -114,20 +115,34 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
 
-    def incomingCall(self, description, cookie, defsetup):
-        from shtoom.exceptions import CallRejected
+    def incomingCall(self, description, cookie):
         # XXX multiple incoming calls won't work
-        d = defer.Deferred()
-        self.incoming.append(Incoming(self, cookie, description, d))
-        defsetup.addCallback(lambda x: d)
+        p = PopupNotice()
+        d = p.popup('Accept call from %s?'%description, buttons=('Yes', 'No'),
+                    #timeout = 30000)
+                    timeout = 4000)
+        self.incoming.append(p)
+        d.addCallback(lambda x: self._cbAcceptDone(x, cookie))
         if len(self.incoming) == 1:
-            self.incoming[0].show()
+            self.incoming[0].start()
+        return d
 
-    def _cbAcceptDone(self, result):
+    def _cbAcceptDone(self, result, cookie):
         """Called when user accepts/denies call."""
+        from shtoom.exceptions import CallRejected, CallNotAnswered
         del self.incoming[0]
+        if result == "Yes":
+            self.cookie = self.cookie
+            self.callButton.set_sensitive(0)
+            self.hangupButton.set_sensitive(1)
+            self.address.set_sensitive(0)
+            return cookie
+        elif result == "No":
+            raise CallRejected("no thanks")
+        else:
+            raise CallRejected("timed out")
         if self.incoming:
-            self.incoming[0].show()
+            self.incoming[0].start()
         return result
 
     def debugMessage(self, msg):
@@ -253,44 +268,4 @@ class DebugTextView:
     def flush(self):
         pass
 
-class Incoming:
 
-    def __init__(self, main, cookie, description, deferredResponse):
-        self.main = main
-        self.cookie = cookie
-        self.description = description
-        self.deferredResponse = deferredResponse
-        self.timeoutID = reactor.callLater(30, self._cbTimeout)
-        self.current = False
-
-    def show(self):
-        """Display the dialog."""
-        self.current = True
-        self.main.xml.get_widget("acceptlabel").set_text("Accept call from %s?" % self.description)
-        self.main.acceptDialog.show()
-
-    def approved(self, answer):
-        from shtoom.exceptions import CallRejected
-        self.timeoutID.cancel()
-        if answer:
-            #if self.main.cookie:
-            #    self.main.on_hangup_clicked(None)
-            self.main.cookie = self.cookie
-            self.main.callButton.set_sensitive(0)
-            self.main.hangupButton.set_sensitive(1)
-            self.main.address.set_sensitive(0)
-            self.main.acceptDialog.hide()
-            self.deferredResponse.callback(self.cookie)
-        else:
-            self.main.acceptDialog.hide()
-            self.deferredResponse.errback(CallRejected)
-        del self.deferredResponse
-        del self.main
-
-    def _cbTimeout(self):
-        """User didn't answer, same response as user not accepting call."""
-        from shtoom.exceptions import CallNotAnswered
-        if self.current:
-            self.main.acceptDialog.hide()
-        self.deferredResponse.errback(CallNotAnswered)
-        del self.deferredResponse

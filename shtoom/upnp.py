@@ -99,9 +99,13 @@ class UPnPProtocol(DatagramProtocol, object):
         "Discover UPnP devices. Returns a Deferred"
         self._discDef = defer.Deferred()
         search = cannedUPnPSearch()
-        self.transport.write(search, ('239.255.255.250', 1900))
-        self.transport.write(search, ('239.255.255.250', 1900))
-        self.transport.write(search, ('239.255.255.250', 1900))
+        try:
+            self.transport.write(search, ('239.255.255.250', 1900))
+            self.transport.write(search, ('239.255.255.250', 1900))
+            self.transport.write(search, ('239.255.255.250', 1900))
+        except socket.error:
+            del self._discDef
+            return defer.fail(NoUPnPFound('no network available'))
         self.upnpTimeout = reactor.callLater(3, self.timeoutDiscovery)
         return self._discDef
 
@@ -187,7 +191,7 @@ class UPnPProtocol(DatagramProtocol, object):
             return
 
         self.controlURL = urlparse.urljoin(self.urlbase, controlurl)
-        log.msg("upnp controlURL is %s"%(self.controlURL), system='UPnP')
+        log.msg("upnp %r controlURL is %s"%(self, self.controlURL), system='UPnP')
         d = urlopen(urlparse.urljoin(self.urlbase, scpdurl))
         d.addCallback(self.handleWanServiceDesc).addErrback(log.err)
 
@@ -409,7 +413,7 @@ def getUPnP():
         return d
     else:
         return _cached_upnp.isAvailable()
-getUPnP = DeferredCache(getUPnP)
+getUPnP = DeferredCache(getUPnP, inProgressOnly=False)
 
 def _cb_gotUPnP(upnp):
     if isinstance(upnp, NoUPnPFound):

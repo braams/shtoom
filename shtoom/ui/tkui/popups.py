@@ -6,10 +6,11 @@ class Popup(Toplevel):
     deferred = None
     parent = None
 
-    def __init__(self, parent):
+    def __init__(self, parent, addnl=None):
         Toplevel.__init__(self)
         self.initial_focus = self
         self.parent = parent
+        self.addnl = addnl
         self.body()
         self.title('popup window')
         self.protocol("WM_DELETE_WINDOW", self.cancel)
@@ -22,13 +23,21 @@ class Popup(Toplevel):
         self.hideWindow()
         if self.deferred:
             d, self.deferred = self.deferred, None
-            d.callback(None)
+            if self.addnl is None:
+                d.callback(None)
+            else:
+                d.callback((None,self.addnl))
+                self.addnl = None
 
     def selected(self, option):
         self.hideWindow()
         if self.deferred:
             d, self.deferred = self.deferred, None
-            d.callback(option)
+            if self.addnl is None:
+                d.callback(option)
+            else:
+                d.callback((option,self.addnl))
+                self.addnl = None
 
     def showWindow(self):
         self.transient(self.parent)
@@ -42,11 +51,11 @@ class Popup(Toplevel):
 
 class Dialog(Popup):
 
-    def __init__(self, parent, deferred, message, buttons):
+    def __init__(self, parent, deferred, message, buttons, addnl=None):
         self.message = message
         self.buttons = buttons
         self.deferred = deferred
-        Popup.__init__(self, parent)
+        Popup.__init__(self, parent, addnl)
 
     def body(self):
         from Tkinter import NW, E, Frame, Label, Button
@@ -68,6 +77,9 @@ class MovingDialog(Dialog):
     finalOffset = 10
 
     def showWindow(self):
+        # Make this an override-redirect
+        self.overrideredirect(1)
+
         self._x, self._y = self.winfo_width(), self.winfo_height()
         if self._x == 1 or self._y == 1:
             # sometimes we're called before being laid out, argh
@@ -75,18 +87,15 @@ class MovingDialog(Dialog):
         # screen size
         self._sx = self.parent.winfo_screenwidth()
         self._sy = self.parent.winfo_screenheight()
-        print "screen",(self._sx, self._sy)
-        print "window",(self._x, self._y)
         # final positions
         if self._x is not None:
             self._fx = self._sx - self._x - self.finalOffset
             self._fy = self._sy - self._y - self.finalOffset
-            print "final",(self._fx, self._fy)
-            print "move",(self._sx, self._fy)
-            self.geometry("+%d+%d" % (self._sx, self._fy))
+            self.geometry("+%d+%d" % (self._fx, self._sy))
         else:
+            # Not laid out yet.
             self.geometry("+%d+%d" % (self._sx, self._sy))
-        reactor.callLater(0.02, self._moveWindow)
+        reactor.callLater(0.01, self._moveWindow)
 
     def _moveWindow(self):
         if self._x is None:
@@ -104,8 +113,8 @@ class MovingDialog(Dialog):
         if newx < self._fx:
             newx = self._fx
         self.geometry("+%d+%d" % (newx, newy))
-        if newx >= self._fx:
-            print "move",(newx, newy)
+        if newx > self._fx:
+            print "move",(newx, newy), (self._fx, self._fy)
             reactor.callLater(0.02, self._moveWindow)
             
 
@@ -131,7 +140,7 @@ if __name__ == "__main__":
 
     def popupWindow():
         d = defer.Deferred()
-        popup = Dialog(main, d, 'hello world', ('OK', 'Cancel'))
+        popup = MovingDialog(main, d, 'hello world', ('OK', 'Cancel'))
         d.addCallback(optionClicked)
 
     def ping():

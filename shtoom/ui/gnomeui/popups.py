@@ -13,7 +13,7 @@ class PopupNotice:
         self.deferred = None
 
     def popup(self, text, buttons=('OK',), timeout=5000):
-	import gtk
+	import gtk, gtk.gdk
         from twisted.internet import defer
         self.deferred = defer.Deferred()
         self.win = gtk.Window(gtk.WINDOW_POPUP)
@@ -47,6 +47,7 @@ class PopupNotice:
         return self.deferred
 
     def _move(self):
+        import gobject
         if not self.win:
             return
         curx, cury = self.win.get_position()
@@ -116,9 +117,13 @@ def testrun():
     d.addCallback(testrun2)
 
 if __name__ == "__main__":
+    import pygtk
+    pygtk.require("2.0")
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
-    import pygtk
+    import gobject
+    import gtk
+    import gtk.gdk
     pygtk.require("2.0")
     import gobject
     import gtk

@@ -75,11 +75,11 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.cookie = cookie
         self.hangupButton.setEnabled(True)
         self.statusMessage('Calling...')
-        self.callSelectionTab.changeTab(self._newCallTab, QString(cookie))
+        #self.callSelectionTab.changeTab(self._newCallTab, QString(cookie))
         self._connectedCalls[cookie] = self._newCallTab
         self._connectedCalls[self._newCallTab] = cookie
         self._connectedURLs[cookie] = self._newCallURL
-        self._makeNewCallTab()
+        #self._makeNewCallTab()
 
     def callFailed(self, e, message=None):
         self.errorMessage("call failed", e.getErrorMessage())
@@ -139,8 +139,8 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def preferences_discard(self):
         self.prefs.hide()
 
-    def incomingCall(self, description, cookie, defsetup):
-        # XXX not good. Blockage.
+    def incomingCall(self, description, cookie):
+        # XXX not good. Blockage. Argh.
         from twisted.internet import defer
         from shtoom.exceptions import CallRejected
         accept = QMessageBox.information(self, 'Shtoom',
@@ -151,9 +151,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
             self.cookie = cookie
             self.callButton.setEnabled(False)
             self.addressComboBox.setEnabled(False)
-            defsetup.addCallback(lambda x: cookie)
+            return defer.succeed(cookie)
         else:
-            defsetup.addCallback(lambda x: defer.fail(CallRejected()))
+            return defer.fail(CallRejected(cookie))
 
     def dtmfButtonHash_pressed(self):
         if self.cookie is not None:

@@ -3,6 +3,7 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
+    - Handle a CANCEL and withdraw any incoming-call-dialog
     - go through and make sure Doug is up-to-date with recent refactorings
     - all interfaces must be current and correct
     - doug: use dropCall()'s deferred to generate correct events
@@ -12,6 +13,8 @@ Definite before 0.3:
     - doug: flesh out leg tests, then voiceapp tests
     - ui(qt): hide multiple call support for now
     - shtoom.avail.ui
+    - use OptionDict for a new 'registrations' tab
+    - write prefs UI for an OptionDict
     - finish credcache
     - fix brokenness with acceptCall deferreds
     - package for Mac, Windows

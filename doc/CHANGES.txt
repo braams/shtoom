@@ -1,6 +1,7 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - refactoring the call setup code to suck much less
   - Universal Plug n Play support. This works with Microsoft Internet
     Connection Sharing and many off-the-shelf firewalls.
   - Much better STUN support.

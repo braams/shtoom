@@ -63,8 +63,6 @@ class WxProxy(AppProxy):
         self.call(self.wxapp.frame.statusMessage, *args)
     def errorMessage(self, *args):
         self.call(self.wxapp.frame.errorMessage, *args)
-    def incomingCall(self, *args):
-        self.call(self.wxapp.frame.incomingCall, *args)
     def callStarted(self, *args):
         self.call(self.wxapp.frame.callStarted, *args)
     def callConnected(self, *args):
@@ -73,6 +71,16 @@ class WxProxy(AppProxy):
         self.call(self.wxapp.frame.callDisconnected, *args)
     def callFailed(self, *args):
         self.call(self.wxapp.frame.callFailed, *args)
+
+    def incomingCall(self, *args):
+        d = defer.Deferred()
+        self.incomingDeferred = d
+        self.call(self.wxapp.frame.incomingCall, *args)
+        return d
+
+    def answerIncomingCall(self, result):
+        d, self.incomingDeferred = self.incomingDeferred, None
+        d.callback(result)
 
     # Proxies for deferred callbacks + others
     def placeCall(self, sipURL):
@@ -116,6 +124,9 @@ class ShtoomProxy(AppProxy):
     def updateOptions(self, opts):
         reactor.callFromThread(self.shtoomapp.updateOptions, opts)
 
+    def answerIncomingCall(self, result):
+        reactor.callFromThread(self.shtoomapp.answerIncomingCall, result)
+
 
 class WxShtoomApplication(wxApp):
     def OnInit(self):
@@ -143,5 +154,7 @@ def main(shtoomapp):
     # the logging into the WxInjector. i.e. the logger targets the
     # WxInjector.evtlist
     #log.startLogging(wxapp.frame.getLogger(), setStdout=False)
+    import sys
+    log.startLogging(sys.stdout)
 
     return wxproxy

@@ -203,20 +203,26 @@ class ShtoomMainWindow(ShtoomBaseUI):
             user, passwd = None, None
         return defer.succeed((user, passwd))
 
-    def incomingCall(self, description, cookie, defsetup):
-        defsetup.addCallback(lambda x: self.popupIncoming(description, cookie))
+    def incomingCall(self, description, cookie):
+        return self.popupIncoming(description, cookie)
 
     def popupIncoming(self, description, cookie):
-        # XXX Not good - blockage
-        import tkMessageBox
+        import popups
         from twisted.internet import defer
-        answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
-        if answer:
+        d = defer.Deferred()
+        popup = popups.Dialog(self.main, d, 
+                              "Incoming Call: %s\nAnswer?"%description,
+                              ("Yes", "No"),)
+        d.addCallback(lambda x: self._cb_popupIncoming(x, cookie))
+        return d
+
+    def _cb_popupIncoming(self, answer, cookie):
+        if answer == 'Yes':
             self.cookie = cookie
             self._callButton.config(state=DISABLED)
-            return defer.succeed(cookie)
+            return cookie
         else:
-            return defer.fail(CallRejected())
+            return CallRejected('no thanks', cookie)
 
     def addrButton_clicked(self):
         dlg = AddressBook(self.main,self)

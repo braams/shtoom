@@ -8,9 +8,12 @@ from time import time
 
 class TestCall:
     "A fake Call object"
-    def __init__(self, d, sip):
-        self.d = d
+    def __init__(self, sip):
         self.sip = sip
+
+    def startCall(self):
+        self.d = defer.Deferred()
+        return self.d
 
     def getLocalSIPAddress(self):
         return ( '127.0.0.1', 5060)
@@ -23,32 +26,47 @@ class TestCall:
         self.dialog = Dialog()
         self.dialog.setDirection(inbound=True)
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self.acceptedFakeCall,
-                       self.rejectedFakeCall).addErrback(log.err)
+        d.addCallbacks(self._cb_incomingCall, self.failedIncoming).addErrback(log.err)
 
     def startFakeOutbound(self, uri):
         from shtoom.sip import Dialog
         self.dialog = Dialog()
         self.dialog.setDirection(outbound=True)
         d = self.sip.app.acceptCall(call=self)
-        d.addCallbacks(self.acceptedFakeCall,
-                       self.rejectedFakeCall).addErrback(log.err)
+        d.addCallbacks(self._cb_incomingCall, 
+                       self.failedIncoming).addErrback(log.err)
+
+    def _cb_incomingCall(self, response):
+        from shtoom.exceptions import CallFailed
+        if isinstance(response, CallFailed):
+            return self.rejectedFakeCall(response)
+        else:
+            return self.acceptedFakeCall(response)
+
+    def failedIncoming(self, failure):
+        print "failed, got %r"%(failure,)
+        d, self.d = self.d, None
+        d.errback(failure)
+        return failure
 
     def acceptedFakeCall(self, cookie):
         print "accepted, got %r"%(cookie,)
         from shtoom.rtp.formats import PT_PCMU, SDPGenerator
+        from shtoom.exceptions import CallRejected
         self.cookie = cookie
-        d, self.d = self.d, None
         self.sip.app.selectDefaultFormat(self.cookie, sdp=None,format=PT_PCMU)
         sdp = SDPGenerator().getSDP(self)
+        d, self.d = self.d, None
         self.sip.app.startCall(self.cookie, sdp, d.callback)
+
+    def rejectedFakeCall(self, response):
+        print "rejected, got %r"%(response,)
+        d, self.d = self.d, None
+        d.errback(response)
 
     def getVisibleAddress(self):
         return  ('127.0.0.1', 9876)
-    def rejectedFakeCall(self, e):
-        print "rejected, got %r"%(e,)
-        d, self.d = self.d, None
-        d.errback(e)
+
 
     def dropCall(self):
         print "drop"
@@ -88,8 +106,16 @@ class TestSip:
                     self.dropFakeInbound('foo')
                 else:
                     print "new incoming call starting"
-                    self.fakeInbound()
+                    d = self.fakeInbound()
+                    d.addCallbacks(self._cb_fakeInbound, 
+                                   self._eb_fakeInbound).addErrback(log.err)
 
+    def _cb_fakeInbound(self, response):
+        print "fake inbound call setup OK,",response
+
+    def _eb_fakeInbound(self, failure):
+        print "fake inbound call setup failed,",failure
+        self.callEndedRestartChecking()
 
     def callEndedRestartChecking(self):
         from twisted.internet import reactor
@@ -98,8 +124,8 @@ class TestSip:
         reactor.callLater(5, self.checkForCallFile)
 
     def placeCall(self, uri):
-        d = defer.Deferred()
-        self.c = TestCall(d, self)
+        self.c = TestCall(self)
+        d = self.c.startCall()
         self.c.startFakeOutbound(uri)
         return d
 
@@ -112,8 +138,8 @@ class TestSip:
         pass
 
     def fakeInbound(self):
-        d = defer.Deferred()
-        self.c = TestCall(d, self)
+        self.c = TestCall(self)
+        d = self.c.startCall()
         self.c.startFakeInbound()
         return d
 

@@ -99,12 +99,12 @@ class TestUI:
         if self.stopOnDisconnect:
             self.compdef.callback(None)
 
-    def incomingCall(self, description, cookie, defsetup):
+    def incomingCall(self, description, cookie):
         if TDEBUG: print "incoming"
         self.actions.append(('incoming',cookie))
-        defsetup.addCallbacks(self.cb_callConnected,
-                       self.cb_callFailed).addErrback(log.err)
-        defsetup.addCallback(lambda x: cookie)
+        self.cb_callConnected(cookie)
+        d = defer.succeed(cookie)
+        return d
 
     def fakeCall(self):
         if TDEBUG: print "placing a call"
@@ -304,4 +304,4 @@ class TestCallControl(unittest.TestCase):
             self.assertEquals(cookie,c)
         actions = [x[0] for x in actions]
         # XXX no connected??
-        self.assertEquals(actions, ['start', 'incoming', 'connected', 'disconnected'])
+        self.assertEquals(actions, ['incoming', 'connected', 'start', 'disconnected'])

@@ -205,9 +205,8 @@ class Call(object):
     nonce_count = 1
     sip = None
     _invite = None
-    def __init__(self, phone, deferred, uri=None, callid=None):
+    def __init__(self, phone, uri=None, callid=None):
         self.sip = phone
-        self.compDef = deferred
         self.auth_attempts = 0
         self._remoteURI = None
         self._remoteAOR = None
@@ -219,6 +218,10 @@ class Call(object):
         self.cancel_trigger = None
         if callid:
             self.setCallID(callid)
+
+    def callStart(self):
+        self.compDef = defer.Deferred()
+        return self.compDef
 
     def setupLocalSIP(self, uri=None, via=None):
         ''' Setup SIP stuff at this end. Call with either a t.p.sip.URL
@@ -371,8 +374,15 @@ class Call(object):
         else:
             return self._localAOR
 
-    def acceptedCall(self, cookie):
-        log.msg("acceptedCall setting cookie to %r"%(cookie))
+    def _cb_incomingCall(self, response):
+        from shtoom.exceptions import CallFailed
+        if isinstance(response, CallFailed):
+            return self.rejectedIncoming(response)
+        else:
+            return self.acceptedIncoming(response)
+
+    def acceptedIncoming(self, cookie):
+        log.msg("acceptIncoming setting cookie to %r"%(cookie), system='sip')
         self.cookie = cookie
         lhost, lport = self.getLocalSIPAddress()
         username = self.sip.app.getPref('username')
@@ -380,13 +390,24 @@ class Call(object):
         self.sendResponse(self._invite, 200)
         self.setState('INVITE_OK')
 
-    def rejectCall(self, message=None):
+    def rejectedIncoming(self, response):
         ''' Accept currently pending call.
         '''
-        log.msg("rejecting because %r"%(message,))
-        self.sendResponse(self._invite, 603)
+        log.msg("rejecting because %r"%(response,), system='sip')
+        if hasattr(response, sipCode):
+            code = response.sipCode
+        else:
+            code = 603
+        self.sendResponse(self._invite, code)
         self.setState('ABORTED')
-        self.compDef.errback(CallRejected)
+        self.compDef.errback(response)
+
+    def failedIncoming(self, failure):
+        log.msg('failedIncoming because %r'%(failure,), system='sip')
+        # XXX Can I produce a more specific error than 500?
+        self.sendResponse(self._invite, 500)
+        self.setState('ABORTED')
+        self.compDef.errback(failure)
 
     def terminateCall(self, message):
         if self.getState() == 'SENT_INVITE':
@@ -471,7 +492,7 @@ class Call(object):
             name,uri,params =  tpsip.parseAddress(invite.headers['from'][0])
             desc = "From: %s %s" %(name,uri)
         d.addCallback(lambda x: self.sip.app.acceptCall(call=self))
-        d.addCallbacks(self.acceptedCall, self.rejectCall)
+        d.addCallbacks(self._cb_incomingCall, self.failedIncoming)
         d.addErrback(log.err)
         #self.app.incomingCall(subj, call, defaccept, defsetup)
 
@@ -555,6 +576,7 @@ class Call(object):
         if not sdp.hasMediaDescriptions():
             self.sendResponse(okmessage, 406)
             self.setState('ABORTED')
+            # compDef.errback? XXX
             return
         via = okmessage.headers.get('via')
         if type(via) is list: via = via[0]
@@ -1072,12 +1094,13 @@ class SipProtocol(DatagramProtocol, object):
                 r.startRegistration()
                 return d
 
-    def _newCallObject(self, deferred, to=None, callid=None):
-        call = Call(self, deferred, uri=to, callid=callid)
+    def _newCallObject(self, to=None, callid=None):
+        call = Call(self, uri=to, callid=callid)
+        d = call.callStart()
         if call.getState() != 'ABORTED':
             if call.getCallID():
                 self._calls[call.getCallID()] = call
-            return call
+            return call, d
 
     def updateCallObject(self, call, callid):
         "Used when Call setup returns a deferred result (e.g. STUN)"
@@ -1106,12 +1129,11 @@ class SipProtocol(DatagramProtocol, object):
         Returns a Call object and a Deferred
         """
         self.app.debugMessage("placeCall starting")
-        _d = defer.Deferred()
         try:
-            call = self._newCallObject(_d, to=uri)
+            call, _d = self._newCallObject(to=uri)
         except:
             e,v,t = sys.exc_info()
-            log.err("call creation failed %r %s"%(v,v))
+            log.err("call creation failed %r %s"%(v,v), system="sip")
             return defer.fail(v)
         #print "call is", call
         if call is None:
@@ -1155,9 +1177,8 @@ class SipProtocol(DatagramProtocol, object):
         if message.request and message.method.lower() != 'invite' and not call:
             self.app.debugMessage("SIP request refers to unknown call %s %r"%(
                                                     callid, self._calls.keys()))
-            _d = defer.Deferred()
             callid = message.headers['call-id'][0]
-            call = self._newCallObject(_d, callid = callid)
+            call, _d = self._newCallObject(callid = callid)
             call.sendResponse(message, 481)
             self._delCallObject(callid)
             return
@@ -1167,8 +1188,7 @@ class SipProtocol(DatagramProtocol, object):
                 # We must have received an INVITE here. Handle it, reply with
                 # a 180 Ringing.
                 callid = message.headers['call-id'][0]
-                defsetup = defer.Deferred()
-                call = self._newCallObject(defsetup, callid=callid)
+                call, defsetup = self._newCallObject(callid=callid)
                 call.startInboundCall(message)
             else:
                 if message.method == 'BYE':

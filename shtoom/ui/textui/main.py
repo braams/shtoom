@@ -3,11 +3,13 @@ from twisted.python import log
 from shtoom.ui.base import ShtoomBaseUI
 from twisted.internet import stdio, defer
 from twisted.protocols import basic
+from shtoom.exceptions import CallRejected, CallNotAnswered
 
 class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
     _cookie = None
     _pending = None
     _debug = True
+    _incoming_timeout = None
     from os import linesep as delimiter
     sipURL = None
 
@@ -23,18 +25,22 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         log.msg("error %s"%(message), system='ui')
 
     def shutdown(self):
+        from twisted.internet import reactor
         # XXX Hang up any calls
         if self._cookie:
             self.app.dropCall(self._cookie)
-        from twisted.internet import reactor
         reactor.stop()
 
-    def incomingCall(self, description, cookie, defsetup):
+    def incomingCall(self, description, cookie):
+        from twisted.internet import reactor
+        if self._pending is not None:
+            return defer.fail(UserBusy())
         defresp = defer.Deferred()
-        self._pending = ( cookie, defresp, defsetup )
+        self._pending = ( cookie, defresp )
+        self._incoming_timeout = reactor.callLater(20, lambda :self._timeout_incoming(self._pending))
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
-        defsetup.addCallback(lambda x: defresp)
+        return defresp
 
     def connectionMade(self):
         self.transport.write("Welcome to shtoom, debug rev. %s\n>> \n" % self.app._debugrev)
@@ -102,25 +108,29 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def cmd_accept(self, line):
         "accept -- accept an incoming call"
+        self._incoming_timeout.cancel()
+        self._incoming_timeout = None
         if not self._pending:
             self.transport.write("no pending calls")
             return
-        self._cookie, resp, setup = self._pending
+        self._cookie, resp = self._pending
         self._pending = None
-        setup.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
         resp.callback(self._cookie)
 
     def cmd_reject(self, line):
         "reject -- reject an incoming call"
+        self._incoming_timeout.cancel()
+        self._incoming_timeout = None
         if not self._pending:
             self.transport.write("no pending calls")
             return
-        self._cookie, resp, setup = self._pending
+        cookie, resp = self._pending
         self._pending = None
-        resp.errback('no')
+        resp.callback(CallRejected('no thanks', cookie))
 
     def cmd_auth(self, line):
         "auth realm user password -- add a user/password"
+        self.transport.write("note not hooked up yet\n")
         toks = line.split(' ')
         if len(toks) != 4:
             self.transport.write("usage: auth realm user password")
@@ -128,3 +138,10 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         auth, realm, user, password = toks
         self.app.creds.addCred(realm, user, password, save=True)
 
+    def _timeout_incoming(self, which):
+        # Not using 'which' for now
+        self.transport.write("CALL NOT ANSWERED\n")
+        self._incoming_timeout = None
+        cookie, resp = self._pending
+        self._pending = None
+        resp.callback(CallNotAnswered('not answering', cookie))

@@ -12,7 +12,7 @@ from shtoom.app.base import BaseApplication
 from shtoom.exceptions import CallFailed
 from shtoom.audio import getAudioDevice
 from shtoom.sdp import SDP, MediaDescription
-from shtoom.ui.select import findUserInterface
+from shtoom.ui import findUserInterface
 from shtoom.opts import buildOptions
 from shtoom.Options import OptionGroup, StringOption, ChoiceOption, OptionDict
 
@@ -84,13 +84,8 @@ class Phone(BaseApplication):
 
     def acceptCall(self, call):
         log.msg("dialog is %r"%(call.dialog))
-        self.openAudioDevice()
         cookie = self.getCookie()
         self._calls[cookie] = call
-        d = self._createRTP(cookie,
-                            call.getLocalSIPAddress()[0],
-                            call.getSTUNState())
-        self.ui.callStarted(cookie)
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
             # Otherwise we chain callbacks
@@ -101,15 +96,28 @@ class Phone(BaseApplication):
                 args = ringingCommand.split(' ')
                 cmdname = args[0]
                 reactor.spawnProcess(protocol.ProcessProtocol(), cmdname, args)
-            self.ui.incomingCall(call.dialog.getCaller(), cookie, d)
+            uidef = self.ui.incomingCall(call.dialog.getCaller(), cookie)
+            uidef.addCallback(lambda x: self._createRTP(x,
+                                        call.getLocalSIPAddress()[0],
+                                        call.getSTUNState()))
+            return uidef
         elif calltype == 'outbound':
-            d.addCallback(lambda x, cookie=cookie: cookie )
+            self.openAudioDevice()
+            return self._createRTP(cookie, call.getLocalSIPAddress()[0],
+                                           call.getSTUNState())
         else:
             raise ValueError, "unknown call type %s"%(calltype)
         return d
 
     def _createRTP(self, cookie, localIP, withSTUN):
         from shtoom.rtp.protocol import RTPProtocol
+        from shtoom.exceptions import CallFailed
+        if isinstance(cookie, CallFailed):
+            del self._calls[cookie.cookie] 
+            return defer.succeed(cookie)
+
+        self.openAudioDevice()
+        self.ui.callStarted(cookie)
         if self._rtpProtocolClass is None:
             rtp = RTPProtocol(self, cookie)
         else:
