@@ -27,6 +27,17 @@ StunTypes = {
    0x000b: 'REFLECTED-FROM',
 }
 
+import os
+if os.path.exists('/dev/urandom'):
+    def getRandomTID():
+        return open('/dev/urandom').read(16)
+else:
+    def getRandomTID():
+        # It's not necessary to have a particularly strong TID here
+        import random
+        tid = [ chr(random.randint(0,255)) for x in range(16) ]
+        tid = ''.join(tid)
+        return tid
 
 class StunProtocol(DatagramProtocol, object):
     def __init__(self, servers=DefaultServers, *args, **kwargs):
@@ -68,7 +79,7 @@ class StunProtocol(DatagramProtocol, object):
                                                                       port))
 
     def sendRequest(self, server, avpairs=()):
-        tid = open('/dev/urandom').read(16)
+        tid = getRandomTID()
         mt = 0x1 # binding request
         avstr = ''
         # add any attributes
