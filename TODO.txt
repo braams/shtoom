@@ -1,7 +1,5 @@
 
 Before 0.1:
-    - Test and fix Windows audio
-    - Handle bogus NATted ports - retry a couple of times?
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
