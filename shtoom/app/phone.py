@@ -52,26 +52,24 @@ class Phone(BaseApplication):
     def getAuth(self, method, realm):
         self.ui.getString("Please enter user,passwd for %s at %s"%(method, realm))
 
-    def acceptCall(self, call, **calldesc):
-        print "acceptCall for %r"%calldesc
-
-        print "dialog is", calldesc.get('dialog')
+    def acceptCall(self, call):
+        print "dialog is", call.dialog
         if self._audio is None:
             self.openAudioDevice()
-        calltype = calldesc.get('calltype')
-        d = defer.Deferred()
-        d.addCallback(lambda x: self._createRTP(cookie,
-                                                calldesc['localIP'],
-                                                calldesc['withSTUN']))
         cookie = self.getCookie()
         self._calls[cookie] = call
-        if calltype == 'outbound':
-            # Outbound call, trigger the callback immediately
-            self.ui.callStarted(cookie)
-            d.callback(cookie)
-        elif calltype == 'inbound':
+        d = self._createRTP(cookie, 
+                            call.getLocalSIPAddress()[0], 
+                            call.getSTUNState())
+        calltype = call.dialog.getDirection()
+        if calltype == 'inbound':
             # Otherwise we chain callbacks
-            self.ui.incomingCall(calldesc['desc'], cookie, d)
+            d.addCallback(lambda x: 
+                                 self.ui.incomingCall(call.dialog.getCaller(), 
+                                                      cookie)
+                         )
+        elif calltype == 'outbound':
+            d.addCallback(lambda x, cookie=cookie: cookie )
         else:
             raise ValueError, "unknown call type %s"%(calltype)
         return d

@@ -1,7 +1,7 @@
 
 from twisted.python import log
 from shtoom.ui.base import ShtoomBaseUI
-from twisted.internet import stdio
+from twisted.internet import stdio, defer
 from twisted.protocols import basic
 
 class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
@@ -28,10 +28,12 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         from twisted.internet import reactor
         reactor.stop()
 
-    def incomingCall(self, description, cookie, defresp):
+    def incomingCall(self, description, cookie):
+        defresp = defer.Deferred()
         self._pending = ( cookie, defresp )
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
+        return defresp
 
     def connectionMade(self):
         self.transport.write("Welcome to shtoom\n>> \n")

@@ -152,7 +152,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
             user, passwd = None, None
         return defer.succeed((user, passwd))
 
-    def incomingCall(self, description, cookie, defresp):
+    def incomingCall(self, description, cookie):
         import tkMessageBox
         answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
         if answer:

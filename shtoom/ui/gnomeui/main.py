@@ -4,7 +4,7 @@ import gtk
 import gtk.glade
 
 from twisted.python import util, log
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 
 from shtoom.ui.base import ShtoomBaseUI
 
@@ -95,12 +95,14 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
 
-    def incomingCall(self, description, cookie, defresp):
+    def incomingCall(self, description, cookie):
         from shtoom.exceptions import CallRejected
         # XXX multiple incoming calls won't work
-        self.incoming.append(Incoming(self, cookie, description, defresp))
+        d = defer.Deferred()
+        self.incoming.append(Incoming(self, cookie, description, d))
         if len(self.incoming) == 1:
             self.incoming[0].show()
+        return d
 
     def _cbAcceptDone(self, result):
         """Called when user accepts/denies call."""

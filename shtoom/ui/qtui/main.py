@@ -25,14 +25,19 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self._newCallTab = self.tab1
         self._newCallURL = None
         self._connectedCalls = {}
+        self._pendingCalls = {}
         self._connectedURLs = {}
         del self.tab1
 
-    def _makeNewCallTab(self):
+    def _createCallTab(self, desc):
         self._tabcount = self._tabcount + 1
         tab = QWidget(self.callSelectionTab, 
                             "tab%d"%self._tabcount)
-        self.callSelectionTab.insertTab(tab, QString("New Call"))
+        self.callSelectionTab.insertTab(tab, QString(desc))
+        return tab
+
+    def _makeNewCallTab(self):
+        tab = self._createCallTab('New Call')
         self._newCallTab = tab
         self._newCallURL = None
 
@@ -134,7 +139,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def preferences_discard(self):
         self.prefs.hide()
 
-    def incomingCall(self, description, cookie, defresp):
+    def incomingCall(self, description, cookie):
+        # XXX not good. Blockage.
+        from twisted.internet import defer
         from shtoom.exceptions import CallRejected
         accept = QMessageBox.information(self, 'Shtoom',
                 'Incoming Call: %s\nAnswer?'%description,
@@ -144,9 +151,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
             self.cookie = cookie
             self.callButton.setEnabled(False)
             self.addressComboBox.setEnabled(False)
-            defresp.callback(cookie)
+            return defer.succeed(cookie)
         else:
-            defresp.errback(CallRejected)
+            return defer.fail(CallRejected())
 
     def dtmfButtonHash_pressed(self):
         if self.cookie is not None:
@@ -270,7 +277,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
             self.addressComboBox.setEnabled(True)
             self.callButton.setEnabled(True)
             self.hangupButton.setEnabled(False)
-        else:
+        elif tab in self._pendingCalls:
             print "ERROR, no widget %r, have %r"%(tab, self._connectedCalls)
 
 class Logger:

@@ -50,25 +50,22 @@ class Message(BaseApplication):
             d.addCallback(log.err).addErrback(log.err)
         reactor.run()
 
-    def acceptCall(self, call, **calldesc):
-        print "acceptCall for %r"%calldesc
-
-        calltype = calldesc.get('calltype')
-        d = defer.Deferred()
+    def acceptCall(self, call):
+        calltype = call.dialog.getDirection()
         cookie = self.getCookie()
         self._calls[cookie] = call
         print "ACCEPTED", self._calls.keys()
         self.openAudioDevice(cookie)
-        d.addCallback(lambda x: self._createRTP(cookie,
-                                                calldesc['localIP'],
-                                                calldesc['withSTUN']))
+        d = self._createRTP(cookie,
+                            call.getLocalSIPAddress()[0], 
+                            call.getSTUNState())
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
-            d.callback(cookie)
+            d.addCallback(lambda x: cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
             log.msg("accepting incoming call from %s"%calldesc['desc'])
-            d.callback(cookie)
+            d.addCallback(lambda x: cookie)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
         return d

@@ -24,9 +24,9 @@ class AnsweringMachine(Message):
         self._playingAnnounce = {}
         Message.__init__(self, *args, **kwargs)
 
-    def acceptCall(self, call, **calldesc):
+    def acceptCall(self, call):
         print "acceptCall for %r"%calldesc
-        calltype = calldesc.get('calltype')
+        calltype = call.dialog.getDirection()
         if calldesc.get('toAddr'):
             comment, toAddress, tag = tpsip.parseAddress(calldesc['toAddr'][0])
             toAddress = (toAddress.username, toAddress.host)
@@ -47,7 +47,7 @@ class AnsweringMachine(Message):
         if calltype == 'inbound':
             # Otherwise we chain callbacks
             log.msg("accepting incoming call from %s"%calldesc['desc'])
-            d.callback(cookie)
+            d.addCallback(lambda x: cookie)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
         return d

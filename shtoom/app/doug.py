@@ -55,7 +55,7 @@ class DougApplication(BaseApplication):
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x), 
                        lambda x: self.acceptErrors(callcookie,x))
         try:
-            v = self._voiceappClass(d)
+            v = self._voiceappClass(d, self)
             v.va_start()
         except:
             ee,ev,et = sys.exc_info() 
@@ -73,29 +73,32 @@ class DougApplication(BaseApplication):
         print "callcookie %s ended with ERROR %r"%(callcookie, error)
         self.dropCall(callcookie)
 
-    def acceptCall(self, call, **calldesc):
+    def acceptCall(self, call):
         from shtoom.doug.leg import Leg
-        print "acceptCall for %r"%calldesc
 
-        print "dialog is", calldesc.get('dialog')
-        calltype = calldesc.get('calltype')
-        d = defer.Deferred()
+        print "dialog is", call.dialog
+        calltype = call.dialog.getDirection()
         cookie = self.getCookie()
         self._calls[cookie] = call
         self.initVoiceapp(cookie)
-        d.addCallback(lambda x: self._createRTP(cookie,
-                                                calldesc['localIP'],
-                                                calldesc['withSTUN']))
+        d = self._createRTP(cookie, 
+                            call.getLocalSIPAddress()[0], 
+                            call.getSTUNState())
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
-            d.callback(cookie)
+            outbound = Leg(cookie, call.dialog)
+            outbound.outgoingCall()
+            d.addCallback(lambda x:self._voiceapps[cookie].va_callstart(
+                                                                   outbound))
+            d.addCallback(lambda x: cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
-            log.msg("starting incoming call from %s"%calldesc['desc'])
             d.addErrback(lambda x: self.rejectedCall(cookie, x))
-            inbound = Leg(cookie, calldesc['dialog'])
-            inbound.incomingCall(d)
+            ad = defer.Deferred()
+            inbound = Leg(cookie, call.dialog)
+            inbound.incomingCall(ad)
             self._voiceapps[cookie].va_callstart(inbound)
+            d.addCallback(lambda x, ad=ad: ad)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
         return d
@@ -205,8 +208,8 @@ class DougApplication(BaseApplication):
         fmt, data = v.va_giveRTP()
         return fmt, data
 
-    def placeCall(self, sipURL):
-        return self.sip.placeCall(sipURL)
+    def placeCall(self, sipURL, fromURI=None):
+        return self.sip.placeCall(sipURL, fromURI=None)
 
     def dropCall(self, cookie):
         call = self._calls.get(cookie)

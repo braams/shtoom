@@ -75,7 +75,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
                 self._dtmfbuttons[dtmf] = button
         self._buttonF.grid(row=1,column=1, sticky=NW)
         self._debugText = Text(self._top2, width=72, height=7, wrap='char')
-        self._debugText.grid(row=1,column=2, sticky=NW)
+        self._debugText.grid(row=1,column=2, sticky='nsew')
         for b in ( '1', '2', '3',  '4', '5', '6' ,  '7', '8', '9', '0', ):
             self._debugText.bind('<KeyPress-KP_%s>'%b,     lambda e, b=b: self.startDTMF(b))
             self._debugText.bind('<KeyRelease-KP_%s>'%b,   lambda e, b=b: self.stopDTMF(b))
@@ -83,7 +83,8 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._debugText.bind('<KeyRelease-KP_Multiply>',lambda e, b=b: self.stopDTMF('*'))
         self._debugText.bind('<KeyPress-KP_Enter>',    lambda e, b=b: self.startDTMF('#'))
         self._debugText.bind('<KeyRelease-KP_Enter>',   lambda e, b=b: self.stopDTMF('#'))
-        self._top2.grid(row=3,column=1, columnspan=6,sticky=NW)
+        self._top2.grid(row=3,column=1, columnspan=6,sticky='nsew')
+        self.main.grid()
 
 
     def startDTMF(self, key):
@@ -117,7 +118,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
             return
         self._callButton.config(state=DISABLED)
         deferred = self.app.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
+        deferred.addCallbacks(self.callStarted, self.callFailed).addErrback(log.err)
 
     def registerButton_clicked(self, evt=None):
         self.app.register()
@@ -181,15 +182,17 @@ class ShtoomMainWindow(ShtoomBaseUI):
             user, passwd = None, None
         return defer.succeed((user, passwd))
 
-    def incomingCall(self, description, cookie, defresp):
+    def incomingCall(self, description, cookie):
+        # XXX Not good - blockage
+        from twisted.internet import defer
         import tkMessageBox
         answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
         if answer:
             self.cookie = cookie
             self._callButton.config(state=DISABLED)
-            defresp.callback(cookie)
+            return defer.succeed(cookie)
         else:
-            defresp.errback(CallRejected)
+            return defer.fail(CallRejected())
 
     def prefButton_clicked(self):
         from prefs import PreferencesDialog

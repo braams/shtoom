@@ -110,6 +110,9 @@ class Dialog:
         else:
             raise ValueError, "must be either inbound or outbound"
 
+    def getDirection(self):
+        return self._direction
+
     def getLocalTag(self):
         if self._direction == 'inbound':
             return self.getCallee()
@@ -338,7 +341,10 @@ class Call(object):
         else:
             return (self._remoteAOR.host, (self._remoteAOR.port or 5060))
 
-    def getLocalAOR(self, full=False):
+    def getLocalAOR(self, full=False, addr=None):
+        if addr is not None:
+            self._localFullAOR = Address(addr, ensureTag=True)
+            self._localAOR = self._localFullAOR.getURI(parsed=True)
         if not self._localAOR:
             username = self.sip.app.getPref('username')
             email_address = self.sip.app.getPref('email_address')
@@ -399,7 +405,7 @@ class Call(object):
             #self.compDef.errback(e(v))
             self.setState('ABORTED')
 
-    def startOutboundCall(self, toAddr):
+    def startOutboundCall(self, toAddr, fromAddr=None):
         # XXX Set up a callLater in case we don't get a response, for a
         # retransmit
         # XXX Set up a timeout for the call completion
@@ -408,12 +414,13 @@ class Call(object):
         # XXX Display name? needs an option
         self.dialog.setDirection(outbound=True)
         self.dialog.setCallee(Address(uri, ensureTag=False))
-        self.dialog.setCaller(self.getLocalAOR())
+        self.dialog.setCaller(self.getLocalAOR(addr=fromAddr))
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)
                                                         ).addErrback(log.err)
 
     def startInboundCall(self, invite):
+        "help me. this is awful"
         via = tpsip.parseViaHeader(invite.headers['via'][0])
         if via.host.startswith(' '):
             via.host = via.host.strip()
@@ -433,19 +440,9 @@ class Call(object):
         else:
             name,uri,params =  tpsip.parseAddress(invite.headers['from'][0])
             desc = "From: %s %s" %(name,uri)
-        d.addCallback(lambda justWaitingForGetLocalSIP:
-                      self.sip.app.acceptCall(self,
-                                              calltype='inbound',
-                                              desc=desc,
-                                              localIP=self.getLocalSIPAddress()[0],
-                                              withSTUN=self.getSTUNState() ,
-                                              toAddr=invite.headers.get('to'),
-                                              fromAddr=invite.headers.get('from'),
-                                              dialog=self.dialog,
-                                              ).addCallbacks(
-                                                   self.acceptedCall, 
-                                                   self.rejectCall).addErrback(log.err)
-                      and None).addErrback(log.msg)
+        d.addCallback(lambda x: self.sip.app.acceptCall(call=self))
+        d.addCallbacks(self.acceptedCall, self.rejectCall)
+        d.addErrback(log.err)
         #self.app.incomingCall(subj, call, defaccept, defsetup)
 
     def recvInvite(self, invite):
@@ -465,12 +462,7 @@ class Call(object):
     def startSendInvite(self, toAddr, init=0):
         print "startSendInvite", init
         if init:
-            d = self.sip.app.acceptCall(self,
-                                        calltype='outbound',
-                                        localIP=self.getLocalSIPAddress()[0],
-                                        withSTUN=self.getSTUNState(),
-                                        dialog=self.dialog,
-                                        )
+            d = self.sip.app.acceptCall(call=self)
             d.addCallback(lambda x:self.sendInvite(toAddr, cookie=x, init=init)
                                                         ).addErrback(log.err)
         else:
@@ -490,7 +482,7 @@ class Call(object):
             return
         invite = tpsip.Request('INVITE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s INVITE'%self.dialog.getCSeq(incr=1))
         invite.addHeader('to', str(self.dialog.getCallee()))
@@ -544,7 +536,7 @@ class Call(object):
         self.dialog.setCallee(Address(okmessage.headers['to'][0]))
         ack = tpsip.Request('ACK', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
+        ack.addHeader('via', 'SIP/2.0/UDP %s:%s'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.dialog.getCSeq())
         ack.addHeader('to', str(self.dialog.getCallee()))
         ack.addHeader('from', str(self.dialog.getCaller()))
@@ -573,7 +565,7 @@ class Call(object):
         dest = uri.host, (uri.port or 5060)
         bye = tpsip.Request('BYE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
+        bye.addHeader('via', 'SIP/2.0/UDP %s:%s'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.dialog.getCSeq(incr=1))
         bye.addHeader('from', str(self.dialog.getLocalTag()))
         bye.addHeader('to', str(self.dialog.getRemoteTag()))
@@ -587,15 +579,15 @@ class Call(object):
         self.setState('SENT_BYE')
 
     def sendCancel(self):
-        """ Sends a CANCEL message to kill a call that's in the process of
-            being established
+        """ Sends a CANCEL message to kill a call that's not yet seen a 
+            non-provisional response (i.e. a 1xx, but not a 2xx).
         """
         username = self.sip.app.getPref('username')
         uri = self._remoteAOR
         dest = uri.host, (uri.port or 5060)
         cancel = tpsip.Request('CANCEL', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        cancel.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
+        cancel.addHeader('via', 'SIP/2.0/UDP %s:%s'%self.getLocalSIPAddress())
         cancel.addHeader('cseq', '%s CANCEL'%self.dialog.getCSeq(incr=1))
         cancel.addHeader('to', str(self.dialog.getCallee()))
         cancel.addHeader('from', str(self.dialog.getCaller()))
@@ -845,7 +837,7 @@ class Registration(Call):
         username = self.sip.app.getPref('username')
         invite = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s REGISTER'%self.dialog.getCSeq(incr=1))
         invite.addHeader('to', str(self.regAOR))
@@ -1026,7 +1018,7 @@ class SipPhone(DatagramProtocol, object):
             callid = callid[1:-1]
         del self._calls[callid]
 
-    def placeCall(self, uri):
+    def placeCall(self, uri, fromuri=None):
         """Place a call.
 
         uri should be a string, an address of the person we are calling,
@@ -1047,7 +1039,7 @@ class SipPhone(DatagramProtocol, object):
             from shtoom.exceptions import CallFailed
             _d.errback(CallFailed)
             return _d
-        invite = call.startOutboundCall(uri)
+        invite = call.startOutboundCall(uri, fromAddr=fromuri)
         return _d
 
     def datagramReceived(self, datagram, addr):

@@ -8,12 +8,8 @@ class ApplicationSIPInterface(Interface):
        the SIP layer uses.
     """
 
-    def acceptCall(self, call, **calldesc):
+    def acceptCall(self, call):
         """ Setup a new call.
-            calldesc describes the new call, it's a dictionary with the
-            following entries:
-                calltype : 'outbound' or 'inbound'
-
             Returns  deferred - .callback() will be invoked if
             the call is to be accepted, or .errback() if the call is to be
             rejected.  The callback will return the callcookie - callcookie

@@ -32,7 +32,7 @@ class Timer:
 
 class VoiceApp(StateMachine):
 
-    def __init__(self, defer, **kwargs):
+    def __init__(self, defer, appl, **kwargs):
         self.__playoutList = []
         self.__recordDest = None
         self.__connected = None
@@ -42,6 +42,7 @@ class VoiceApp(StateMachine):
         self.__silenceSource = SilenceSource()
         self._legConnect(self.__silenceSource)
         self.__converter = DougConverter()
+        self.__appl = appl
         super(VoiceApp, self).__init__(defer, **kwargs)
 
     def va_listFormats(self):
@@ -161,3 +162,6 @@ class VoiceApp(StateMachine):
         self.__dtmfSingleMode = single
         # XXX handle timeout
 
+    def placeCall(self, toURI, fromURI):
+        appl.placeCall(toURI, fromURI)
+    

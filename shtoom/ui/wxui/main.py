@@ -3,7 +3,7 @@ from wxshtoomframe import ShtoomMainFrame
 from wxlogframe import LogFrame
 from shtoom.ui.base import ShtoomBaseUI
 from twisted.python import log
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from prefs import PreferencesDialog
 import os
 
@@ -156,7 +156,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.SetStatusText('Not connected')
         self.cookie = False
 
-    def incomingCall(self, description, call, defresp):
+    def incomingCall(self, description, cookie):
         from shtoom.exception import CallRejected
         dlg = wxMessageDialog(self, 'Incoming Call: %s\nAnswer?'%description,
             "Shtoom Call", wxYES_NO|wxICON_QUESTION)
@@ -165,9 +165,9 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             self.cookie = call
             self.updateCallButton(do_call=False)
             self.SetStatusText('Connected to %s'%description)
-            defresp.callback('yes')
+            return defer.succeed(cookie)
         else:
-            defresp.errback(CallRejected)
+            return defer.fail(CallRejected())
 
     def DoErrorLog(self, event):
         self.errorlog.Show(True)
