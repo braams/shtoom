@@ -286,11 +286,11 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
         self._caller = tpsip.parseURL(self.extractURI(invite.headers['from'][0]))
         self._callee = tpsip.parseURL(self.extractURI(invite.headers['to'][0]))
         self._remoteURI = tpsip.parseURL(self.extractURI(self.contact))
         self._remoteAOR = self._callee
+        d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
         if invite.headers.has_key('subject'):
             desc = invite.headers['subject'][0]
         else:
