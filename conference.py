@@ -13,10 +13,10 @@ from shtoom.exceptions import CallRejected
 
 class ConferencingApp(VoiceApp):
 
-    announceFile = 'tmp/doug_welcome.raw'
-    conf = None
+    announceFile = 'tmp/conf_welcome.raw'
 
     def __init__(self, *args, **kwargs):
+        self.conf = None
         self.__dict__.update(kwargs)
         if not self.announceFile:
             raise ValueError, "must supply announceFile"        
@@ -33,14 +33,16 @@ class ConferencingApp(VoiceApp):
         return ()
 
     def answerCall(self, event):
-        leg = event.getLeg()
+        self.leg = event.getLeg()
 
-        username = leg._dialog.getCallee().getURI().username
-        print "voiceapp.__start__ to user %s"%(username)
-        if username == 'nope':
-            leg.rejectCall(CallRejected('go away'))
+        roomname = self.leg.getDialog().getLocalTag().getURI().username
+        print "voiceapp.__start__ to user %s"%(roomname)
+        if roomname == 'nope':
+            self.leg.rejectCall(CallRejected('go away'))
+            del self.leg
         else:
-            leg.answerCall(self)
+            self.roomname = roomname
+            self.leg.answerCall(self)
         return ( (CallAnsweredEvent, self.playAnnounce),
                )
 
@@ -59,7 +61,7 @@ class ConferencingApp(VoiceApp):
     def startConference(self, event):
         from shtoom.doug.conferencing import newConferenceMember
         self.mediaStop()
-        self.conf = newConferenceMember('101')
+        self.conf = newConferenceMember(self.roomname, self.leg)
         self.mediaPlay([self.conf])
         return ( (MediaDoneEvent, self.startConference), 
                  (CallEndedEvent,  self.allDone),
@@ -69,7 +71,8 @@ class ConferencingApp(VoiceApp):
 
 
     def allDone(self, event):
-        self.conf.close()
+        self.mediaStop()
+        del self.leg, self.conf
         self.mediaStop()
         self.returnResult('other end closed')
 
