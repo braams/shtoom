@@ -63,7 +63,7 @@ static double _db_to_scalar ( Float32 decibels )
 - (OSStatus) recordIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
     unsigned framesQueued = [outConverter writeFromAudioBufferList:inInputData timestamp:inInputTime];
-    printf("queued = %d\n", framesQueued);
+    printf("queuedFramesToConverter = %d\n", framesQueued);
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelectorOnMainThread:@selector(sendDataFromConverter:) withObject:nil waitUntilDone:NO];
     [pool release];
@@ -73,10 +73,16 @@ static double _db_to_scalar ( Float32 decibels )
 - (OSStatus) playbackIOForDevice:(MTCoreAudioDevice *)theDevice timeStamp:(const AudioTimeStamp *)inNow inputData:(const AudioBufferList *)inInputData inputTime:(const AudioTimeStamp *)inInputTime outputData:(AudioBufferList *)outOutputData outputTime:(const AudioTimeStamp *)inOutputTime clientData:(void *)inClientData
 {
     unsigned framesRead = [inConverter readToAudioBufferList:outOutputData timestamp:inOutputTime];
-    printf("read = %d\n", framesRead);
+    printf("readFramesFromConverter = %d\n", framesRead);
+    /*
+    if (framesRead > 0) {
+        printf("\n");
+    }
+    */
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [self performSelectorOnMainThread:@selector(flushDataForConverter:) withObject:nil waitUntilDone:NO];
     [pool release];
+
 	return noErr;
 }
 // ----------------------------------
@@ -120,7 +126,7 @@ static double _db_to_scalar ( Float32 decibels )
     AudioStreamBasicDescription shtoomDescription;
     shtoomDescription.mSampleRate = SHTOOM_FREQUENCY;
     shtoomDescription.mFormatID = kAudioFormatLinearPCM;
-    shtoomDescription.mFormatFlags = kLinearPCMFormatFlagIsPacked | kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsBigEndian;
+    shtoomDescription.mFormatFlags = kLinearPCMFormatFlagIsPacked | kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsBigEndian | kAudioFormatFlagIsNonInterleaved;
     shtoomDescription.mBytesPerFrame = sizeof(SInt16);
     shtoomDescription.mFramesPerPacket = 1;
     shtoomDescription.mBytesPerPacket = sizeof(SInt16);

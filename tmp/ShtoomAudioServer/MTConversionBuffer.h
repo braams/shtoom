@@ -23,14 +23,10 @@
 
 + (AudioStreamBasicDescription)descriptionForDevice:(MTCoreAudioDevice *)device forDirection:(MTCoreAudioDirection)direction;
 - initWithSourceDescription:(AudioStreamBasicDescription)srcDescription bufferFrames:(UInt32)srcFrames destinationDescription:(AudioStreamBasicDescription)dstDescription bufferFrames:(UInt32)dstFrames;
-- initWithSourceDevice:(MTCoreAudioDevice *)inputDevice destinationDevice:(MTCoreAudioDevice *)outputDevice;
-- initWithSourceSampleRate:(Float64)srcRate channels:(UInt32)srcChans bufferFrames:(UInt32)srcFrames destinationSampleRate:(Float64)dstRate channels:(UInt32)dstChans bufferFrames:(UInt32)dstFrames;
 - (void) setGain:(Float32)theGain forOutputChannel:(UInt32)theChannel;
 - (Float32) gainForOutputChannel:(UInt32)theChannel;
 - (unsigned) writeFromAudioBufferList:(const AudioBufferList *)src timestamp:(const AudioTimeStamp *)timestamp;
 - (unsigned) readToAudioBufferList:(AudioBufferList *)dst timestamp:(const AudioTimeStamp *)timestamp;
-// - (void) setInterpolation:(Boolean)flag forDirection:(MTCoreAudioDirection)theDirection;
-// - (Boolean) shouldInterpolateForDirection:(MTCoreAudioDirection)theDirection;
 
 // subclasses may override this method to change the size of the converter's buffer
 - (UInt32) numBufferFramesForSourceSampleRate:(Float64)srcRate sourceFrames:(UInt32)srcFrames effectiveDestinationFrames:(UInt32)effDstFrames;

@@ -49,12 +49,13 @@
 //104
 		1058C7A0FEA54F0111CA2CBB = {
 			children = (
+				C40F1735073EB8CD005F8B1E,
+				C40F1610073EB52B005F8B1E,
 				C49841F7073B23E800AC5FC1,
 				C49841F9073B240C00AC5FC1,
 				C49841FA073B240C00AC5FC1,
 				C49841FB073B240C00AC5FC1,
 				C49841FC073B240C00AC5FC1,
-				C49841DE073B23BE00AC5FC1,
 				1058C7A1FEA54F0111CA2CBB,
 			);
 			isa = PBXGroup;
@@ -126,6 +127,7 @@
 		};
 		29B97314FDCFA39411CA2CEA = {
 			children = (
+				C40F168B073EB7E5005F8B1E,
 				080E96DDFE201D6D7F000001,
 				29B97315FDCFA39411CA2CEA,
 				29B97317FDCFA39411CA2CEA,
@@ -250,7 +252,7 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				ZERO_LINK = YES;
+				ZERO_LINK = NO;
 			};
 			isa = PBXBuildStyle;
 			name = Development;
@@ -279,10 +281,12 @@
 				8D1107290486CEB800E47090,
 				8D11072C0486CEB800E47090,
 				8D11072E0486CEB800E47090,
+				C40F162B073EB56F005F8B1E,
 			);
 			buildRules = (
 			);
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = Frameworks;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -311,6 +315,7 @@
 				C4FDD20A073E2BA300B2363E,
 				C4FDD20C073E2BA300B2363E,
 				C4FDD20E073E2BA300B2363E,
+				C40F168E073EB7E5005F8B1E,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -341,13 +346,14 @@
 		8D11072E0486CEB800E47090 = {
 			buildActionMask = 2147483647;
 			files = (
+				C40F1611073EB52B005F8B1E,
 				8D11072F0486CEB800E47090,
-				C49841DF073B23BE00AC5FC1,
 				C49841F8073B23E800AC5FC1,
 				C49841FD073B240C00AC5FC1,
 				C49841FE073B240C00AC5FC1,
 				C49841FF073B240C00AC5FC1,
 				C4984200073B240C00AC5FC1,
+				C40F1736073EB8CD005F8B1E,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -384,16 +390,59 @@
 //C42
 //C43
 //C44
-		C49841DE073B23BE00AC5FC1 = {
+		C40F1610073EB52B005F8B1E = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = MTCoreAudio.framework;
-			path = /Library/Frameworks/MTCoreAudio.framework;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = Frameworks/MTCoreAudio.framework;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
-		C49841DF073B23BE00AC5FC1 = {
-			fileRef = C49841DE073B23BE00AC5FC1;
+		C40F1611073EB52B005F8B1E = {
+			fileRef = C40F1610073EB52B005F8B1E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C40F162B073EB56F005F8B1E = {
+			buildActionMask = 2147483647;
+			dstPath = Contents;
+			dstSubfolderSpec = 1;
+			files = (
+				C40F1732073EB85B005F8B1E,
+			);
+			isa = PBXCopyFilesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C40F168B073EB7E5005F8B1E = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder;
+			path = Frameworks;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		C40F168E073EB7E5005F8B1E = {
+			fileRef = C40F168B073EB7E5005F8B1E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C40F1732073EB85B005F8B1E = {
+			fileRef = C40F168B073EB7E5005F8B1E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		C40F1735073EB8CD005F8B1E = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = Accelerate.framework;
+			path = ../../../../../../System/Library/Frameworks/Accelerate.framework;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		C40F1736073EB8CD005F8B1E = {
+			fileRef = C40F1735073EB8CD005F8B1E;
 			isa = PBXBuildFile;
 			settings = {
 			};
