@@ -119,6 +119,7 @@ class Call(object):
             self._localIP, self._localPort = locAddress
             if not self._callID:
                 self.setCallID()
+            self.phone.updateCallObject(self, self.getCallID())
             self.setupDeferred.callback((host,port))
 
     def setStunnedLocalIP(self, (host, port)):
