@@ -5,11 +5,11 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.8 2003/11/16 03:47:30 anthonybaxter Exp $
+# $Id: rtp.py,v 1.9 2003/11/16 04:39:43 anthonybaxter Exp $
 #
 
-import time, signal, struct, random
-from time import time, sleep
+import time, signal, struct, random, sys
+from time import sleep, time
 
 from select import select as Select
 
@@ -42,7 +42,7 @@ class LoopingCall:
         self.running = True
 
     def loop(self, interval):
-        self._loop(time.time(), 0, interval)
+        self._loop(time(), 0, interval)
 
     def stop(self):
         self.running = False
@@ -52,8 +52,9 @@ class LoopingCall:
     def _loop(self, starttime, count, interval):
         if hasattr(self, "call"):
             del self.call
+        sys.real_stdout.write("OUT %s\n"%(time()))
         self.f(*self.a, **self.kw)
-        now = time.time()
+        now = time()
         while self.running:
             count += 1
             fromStart = count * interval
@@ -77,6 +78,9 @@ class RTPProtocol(DatagramProtocol):
     _cbDone = None
     fp = None
     outfp = None
+    collectStats = 0
+    statsIn = []
+    statsOut = []
 
     def createRTPSocket(self):
         """Start listening on UDP ports for RTP and RTCP.
@@ -121,7 +125,7 @@ class RTPProtocol(DatagramProtocol):
         self.rtpListener.stopListening()
         self.rtcpListener.stopListening()
         if hasattr(self, "fp"):
-            del self.fp
+            del self.infp
         if hasattr(self, "outfp"):
             del self.outfp
 
@@ -134,18 +138,20 @@ class RTPProtocol(DatagramProtocol):
     def startSending(self, dest, fp=None):
         self.dest = dest
         if fp is None:
-            self.fp = getAudioDevice('r')
+            self.infp = getAudioDevice('r')
         else:
-            self.fp = fp
+            self.infp = fp
         self.sendFirstData()
 
     def startSendingAndReceiving(self, dest, fp=None):
         self.dest = dest
         if fp is None:
-            self.fp = getAudioDevice('rw')
+            self.infp = getAudioDevice('rw')
         else:
-            self.fp = fp
-        self.outfp = self.fp
+            self.infp = fp
+        self.outfp = self.infp
+        #self.infp = open('tmp/quake.ul','rb')
+        self.prevInTime = self.prevOutTime = time()
         self.sendFirstData()
 
     def sendFirstData(self):
@@ -158,19 +164,28 @@ class RTPProtocol(DatagramProtocol):
         self.Done = 0
         self.sent = 0
         try:
-            self.sample = self.fp.read(160)
+            self.sample = self.infp.read(160)
         except IOError: # stupid sound devices
             self.sample = None
             pass
-        if not self.use_setitimer:
-            reactor.callLater(0.015, self.nextpacket)
-        else:
+        self.LC = LoopingCall(self.nextpacket)
+        self.LC.loop(0.019)
+        if self.use_setitimer:
             import signal, itimer 
-            signal.signal(signal.SIGALRM, self.nextpacket)
-            itimer.setitimer(itimer.ITIMER_REAL, 0.019, 0.019)
+            signal.signal(signal.SIGALRM, self.reactorWakeUp)
+            itimer.setitimer(itimer.ITIMER_REAL, 0.009, 0.009)
+
+    def reactorWakeUp(self, n, f, reactor=reactor):
+        reactor.wakeUp()
 
     def datagramReceived(self, datagram, addr):
-        # XXX keep stats
+        if self.collectStats:
+            t = time()
+            self.statsIn.append(str(int((t-self.prevInTime)*1000)))
+            self.prevInTime = t
+            if len(self.statsIn) == 100:
+                print "Input", " ".join(self.statsIn)
+                self.statsIn = []
         if self.outfp:
             if len(datagram) != 172:
                 print "datagram len %d!!"%(len(datagram))
@@ -217,18 +232,13 @@ class RTPProtocol(DatagramProtocol):
 
     def nextpacket(self, n=None, f=None, pack=struct.pack):
         if self.Done:
+            self.LC.stop()
             if self.use_setitimer:
                 import itimer
                 itimer.setitimer(itimer.ITIMER_REAL, 0.0, 0.0)
             if self._cbDone:
                 self._cbDone()
             return
-        if not self.use_setitimer:
-            reactor.callLater(0.015, self.nextpacket)
-        #t = time()
-        #if self.last is not None:
-        #    print "%d"%(1000*(t- self.last))
-        #self.last = t
         self.packets += 1
         if self.sample is not None:
             self.sent += 1
@@ -240,19 +250,26 @@ class RTPProtocol(DatagramProtocol):
             self.sample = None
         else:
             print "skipping audio, %s/%s sent"%(self.sent, self.packets)
+        if self.collectStats:
+            t = time()
+            self.statsOut.append(str(int((t-self.prevOutTime)*1000)))
+            self.prevOutTime = t
+            if len(self.statsOut) == 100:
+                print "Output", " ".join(self.statsOut)
+                self.statsOut = []
         self.seq += 1
         self.ts += 160
         try:
-            if self.fp:
-                self.sample = self.fp.read(160)
+            if self.infp:
+                self.sample = self.infp.read(160)
         except IOError:
             pass
 
         # We do the select ourself, to stop the UDP listener and the 
         # timer loop from tripping over each other. Kinda sucky.
-        r, ignored, ignored = Select([self.rtpListener], [], [], 0.0)
-        if r:
-            r[0].doRead()
+        #r, ignored, ignored = Select([self.rtpListener], [], [], 0.0)
+        #if r:
+            #r[0].doRead()
         
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
