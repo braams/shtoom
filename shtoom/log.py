@@ -1,4 +1,6 @@
+from twisted.python.log import err, msg
 from twisted.python import log
+
 try: 
     from twisted.python.util import untilConcludes
 except ImportError:
@@ -20,6 +22,8 @@ class SaneLogObserver:
         if msg:
             text = ' '.join([str(x) for x in msg])
         elif eventDict['isError'] and 'failure' in eventDict:
+            text = eventDict['failure'].getTraceback()
+        elif eventDict.has_key('format'):
             try:
                 text = eventDict['format'] % eventDict
             except:
