@@ -36,6 +36,7 @@
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
 		      <signal name="activate" handler="on_quit_activate" last_modification_time="Sat, 22 Nov 2003 22:57:10 GMT"/>
+		      <accelerator key="Q" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -166,6 +167,7 @@
 	      <property name="has_frame">True</property>
 	      <property name="invisible_char" translatable="yes">*</property>
 	      <property name="activates_default">False</property>
+	      <signal name="activate" handler="on_call_clicked" last_modification_time="Sat, 22 Nov 2003 23:47:49 GMT"/>
 	    </widget>
 	    <packing>
 	      <property name="padding">5</property>
