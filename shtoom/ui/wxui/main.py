@@ -2,6 +2,7 @@ from wxPython.wx import *
 from wxshtoomframe import ShtoomMainFrame
 from shtoom.ui.base import ShtoomBaseUI
 from twisted.python import log
+from twisted.internet import reactor
 from prefs import PreferencesDialog
 import os
 
@@ -48,6 +49,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         EVT_BUTTON(self, self.BUTT_ADVANCED, self.OnAdvanced)
         EVT_BUTTON(self, self.BUTT_CALL, self.OnCall)
         EVT_TEXT_ENTER(self, self.COMBO_ADDRESS, self.PlaceCall)
+        EVT_CLOSE(self, self.DoExit)
         
         # Advanced mode - whether to display the dtmf buttons or not
         self.advanced_mode = True
@@ -201,7 +203,8 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
     def DoExit(self, event):
         # Write out the current address history
         self.saveHistory()
-        self.Close(True)
+        #self.Close(True)
+        reactor.stop()
 
     def UpdateHeight(self, newheight):
         curwidth, curheight = self.GetSize()
