@@ -435,6 +435,52 @@ class Call(object):
             self.sendCancel()
             self.setState('SENT_CANCEL')
 
+    def calcAuth(self, authhdr):
+        from urllib2 import parse_http_list
+        import digestauth
+        method, auth = authhdr.split(' ', 1)
+        if method.lower() != 'digest':
+            raise ValueError, "Unknown auth method %s"%(method)
+        chal = digestauth.parse_keqv_list(parse_http_list(auth))
+        print chal
+        qop = chal.get('qop')
+        if not qop:
+            # Bogus Quotient bug.
+            qop = chal.get('qop-options')
+        if not qop:
+            qop = 'auth'
+        if qop.lower() != 'auth':
+            raise ValueError, "can't handle qop '%s'"%(qop)
+        realm = chal.get('realm')
+        algorithm = chal.get('algorithm', 'md5')
+        nonce = chal.get('nonce')
+        opaque = chal.get('opaque')
+        H, KD = self._getHashingImplementation(algorithm)
+        user = self.sip.app.getPref('register_authuser')
+        passwd = self.sip.app.getPref('register_authpasswd')
+        if user is None or passwd is None:
+            raise RuntimeError, "Auth required"
+        A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
+        A2 = 'REGISTER:%s'%str(self.regServer)
+        self.nonce_count += 1
+        ncvalue = '%08x'%(self.nonce_count)
+        cnonce = digestauth.generate_nonce(bits=16,
+                                           randomness=
+                                              str(nonce)+str(self.nonce_count))
+        # XXX nonce isn't there for proxy-auth. :-(
+        noncebit =  "%s:%s:%s:%s:%s" % (nonce,ncvalue,cnonce,qop,H(A2))
+        respdig = KD(H(A1), noncebit)
+        base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
+               'response="%s"' % (method, user, realm, nonce, 
+                                  str(self.regServer), respdig)
+        if opaque:
+            base = base + ', opaque="%s"' % opaque
+        if algorithm != 'MD5':
+            base = base + ', algorithm="%s"' % algorithm
+        if qop:
+            base = base + ', qop=auth, nc=%s, cnonce="%s"'%(ncvalue, cnonce)
+        return base
+
     def recvResponse(self, message):
         if message.code in ( 100, 180, 181, 182 ):
             return
@@ -492,7 +538,7 @@ class Registration(Call):
         d = self.setupLocalSIP(self.regServer)
         d.addCallback(self.sendRegistration).addErrback(log.err)
 
-    def sendRegistration(self, cb=None, auth=None):
+    def sendRegistration(self, cb=None, auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
         invite = tpsip.Request('REGISTER', str(self.regServer))
         # XXX refactor all the common headers and the like
@@ -501,19 +547,19 @@ class Registration(Call):
         invite.addHeader('cseq', '%s REGISTER'%self.getCSeq(incr=1))
         invite.addHeader('to', '"anthony baxter" <%s>'%(str(self.regAOR)))
         invite.addHeader('from', '"anthony baxter" <%s>'%(str(self.regAOR)))
-        invite.addHeader('content-type', 'application/sdp')
         state =  self.getState() 
         if state in ( 'NEW', 'SENT_REGISTER', 'REGISTERED' ):
             invite.addHeader('expires', 900)
         elif state in ( 'CANCEL_REGISTER' ):
             invite.addHeader('expires', 0)
-        invite.addHeader('event', 'registration')
+        #invite.addHeader('event', 'registration')
+        #invite.addHeader('allow-events', 'presence')
         invite.addHeader('call-id', self.getCallID())
         if auth is not None:
-            invite.addHeader('Authorization', auth)
+            invite.addHeader(authhdr, auth)
         invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         lhost, lport = self.getLocalSIPAddress()
-        invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
+        invite.addHeader('contact', '<sip:%s@%s:%s>'%(
                                 username, lhost, lport))
         invite.addHeader('content-length', '0')
         invite.creationFinished()
@@ -532,8 +578,20 @@ class Registration(Call):
         state = self.getState()
         if message.code in ( 401, ):
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
-                auth = self.calcAuth(message.headers['www-authenticate'][0])
-                self.sendRegistration(auth=auth)
+                a = message.headers.get('www-authenticate')
+                if a:
+                    auth = self.calcAuth(a[0])
+                    self.sendRegistration(auth=auth, authhdr='authorization')
+                else:
+                    # We got bounced and told to bugger off.
+                    print "401, no further possible actions"
+            else:
+                print "Unknown state '%s' for a 401"%(state)
+        elif message.code in ( 407, ):
+            # XXX todo handle proxy-auth
+            if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
+                auth = self.calcAuth(message.headers['proxy-authenticate'][0])
+                self.sendRegistration(auth=auth, authhdr='proxy-authorization')
             else:
                 print "Unknown state '%s' for a 401"%(state)
         elif message.code in ( 200, ):
@@ -553,6 +611,9 @@ class Registration(Call):
                 d.callback('ok')
             else:
                 print "Unknown state '%s' for a 200"%(state)
+        elif message.code in ( 100, ):
+            # Trying?!?
+            print "TODO: 'Trying' from register??!"
         else:
             log.err("don't know about %s for registration"%(message.code))
 
@@ -566,52 +627,6 @@ class Registration(Call):
         self._cancelDef = d
         return d
 
-    def calcAuth(self, authhdr):
-        from urllib2 import parse_http_list
-        import digestauth
-        method, auth = authhdr.split(' ', 1)
-        if method.lower() != 'digest':
-            raise ValueError, "Unknown auth method %s"%(method)
-        chal = digestauth.parse_keqv_list(parse_http_list(auth))
-        print chal
-        qop = chal.get('qop')
-        if not qop:
-            # Bogus Quotient bug.
-            qop = chal.get('qop-options')
-        if not qop:
-            qop = 'auth'
-        if qop.lower() != 'auth':
-            raise ValueError, "can't handle qop '%s'"%(qop)
-        realm = chal.get('realm')
-        algorithm = chal.get('algorithm')
-        nonce = chal.get('nonce')
-        opaque = chal.get('opaque')
-        H, KD = self._getHashingImplementation(algorithm)
-        user = self.sip.app.getPref('register_authuser')
-        passwd = self.sip.app.getPref('register_authpasswd')
-        if user is None or passwd is None:
-            raise RuntimeError, "Auth required"
-        A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
-                         
-        A2 = 'REGISTER:%s'%str(self.regServer)
-        self.nonce_count += 1
-        ncvalue = '%08x'%(self.nonce_count)
-        cnonce = digestauth.generate_nonce(bits=16,
-                                           randomness=
-                                              str(nonce)+str(self.nonce_count))
-        noncebit =  "%s:%s:%s:%s:%s" % (nonce,ncvalue,cnonce,qop,H(A2))
-        respdig = KD(H(A1), noncebit)
-        base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
-               'response="%s"' % (method, user, realm, nonce, 
-                                  str(self.regServer), respdig)
-        if opaque:
-            base = base + ', opaque="%s"' % opaque
-        if algorithm != 'MD5':
-            base = base + ', algorithm="%s"' % algorithm
-        if qop:
-            base = base + ', qop=auth, nc=%s, cnonce="%s"'%(ncvalue, cnonce)
-        print "base", base
-        return base
 
 
             
