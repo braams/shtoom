@@ -541,7 +541,8 @@ class Call(object):
                     a = message.headers.get(inH)
                     if a:
                         uri = str(self.remote)
-                        credDef = self.sip.app.authCred('INVITE', uri)
+
+                        credDef = self.sip.app.authCred('INVITE', uri, retry=(self.call_attempts > 1))
                         credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('INVITE', 
                                                       uri=uri, 
@@ -553,8 +554,14 @@ class Call(object):
                                                         authhdr=h)
                             ).addErrback(log.err)
                     else:
-                        # We got bounced and told to bugger off.
-                        print "401/407, no further possible actions"
+                        # * is retarded. If you send in an incorrect digest auth,
+                        # you just get back a 401/407, with no auth challenge.
+                        # In this case, retry without an auth header to get another
+                        # challenge.
+                        if self.register_attempts > 1:
+                            self.sendRegistration()
+                        else: 
+                            print "401/407 and no auth header"
                 else:
                     print "Unknown state '%s' for a 401/407"%(state)
             else:
@@ -580,7 +587,6 @@ class Registration(Call):
         self.compDef = deferred
         self.regServer = None
         self.regAOR = None
-        self.authCred = None
         self.state = 'NEW'
         self._needSTUN = False
         self.cseq = random.randint(1000,5000)
@@ -653,7 +659,7 @@ class Registration(Call):
                 a = message.headers.get(inH)
                 if a:
                     uri = str(self.regURI)
-                    credDef = self.sip.app.authCred('REGISTER', uri)
+                    credDef = self.sip.app.authCred('REGISTER', uri, retry=(self.register_attempts > 1))
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('REGISTER', 
                                                       uri=uri, 
@@ -664,8 +670,14 @@ class Registration(Call):
                             ).addErrback(log.err)
 
                 else:
-                    # We got bounced and told to bugger off.
-                    print "401/407, no further possible actions"
+                    # * is retarded. If you send in an incorrect digest auth,
+                    # you just get back a 401/407, with no auth challenge.
+                    # In this case, retry without an auth header to get another
+                    # challenge.
+                    if self.register_attempts > 1:
+                        self.sendRegistration()
+                    else: 
+                        print "401/407 and no auth header"
             else:
                 print "Unknown state '%s' for a 401/407"%(state)
         elif message.code in ( 200, ):
@@ -688,7 +700,7 @@ class Registration(Call):
                 print "Unknown state '%s' for a 200"%(state)
         elif message.code in ( 100, ):
             # Trying?!?
-            print "TODO: 'Trying' from register??!"
+            pass
         else:
             log.err("don't know about %s for registration"%(message.code))
 
