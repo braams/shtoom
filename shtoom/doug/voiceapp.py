@@ -103,7 +103,8 @@ class VoiceApp(StateMachine):
         self._triggerEvent(CallStartedEvent(inboundLeg))
 
     def va_abort(self):
-        raise NotImplementedError
+        self.mediaStop()
+        self._triggerEvent(CallEndedEvent(None))
 
     def mediaPlay(self, playlist):
         if isinstance(playlist, basestring):
