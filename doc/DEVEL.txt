@@ -45,5 +45,5 @@ This is to track current and historic branches, including the
 revision which they branched from, and the revision they were
 merged at.
 
-rtp-sdp-refactor: branched at r676, not yet merged back in.
-
+rtp-sdp-refactor: branched at r676, merged back in.
+zooko-mic-merge: branched at 1291, merged back in at r1330.
