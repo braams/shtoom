@@ -230,7 +230,7 @@ class Call(object):
         self.setupDeferred = defer.Deferred()
         outboundProxyURI = self.sip.app.getPref('outbound_proxy_url')
         if outboundProxyURI:
-            print 'outboundProxyURI=' + outboundProxyURI
+            log.msg('outboundProxyURI=%s'%(outboundProxyURI,))
             self._outboundProxyURI = tpsip.parseURL(outboundProxyURI)
         if via is not None:
             remote = tpsip.URL(host=via.host, port=via.port)
@@ -364,7 +364,7 @@ class Call(object):
             return self._localAOR
 
     def acceptedCall(self, cookie):
-        print "acceptedCall setting cookie to", cookie
+        log.msg("acceptedCall setting cookie to %r"%(cookie))
         self.cookie = cookie
         lhost, lport = self.getLocalSIPAddress()
         username = self.sip.app.getPref('username')
@@ -375,7 +375,7 @@ class Call(object):
     def rejectCall(self, message=None):
         ''' Accept currently pending call.
         '''
-        print "rejecting because", message
+        log.msg("rejecting because %r"%(message,))
         self.sendResponse(self._invite, 603)
         self.setState('ABORTED')
         self.compDef.errback(CallRejected)
@@ -476,7 +476,7 @@ class Call(object):
         self.installTeardownTrigger()
 
     def startSendInvite(self, toAddr, init=0):
-        print "startSendInvite", init
+        #print "startSendInvite", init
         if init:
             d = self.sip.app.acceptCall(call=self)
             d.addCallback(lambda x:self.sendInvite(toAddr, cookie=x, init=init)
@@ -486,7 +486,7 @@ class Call(object):
 
     def sendInvite(self, toAddr, cookie=None, auth=None, authhdr=None, init=0):
         if cookie:
-            print "sendinvite setting cookie to", cookie
+            #print "sendinvite setting cookie to", cookie
             self.cookie = cookie
         lhost, lport = self.getLocalSIPAddress()
         username = self.sip.app.getPref('username')
@@ -509,7 +509,7 @@ class Call(object):
         invite.addHeader('allow-events', 'telephone-event')
         invite.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         if auth is not None:
-            print auth, authhdr
+            #print auth, authhdr
             invite.addHeader(authhdr, auth)
         invite.addHeader('contact', str(self.dialog.getContact()))
         s = self.sip.app.getSDP(self.cookie)
@@ -566,7 +566,7 @@ class Call(object):
             cb = lambda *args: None
         addr = self._remoteURI.host, self._remoteURI.port or 5060
         log.msg("sending ACK to %s %s"%addr, system='sip')
-        print "sending ACK to %s %s"%addr
+        #print "sending ACK to %s %s"%addr
         self.sip.transport.write(ack.toString(), addr)
         self.setState('CONNECTED')
         if startRTP:
@@ -588,7 +588,7 @@ class Call(object):
         bye.addHeader('content-length', 0)
         bye.creationFinished()
         bye = bye.toString()
-        print "sending BYE to %r\n%s"%(dest, bye)
+        log.msg("sending BYE to %r\n%s"%(dest, bye))
         self.sip.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
@@ -610,7 +610,7 @@ class Call(object):
         cancel.addHeader('content-length', 0)
         cancel.creationFinished()
         cancel = cancel.toString()
-        print "sending CANCEL to %s %s"%dest
+        log.msg("sending CANCEL to %r\n%s"%(dest, cancel))
         self.sip.transport.write(cancel, dest)
         self.setState('SENT_CANCEL')
 
@@ -661,7 +661,7 @@ class Call(object):
         if not appTeardown and self.cancel_trigger is not None:
             reactor.removeSystemEventTrigger(self.cancel_trigger)
         state = self.getState()
-        print "dropcall in state", state
+        log.msg("dropcall in state %r"%state)
         if state == 'NONE':
             self.sip.app.debugMessage("no call to drop")
             return defer.succeed('no call to drop')
@@ -731,7 +731,7 @@ class Call(object):
 
     def recvResponse(self, message):
         state = self.getState()
-        print "Handling %s while in state %s"%(message.code, state)
+        log.msg("Handling %s while in state %s"%(message.code, state))
         if message.code in ( 100, 180, 181, 182 ):
             return
         elif message.code == 183:
@@ -754,7 +754,7 @@ class Call(object):
                 self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
             if state == 'SENT_CANCEL' and message.code == 487:
-                print "cancelled"
+                #print "cancelled"
                 self.sip.app.endCall(self.cookie)
                 self.sip._delCallObject(self.getCallID())
                 self.sip.app.debugMessage("Hung up on call %s"%self.getCallID())
@@ -762,7 +762,7 @@ class Call(object):
                 return
             self.call_attempts += 1
             if self.call_attempts > 5:
-                print "TOO MANY AUTH FAILURES"
+                #print "TOO MANY AUTH FAILURES"
                 self.setState('ABORTED')
                 return
             if message.code in ( 401, 407 ):
@@ -796,9 +796,9 @@ class Call(object):
                         if self.call_attempts > 1:
                             self.sendInvite(str(self.dialog.getCallee()))
                         else:
-                            print "401/407 and no auth header"
+                            log.err("FATAL 401/407 and no auth header")
                 else:
-                    print "Unknown state '%s' for a 401/407"%(state)
+                    log.err("Unknown state '%s' for a 401/407"%(state))
             else:
                 if self.state == 'SENT_BYE':
                     d, self.dropDef = self.dropDef, None
@@ -906,7 +906,7 @@ class Registration(Call):
         if message.code in ( 401, 407 ):
             self.register_attempts += 1
             if self.register_attempts > 5:
-                print "REGISTRATION FAILED"
+                #print "REGISTRATION FAILED"
                 self.setState('FAILED')
                 return
             if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
@@ -944,7 +944,7 @@ class Registration(Call):
                     else:
                         self.sip.app.statusMessage("Registration: auth failed")
             else:
-                print "Unknown registration state '%s' for a 401/407"%(state)
+                log.err("Unknown registration state '%s' for a 401/407"%(state))
         elif message.code in ( 200, ):
             self.sip.app.statusMessage("Registration: OK")
             # Woo. registration succeeded.
@@ -963,7 +963,7 @@ class Registration(Call):
                 del self._cancelDef
                 d.callback(self)
             else:
-                print "Unknown state '%s' for a 200"%(state)
+                log.err("Unknown state '%s' for a 200"%(state))
         elif message.code in ( 100, ):
             # Trying?!?
             pass
@@ -1008,17 +1008,17 @@ class SipProtocol(DatagramProtocol, object):
 
     def register(self, removed=None):
         if removed:
-            print "cancelled", removed
+            #print "cancelled", removed
             self._delCallObject(removed.getCallID())
         if self.app.getPref('register_uri') is not None:
             existing = self.getRegistrations()
             if existing:
                 for reg in existing:
-                    print "removing", reg, existing
+                    #print "removing", reg, existing
                     d = reg.cancelRegistration()
                     d.addCallbacks(self.register, log.err)
             else:
-                print "no outstanding registrations, registering"
+                log.msg("no outstanding registrations, registering")
                 d = defer.Deferred()
                 r = Registration(self,d)
                 r.startRegistration()
@@ -1063,9 +1063,9 @@ class SipProtocol(DatagramProtocol, object):
             call = self._newCallObject(_d, to=uri)
         except:
             e,v,t = sys.exc_info()
-            print "call creation failed", v
+            log.err("call creation failed %r %s"%(v,v))
             return defer.fail(v)
-        print "call is", call
+        #print "call is", call
         if call is None:
             _d.errback(CallFailed)
             return _d
@@ -1114,7 +1114,7 @@ class SipProtocol(DatagramProtocol, object):
             self._delCallObject(callid)
             return
         if message.request:
-            print "handling request", message.method
+            #print "handling request", message.method
             if not call:
                 # We must have received an INVITE here. Handle it, reply with
                 # a 180 Ringing.
@@ -1139,5 +1139,5 @@ class SipProtocol(DatagramProtocol, object):
                     call.recvCancel(message)
 
         elif message.response:
-            print "handling response", message.code
+            #print "handling response", message.code
             call.recvResponse(message)
