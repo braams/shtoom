@@ -45,6 +45,9 @@ class RTPParser:
         cc = hdr[0]&15 and 1 or 0
         x = hdr[0]&16 and 1 or 0
         pt = hdr[1]&127
+        if not ptdict.get(pt):
+            # Could be any old garbage, such as a late STUN packet
+            return None
         pt = self.ptdict[pt]
         marker = hdr[1]&128 and 1 or 0
         seq = hdr[2]

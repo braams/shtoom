@@ -269,11 +269,13 @@ class RTPProtocol(DatagramProtocol):
             self.transport.connect(*self.dest)
 
     def datagramReceived(self, datagram, addr):
+        # XXX check for late STUN packets here. see, e.g datagramReceived in sip.py
         if self.rtpParser is None:
             log.msg("early(?) rtp packet, no rtpParser available")
             return
         packet = self.rtpParser.fromnet(datagram, addr)
-        self.app.receiveRTP(self.cookie, packet)
+        if packet:
+            self.app.receiveRTP(self.cookie, packet)
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
