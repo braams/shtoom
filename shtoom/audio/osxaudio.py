@@ -80,8 +80,11 @@ class OSXAudio(object):
         return b
 
     def to44KStereo(self, buffer):
-        b = audioop.tostereo(buffer, 2, 1, 1)
-        b, self.fromstate = audioop.ratecv(b, 2, 2, 8000, 44100, self.fromstate)
+        try:
+            b = audioop.tostereo(buffer.data, 2, 1, 1)
+            b, self.fromstate = audioop.ratecv(b, 2, 2, 8000, 44100, self.fromstate)
+        except audioop.error:
+            return ''
         return b
 
     def fromPCMString(self, buffer):
@@ -135,5 +138,8 @@ class OSXAudio(object):
             print e, v
             traceback.print_tb(t)
         return
+
+    def selectDefaultFormat(self, format):
+        pass
 
 Device = OSXAudio
