@@ -82,7 +82,7 @@ class RTPProtocol(DatagramProtocol):
         # but there's no way we'll get any back.
         rtpPort = self.app.getPref('force_rtp_port')
         if not rtpPort:
-            rtpPort = 30000 + random.randint(0, 20000)
+            rtpPort = 11000 + random.randint(0, 9000)
         if (rtpPort % 2) == 1:
             rtpPort += 1
         while True:
