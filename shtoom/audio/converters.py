@@ -1,6 +1,6 @@
 # Copyright (C) 2004 Anthony Baxter
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4, PT_RAW
-from shtoom.rtp.formats import PT_CN, PT_xCN
+from shtoom.rtp.formats import PT_CN, PT_xCN, AudioPTMarker
 from shtoom.rtp.packets import RTPPacket
 from shtoom.avail import codecs
 from shtoom.audio.playout import Playout
@@ -21,21 +21,28 @@ class NullConv:
     def setDevice(self, d):
         self._d = d
     def getFormats(self):
-        return self._d.getFormats()
+        if self._d:
+            return self._d.getFormats()
     def selectDefaultFormat(self, format):
-        return self._d.selectDefaultFormat(format)
+        if self._d:
+            return self._d.selectDefaultFormat(format)
     def read(self):
-        return self._d.read()
+        if self._d:
+            return self._d.read()
     def write(self, data):
-        return self._d.write(data)
+        if self._d:
+            return self._d.write(data)
     def close(self):
-        print "audio: close"
-        return self._d.close()
+        if self._d:
+            print "audio: close"
+            return self._d.close()
     def reopen(self):
-        print "audio: reopen ..."
-        return self._d.reopen()
+        if self._d:
+            print "audio: reopen ..."
+            return self._d.reopen()
     def isClosed(self):
-        return self._d.isClosed()
+        if self._d:
+            return self._d.isClosed()
     def __repr__(self):
         return '<%s wrapped around %r>'%(self.__class__.__name__, self._d)
 
@@ -153,9 +160,14 @@ class Codecker:
     def getDefaultFormat(self):
         return self.format
 
-    def setDefaultFormat(self, format):
-        if self.codecs.has_key(format):
+    def setDefaultFormat(self, format, noexc=False):
+        if (isinstance(format, AudioPTMarker) 
+                and format not in (PT_CN, PT_xCN)
+                and self.codecs.has_key(format)):
             self.format = format
+            return True
+        elif noexc:
+            return False
         else:
             raise ValueError("Can't handle codec %r"%format)
 
@@ -195,7 +207,14 @@ class MediaLayer(NullConv):
         NullConv.__init__(self, device, *args, **kwargs)
 
     def selectDefaultFormat(self, fmt):
-        self.codecker.setDefaultFormat(fmt)
+        if type(fmt) is not list:
+            fmt = [fmt]
+        for f in fmt:
+            res = self.codecker.setDefaultFormat(f, noexc=True)
+            if res:
+                break
+        else:
+            raise ValueError("No working formats!")
 
     def getFormat(self):
         return self.codecker.getDefaultFormat()
@@ -240,7 +259,8 @@ class DougConverter(MediaLayer):
     "Specialised converter for Doug."
     # XXX should be refactored away to just use a Codecker directly
     def __init__(self, defaultFormat=PT_PCMU, *args, **kwargs):
-        MediaLayer.__init__(self, defaultFormat=defaultFormat,
-                            *args, **kwargs)
+        self.codecker = Codecker()
+        self.codecker.setDefaultFormat(defaultFormat)
         self.convertOutbound = self.codecker.encode
         self.convertInbound = self.codecker.decode
+        NullConv.__init__(self, device=None, *args, **kwargs)
