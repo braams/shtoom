@@ -80,6 +80,7 @@ class Phone(BaseApplication):
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
             # Otherwise we chain callbacks
+            # XXX call some sort of 'make a ringing sound' thing here.
             self.ui.incomingCall(call.dialog.getCaller(), cookie, d)
         elif calltype == 'outbound':
             d.addCallback(lambda x, cookie=cookie: cookie )
