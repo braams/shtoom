@@ -86,6 +86,7 @@ def clearCache():
     from shtoom.upnp import clearCache as uClearCache
     from shtoom.stun import clearCache as sClearCache
     getLocalIPAddress.clearCache()
+    getMapper.clearCache()
     uClearCache()
     sClearCache()
 
@@ -179,6 +180,7 @@ def getMapper():
     dl = defer.DeferredList([ud, sd])
     dl.addCallback(cb_getMapper).addErrback(log.err)
     return dl
+getMapper = DeferredCache(getMapper, inProgressOnly=False)
 
 def isBogusAddress(addr):
     """ Returns true if the given address is bogus, i.e. 0.0.0.0 or
