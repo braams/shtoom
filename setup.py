@@ -35,10 +35,10 @@ else:
 setup(
     name = "shtoom",
     version = __version__,
-    description = "Shtoom - SIP softphone",
+    description = "Shtoom - SIP stack (including a softphone)",
     author = "Anthony Baxter",
     author_email = "anthony@interlink.com.au",
-    url = 'http://sourceforge.net/projects/shtoom/',
+    url = 'http://shtoom.divmod.org/',
     packages = ['shtoom', 'shtoom.multicast',
                 'shtoom.ui', 'shtoom.ui.qtui',
                 'shtoom.ui.gnomeui', 'shtoom.ui.qtui',
@@ -47,7 +47,8 @@ setup(
                 'shtoom.audio', 'shtoom.app', 'shtoom.doug' ],
     requires = ( 'twisted', 'python-2.3' ), 
     provides = ( 'shtoom-%s'%__version__, ), 
-    scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py', 'scripts/shmessage.py',
+    scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py', 
+               'scripts/shmessage.py', 'scripts/shecho.py',
               ],
     classifiers = [
        'Development Status :: 3 - Alpha',

@@ -1,0 +1,33 @@
+
+The Shtoom License
+------------------
+
+Shtoom is licensed under the GNU Lesser/Library General Public License
+(LGPL). This document attempts to lay out what this means.
+
+The goal of Shtoom's license is to make sure that all changes and
+improvements to the shtoom code are released back to the community.
+Any additional code that merely uses the shtoom code is free to remain
+closed, open, or whatever the author of the code wants to do.
+
+Essentially, what this means is that if you make changes or additions
+to any of the source files that are distributed as part of shtoom,
+you *must* make those modified source files available. If you write
+new modules, you're free to do with them what you will (obviously, if
+they're the sort of thing that's going to be useful to a lot of people,
+I'd encourage you to consider contributing them, but that's your call).
+
+The rationale for this licensing is that SIP is a complex beast, and
+there's many, many implementations of it. I only have access to a
+fraction of these, which makes it hard to do interoperability testing.
+
+I am open to adopting another license and making the shtoom code dual
+licensed, so long as it fulfills the goal I've listed above. An MIT or
+BSD style license is not acceptable, as it doesn't do what I want.
+The Creative Commons licenses are more aimed at non-code, and none of
+these seem to achieve what I want (with the obvious exception of the
+CC LGPL, which is the same as the LGPL).
+
+Of course, if your changes are purely local and you never intend to
+distribute them to someone else, you can do whatever you like. The 
+shtoom license only applies if you redistribute the licensed material.
