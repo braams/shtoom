@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.24 2003/12/21 16:36:01 itamar Exp $
+# $Id: rtp.py,v 1.25 2003/12/21 16:38:33 itamar Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -20,40 +20,10 @@ except ImportError:
 
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
+from twisted.internet.task import LoopingCall
 
 from shtoom.audio import getAudioDevice
 from shtoom.multicast.SDP import rtpPTDict
-
-
-class LoopingCall:
-    """Move into twisted if this helps."""
-    def __init__(self, f, *a, **kw):
-        self.f = f
-        self.a = a
-        self.kw = kw
-        self.running = True
-
-    def loop(self, interval):
-        self._loop(time(), 0, interval)
-
-    def stop(self):
-        self.running = False
-        if hasattr(self, "call"):
-            self.call.cancel()
-    
-    def _loop(self, starttime, count, interval):
-        if hasattr(self, "call"):
-            del self.call
-        self.f(*self.a, **self.kw)
-        now = time() 
-        while self.running:
-            count += 1
-            fromStart = count * interval
-            fromNow = starttime - now
-            delay = fromNow + fromStart
-            if delay > 0:
-                self.call = reactor.callLater(delay, self._loop, starttime, count, interval)
-                return
 
 
 class RTPProtocol(DatagramProtocol):
@@ -266,7 +236,7 @@ class RTPProtocol(DatagramProtocol):
             self.sample = None
             pass
         self.LC = LoopingCall(self.nextpacket)
-        self.LC.loop(0.020)
+        self.LC.start(0.020)
         if self.use_setitimer:
             signal.signal(signal.SIGALRM, self.reactorWakeUp)
             itimer.setitimer(itimer.ITIMER_REAL, 0.009, 0.009)
