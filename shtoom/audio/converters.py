@@ -263,4 +263,6 @@ class DougConverter(MediaLayer):
         self.codecker.setDefaultFormat(defaultFormat)
         self.convertOutbound = self.codecker.encode
         self.convertInbound = self.codecker.decode
-        NullConv.__init__(self, device=None, *args, **kwargs)
+        if not kwargs.get('device'):
+            kwargs['device'] = None
+        NullConv.__init__(self, *args, **kwargs)
