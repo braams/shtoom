@@ -15,6 +15,8 @@ Definite before 0.3:
       between the event loops.
     - doug: implement placeCall
     - doug: implement leg conferencing (connection)
+    - doug: implement timers
+    - doug: sending of DTMF
 
 Maybe before 0.3:
     - Investigate http://respyre.org/pyalsa.html
@@ -43,15 +45,13 @@ Maybe before 0.3:
     - ui(qt, wx, gtk): save call history
     - doug: reimplement shmessage and shecho in doug
     - doug: create application frameworky bit (look at quotient.deployment?)
-    - doug: implement timers
-    - doug: sending of DTMF
     - ui(all): multi-tab view for multiple calls
     - shtoom: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
     - Mac OS CoreAudio support for Mac audio - dp/bob
     - rtcp: finish RTCP encoding -- RR, SR, PRIV. Handle strange extended
       SR/RR from ciscos.
-    - doug: expose the auth headers from the call?
+    - doug: expose the auth headers to/from the call?
 
 Future:
     - doug: write MixSource (for conferencing)
