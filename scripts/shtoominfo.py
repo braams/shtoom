@@ -37,7 +37,7 @@ def didntGetResults(*res):
 
 def gotResults(natresults):
     from twisted.internet import reactor
-    from shtoom.avail import audio, codecs
+    from shtoom.avail import audio, codecs, ui
     from shtoom import __version__
     import platform, twisted.copyright
     (ures, upnp), (sres, stun), (lres,locIP), (mres, mapper) = natresults
@@ -52,6 +52,7 @@ def gotResults(natresults):
         ver = platform.win32_ver()
         print ver
     print "Available audio interfaces:", ', '.join(audio.listAudio())
+    print "Available user interfaces:", ', '.join(ui.listUI())
     print "Available codecs:", ', '.join(codecs.listCodecs())
     print "Local IP address:", locIP
     if upnp:
