@@ -283,6 +283,8 @@ class UPnPProtocol(DatagramProtocol, object):
 
     def cb_failedGenericPortMappingEntry(self, failure, cd, saved):
         err = failure.value.args[0]
+        # Some routers (reported on a Netgear DG834) return "Invalid Action"
+        # instead of SpecifiedArrayIndexInvalid. This is double-plus bogus.
         if err == "SpecifiedArrayIndexInvalid":
             cd.callback(saved)
         else:
