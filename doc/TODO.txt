@@ -9,6 +9,8 @@ Definite before 0.3:
     - doug: s.d.conferencing's entrance soundburst bug
     - ui(qt): hide multiple call support for now
     - documentation, documentation, documentation
+    - Some sort of "debug dump" command that dumps relevant info (ui, audio,
+      &c) for bugreports.
     - package for Mac, Windows
 
 Maybe before 0.3:
