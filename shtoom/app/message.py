@@ -188,7 +188,7 @@ class Message(BaseApplication):
             # comfort noise
             pass
         else:
-            print "unexpected RTP PT %s len %d"%(rtpPTDict.get(payloadType,str(payloadType)), len(datagram))
+            print "unexpected RTP PT %s len %d"%((payloadType,str(payloadType)), len(payloadData))
 
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call!

@@ -14,7 +14,8 @@ class BaseApplication:
     __cookieCount = 0
 
     def __init__(self, prefs=None):
-        self._options = _dummy()
+        #self._options = _dummy()
+        pass
 
     def boot(self):
         self.connectSIP()
