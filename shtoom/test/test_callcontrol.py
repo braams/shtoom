@@ -87,7 +87,7 @@ class TestUI:
 
     def cb_callFailed(self, cookie, message=None):
         self.actions.append(('failed',cookie))
-        if TDEBUG: print "callFailed", self.cookie
+        if TDEBUG: print "callFailed", cookie
 
     def cb_callConnected(self, cookie):
         if TDEBUG: print "callConnected", self.cookie

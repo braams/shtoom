@@ -407,7 +407,7 @@ class Call(object):
         ''' Accept currently pending call.
         '''
         log.msg("rejecting because %r"%(response,), system='sip')
-        if hasattr(response, sipCode):
+        if hasattr(response, 'sipCode'):
             code = response.sipCode
         else:
             code = 603

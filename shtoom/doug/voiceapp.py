@@ -14,6 +14,7 @@ from shtoom.doug.exceptions import *
 from shtoom.doug.statemachine import StateMachine
 from twisted.internet import reactor
 from twisted.python.util import OrderedDict
+from twisted.python import log
 
 class Timer:
     def __init__(self, voiceapp, delay):
@@ -76,7 +77,12 @@ class VoiceApp(StateMachine):
     def va_callrejected(self, leg=None):
         if leg is None:
             leg = self._inbound
-        self.__legs.remove(leg)
+        try:
+            del self.__legs[leg]
+        except KeyError:
+            log.msg("can't find leg %s, current legs: %r"%(
+                                    leg, self.__legs.keys()), 
+                                    system='doug')
         self._triggerEvent(CallRejectedEvent(leg))
 
     def va_abort(self):
@@ -138,8 +144,11 @@ class VoiceApp(StateMachine):
     def sendDTMF(self, digits, cookie=None, duration=0.1, delay=0.05):
         "Send a string of DTMF keystrokes"
         for n,key in enumerate(digits):
-            if key not in '01234567890#*':
+            if key not in ',01234567890#*':
                 raise ValueError, key
+            if key == ',': 
+                # pause
+                continue
             n = float(n) # just in case
             if cookie is None:
                 cookie = self.__cookie

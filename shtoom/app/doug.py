@@ -52,7 +52,6 @@ class DougApplication(BaseApplication):
     def start(self):
         "Start the application."
         from twisted.internet import reactor
-        import sys
         vargs = self.getPref('dougargs')
         if vargs:
             kwargs = [x.split('=') for x in vargs.split(',') ]
@@ -76,7 +75,7 @@ class DougApplication(BaseApplication):
             v.va_start()
         except:
             ee,ev,et = sys.exc_info()
-            log.err("voiceapp error", ee, ev, traceback.extract_tb(et))
+            log.err("voiceapp error %s, %s, %s"%(ee, ev, traceback.extract_tb(et)))
             v = None
         if v:
             log.msg("new voiceapp %r"%(v), system='doug')
