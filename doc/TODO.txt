@@ -104,7 +104,6 @@ Future:
     - Statistics display
     - New codec support: 
         - DVI4? Is this the same thing as audioop implements?
-        - speex? http://207.34.118.42/~john/pyspeex/index.html
         - iLBC? - www.ilbcfreeware.org
         - G723? - patented, reference implementation available
         - G729? - patented.

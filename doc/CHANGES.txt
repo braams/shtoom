@@ -1,6 +1,11 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - scripts/shreadder.py now takes an optional codec argument, e.g.
+    PT_GSM, PT_SPEEX. The audio will be roundtripped through that 
+    codec. Good for testing.
+  - Support for the speex codec added. This requires an optional 
+    install - David McNab's pySpeex package.
   - Audio interfaces have been refactored to be a little more sane.
   - A simple playout buffer has been created. This should hopefully
     help with the creeping delay problem.
