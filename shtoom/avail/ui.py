@@ -44,11 +44,11 @@ def getTkInterface(fail=False):
     try:
         import Tkinter
     except ImportError:
+        cleanup('Tkinter', '_tkinter')
         Tkinter = None
         if fail:
             raise
     if Tkinter is not None:
-        cleanup('Tkinter')
         from shtoom.ui.tkshtoom import main
         return main
 
