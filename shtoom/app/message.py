@@ -29,6 +29,7 @@ class Message(BaseApplication):
         self._calls = {}
         self._pendingRTP = {}
         self._audios = {}
+        self._dtmf = {}
         self._audioFormats = {}
         self._audioStates = {}
 
@@ -85,9 +86,11 @@ class Message(BaseApplication):
     def openAudioDevice(self, callcookie):
         audio_in = self.getPref('audio_infile')
         self._audios[callcookie] = getFileAudio(audio_in, '/dev/null')
+        self._dtmf[callcookie] = None
         self._audioStates[callcookie] = STATE_NONE
 
     def selectFormat(self, callcookie, rtpmap):
+        print "RTP", rtpmap
         rtp =  self._rtp[callcookie]
         audio = self._audios.get(callcookie)
         for entry,desc in rtpmap:
@@ -123,6 +126,7 @@ class Message(BaseApplication):
         if FMT_DVI4 in fmts:
             s.addRtpMap('DVI4', 8000)
             #s.addRtpMap('DVI4', 16000)
+        s.addRtpMap('telephone-event', 8000, payload=101)
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
@@ -144,8 +148,32 @@ class Message(BaseApplication):
         del self._audioStates[callcookie]
         self._audios[callcookie].close()
         del self._audios[callcookie]
+        del self._dtmf[callcookie]
+
+    def startDTMF(self, key):
+        print "GOT DTMF START %s"%(key)
+
+    def stopDTMF(self, key):
+        print "GOT DTMF END %s"%(key)
 
     def receiveRTP(self, callcookie, payloadType, payloadData):
+        # Yuk. If we're answering, the other end sets the PT!
+        # XXX tofix!
+	if payloadType == 101:
+            key = ord(payloadData[0])
+            start = (ord(payloadData[1]) & 128) and True or False
+            d = self._dtmf
+            if start:
+                if d[callcookie] is not None and d[callcookie] != key:
+                    self.stopDTMF(d[callcookie])
+                    d[callcookie] = None
+                if d[callcookie] is None:
+                    d[callcookie] = key
+                    self.startDTMF(key)
+            elif d[callcookie] == key:
+                d[callcookie]  = None
+                self.stopDTMF(key)
+            return
         if not (self._audioStates[callcookie] & STATE_RECEIVING):
             return 
         fmt = None
