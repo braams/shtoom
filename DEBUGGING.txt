@@ -69,8 +69,9 @@ having problems:
   trident
   <insert your dodgy sound driver here>
 
-If you have one of these, you're boned. Install ALSA. If you can't/
-won't upgrade to a Linux 2.6 kernel, find a version for your system.
+If you have one of these, you're boned. Install ALSA. If you 
+can't/won't upgrade to a Linux 2.6 kernel, find a version of 
+ALSA for your system.
 
 For Redhat/Fedora users, look at the Planet CCRMA project, 
 http://www-ccrma.stanford.edu/
@@ -87,17 +88,16 @@ driver work. But I'm not able to spend the time to do so -- there's
 far more useful things I can be working on. If you want to try and
 figure out your sound driver, and contribute fixes or documentation
 on how to make it work, please, do so! I will happily include the
-documentation here, and credit you for it. As a first pointer, note
-that shtoom opens the audio device in mono mode. At least for the
-i810_audio driver, this just Does Not Work. I'm not interested in
-trying to fudge around this by merging the stereo audio into a mono
-signal.
+documentation here, and credit you for it. Previously, shtoom failed
+on systems where the device could only be opened in stereo(!?). There's
+now code in shtoom.audio.ossaudio to deal with these broken drivers.
+This happens even with some ALSA drivers!
 
 
 Determining your sound driver
 -----------------------------
 
-Use this command:
+On Linux, you can use this command:
 
   /sbin/lsmod | grep soundcore
 
