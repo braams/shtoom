@@ -56,7 +56,7 @@ class PreferencesDialog:
 
         self.tooltips = gtk.Tooltips()
 
-        notebook = gtk.Notebook(spacing=8)
+        notebook = gtk.Notebook()
         notebook.set_border_width(4)
         self.dialog.vbox.set_border_width(4)
         self.dialog.vbox.pack_start(notebook)
