@@ -1,6 +1,10 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - After prodding from Jamey Hicks, I've reworked the handling of
+    the from: and to: lines in SIP, so that we can keep a dialog 
+    up correctly.
+  - Outbound proxy support is done (thanks to Jamey Hicks)
   - RTCP decoding is done. RTCP encoding is mostly done. As yet, nothing
     uses the decoded packets or generates RTCP packets, but it's nice to 
     see what you're being sent.

@@ -3,6 +3,10 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
 Before 0.3:
+    - sip: Handle unknown calls and send back a 481
+    - sip: retransmit and timeout of BYE
+    - rtcp: notice when we get an RTCP BYE and close the connection
+    - rtcp: generate a goodbye packet. should at least have an SDES and a BYE
     - sip: Something's not quite right in ACK - IOS is tossing it
     - stun: timeout the STUN call, print a nice error
     - sip/call: the state should become an object, encapsulating the current state.
@@ -12,8 +16,12 @@ Before 0.3:
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - options: default some useful stuff
+    - options: allow a sequence type. Multiple registrations, save call 
+      history
     - options: email_address must die, and now, in favour of 'AOR'. Use 
       'username'@'registerserver'? What to use if no register server?
+    - ui(all): keybindings for DTMF. When a call is in progress, disable the
+      address bar
     - ui(gnome): a new Gtk UI - Nafai
         - Re-hookup the debugging log to the GUI for all GUIs - 
           maybe need a hide/show option
@@ -23,6 +31,7 @@ Before 0.3:
         - A better dialog to prompt for user, password information
     - ui(tk): window resize currently sucks.
     - ui(qt): window resize currently sucks
+    - ui(qt, wx, gtk): save call history
     - ui(wx): move the UI and twisted to seperate threads. This will also be
       needed for mfcui. Implement through a stub layer that passes events
       between the event loops.
