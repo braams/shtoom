@@ -11,47 +11,19 @@
 *****************************************************************************/
 
 
-void shtoommainwindow::fileDTMF()
-{
-}
-
-
-void shtoommainwindow::fileDebugging()
+void Form3::debuggingCloseButton_clicked()
 {
 
 }
 
 
-void shtoommainwindow::editPreferences()
-{
-
-}
-
-void shtoommainwindow::helpAbout()
+void Form3::debuggingCloseButton_2_clicked()
 {
 
 }
 
 
-void ShtoomMainWindow::callButton_clicked()
-{
-
-}
-
-
-void ShtoomMainWindow::hangupButton_clicked()
-{
-
-}
-
-
-void ShtoomMainWindow::registerButton_clicked()
-{
-
-}
-
-
-void ShtoomMainWindow::lookupButton_clicked()
+void Form3::debuggingClearButton_clicked()
 {
 
 }

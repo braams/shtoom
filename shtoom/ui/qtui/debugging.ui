@@ -1,0 +1,103 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>Debugging</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>Debugging</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>338</width>
+            <height>270</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Debugging</string>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QTextEdit">
+            <property name="name">
+                <cstring>debuggingTextEdit</cstring>
+            </property>
+            <property name="font">
+                <font>
+                    <family>Courier</family>
+                </font>
+            </property>
+            <property name="textFormat">
+                <enum>LogText</enum>
+            </property>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout12</cstring>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>debuggingCloseButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Close</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer4</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>40</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>debuggingClearButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Clear</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<connections>
+    <connection>
+        <sender>debuggingCloseButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Debugging</receiver>
+        <slot>debuggingCloseButton_clicked()</slot>
+    </connection>
+    <connection>
+        <sender>debuggingClearButton</sender>
+        <signal>clicked()</signal>
+        <receiver>Debugging</receiver>
+        <slot>debuggingClearButton_clicked()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">debugging.ui.h</include>
+</includes>
+<slots>
+    <slot>debuggingCloseButton_clicked()</slot>
+    <slot>debuggingCloseButton_2_clicked()</slot>
+    <slot>debuggingClearButton_clicked()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

@@ -6,763 +6,160 @@
     </property>
     <property name="geometry">
         <rect>
-            <x>5</x>
+            <x>0</x>
             <y>0</y>
-            <width>408</width>
-            <height>453</height>
+            <width>343</width>
+            <height>156</height>
         </rect>
     </property>
-    <property name="sizePolicy">
-        <sizepolicy>
-            <hsizetype>0</hsizetype>
-            <vsizetype>7</vsizetype>
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-    </property>
-    <property name="minimumSize">
-        <size>
-            <width>408</width>
-            <height>444</height>
-        </size>
-    </property>
     <property name="caption">
-        <string>Shtoom - Qt UI</string>
+        <string>Shtoom</string>
     </property>
-    <widget class="QFrame">
+    <vbox>
         <property name="name">
-            <cstring>frame10</cstring>
+            <cstring>unnamed</cstring>
         </property>
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>408</width>
-                <height>410</height>
-            </rect>
-        </property>
-        <property name="sizePolicy">
-            <sizepolicy>
-                <hsizetype>4</hsizetype>
-                <vsizetype>4</vsizetype>
-                <horstretch>4</horstretch>
-                <verstretch>5</verstretch>
-            </sizepolicy>
-        </property>
-        <property name="frameShape">
-            <enum>NoFrame</enum>
-        </property>
-        <property name="frameShadow">
-            <enum>Plain</enum>
-        </property>
-        <grid>
+        <widget class="QLayoutWidget">
             <property name="name">
-                <cstring>unnamed</cstring>
+                <cstring>layout4</cstring>
             </property>
-            <property name="margin">
-                <number>0</number>
-            </property>
-            <property name="spacing">
-                <number>0</number>
-            </property>
-            <widget class="QFrame" row="4" column="0">
+            <hbox>
                 <property name="name">
-                    <cstring>frame4</cstring>
+                    <cstring>unnamed</cstring>
                 </property>
-                <property name="sizePolicy">
-                    <sizepolicy>
-                        <hsizetype>7</hsizetype>
-                        <vsizetype>5</vsizetype>
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                    </sizepolicy>
-                </property>
-                <property name="frameShape">
-                    <enum>NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                    <enum>Raised</enum>
-                </property>
-                <grid>
+                <widget class="QLabel">
                     <property name="name">
-                        <cstring>unnamed</cstring>
+                        <cstring>textLabel1</cstring>
                     </property>
-                    <property name="margin">
-                        <number>0</number>
+                    <property name="text">
+                        <string>Address:</string>
                     </property>
-                    <property name="spacing">
-                        <number>0</number>
+                    <property name="alignment">
+                        <set>AlignVCenter|AlignRight</set>
                     </property>
-                    <widget class="QLabel" row="0" column="0">
-                        <property name="name">
-                            <cstring>textLabel4</cstring>
-                        </property>
-                        <property name="font">
-                            <font>
-                                <family>Sans Serif</family>
-                                <bold>1</bold>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string>Status</string>
-                        </property>
-                        <property name="alignment">
-                            <set>AlignVCenter|AlignRight</set>
-                        </property>
-                    </widget>
-                    <widget class="QLabel" row="0" column="1">
-                        <property name="name">
-                            <cstring>statusLabel</cstring>
-                        </property>
-                        <property name="sizePolicy">
-                            <sizepolicy>
-                                <hsizetype>7</hsizetype>
-                                <vsizetype>5</vsizetype>
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>250</width>
-                                <height>0</height>
-                            </size>
-                        </property>
-                        <property name="backgroundMode">
-                            <enum>PaletteBrightText</enum>
-                        </property>
-                        <property name="font">
-                            <font>
-                                <family>Sans Serif</family>
-                            </font>
-                        </property>
-                        <property name="text">
-                            <string></string>
-                        </property>
-                        <property name="alignment">
-                            <set>AlignVCenter|AlignLeft</set>
-                        </property>
-                    </widget>
-                    <widget class="QLabel" row="0" column="2">
-                        <property name="name">
-                            <cstring>pixmapLogo</cstring>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>50</width>
-                                <height>30</height>
-                            </size>
-                        </property>
-                        <property name="scaledContents">
-                            <bool>true</bool>
-                        </property>
-                    </widget>
-                </grid>
-            </widget>
-            <widget class="QFrame" row="3" column="0">
-                <property name="name">
-                    <cstring>frame6</cstring>
-                </property>
-                <property name="sizePolicy">
-                    <sizepolicy>
-                        <hsizetype>7</hsizetype>
-                        <vsizetype>5</vsizetype>
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                    </sizepolicy>
-                </property>
-                <property name="frameShape">
-                    <enum>NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                    <enum>Raised</enum>
-                </property>
-                <grid>
-                    <property name="name">
-                        <cstring>unnamed</cstring>
-                    </property>
-                    <property name="margin">
-                        <number>0</number>
-                    </property>
-                    <property name="spacing">
-                        <number>0</number>
-                    </property>
-                    <widget class="QLayoutWidget" row="0" column="0">
-                        <property name="name">
-                            <cstring>layout2</cstring>
-                        </property>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QPushButton" row="0" column="0">
-                                <property name="name">
-                                    <cstring>clearButton</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Clear</string>
-                                </property>
-                            </widget>
-                            <widget class="QLabel" row="0" column="2">
-                                <property name="name">
-                                    <cstring>appVersion</cstring>
-                                </property>
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>200</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="font">
-                                    <font>
-                                        <family>Sans Serif</family>
-                                        <pointsize>14</pointsize>
-                                        <bold>1</bold>
-                                    </font>
-                                </property>
-                                <property name="text">
-                                    <string>Shtoom</string>
-                                </property>
-                                <property name="alignment">
-                                    <set>AlignVCenter|AlignRight</set>
-                                </property>
-                            </widget>
-                            <widget class="QCheckBox" row="0" column="1">
-                                <property name="name">
-                                    <cstring>muteCheck</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>mute</string>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
-                </grid>
-            </widget>
-            <widget class="QFrame" row="1" column="0">
-                <property name="name">
-                    <cstring>frame9</cstring>
-                </property>
-                <property name="frameShape">
-                    <enum>StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                    <enum>Raised</enum>
-                </property>
-                <hbox>
-                    <property name="name">
-                        <cstring>unnamed</cstring>
-                    </property>
-                    <widget class="QFrame">
-                        <property name="name">
-                            <cstring>frame8</cstring>
-                        </property>
-                        <property name="frameShape">
-                            <enum>NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                            <enum>Raised</enum>
-                        </property>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <property name="margin">
-                                <number>0</number>
-                            </property>
-                            <property name="spacing">
-                                <number>0</number>
-                            </property>
-                            <widget class="QLabel" row="0" column="0">
-                                <property name="name">
-                                    <cstring>textLabel1</cstring>
-                                </property>
-                                <property name="sizePolicy">
-                                    <sizepolicy>
-                                        <hsizetype>1</hsizetype>
-                                        <vsizetype>5</vsizetype>
-                                        <horstretch>0</horstretch>
-                                        <verstretch>0</verstretch>
-                                    </sizepolicy>
-                                </property>
-                                <property name="text">
-                                    <string>Call: </string>
-                                </property>
-                                <property name="alignment">
-                                    <set>AlignVCenter|AlignRight</set>
-                                </property>
-                            </widget>
-                            <widget class="QComboBox" row="0" column="1">
-                                <property name="name">
-                                    <cstring>addressComboBox</cstring>
-                                </property>
-                                <property name="sizePolicy">
-                                    <sizepolicy>
-                                        <hsizetype>7</hsizetype>
-                                        <vsizetype>0</vsizetype>
-                                        <horstretch>0</horstretch>
-                                        <verstretch>0</verstretch>
-                                    </sizepolicy>
-                                </property>
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>250</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="editable">
-                                    <bool>true</bool>
-                                </property>
-                                <property name="sizeLimit">
-                                    <number>20</number>
-                                </property>
-                                <property name="insertionPolicy">
-                                    <enum>AtTop</enum>
-                                </property>
-                                <property name="autoCompletion">
-                                    <bool>true</bool>
-                                </property>
-                                <property name="duplicatesEnabled">
-                                    <bool>false</bool>
-                                </property>
-                            </widget>
-                            <widget class="QFrame" row="2" column="0" rowspan="1" colspan="2">
-                                <property name="name">
-                                    <cstring>frame7</cstring>
-                                </property>
-                                <property name="frameShape">
-                                    <enum>NoFrame</enum>
-                                </property>
-                                <property name="frameShadow">
-                                    <enum>Plain</enum>
-                                </property>
-                                <grid>
-                                    <property name="name">
-                                        <cstring>unnamed</cstring>
-                                    </property>
-                                    <property name="margin">
-                                        <number>0</number>
-                                    </property>
-                                    <widget class="QPushButton" row="0" column="2">
-                                        <property name="name">
-                                            <cstring>pushButton17</cstring>
-                                        </property>
-                                        <property name="text">
-                                            <string>Register</string>
-                                        </property>
-                                    </widget>
-                                    <widget class="QPushButton" row="0" column="0">
-                                        <property name="name">
-                                            <cstring>callButton</cstring>
-                                        </property>
-                                        <property name="text">
-                                            <string>Call</string>
-                                        </property>
-                                        <property name="accel">
-                                            <string>Return</string>
-                                        </property>
-                                    </widget>
-                                    <widget class="QPushButton" row="0" column="1">
-                                        <property name="name">
-                                            <cstring>hangupButton</cstring>
-                                        </property>
-                                        <property name="enabled">
-                                            <bool>false</bool>
-                                        </property>
-                                        <property name="text">
-                                            <string>Hang Up</string>
-                                        </property>
-                                    </widget>
-                                </grid>
-                            </widget>
-                            <spacer row="1" column="0" rowspan="1" colspan="2">
-                                <property name="name">
-                                    <cstring>spacer1</cstring>
-                                </property>
-                                <property name="orientation">
-                                    <enum>Horizontal</enum>
-                                </property>
-                                <property name="sizeType">
-                                    <enum>Expanding</enum>
-                                </property>
-                                <property name="sizeHint">
-                                    <size>
-                                        <width>240</width>
-                                        <height>16</height>
-                                    </size>
-                                </property>
-                            </spacer>
-                        </grid>
-                    </widget>
-                    <widget class="QFrame">
-                        <property name="name">
-                            <cstring>dtmfFrame</cstring>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>75</width>
-                                <height>95</height>
-                            </size>
-                        </property>
-                        <property name="paletteBackgroundColor">
-                            <color>
-                                <red>191</red>
-                                <green>191</green>
-                                <blue>191</blue>
-                            </color>
-                        </property>
-                        <property name="frameShape">
-                            <enum>StyledPanel</enum>
-                        </property>
-                        <property name="frameShadow">
-                            <enum>Raised</enum>
-                        </property>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton1</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>10</x>
-                                    <y>10</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>1</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton4</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>10</x>
-                                    <y>30</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </size>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>4</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton2</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>30</x>
-                                    <y>10</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>2</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton7</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>10</x>
-                                    <y>50</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>7</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButtonStar</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>10</x>
-                                    <y>70</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>*</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton0</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>30</x>
-                                    <y>70</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>0</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton8</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>30</x>
-                                    <y>50</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>8</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton5</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>30</x>
-                                    <y>30</y>
-                                    <width>16</width>
-                                    <height>16</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>5</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton9</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>50</x>
-                                    <y>50</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>9</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButtonHash</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>50</x>
-                                    <y>70</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>#</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton3</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>50</x>
-                                    <y>10</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>3</string>
-                            </property>
-                        </widget>
-                        <widget class="QPushButton">
-                            <property name="name">
-                                <cstring>dtmfButton6</cstring>
-                            </property>
-                            <property name="geometry">
-                                <rect>
-                                    <x>50</x>
-                                    <y>30</y>
-                                    <width>15</width>
-                                    <height>15</height>
-                                </rect>
-                            </property>
-                            <property name="font">
-                                <font>
-                                </font>
-                            </property>
-                            <property name="text">
-                                <string>6</string>
-                            </property>
-                        </widget>
-                    </widget>
-                </hbox>
-            </widget>
-            <widget class="QTabWidget" row="0" column="0">
-                <property name="name">
-                    <cstring>callSelectionTab</cstring>
-                </property>
-                <property name="minimumSize">
-                    <size>
-                        <width>0</width>
-                        <height>25</height>
-                    </size>
-                </property>
-                <property name="maximumSize">
-                    <size>
-                        <width>32767</width>
-                        <height>25</height>
-                    </size>
-                </property>
-                <property name="tabShape">
-                    <enum>Rounded</enum>
-                </property>
-                <widget class="QWidget">
-                    <property name="name">
-                        <cstring>tab1</cstring>
-                    </property>
-                    <attribute name="title">
-                        <string>New Call</string>
-                    </attribute>
                 </widget>
-            </widget>
-            <widget class="QTextEdit" row="2" column="0">
+                <widget class="QComboBox">
+                    <property name="name">
+                        <cstring>addressComboBox</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>7</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="editable">
+                        <bool>true</bool>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>lookupButton</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="maximumSize">
+                        <size>
+                            <width>25</width>
+                            <height>32767</height>
+                        </size>
+                    </property>
+                    <property name="text">
+                        <string>...</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLayoutWidget">
+            <property name="name">
+                <cstring>layout2</cstring>
+            </property>
+            <hbox>
                 <property name="name">
-                    <cstring>debuggingTextEdit</cstring>
+                    <cstring>unnamed</cstring>
                 </property>
-                <property name="sizePolicy">
-                    <sizepolicy>
-                        <hsizetype>7</hsizetype>
-                        <vsizetype>7</vsizetype>
-                        <horstretch>100</horstretch>
-                        <verstretch>100</verstretch>
-                    </sizepolicy>
-                </property>
-                <property name="font">
-                    <font>
-                        <family>Courier</family>
-                    </font>
-                </property>
-                <property name="textFormat">
-                    <enum>PlainText</enum>
-                </property>
-                <property name="wrapPolicy">
-                    <enum>Anywhere</enum>
-                </property>
-                <property name="undoDepth">
-                    <number>0</number>
-                </property>
-                <property name="readOnly">
-                    <bool>true</bool>
-                </property>
-                <property name="undoRedoEnabled">
-                    <bool>false</bool>
-                </property>
-                <property name="toolTip" stdset="0">
-                    <string>Debugging Messages</string>
-                </property>
-            </widget>
-        </grid>
-    </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>callButton</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>Call</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>hangupButton</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>Hangup</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>registerButton</cstring>
+                    </property>
+                    <property name="sizePolicy">
+                        <sizepolicy>
+                            <hsizetype>0</hsizetype>
+                            <vsizetype>0</vsizetype>
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                        </sizepolicy>
+                    </property>
+                    <property name="text">
+                        <string>Register</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>statusLabel</cstring>
+            </property>
+            <property name="text">
+                <string></string>
+            </property>
+        </widget>
+    </vbox>
 </widget>
 <menubar>
     <property name="name">
-        <cstring>menubar</cstring>
+        <cstring>MenuBar</cstring>
     </property>
     <item text="&amp;File" name="fileMenu">
-        <action name="fileNewAction"/>
-        <action name="fileOpenAction"/>
-        <action name="fileSaveAction"/>
-        <action name="fileSaveAsAction"/>
-        <separator/>
-        <action name="filePrefsAction"/>
+        <action name="fileDTMFAction"/>
+        <action name="fileDebugAction"/>
         <separator/>
         <action name="fileExitAction"/>
     </item>
+    <item text="&amp;Edit" name="Edit">
+        <action name="editPreferencesAction"/>
+    </item>
     <item text="&amp;Help" name="helpMenu">
-        <action name="helpContentsAction"/>
-        <action name="helpIndexAction"/>
-        <separator/>
         <action name="helpAboutAction"/>
     </item>
 </menubar>
@@ -771,33 +168,36 @@
 <actions>
     <action>
         <property name="name">
-            <cstring>fileNewAction</cstring>
+            <cstring>fileDTMFAction</cstring>
         </property>
-        <property name="iconSet">
-            <iconset></iconset>
+        <property name="enabled">
+            <bool>true</bool>
         </property>
         <property name="text">
-            <string>New</string>
+            <string>DTMF</string>
         </property>
         <property name="menuText">
-            <string>&amp;New</string>
+            <string>&amp;DTMF</string>
+        </property>
+        <property name="toolTip">
+            <string>Show DTMF Window</string>
         </property>
         <property name="accel">
-            <string>Ctrl+N</string>
+            <string>Ctrl+D</string>
         </property>
     </action>
     <action>
         <property name="name">
-            <cstring>fileOpenAction</cstring>
+            <cstring>fileDebugAction</cstring>
         </property>
-        <property name="iconSet">
-            <iconset></iconset>
+        <property name="enabled">
+            <bool>true</bool>
         </property>
         <property name="text">
-            <string>Open</string>
+            <string>Debugging</string>
         </property>
         <property name="menuText">
-            <string>&amp;Open...</string>
+            <string>&amp;Debugging...</string>
         </property>
         <property name="accel">
             <string>Ctrl+O</string>
@@ -805,89 +205,13 @@
     </action>
     <action>
         <property name="name">
-            <cstring>fileSaveAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset></iconset>
-        </property>
-        <property name="text">
-            <string>Save</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Save</string>
-        </property>
-        <property name="accel">
-            <string>Ctrl+S</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>fileSaveAsAction</cstring>
-        </property>
-        <property name="text">
-            <string>Save As</string>
-        </property>
-        <property name="menuText">
-            <string>Save &amp;As...</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>filePrefsAction</cstring>
-        </property>
-        <property name="iconSet">
-            <iconset></iconset>
-        </property>
-        <property name="text">
-            <string>Preferences</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Preferences...</string>
-        </property>
-        <property name="accel">
-            <string>Ctrl+P</string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
             <cstring>fileExitAction</cstring>
         </property>
         <property name="text">
-            <string></string>
+            <string>Exit</string>
         </property>
         <property name="menuText">
             <string>E&amp;xit</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>helpContentsAction</cstring>
-        </property>
-        <property name="text">
-            <string>Contents</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Contents...</string>
-        </property>
-        <property name="accel">
-            <string></string>
-        </property>
-    </action>
-    <action>
-        <property name="name">
-            <cstring>helpIndexAction</cstring>
-        </property>
-        <property name="text">
-            <string>Index</string>
-        </property>
-        <property name="menuText">
-            <string>&amp;Index...</string>
         </property>
         <property name="accel">
             <string></string>
@@ -907,55 +231,45 @@
             <string></string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>editPreferencesAction</cstring>
+        </property>
+        <property name="text">
+            <string>Preferences</string>
+        </property>
+        <property name="menuText">
+            <string>Preferences</string>
+        </property>
+        <property name="accel">
+            <string>Ctrl+P</string>
+        </property>
+    </action>
 </actions>
 <connections>
     <connection>
-        <sender>fileNewAction</sender>
+        <sender>fileDTMFAction</sender>
         <signal>activated()</signal>
         <receiver>ShtoomMainWindow</receiver>
-        <slot>fileNew()</slot>
+        <slot>fileDTMF()</slot>
     </connection>
     <connection>
-        <sender>fileOpenAction</sender>
+        <sender>fileDebugAction</sender>
         <signal>activated()</signal>
         <receiver>ShtoomMainWindow</receiver>
-        <slot>fileOpen()</slot>
+        <slot>fileDebugging()</slot>
     </connection>
     <connection>
-        <sender>fileSaveAction</sender>
+        <sender>editPreferencesAction</sender>
         <signal>activated()</signal>
         <receiver>ShtoomMainWindow</receiver>
-        <slot>fileSave()</slot>
-    </connection>
-    <connection>
-        <sender>fileSaveAsAction</sender>
-        <signal>activated()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>fileSaveAs()</slot>
-    </connection>
-    <connection>
-        <sender>filePrefsAction</sender>
-        <signal>activated()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>filePrefs()</slot>
+        <slot>editPreferences()</slot>
     </connection>
     <connection>
         <sender>fileExitAction</sender>
         <signal>activated()</signal>
         <receiver>ShtoomMainWindow</receiver>
         <slot>fileExit()</slot>
-    </connection>
-    <connection>
-        <sender>helpIndexAction</sender>
-        <signal>activated()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>helpIndex()</slot>
-    </connection>
-    <connection>
-        <sender>helpContentsAction</sender>
-        <signal>activated()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>helpContents()</slot>
     </connection>
     <connection>
         <sender>helpAboutAction</sender>
@@ -976,193 +290,31 @@
         <slot>hangupButton_clicked()</slot>
     </connection>
     <connection>
-        <sender>dtmfButton2</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton2_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton2</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton2_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton3</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton3_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton3</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton3_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton4</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton4_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton4</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton4_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton5</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton5_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton5</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton5_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton6</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton6_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton6</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton6_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton7</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton7_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton7</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton7_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton8</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton8_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton8</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton8_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton9</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton9_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton9</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton9_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton0</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton0_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButton0</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButton0_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButtonHash</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButtonHash_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButtonHash</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButtonHash_released()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButtonStar</sender>
-        <signal>pressed()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButtonStar_pressed()</slot>
-    </connection>
-    <connection>
-        <sender>dtmfButtonStar</sender>
-        <signal>released()</signal>
-        <receiver>ShtoomMainWindow</receiver>
-        <slot>dtmfButtonStar_released()</slot>
-    </connection>
-    <connection>
-        <sender>pushButton17</sender>
+        <sender>registerButton</sender>
         <signal>clicked()</signal>
         <receiver>ShtoomMainWindow</receiver>
-        <slot>register_clicked()</slot>
+        <slot>registerButton_clicked()</slot>
     </connection>
     <connection>
-        <sender>callSelectionTab</sender>
-        <signal>currentChanged(QWidget*)</signal>
+        <sender>lookupButton</sender>
+        <signal>clicked()</signal>
         <receiver>ShtoomMainWindow</receiver>
-        <slot>callSelectionTab_currentChanged(QWidget*)</slot>
+        <slot>lookupButton_clicked()</slot>
     </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">shtoommainwindow.ui.h</include>
 </includes>
 <slots>
-    <slot>fileNew()</slot>
-    <slot>fileOpen()</slot>
-    <slot>fileSave()</slot>
-    <slot>fileSaveAs()</slot>
-    <slot>filePrefs()</slot>
+    <slot>fileDTMF()</slot>
+    <slot>fileDebugging()</slot>
     <slot>fileExit()</slot>
-    <slot>helpIndex()</slot>
-    <slot>helpContents()</slot>
+    <slot>editPreferences()</slot>
     <slot>helpAbout()</slot>
-    <slot>lookupAddressButton_clicked()</slot>
-    <slot>dtmfButtonHash_clicked()</slot>
-    <slot>dtmfButtonHash_pressed()</slot>
-    <slot>dtmfButtonHash_released()</slot>
-    <slot>dtmfButton0_released()</slot>
-    <slot>dtmfButton0_pressed()</slot>
-    <slot>dtmfButtonStar_pressed()</slot>
-    <slot>dtmfButtonStar_released()</slot>
-    <slot>dtmfButton9_pressed()</slot>
-    <slot>dtmfButton9_released()</slot>
-    <slot>dtmfButton8_pressed()</slot>
-    <slot>dtmfButton8_released()</slot>
-    <slot>dtmfButton7_pressed()</slot>
-    <slot>dtmfButton7_released()</slot>
-    <slot>dtmfButton6_pressed()</slot>
-    <slot>dtmfButton6_released()</slot>
-    <slot>dtmfButton5_pressed()</slot>
-    <slot>dtmfButton5_released()</slot>
-    <slot>dtmfButton4_pressed()</slot>
-    <slot>dtmfButton4_released()</slot>
-    <slot>dtmfButton3_pressed()</slot>
-    <slot>dtmfButton3_released()</slot>
-    <slot>dtmfButton2_pressed()</slot>
-    <slot>dtmfButton2_released()</slot>
     <slot>callButton_clicked()</slot>
     <slot>hangupButton_clicked()</slot>
-    <slot>clearButton_clicked()</slot>
-    <slot>register_clicked()</slot>
-    <slot>muteCheck_stateChanged( int )</slot>
-    <slot>callSelectionTab_currentChanged( QWidget * )</slot>
+    <slot>registerButton_clicked()</slot>
+    <slot>lookupButton_clicked()</slot>
 </slots>
 <pixmapinproject/>
 <layoutdefaults spacing="6" margin="11"/>

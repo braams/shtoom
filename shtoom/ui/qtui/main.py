@@ -1,5 +1,13 @@
 # Copyright (C) 2004 Anthony Baxter
+if __name__ == "__main__":
+    import qt
+    from twisted.internet import qtreactor
+    app=qt.QApplication([])
+    qtreactor.install(app)
+
 from shtoommainwindow import ShtoomMainWindow as ShtoomBaseWindow
+from dtmf import DTMF
+from debugging import Debugging
 
 from shtoom.ui.base import ShtoomBaseUI
 
@@ -7,41 +15,116 @@ import sys
 from twisted.python import log
 from qt import *
 
+
+
+
+import sys
+from twisted.python import log
+
+class DTMF(DTMF):
+    main = None
+
+    def dtmfClose_clicked(self):
+        self.hide()
+
+    def dtmfButtonHash_pressed(self):
+        self.main.startDTMF('#')
+
+    def dtmfButtonHash_released(self):
+        self.main.stopDTMF('#')
+
+    def dtmfButtonStar_pressed(self):
+        self.main.startDTMF('*')
+
+    def dtmfButtonStar_released(self):
+        self.main.stopDTMF('*')
+
+    def dtmfButton1_pressed(self):
+        self.main.startDTMF('1')
+
+    def dtmfButton1_released(self):
+        self.main.stopDTMF('1')
+
+    def dtmfButton2_pressed(self):
+        self.main.startDTMF('2')
+
+    def dtmfButton2_released(self):
+        self.main.stopDTMF('2')
+
+    def dtmfButton3_pressed(self):
+        self.main.startDTMF('3')
+
+    def dtmfButton3_released(self):
+        self.main.stopDTMF('3')
+
+    def dtmfButton4_pressed(self):
+        self.main.startDTMF('4')
+
+    def dtmfButton4_released(self):
+        self.main.stopDTMF('4')
+
+    def dtmfButton5_pressed(self):
+        self.main.startDTMF('5')
+
+    def dtmfButton5_released(self):
+        self.main.stopDTMF('5')
+
+    def dtmfButton6_pressed(self):
+        self.main.startDTMF('6')
+
+    def dtmfButton6_released(self):
+        self.main.stopDTMF('6')
+
+    def dtmfButton7_pressed(self):
+        self.main.startDTMF('7')
+
+    def dtmfButton7_released(self):
+        self.main.stopDTMF('7')
+
+    def dtmfButton8_pressed(self):
+        self.main.startDTMF('8')
+
+    def dtmfButton8_released(self):
+        self.main.stopDTMF('8')
+
+    def dtmfButton9_pressed(self):
+        self.main.startDTMF('9')
+
+    def dtmfButton9_released(self):
+        self.main.stopDTMF('9')
+
+    def dtmfButton0_pressed(self):
+        self.main.startDTMF('0')
+
+    def dtmfButton0_released(self):
+        self.main.stopDTMF('0')
+
+
+class Debugging(Debugging):
+    def debuggingCloseButton_clicked(self):
+        self.hide()
+
+    def debuggingClearButton_clicked(self):
+        self.debuggingTextEdit.clear()
+
 class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
 
     sending = False
     audiosource = None
     cookie = None
     _muted = False
-    _currentTab = None
-    _newCallTab = None
-    _tabcount = 1
 
     def __init__(self, *args, **kwargs):
-        ShtoomBaseWindow.__init__(self, *args, **kwargs)
         from shtoom.ui.logo import logoGif
-        self.pixmapLogo.setPixmap(QPixmap(QByteArray(logoGif)))
-        self._currentTab = self.tab1
-        self._newCallTab = self.tab1
         self._newCallURL = None
-        self._connectedCalls = {}
-        self._pendingCalls = {}
-        self._connectedURLs = {}
-        del self.tab1
-
-    def _createCallTab(self, desc):
-        self._tabcount = self._tabcount + 1
-        tab = QWidget(self.callSelectionTab,
-                            "tab%d"%self._tabcount)
-        self.callSelectionTab.insertTab(tab, QString(desc))
-        return tab
-
-    def _makeNewCallTab(self):
-        tab = self._createCallTab('New Call')
-        self._newCallTab = tab
-        self._newCallURL = None
+        self.dtmf = DTMF()
+        self.dtmf.main = self
+        self.debugging = Debugging()
+        ShtoomBaseWindow.__init__(self, *args, **kwargs)
+        print "init done", self.dtmf, self.debugging
 
     def debugMessage(self, message):
+        print message
         log.msg(message, system='ui')
 
     def statusMessage(self, message):
@@ -60,12 +143,12 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.app.register()
 
     def callButton_clicked(self):
-        sipURL = str(self.addressComboBox.currentText())
-        sipURL = self.addrlookup.lookup(sipURL)
+        sipURL = str(self.addressComboBox.currentText()).strip()
+        if not sipURL:
+            return
         self.addressComboBox.setCurrentText(sipURL)
         self.addressComboBox.insertItem(QString(sipURL))
         self._newCallURL = sipURL
-        self.callSelectionTab.setTabToolTip(self._newCallTab, QString(sipURL))
         self.callButton.setEnabled(False)
         defer = self.app.placeCall(sipURL)
         defer.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
@@ -75,15 +158,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.cookie = cookie
         self.hangupButton.setEnabled(True)
         self.statusMessage('Calling...')
-        #self.callSelectionTab.changeTab(self._newCallTab, QString(cookie))
-        self._connectedCalls[cookie] = self._newCallTab
-        self._connectedCalls[self._newCallTab] = cookie
-        self._connectedURLs[cookie] = self._newCallURL
-        #self._makeNewCallTab()
 
     def callFailed(self, e, message=None):
         self.errorMessage("call failed", e.getErrorMessage())
-        self.callSelectionTab.setTabToolTip(self._newCallTab, QString(''))
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
@@ -99,34 +176,12 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
         self.cookie = None
-        tab = self._connectedCalls[cookie]
-        print "removing tab", tab
-        self.callSelectionTab.showPage(self._newCallTab)
-        self.callSelectionTab.changeTab(tab, QString('closing'))
-        self.callSelectionTab.removePage(tab)
-        del self._connectedCalls[cookie]
-        del self._connectedURLs[cookie]
-        del self._connectedCalls[tab]
-
-    def setAudioSource(self, fn):
-        self.audiosource = fn
 
     def getLogger(self):
-        l = Logger(self.debuggingTextEdit)
+        l = Logger(self.debugging.debuggingTextEdit)
         return l
 
-    def clearButton_clicked(self):
-        self.debuggingTextEdit.clear()
-
-    def fileOpen(self):
-        if self.audiosource:
-            fn = self.audiosource
-        else:
-            fn = QString.null
-        fn = QFileDialog.getOpenFileName(fn, QString.null, self)
-        self.audiosource = str(fn)
-
-    def filePrefs(self):
+    def editPreferences(self):
         from prefs import PreferencesDialog
         self.prefs =PreferencesDialog(self, self.app.getOptions())
         self.prefs.show()
@@ -155,102 +210,6 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         else:
             return defer.fail(CallRejected(cookie))
 
-    def dtmfButtonHash_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '#')
-
-    def dtmfButtonHash_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '#')
-
-    def dtmfButtonStar_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '*')
-
-    def dtmfButtonStar_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '*')
-
-    def dtmfButton1_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '1')
-
-    def dtmfButton1_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '1')
-
-    def dtmfButton2_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '2')
-
-    def dtmfButton2_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '2')
-
-    def dtmfButton3_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '3')
-
-    def dtmfButton3_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '3')
-
-    def dtmfButton4_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '4')
-
-    def dtmfButton4_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '4')
-
-    def dtmfButton5_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '5')
-
-    def dtmfButton5_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '5')
-
-    def dtmfButton6_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '6')
-
-    def dtmfButton6_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '6')
-
-    def dtmfButton7_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '7')
-
-    def dtmfButton7_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '7')
-
-    def dtmfButton8_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '8')
-
-    def dtmfButton8_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '8')
-
-    def dtmfButton9_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '9')
-
-    def dtmfButton9_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '9')
-
-    def dtmfButton0_pressed(self):
-        if self.cookie is not None:
-            self.app.startDTMF(self.cookie, '0')
-
-    def dtmfButton0_released(self):
-        if self.cookie is not None:
-            self.app.stopDTMF(self.cookie, '0')
-
     def muteCheck_stateChanged(self,val):
         if val:
             self._muted = True
@@ -262,23 +221,19 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
             else:
                 self.app.unmuteCall(self.cookie)
 
-    def callSelectionTab_currentChanged(self, tab):
-        cookie = self._connectedCalls.get(tab)
-        if cookie:
-            print "switching to", cookie
-            self.app.switchCallAudio(cookie)
-            url = self._connectedURLs[cookie]
-            self.addressComboBox.setCurrentText(QString(url))
-            self.addressComboBox.setEnabled(False)
-            self.callButton.setEnabled(False)
-            self.hangupButton.setEnabled(True)
-        elif tab == self._newCallTab:
-            print "selected 'new call' tab"
-            self.addressComboBox.setEnabled(True)
-            self.callButton.setEnabled(True)
-            self.hangupButton.setEnabled(False)
-        elif tab in self._pendingCalls:
-            print "ERROR, no widget %r, have %r"%(tab, self._connectedCalls)
+    def startDTMF(self, key):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, key)
+
+    def stopDTMF(self, key):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, key)
+
+    def fileDTMF(self, *args):
+        self.dtmf.show()
+
+    def fileDebugging(self, *args):
+        self.debugging.show()
 
 class Logger:
     def __init__(self, textwidget):
@@ -287,3 +242,9 @@ class Logger:
         pass
     def write(self, text):
         self._t.append(text)
+
+if __name__ == "__main__":
+    from twisted.internet import reactor
+    UI = ShtoomMainWindow()
+    UI.show()
+    reactor.run()
