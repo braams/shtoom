@@ -161,7 +161,7 @@ class _StunBase(object):
         pkt = struct.pack('!hh16s', mt, pktlen, tid) + avstr
         if STUNVERBOSE:
             print "sending request with %d avpairs to %r (in state %s)"%(
-                                        len(avpairs), server, getattr(self, '_stunState'))
+                                        len(avpairs), server, self._stunState)
         self.transport.write(pkt, server)
 
 class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
@@ -380,6 +380,7 @@ class StunHook(_StunBase):
         self._pending = {}
         self.servers = servers
         self.expectedTID = None
+        self._stunState = 'hook'
         super(StunHook, self).__init__(*args, **kwargs)
 
     def initialStunRequest(self, address):
