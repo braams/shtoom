@@ -3,7 +3,7 @@ from twisted.trial import unittest
 
 from shtoom.audio.converters import Codecker, _Codec, MediaLayer, DougConverter
 from shtoom.audio.converters import MulawCodec, NullCodec, PassthruCodec
-from shtoom.rtp.formats import PT_PCMU, PT_RAW, PT_CN, PT_QCELP
+from shtoom.rtp.formats import PT_PCMU, PT_RAW, PT_CN, PT_QCELP, PT_GSM
 from shtoom.rtp.packets import RTPPacket
 
 from shtoom.avail import codecs
