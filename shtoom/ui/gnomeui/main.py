@@ -115,6 +115,89 @@ class ShtoomWindow(ShtoomBaseUI):
     def statusMessage(self, msg):
         self.status.set_text(msg)
 
+    def on_dtmfButton0_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '0')
+    def on_dtmfButton0_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '0')
+
+    def on_dtmfButton1_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '1')
+    def on_dtmfButton1_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '1')
+
+    def on_dtmfButton2_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '2')
+    def on_dtmfButton2_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '2')
+
+    def on_dtmfButton3_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '3')
+    def on_dtmfButton3_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '3')
+
+    def on_dtmfButton4_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '4')
+    def on_dtmfButton4_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '4')
+
+    def on_dtmfButton5_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '5')
+    def on_dtmfButton5_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '5')
+
+    def on_dtmfButton6_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '6')
+    def on_dtmfButton6_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '6')
+
+    def on_dtmfButton7_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '7')
+    def on_dtmfButton7_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '7')
+
+    def on_dtmfButton8_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '8')
+    def on_dtmfButton8_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '8')
+
+    def on_dtmfButton9_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '9')
+    def on_dtmfButton9_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '9')
+
+    def on_dtmfButtonHash_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '#')
+    def on_dtmfButtonHash_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '#')
+
+    def on_dtmfButtonStar_pressed(self, widget):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, '*')
+    def on_dtmfButtonStar_released(self, widget):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, '*')
 
 class Incoming:
 
