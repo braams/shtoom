@@ -1,33 +1,55 @@
-Shtoom is a pure-python VoIP client, using SIP.
+Shtoom is a pure-python VoIP client and other applications, using SIP.
 
-At the moment it's functionality is pretty limited, but is growing
-quickly:
+At the moment it's functionality is somewhat limited, but is 
+growing quickly:
 
-  - Qt, Tk, Gnome or text user interface (others coming soon)
-  - Can make simple calls and hang them up - tested with kphone, linphone and
-    cisco AS5x00 running 12.3, as well as with Asterisk and Quotient.
-  - Can receive calls.
+  - Qt, Tk, Gnome or text user interface (MFC on Windows and Cocoa on
+  OSX coming soon)
+
+  - Can make and receive calls - tested with kphone, linphone, xten and
+  cisco AS5x00 running 12.3, as well as with Asterisk and Quotient.
+
+  - Can register with SIP proxies/location services. Tested with
+  divmod.com's Quotient, Asterisk, and FWD (http://www.fwd.pulver.com/)
+
   - Uses the G711 ULAW codec by default, or GSM 06.10 (with additional
-    pygsm module installed).
+  pygsm module installed).
+
   - It should work on any system with ossaudiodev, or on most other
-    systems (with the fastaudio/portaudio module installed, see the
-    dependencies section, below)
+  systems (with the fastaudio/portaudio module installed, see the
+  dependencies section, below)
 
 It's been tested (by me) on Linux (Fedora Core 1) using ossaudio, and 
 Windows XP (using portaudio/fastaudio). It _should_ work Mac OS X - but
 this is untested so far.
 
+In addition, there are a number of other programs, including shtam 
+(an answering machine/voicemail), shmessage (a simple announcement 
+server) and shtoomcu (a conferencing server) XXX shtoomcu not checked
+in yet, check back soon.
+
 Dependencies
 ------------
 
+Note that the Windows installer (offline for now) has all dependencies
+included in the installer. You only need these if you're not using the 
+windows installer.
+
 Required:
+
     Python 2.3. It might work on 2.2, but I have no real interest in 
     maintaining that.
+
+    http://www.python.org/2.3.3
+
     Twisted 1.1.1. Note that Twisted 1.1.1 or later is REQUIRED.
+
+    http://www.twistedmatrix.com/
 
 Optional:
 
     Portaudio/fastaudio (see below)
+
     pygsm (see below)
 
 Audio
@@ -47,6 +69,9 @@ shtoom.sf.net website. If someone wants to package up a Mac OSX
 installer, that would be great.
 
 Note that, for me, portaudio doesn't work - I'm using ALSA on Linux.
+The python standard ossaudiodev module works fine with ALSA. ALSA is
+an optional add-on for Linux kernel version 2.4, but is standard in 
+kernel version 2.6.
 
 Codecs
 ======
@@ -63,8 +88,10 @@ the GNU Lesser General Public License - see the file LICENSE for
 details.
 
 Thanks to folks who've contributed:
-   Itamar Shtull-Trauring
-   Jp Calderone
+   Itamar Shtull-Trauring,
+   Jp Calderone,
+   Allan Short for much testing and advice
+
 and thanks to everyone on the Twisted project for producing such a 
 high quality framework.
 

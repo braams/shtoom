@@ -3,7 +3,9 @@ Windows installer: Innoconda, py2exe
 Linux installer: rpmbuilder??, deb?
 
 Before 0.2:
-    - debug: Why does calling from the web in quotient not work?
+    - sip, app: support outbound proxies (e.g. fwdnat.pulver.com:5082, see
+      http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
+    - bug: Why does calling from the web in quotient not work?
     - app: refactor more code into base
     - sip, options: remove hardcoded "anthony baxter" ;)
     - options: find a better place to put options files on windows
