@@ -208,7 +208,7 @@ class Call(object):
     def __init__(self, phone, deferred, uri=None, callid=None):
         self.sip = phone
         self.compDef = deferred
-        self.call_attempts = 0
+        self.auth_attempts = 0
         self._remoteURI = None
         self._remoteAOR = None
         self._localAOR = None
@@ -770,6 +770,7 @@ class Call(object):
         elif message.code == 183:
             self.sip.app.debugMessage('Should handle early media here:\n' + message.toString())
         elif message.code == 200:
+            self.auth_attempts = 0
             if state == 'SENT_INVITE':
                 self.sip.app.debugMessage("Got Response 200\n")
                 self.sendAck(message, startRTP=1)
@@ -793,8 +794,8 @@ class Call(object):
                 self.sip.app.debugMessage("Hung up on call %s"%self.getCallID())
                 self.sip.app.statusMessage("Call Disconnected")
                 return
-            self.call_attempts += 1
-            if self.call_attempts > 5:
+            self.auth_attempts += 1
+            if self.auth_attempts > 5:
                 #print "TOO MANY AUTH FAILURES"
                 self.setState('ABORTED')
                 return
@@ -810,11 +811,14 @@ class Call(object):
                     else:
                         inH, outH = 'proxy-authenticate', 'proxy-authorization'
                     a = message.headers.get(inH)
+                    chal = digestauth.parse_keqv_list(
+                                        parse_http_list(a[0].split(' ',1)[1])
+                                                     )
                     if a:
                         uri = str(self._remoteAOR)
-
                         credDef = self.sip.app.authCred(method, uri,
-                                                retry=(self.call_attempts > 1)
+                                                realm=chal.get('realm','unknown'),
+                                                retry=(self.auth_attempts > 1)
                                                           ).addErrback(log.err)
                         credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth(method,
@@ -831,7 +835,7 @@ class Call(object):
                         # you just get back a 401/407, with no auth challenge.
                         # In this case, retry without an auth header to get another
                         # challenge.
-                        if self.call_attempts > 1:
+                        if self.auth_attempts > 1:
                             self.sendInvite(str(self.dialog.getCallee()))
                         else:
                             log.err("FATAL 401/407 and no auth header")
@@ -903,7 +907,6 @@ class Registration(Call):
 
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
-        print "self.regURI2", self.regURI
         invite = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
@@ -954,9 +957,13 @@ class Registration(Call):
                 else:
                     inH, outH = 'proxy-authenticate', 'proxy-authorization'
                 a = message.headers.get(inH)
+                chal = digestauth.parse_keqv_list(
+                                    parse_http_list(a[0].split(' ',1)[1])
+                                                 )
                 if a:
                     uri = str(self.regURI)
                     credDef = self.sip.app.authCred('REGISTER', uri,
+                                            realm=chal.get('realm','unknown'),
                                             retry=(self.register_attempts > 1)
                                             )
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
