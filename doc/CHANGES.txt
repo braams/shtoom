@@ -1,6 +1,14 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - A major refactoring of SIP internals and the handling of local and
+    remote addresses mean it should be a bit saner and easier to 
+    understand.
+  - A wxWidgets UI was checked in. Thanks to Andy Hird for writing this.
+  - The fastaudio driver, used on windows, received some TLC and should
+    work on a lot more systems.
+  - The return of RTP's connected port, after it was removed from 0.2 
+    release
   - A major refactoring of the use of deferreds mean that things actually
     work a lot more sanely now. I'm chaining deferreds and using them to
     return data in a more orderly fashion now. 

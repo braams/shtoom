@@ -3,8 +3,8 @@ Shtoom is a pure-python VoIP client and other applications, using SIP.
 At the moment it's functionality is somewhat limited, but is 
 growing quickly:
 
-  - Qt, Tk, Gnome or text user interface (MFC on Windows and Cocoa on
-  OSX coming soon)
+  - Qt, Tk, Gnome wxWidgets or text user interface (MFC on Windows and 
+  Cocoa on OSX coming soon)
 
   - Can make and receive calls - tested with kphone, linphone, xten and
   cisco AS5x00 running 12.3, as well as with Asterisk and Quotient.
@@ -90,6 +90,7 @@ details.
 Thanks to folks who've contributed:
    Itamar Shtull-Trauring,
    Jp Calderone,
+   Andy Hird,
    Allan Short for much testing and advice
 
 and thanks to everyone on the Twisted project for producing such a 
