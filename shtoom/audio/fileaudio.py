@@ -31,3 +31,6 @@ def getAudioDevice(mode):
         opened = MultipleConv(AudioFromFiles(app.getPref('audio_infile'), app.getPref('audio_outfile')))
     return opened
 
+def getFileAudio(infile, outfile):
+    return MultipleConv(AudioFromFiles(infile, outfile))
+
