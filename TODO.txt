@@ -1,7 +1,5 @@
 Before 0.1:
-    - Refactor Call instantiation - setupLocalSIP() returns a deferred now
-    (for STUN). Get the code in the SIP Phone object into the Call object.
-    - Hook up Stun client
+    - Hook up STUN for RTP/RTCP
     - Fix Windows audio
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
@@ -11,6 +9,7 @@ Before 0.2:
     - Handle rest of SIP 
         - registration
         - Lookup servers/proxies using multicast, SRV
+        - redirects, auth
         - retransmits &c
         - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
           into shtoom.sdp, kill shtoom.multicast
