@@ -5,7 +5,7 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# $Id: rtp.py,v 1.38 2004/03/06 10:17:56 anthony Exp $
+# $Id: rtp.py,v 1.39 2004/03/07 06:43:49 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -58,7 +58,9 @@ class RTPProtocol(ConnectedDatagramProtocol):
         # RTP port must be even, RTCP must be odd
         # We select a RTP port at random, and try to get a pair of ports
         # next to each other. What fun!
-        rtpPort = 30000 + random.randint(0, 20000)
+        rtpPort = self.app.getPref('force_rtp_port')
+        if not rtpPort:
+            rtpPort = 30000 + random.randint(0, 20000)
         if (rtpPort % 2) == 1:
             rtpPort += 1
         while True:

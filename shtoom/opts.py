@@ -25,6 +25,8 @@ def buildOptions(app):
     network.addOption(ChoiceOption('stun_policy','When should STUN be used?', 'rfc1918', 
                                     choices=['never','always','rfc1918']))
     network.addOption(BooleanOption('use_upnp','Use UPnP to punch holes in firewalls', False))
+
+    network.addOption(NumberOption('force_rtp_port','force RTP to use this port'))
     opts.addGroup(network)
 
     identity = OptionGroup('identity', 'Identity Settings')
