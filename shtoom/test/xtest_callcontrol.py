@@ -1,5 +1,7 @@
 from twisted.internet import reactor, defer
 from twisted.python import log
+import twisted.trial.util
+
 callFlowOutboundHorror = """
 For an outbound call:
   UI calls app.placeCall(), which calls sip.SIP.placeCall(), which 
@@ -92,7 +94,7 @@ class TestUI:
         self.actions.append(('disconnected',cookie))
         print "callDisconnected", self.cookie
         if self.stopOnDisconnect:
-            reactor.stop()
+            self.compdef.callback(None)
 
     def incomingCall(self, description, cookie, defsetup):
         print "incoming"
@@ -224,13 +226,16 @@ class TestCallControl(unittest.TestCase):
         p._rtpProtocolClass = TestRTP
         ui.connectApplication(p)
         p.connectSIP = lambda x=None: None 
+        p._startReactor = False
         p.boot()
         p.sip = TestSip(p)
         for l in range(loopcount):
+            testdef = ui.compdef = defer.Deferred()
             TestRTP.actions = []
             reactor.callLater(0, ui.fakeCall)
             reactor.callLater(0, ui.dropCall)
             p.start()
+            twisted.trial.util.wait(testdef)
             self.assertEquals(au.actions, ['reopen', 'close'])
             self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
             actions = ui.actions
@@ -248,14 +253,17 @@ class TestCallControl(unittest.TestCase):
         ui = TestUI()
         au = TestAudio()
         p = Phone(ui=ui, audio=au)
+        p._startReactor = False
         TestRTP.actions = []
         p._rtpProtocolClass = TestRTP
         ui.connectApplication(p)
+        testdef = ui.compdef = defer.Deferred()
         reactor.callLater(0, ui.fakeCall)
         p.connectSIP = lambda x=None: None 
         p.boot()
         p.sip = TestSip(p)
         p.start()
+        twisted.trial.util.wait(testdef)
         self.assertEquals(au.actions, ['reopen', 'close'])
         self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
         actions = ui.actions
@@ -271,15 +279,20 @@ class TestCallControl(unittest.TestCase):
         ui = TestUI()
         au = TestAudio()
         p = Phone(ui=ui, audio=au)
+        p._startReactor = False
         TestRTP.actions = []
         p._rtpProtocolClass = TestRTP
         ui.connectApplication(p)
+        testdef = ui.compdef = defer.Deferred()
         p.connectSIP = lambda x=None: None 
         p.boot()
         p.sip = TestSip(p)
         d =  p.sip.fakeInbound()
         d.addCallback(p.sip.dropFakeInbound)
         p.start()
+        print "looping"
+        twisted.trial.util.wait(testdef)
+        print "done"
         self.assertEquals(au.actions, ['reopen', 'close'])
         self.assertEquals(TestRTP.actions, ['create', 'start', 'stop'])
         actions = ui.actions
