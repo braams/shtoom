@@ -1,9 +1,3 @@
-name: media port off by 2 error
-to reproduce: run Shtoom behind NAT, let it use STUN to discover externally-visible port numbers
-details: the port numbers returned by STUN are the port numbers Shtoom listens on, but the port numbers it puts in the "media" line in SDP are +2
-more details: I discovered this while trying to demo a Shtoom-derived product.  I worked-around it by telling the other UA to subtract 2 from the RTP port in the SDP.  This worked, enabling the other UA to send media packets to the behind-NAT-Shtoom.
-analysis: As far as I know, this was a bug introduced in local code.
-
 name: wxShtoom call setup confused
 to reproduce: run shtoom with wx GUI, call it from another shtoom
 details: wx Shtoom opens audio channel before user decides whether to accept or decline call; exceptions in log
