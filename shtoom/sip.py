@@ -41,6 +41,7 @@ class Call(object):
         self.uri = None
         self.state = 'NEW'
         self._needSTUN = False
+        self.cancel_trigger = None
         if uri:
             self.uri = uri
         if callid:
@@ -256,6 +257,7 @@ class Call(object):
         self.sendResponse(invite, 180)
         if self.getState() != 'ABORTED':
             self.setState('SENT_RINGING')
+        self.installTeardownTrigger()
 
     def startSendInvite(self, toAddr, init=0):
         print "startSendInvite", init
@@ -302,6 +304,7 @@ class Call(object):
             self.setState('ABORTED')
         else:
             self.setState('SENT_INVITE')
+            self.installTeardownTrigger()
 
     def extractURI(self, val):
         name,uri,params = tpsip.parseAddress(val)
@@ -404,9 +407,19 @@ class Call(object):
             otherwise an error (XXXXX)
         """
 
-    def dropCall(self):
+    def installTeardownTrigger(self):
+        if self.cancel_trigger is None:
+            t = reactor.addSystemEventTrigger('before', 
+                                              'shutdown', 
+                                              self.dropCall, 
+                                              appTeardown=True)
+            self.cancel_trigger = t
+
+    def dropCall(self, appTeardown=False):
         '''Drop call '''
-        # XXX return a deferred.
+        # XXX return a deferred, and handle responses properly
+        if not appTeardown and self.cancel_trigger is not None:
+                reactor.removeSystemEventTrigger(self.cancel_trigger)
         state = self.getState()
         if state == 'NONE':
             self.sip.app.debugMessage("no call to drop")
@@ -464,6 +477,7 @@ class Registration(Call):
         self._needSTUN = False
         self.cseq = random.randint(1000,5000)
         self.nonce_count = 0
+        self.cancel_trigger = None
         print "REGISTRATION STARTED"
 
     def startRegistration(self):
@@ -516,6 +530,22 @@ class Registration(Call):
         if message.code in ( 401, ):
             auth = self.calcAuth(message.headers['www-authenticate'][0])
             self.sendRegistration(auth=auth)
+        elif message.code in ( 200, ):
+            # Woo. registration succeeded.
+            self.setState('REGISTERED')
+            reactor.callLater(840, self.sendRegistration)
+            if self.cancel_trigger is None:
+                t = reactor.addSystemEventTrigger('before', 
+                                                  'shutdown', 
+                                                  self.cancelRegistration)
+                self.cancel_trigger = t
+        else:
+            log.err("don't know about %s for registration"%(message.code))
+
+    def cancelRegistration(self):
+        # Cancel this outstanding registration. Should return a deferred 
+        # to pause the shutdown until we're done.
+        print "XXX todo - cancel registration!"
 
     def calcAuth(self, authhdr):
         from urllib2 import parse_http_list
