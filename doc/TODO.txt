@@ -3,6 +3,7 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 New to-do before 0.3:
+    - handle insane/broken UPnP gateways
     - firewall-seeding OPTIONS
     - make registration wait for NAT discovery
     - merge wizard and preference objects
