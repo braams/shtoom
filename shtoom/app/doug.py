@@ -20,6 +20,8 @@ nteMap = { 0: '0', 1: '1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9
 class DougApplication(BaseApplication):
     __implements__ = ( Application, )
 
+    configFileName = '.dougrc'
+
     def __init__(self, voiceapp, ui=None, audio=None):
         # Mapping from callcookies to rtp object
         self._rtp = {}
@@ -36,9 +38,12 @@ class DougApplication(BaseApplication):
             options = buildOptions(self)
         self.initOptions(options)
         if not self.getPref('logfile'):
+            print "logging to stdout"
             log.startLogging(sys.stdout)
         else:
-            log.startLogging(open(self.getPref('logfile'), 'aU'))
+            file = open(self.getPref('logfile'), 'aU')
+            print "logging to file", file
+            log.startLogging(file)
         BaseApplication.boot(self)
 
     def start(self):
@@ -282,7 +287,7 @@ class DougApplication(BaseApplication):
         app.addOption(StringOption('dougargs',
                                 'pass these arguments to the voiceapp'))
         opts.addGroup(app)
-        opts.setOptsFile('.dougrc')
+        opts.setOptsFile(self.configFileName)
 
     def authCred(self, method, uri, realm='unknown', retry=False):
         "Place holder for now"
