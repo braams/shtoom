@@ -5,10 +5,10 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.12 2003/11/16 06:28:45 anthonybaxter Exp $
+# $Id: rtp.py,v 1.13 2003/11/16 16:02:06 itamar Exp $
 #
 
-import time, signal, struct, random, sys
+import signal, struct, random, os, md5, socket
 from time import sleep, time
 
 from select import select as Select
@@ -156,7 +156,6 @@ class RTPProtocol(DatagramProtocol):
         self.sendFirstData()
 
     def sendFirstData(self):
-        from twisted.internet import reactor
         self.seq = self.genRandom(bits=16)
         self.ts = self.genInitTS()
         self.ssrc = self.genSSRC()
@@ -172,7 +171,7 @@ class RTPProtocol(DatagramProtocol):
         self.LC = LoopingCall(self.nextpacket)
         self.LC.loop(0.020)
         if self.use_setitimer:
-            import signal, itimer 
+            import itimer 
             signal.signal(signal.SIGALRM, self.reactorWakeUp)
             itimer.setitimer(itimer.ITIMER_REAL, 0.009, 0.009)
 
@@ -197,9 +196,8 @@ class RTPProtocol(DatagramProtocol):
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
-        import md5, time, os, socket
         m = md5.new()
-        m.update(str(time.time()))
+        m.update(str(time()))
         m.update(str(os.getuid()))
         m.update(str(os.getgid()))
         m.update(str(socket.gethostname()))
@@ -212,10 +210,9 @@ class RTPProtocol(DatagramProtocol):
 
     def genInitTS(self):
         # Python-ish hack at RFC1889, Appendix A.6
-        import md5, time, os, socket
         m = md5.new()
         m.update(str(self.genSSRC()))
-        m.update(str(time.time()))
+        m.update(str(time()))
         hex = m.hexdigest()
         nums = hex[:8], hex[8:16], hex[16:24], hex[24:]
         nums = [ int(x, 16) for x in nums ]
@@ -224,12 +221,16 @@ class RTPProtocol(DatagramProtocol):
         return ts
 
     def genRandom(self, bits):
-        import md5
+        """Generate up to 128 bits of randomness."""
         m = md5.new()
-        m.update(open('/dev/urandom').read(128))
+        if os.path.exists("/dev/urandom"):
+            m.update(open('/dev/urandom').read(16))
+        else:
+            m.update(str(time()))
+            m.update(str(random.random()))
+            m.update(str(id(self.dest)))
         hex = m.hexdigest()
-        random = int(hex[:bits//4],16)
-        return random
+        return int(hex[:bits//4],16)
 
     def nextpacket(self, n=None, f=None, pack=struct.pack):
         if self.Done:
