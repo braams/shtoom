@@ -71,7 +71,7 @@ def main():
     from twisted.internet import reactor
 
     app = EchoApplication(EchoApp)
-    app.boot(sys.argv[1:])
+    app.boot(args=sys.argv[1:])
     app.start()
 
 if __name__ == "__main__":

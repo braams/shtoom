@@ -21,7 +21,7 @@ def main():
     global app
 
     app = Phone()
-    app.boot(sys.argv[1:])
+    app.boot(args=sys.argv[1:])
 
     app.start()
 

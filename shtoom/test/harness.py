@@ -6,8 +6,6 @@ from twisted.python import log
 
 from time import time
 
-app = None
-
 class TestCall:
     "A fake Call object"
     def __init__(self, d, sip):
@@ -161,13 +159,14 @@ class EchoRTP:
 def main():
     from shtoom.app.phone import Phone
     import sys
-    p = Phone()
-    p._rtpProtocolClass = EchoRTP
-    p.boot()
-    p.sipListener.stopListening()
-    del p.sip, p.sipListener
-    p.sip = TestSip(p)
-    p.start()
+    global app
+    app = Phone()
+    app._rtpProtocolClass = EchoRTP
+    app.boot(args=sys.argv[1:])
+    app.sipListener.stopListening()
+    del app.sip, app.sipListener
+    app.sip = TestSip(app)
+    app.start()
     sys.exit(0)
 
 if __name__ == "__main__":
