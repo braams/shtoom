@@ -1,42 +1,63 @@
 # Copyright (C) 2004 Anthony Baxter
 
-# $Id: rtp.py,v 1.40 2004/03/07 14:41:39 anthony Exp $
-#
-
 import struct
-from time import sleep, time
 
 # This class supports extension headers, but only one per packet.
 class RTPPacket:
     """ Contains RTP data. """
     class Header:
-        def __init__(self, ssrc, pt, ct, seq, ts, marker=0, xhdrtype=None, xhdrdata=''):
+        def __init__(self, ssrc, pt, ct, seq, ts, marker=0,
+                     xhdrtype=None, xhdrdata=''):
             """
-            If xhdrtype is not None then it is required to be an int >= 0 and < 2**16 and xhdrdata is required to be a string whose length is a multiple of 4.
+            If xhdrtype is not None then it is required to be an
+            int >= 0 and < 2**16 and xhdrdata is required to be
+            a string whose length is a multiple of 4.
             """
-            assert isinstance(ts, (int, long,)), "ts: %s :: %s" % (ts, type(ts),)
+            assert isinstance(ts, (int, long,)), "ts: %s :: %s" % (ts, type(ts))
             assert isinstance(ssrc, (int, long,))
-            assert xhdrtype is None or isinstance(xhdrtype, int) and xhdrtype >= 0 and xhdrtype < 2**16
-            assert xhdrtype is None or (isinstance(xhdrdata, str) and len(xhdrdata) % 4 == 0), "xhdrtype: %s, len(xhdrdata): %s, xhdrdata: %s" % (xhdrtype, len(xhdrdata), `xhdrdata`,) # Sorry, RFC standard specifies that len is in 4-byte words, and I'm not going to do the padding and unpadding for you.
+            assert xhdrtype is None or isinstance(xhdrtype, int) \
+                    and xhdrtype >= 0 and xhdrtype < 2**16
+            # Sorry, RFC standard specifies that len is in 4-byte words,
+            # and I'm not going to do the padding and unpadding for you.
+            assert xhdrtype is None or (isinstance(xhdrdata, str) and \
+                    len(xhdrdata) % 4 == 0), \
+                    "xhdrtype: %s, len(xhdrdata): %s, xhdrdata: %s" % (
+                    xhdrtype, len(xhdrdata), `xhdrdata`,)
 
-            self.ssrc, self.pt, self.ct, self.seq, self.ts, self.marker, self.xhdrtype, self.xhdrdata = ssrc, pt, ct, seq, ts, marker, xhdrtype, xhdrdata
+            (self.ssrc, self.pt, self.ct, self.seq, self.ts,
+                 self.marker, self.xhdrtype, self.xhdrdata) = (
+             ssrc,      pt,      ct,      seq,      ts,
+                 marker,      xhdrtype,      xhdrdata)
 
         def netbytes(self):
             "Return network-formatted header."
-            assert isinstance(self.pt, int) and self.pt >= 0 and self.pt < 2**8, "pt is required to be a simple byte, suitable for stuffing into an RTP packet and sending. pt: %s" % self.pt
+            assert isinstance(self.pt, int) and self.pt >= 0 and \
+                self.pt < 2**8, \
+                "pt is required to be a simple byte, suitable " + \
+                "for stuffing into an RTP packet and sending. pt: %s" % self.pt
             if self.xhdrtype is not None:
                 firstbyte = 0x90
-                xhdrnetbytes = struct.pack('!HH', self.xhdrtype, len(self.xhdrdata)/4) + self.xhdrdata
+                xhdrnetbytes = struct.pack('!HH', self.xhdrtype,
+                                    len(self.xhdrdata)/4) + self.xhdrdata
             else:
                 firstbyte = 0x80
                 xhdrnetbytes = ''
-            return struct.pack('!BBHII', firstbyte, self.pt | self.marker << 7, self.seq % 2**16, self.ts, self.ssrc) + xhdrnetbytes
+            return struct.pack('!BBHII', firstbyte,
+                                        self.pt | self.marker << 7,
+                                        self.seq % 2**16,
+                                        self.ts, self.ssrc) + xhdrnetbytes
 
-    def __init__(self, ssrc, seq, ts, data, pt=None, ct=None, marker=0, authtag='', xhdrtype=None, xhdrdata=''):
-        assert pt is None or isinstance(pt, int) and pt >= 0 and pt < 2**8, "pt is required to be a simple byte, suitable for stuffing into an RTP packet and sending. pt: %s" % pt
-        self.header = RTPPacket.Header(ssrc, pt, ct, seq, ts, marker, xhdrtype, xhdrdata)
+    def __init__(self, ssrc, seq, ts, data, pt=None, ct=None, marker=0,
+                 authtag='', xhdrtype=None, xhdrdata=''):
+        assert pt is None or isinstance(pt, int) and pt >= 0 and pt < 2**8, \
+            "pt is required to be a simple byte, suitable for stuffing " + \
+            "into an RTP packet and sending. pt: %s" % pt
+        self.header = RTPPacket.Header(ssrc, pt, ct, seq, ts, marker,
+                                       xhdrtype, xhdrdata)
         self.data = data
-        self.authtag = authtag # please leave this alone even if it appears unused -- it is required for SRTP
+        # please leave this alone even if it appears unused --
+        # it is required for SRTP
+        self.authtag = authtag
 
     def __repr__(self):
         if self.header.ct is not None:
@@ -45,9 +66,15 @@ class RTPPacket:
             ptrepr = "pt %d" % (self.header.pt,)
 
         if self.header.xhdrtype is not None:
-            return "<%s #%d (%s) %s [%s] at %x>"%(self.__class__.__name__, self.header.seq, self.header.xhdrtype, ptrepr, repr(self.header.xhdrdata), id(self))
+            return "<%s #%d (%s) %s [%s] at %x>"%(self.__class__.__name__,
+                                                  self.header.seq,
+                                                  self.header.xhdrtype,
+                                                  ptrepr,
+                                                  repr(self.header.xhdrdata),
+                                                  id(self))
         else:
-            return "<%s #%d %s at %x>"%(self.__class__.__name__, self.header.seq, ptrepr, id(self))
+            return "<%s #%d %s at %x>"%(self.__class__.__name__,
+                                        self.header.seq, ptrepr, id(self))
 
     def netbytes(self):
         "Return network-formatted packet."
@@ -93,7 +120,8 @@ def parse_rtppacket(bytes, authtaglen=0):
         padlen = struct.unpack('!B', bytes[-1])[0]
         if padlen:
             bytes = bytes[:-padlen]
-    return RTPPacket(ssrc, seq, ts, bytes, marker=marker, pt=pt, authtag=authtag, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
+    return RTPPacket(ssrc, seq, ts, bytes, marker=marker, pt=pt,
+                     authtag=authtag, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
 
 
 class NTE:
