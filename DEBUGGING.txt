@@ -1,0 +1,33 @@
+
+
+Notes on sound drivers under Linux
+----------------------------------
+
+ALSA is preferred in all cases. It Just Works. Sound drivers before 
+ALSA on Linux are somewhere between a shambles and a bloody shambles.
+
+There are some sound drivers that are just screwed. Non ALSA drivers 
+having problems:
+
+  i810_audio
+  trident
+
+If you have one of these, you're boned. Install ALSA.
+
+Determining your sound driver
+-----------------------------
+
+Use this command:
+
+  /sbin/lsmod | grep soundcore
+
+For ALSA, it will produce something like 
+
+soundcore              10720  1 snd
+
+The 'snd' is the base ALSA module. For non-ALSA, you'll get 
+something like
+
+soundcore              10720  1 i810_audio
+
+
