@@ -290,14 +290,17 @@ class Call(object):
             # This is a hack. To attempt to get the correct local address
             # on a box with multiple interfaces, we connect to the remote
             # end with a ConnectedDatagramProtocol, and get the local address.
+
+            # This code should be removed - code in shtoom.nat does this better
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
                 lport = getPref('listenport')
                 if lport is None:
                     lport = 5060
-                locAddress = (protocol.transport.getHost()[1], lport)
-                remAddress = protocol.transport.getPeer()[1:3]
+                locAddress = (protocol.transport.getHost().host, lport)
+                peer = protocol.transport.getPeer()
+                remAddress = (peer.host,peer.port)
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress,
                                                                   remAddress), system='sip')
@@ -388,7 +391,16 @@ class Call(object):
         lhost, lport = self.getLocalSIPAddress()
         username = self.sip.app.getPref('username')
         self.dialog.setContact(username, lhost, lport)
-        self.sendResponse(self._invite, 200)
+
+        othersdp = SDP(self._invite.body)
+        sdp = self.sip.app.getSDP(self.cookie, othersdp)
+        if not sdp.hasMediaDescriptions():
+            self.sendResponse(message, 406)
+            self.setState('ABORTED')
+            return
+        body = sdp.show()
+
+        self.sendResponse(self._invite, 200, body)
         self.setState('INVITE_OK')
 
     def rejectedIncoming(self, response):
@@ -425,19 +437,10 @@ class Call(object):
                              'other end sent\n%s'%message.toString())
 
 
-    def sendResponse(self, message, code):
+    def sendResponse(self, message, code, body=None):
         ''' Send a response to a message. message is the response body,
             code is the response code (e.g.  200 for OK)
         '''
-        body = None
-        if message.method == 'INVITE' and code == 200:
-            othersdp = SDP(message.body)
-            sdp = self.sip.app.getSDP(self.cookie, othersdp)
-            if not sdp.hasMediaDescriptions():
-                self.sendResponse(message, 406)
-                self.setState('ABORTED')
-                return
-            body = sdp.show()
         resp = self.dialog.formatResponse(message, code, body)
 
         vias = message.headers['via']
@@ -582,7 +585,7 @@ class Call(object):
         via = okmessage.headers.get('via')
         if type(via) is list: via = via[0]
         via = tpsip.parseViaHeader(via)
-        if via.rport:
+        if via.rport and via.rport != True:
             print "correcting local port to %r"%(via.rport)
             self._localPort = int(via.rport)
         contact = okmessage.headers['contact']
