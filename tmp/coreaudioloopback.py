@@ -21,30 +21,58 @@ class AudioProducer(object):
     prevtime = 0
     tostate = None
     fromstate = None
-    inbuffer = ''
-    outbuffer = ''
+    # Data from the "network", waiting to be fed to the audio device
+    _inbuffer = ''
+    # Data from the audio device, waiting to be fed to the network
+    _outbuffer = ''
     SCALE = 32768/2
 
-    def toStdFmt(self, buffer):
+    def from44KStereo(self, buffer):
+        b, self.tostate = audioop.ratecv(buffer, 2, 2, 44100, 8000, self.tostate)
+        b = audioop.tomono(b, 2, 1, 1)
+        return b
+
+    def toPCMString(self, buffer):
         b = buffer * self.SCALE - self.SCALE/2
         b = b.astype(Int16)
         # Damn. Endianness?  
         b = b.tostring()
-        b, self.tostate = audioop.ratecv(b, 2, 2, 44100, 8000, self.tostate)
-        b = audioop.tomono(b, 2, 1, 1)
         return b
 
-    def to44Kstereo(self, buffer):
+    def to44KStereo(self, buffer):
         b = audioop.tostereo(buffer, 2, 1, 1)
         b, self.fromstate = audioop.ratecv(b, 2, 2, 8000, 44100, self.fromstate)
         return b
 
     def fromPCMString(self, buffer):
         from numarray import fromstring, Int16, Float32
+        print "buffer", len(buffer)
         b = fromstring(buffer, Int16)
         b = b.astype(Float32)
         b = ( b + 32768/2 ) / self.SCALE
         return b
+
+    def maybeLoopback(self):
+        if len(self._outbuffer) > 200:
+            buf, self._outbuffer = self._outbuffer[:200], self._outbuffer[200:]
+            buf = self.to44KStereo(buf)
+            self._inbuffer = self._inbuffer + buf
+
+    def storeSamples(self, samples):
+        "Takes an array of 512 32bit float samples, stores as 8KHz 16bit ints"
+        std = self.toPCMString(samples)
+        std = self.from44KStereo(std)
+        self._outbuffer = self._outbuffer + std
+        self.maybeLoopback()
+
+    def getSamples(self):
+        "Returns an array of 512 32 bit samples"
+        if len(self._inbuffer) < 2048:
+            return None
+        else:
+            res, self._inbuffer = self._inbuffer[:2048], self._inbuffer[2048:]
+            res = self.fromPCMString(res)
+            return res
 
     def callback(self, buffer):
         if self.offset % 100 == 0:
@@ -53,18 +81,12 @@ class AudioProducer(object):
             self.prevtime = now
         self.offset += 1
         try:
-            std = self.toStdFmt(buffer)
-            print "converted 512 samples to %d bytes"%(len(std))
-            out = self.to44Kstereo(std)
-            print "and back to %d bytes"%(len(out))
-            self.inbuffer += out
-            if len(self.inbuffer)  < 2048:
+            self.storeSamples(buffer)
+            out = self.getSamples()
+            if out is None:
                 buffer[:] = zeros(1024)
                 return
             else:
-                std, self.inbuffer = self.inbuffer[:2048], self.inbuffer[2048:]
-                out = self.fromPCMString(std)
-                #print "producing %d samples"%len(out)
                 buffer[:] = out
                 return
         except:
@@ -80,7 +102,7 @@ class AudioProducer(object):
 
 from twisted.internet.task import LoopingCall
 
-class LC:
+class AudioConsumer:
     def __init__(self):
         self.start = time()
 
@@ -99,7 +121,7 @@ def main():
     import coreaudio
     ap = AudioProducer()
     coreaudio.installAudioCallback(ap)
-    lc = LC()
+    lc = AudioConsumer()
     reactor.callLater(0, lc.go)
     reactor.run()
     print "stopping"
