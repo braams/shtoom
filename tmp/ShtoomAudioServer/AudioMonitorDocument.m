@@ -111,8 +111,7 @@ static double _db_to_scalar ( Float32 decibels )
 
 - (void) allocNewConverter
 {
-    // XXX - hack - the 0.5 accomodates for Float32 being twice as big as Int16, and the buffers being smaller?
-    Float64 inScale = (SHTOOM_FREQUENCY / [outputDevice nominalSampleRate]) * 0.5;
+    Float64 inScale = (SHTOOM_FREQUENCY / [outputDevice nominalSampleRate]);
     unsigned inBufferSize = ceil ( inScale * [outputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE );
     if (inBuffer) MTAudioBufferListDispose(inBuffer);
     inBuffer = MTAudioBufferListNew(1, inBufferSize, NO);
@@ -139,8 +138,7 @@ static double _db_to_scalar ( Float32 decibels )
 	[inConverter setGain:adjustLeft forOutputChannel:0];
 	[inConverter setGain:adjustRight forOutputChannel:1];
 
-    // XXX - hack - the 0.5 accomodates for Float32 being twice as big as Int16
-    Float64 outScale = (SHTOOM_FREQUENCY / [inputDevice nominalSampleRate]) * 0.5;
+    Float64 outScale = (SHTOOM_FREQUENCY / [inputDevice nominalSampleRate]);
     unsigned outBufferSize = ceil ( outScale * [inputDevice deviceMaxVariableBufferSizeInFrames] * SR_ERROR_ALLOWANCE );
     if (outBuffer) MTAudioBufferListDispose(outBuffer);
     outBuffer = MTAudioBufferListNew(1, outBufferSize, NO);

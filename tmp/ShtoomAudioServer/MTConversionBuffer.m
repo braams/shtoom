@@ -41,9 +41,9 @@ static OSStatus _FillComplexBufferProc (
 	unsigned channelsThisBuffer;
 	unsigned framesToCopy;
 	unsigned framesInBuffer = [audioBuffer count];
-	
-	framesToCopy = MIN ( *ioNumberFrames, MTAudioBufferListFrameCount ( conversionBufferList ));
-	*ioNumberFrames = framesToCopy;
+    unsigned framesInCount = (*ioNumberFrames * inDescription.mBytesPerFrame) / sizeof(Float32);
+    
+	framesToCopy = MIN ( framesInCount, MTAudioBufferListFrameCount ( conversionBufferList ) );
 	// link the appropriate amount of data into the proto-AudioBufferList in ioData
 	for ( x = 0; x < ioData->mNumberBuffers; x++ )
 	{
@@ -54,6 +54,7 @@ static OSStatus _FillComplexBufferProc (
 	if ( framesInBuffer >= framesToCopy )
 	{
 		[audioBuffer readToAudioBufferList:ioData maxFrames:framesToCopy waitForData:NO];
+        *ioNumberFrames = (framesToCopy * sizeof(Float32)) / inDescription.mBytesPerFrame;
 	}
 	else
 	{
@@ -93,7 +94,7 @@ static OSStatus _FillComplexBufferProc (
 		
 	inDescription  = [[[[[MTCoreAudioStreamDescription nativeStreamDescription] setSampleRate:srcRate] setChannelsPerFrame:srcChans] setIsInterleaved:NO] audioStreamBasicDescription];
 	outDescription = [[[[[MTCoreAudioStreamDescription nativeStreamDescription] setSampleRate:dstRate] setChannelsPerFrame:dstChans] setIsInterleaved:NO] audioStreamBasicDescription];
-	
+    
 	if ( noErr != AudioConverterNew ( &inDescription, &outDescription, &converter ))
 	{
 		converter = NULL; // just in case
@@ -222,6 +223,9 @@ static OSStatus _FillComplexBufferProc (
     double srcRate = srcDescription.mSampleRate;
     double dstRate = dstDescription.mSampleRate;
     
+    srcFrames = (srcFrames * srcDescription.mBytesPerFrame) / sizeof(Float32);
+    dstFrames = (dstFrames * dstDescription.mBytesPerFrame) / sizeof(Float32);
+    
 	conversionFactor = srcRate / dstRate;
 	effectiveDstFrames = ceil ( dstFrames * conversionFactor );
 	totalBufferFrames = [self numBufferFramesForSourceSampleRate:srcRate sourceFrames:srcFrames effectiveDestinationFrames:effectiveDstFrames];	
@@ -349,7 +353,7 @@ static OSStatus _FillComplexBufferProc (
 	UInt32 framesRead;
 		
 	outputChannels = MTAudioBufferListChannelCount(outputBufferList);
-	framesRead = framesToRead;
+	framesRead = (framesToRead * sizeof(Float32)) / inDescription.mBytesPerFrame;
     
     UInt32 inputSize = [audioBuffer count] * sizeof(Float32);
     UInt32 inputPropSize = sizeof(UInt32);
@@ -363,7 +367,7 @@ static OSStatus _FillComplexBufferProc (
         printf("AudioConverterGetProperty err %d ('%s')\n", err, errMsg);
         return 0;
     }
-    framesRead = MIN ( framesToRead, inputSize / sizeof(Float32) );
+    framesRead = MIN ( framesRead, inputSize / inDescription.mBytesPerFrame );
     printf("framesToRead = %d framesRead = %d dstFrameCount = %d outFrameCount = %d\n", framesToRead, framesRead, dstFrameCount, outFrameCount);
     
     if (framesRead == 0) {
@@ -376,23 +380,25 @@ static OSStatus _FillComplexBufferProc (
     memcpy(bufBackup, outputBufferList->mBuffers, numBuffers * sizeof(AudioBuffer));
     
     err = AudioConverterFillComplexBuffer ( converter, _FillComplexBufferProc, self, &framesRead, outputBufferList, NULL );
-	if ( err == noErr )
+	if ( err != noErr )
 	{
-		// XXX requires that outputBufferList is de-interleaved, which it should be
+        char errMsg[5];
+        errMsg[5] = '\0';
+        memcpy(errMsg, &err, sizeof(err));
+        printf("AudioConverterFillComplexBuffer err %d ('%s')\n", err, errMsg);
+        framesRead = 0;
+    } else {
         if (outDescription.mFormatFlags & kLinearPCMFormatFlagIsFloat) {
+            // XXX requires that outputBufferList is de-interleaved, which it should be
             for ( chan = 0; chan < outputChannels; chan++ )
             {
                 samples = outputBufferList->mBuffers[chan].mData;
                 vsmul ( samples, 1, &gainArray[chan], samples, 1, framesRead );
             }
         }
+        framesRead = (framesRead * inDescription.mBytesPerFrame) / sizeof(Float32);
 		MTAudioBufferListCopy ( outputBufferList, 0, dst, 0, framesRead );
-	} else {
-        char errMsg[5];
-        errMsg[5] = '\0';
-        memcpy(errMsg, &err, sizeof(err));
-        printf("AudioConverterFillComplexBuffer err %d ('%s')\n", err, errMsg);
-    }
+	}
     UInt32 newFrameCount =  MTAudioBufferListFrameCount(outputBufferList);
     if (newFrameCount != outFrameCount) {
         printf("newFrameCount = %d\n", newFrameCount);

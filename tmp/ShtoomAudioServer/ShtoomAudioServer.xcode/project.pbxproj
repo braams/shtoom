@@ -126,7 +126,6 @@
 		};
 		29B97314FDCFA39411CA2CEA = {
 			children = (
-				C4984231073B278C00AC5FC1,
 				080E96DDFE201D6D7F000001,
 				29B97315FDCFA39411CA2CEA,
 				29B97317FDCFA39411CA2CEA,
@@ -492,32 +491,6 @@
 			isa = PBXBuildFile;
 			settings = {
 			};
-		};
-		C4984231073B278C00AC5FC1 = {
-			children = (
-				C4984233073B27BE00AC5FC1,
-				C4984234073B27BE00AC5FC1,
-			);
-			isa = PBXGroup;
-			name = SampleUnit;
-			refType = 4;
-			sourceTree = "<group>";
-		};
-		C4984233073B27BE00AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			path = SampleUnit.h;
-			refType = 4;
-			sourceTree = "<group>";
-		};
-		C4984234073B27BE00AC5FC1 = {
-			fileEncoding = 4;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			path = SampleUnit.m;
-			refType = 4;
-			sourceTree = "<group>";
 		};
 		C4B775EE073B56E5001FE78F = {
 			fileRef = 29B97316FDCFA39411CA2CEA;
