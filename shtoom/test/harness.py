@@ -161,6 +161,7 @@ def main():
     import sys
     global app
     app = Phone()
+    app._NATMapping = False
     app._rtpProtocolClass = EchoRTP
     app.boot(args=sys.argv[1:])
     app.sipListener.stopListening()
