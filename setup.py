@@ -13,7 +13,7 @@ from shtoom import __version__
 class DependencyFailed(Exception): pass
 class VersionCheckFailed(DependencyFailed): pass
 
-import sys
+import sys, os
 if sys.version < '2.3':
     raise VersionCheckFailed("Python 2.3 or later is required")
 
@@ -38,6 +38,31 @@ if py2exe is not None:
 else:
     addnl = {}
 
+DataGlobs = ['*.glade','*.gladep','*.gif', '*.png']
+
+def getDataFiles():
+    import fnmatch
+    files = []
+    out = []
+    for path, dirnames, filenames in os.walk('shtoom'):
+        if '.svn' in dirnames: 
+            dirnames.remove('.svn')
+        wanted = []
+        for glob in DataGlobs:
+            wanted.extend(fnmatch.filter(filenames, glob))
+        if wanted:
+            files.extend([os.path.join(path, x) for x in wanted])
+    pkgdir = 'lib/python%d.%d/site-packages'%(sys.version_info[:2])
+    for f in files:
+        out.append([os.path.join(pkgdir,os.path.dirname(f)),(f,)])
+    return out
+
+if sys.version_info < (2,4):
+    addnl['data_files'] = getDataFiles()
+else:
+    addnl['data_files'] = []
+    addnl['package_data'] = {'': DataGlobs}
+
 setup(
     name = "shtoom",
     version = __version__,
@@ -48,13 +73,13 @@ setup(
     packages = ['shtoom', 'shtoom.address', 'shtoom.multicast', 'shtoom.avail',
                 'shtoom.ui', 'shtoom.rtp', 'shtoom.ui.qtui',
                 'shtoom.ui.gnomeui', 'shtoom.ui.qtui', 'shtoom.ui.webui',
+                'shtoom.ui.webui.images',
                 'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
                 'shtoom.audio', 'shtoom.app', 'shtoom.doug', 'shtoom.compat' ],
     scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py',
                'scripts/shmessage.py', 'scripts/shecho.py',
               ],
-    package_data = {'': ['*.glade','*.gladep','*.gif', '*.png']},
     classifiers = [
        'Development Status :: 3 - Alpha',
        'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
@@ -68,5 +93,3 @@ setup(
     **addnl
 )
 
-if sys.version_info < (2, 4):
-    print "You'll need to install the .glade file from shtoom/ui/gnomeui by hand :-("
