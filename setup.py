@@ -78,6 +78,7 @@ setup(
                 'shtoom.audio', 'shtoom.app', 'shtoom.doug', 'shtoom.compat' ],
     scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py',
                'scripts/shmessage.py', 'scripts/shecho.py',
+               'scripts/shtoominfo.py',
               ],
     classifiers = [
        'Development Status :: 3 - Alpha',
