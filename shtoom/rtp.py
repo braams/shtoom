@@ -158,6 +158,11 @@ class RTPProtocol(DatagramProtocol):
                 del self._socketCompleteDef
                 d.callback(self.cookie)
 
+    def connectionRefused(self):
+        log.err("RTP got a connection refused, ending call")
+        self.Done = True
+        self.app.dropCall(self.cookie)
+
     def whenDone(self, cbDone):
         self._cbDone = cbDone
 
@@ -192,6 +197,8 @@ class RTPProtocol(DatagramProtocol):
         log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest))
         hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
         self.transport.write(hdr+chr(0), self.dest)
+        if hasattr(self.transport, 'connect'):
+            self.transport.connect(*self.dest)
 
     def reactorWakeUp(self, n, f, reactor=reactor):
         reactor.wakeUp()
