@@ -31,7 +31,12 @@ class SDPTests(unittest.TestCase):
 
     def testParseShowSDP(self):
         from shtoom.sdp import SDP
+        ae = self.assertEqual
         sdp1 = SDP(sdptext1)
+        audio1 = sdp1.getMediaDescription('audio')
+        ae(audio1.rtpmap.keys(), [0,3])
+        video1 = sdp1.getMediaDescription('video')
+        ae(video1.rtpmap.keys(), [31])
         self.assertEquals(sdp1.show(), sdptext1)
 
     def testIntersectSDP(self):
@@ -91,6 +96,7 @@ m=audio 49170 RTP/AVP 0 3\r
 a=rtpmap:0 PCMU/8000\r
 a=rtpmap:3 GSM/8000\r
 m=video 51372 RTP/AVP 31\r
+a=rtpmap:31 H261/90000/1\r
 m=application 32416 udp wb\r
 a=orient:portrait\r
 """
@@ -136,6 +142,7 @@ m=audio 49170 RTP/AVP 3 101\r
 a=rtpmap:3 GSM/8000\r
 a=rtpmap:101 speex/8000\r
 m=video 51372 RTP/AVP 31\r
+a=rtpmap:31 H261/90000/1\r
 """
 
 sdptext5 = """v=0\r
@@ -153,6 +160,7 @@ a=rtpmap:3 GSM/8000\r
 a=rtpmap:101 telephone-event/8000\r
 a=rtpmap:102 speex/8000\r
 m=video 51372 RTP/AVP 31\r
+a=rtpmap:31 H261/90000/1\r
 """
 
 sdptext6 = """v=0\r
