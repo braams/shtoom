@@ -9,6 +9,8 @@ from twisted.trial import util
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import Protocol, Factory, DatagramProtocol
 
+import random
+
 def logerr(failure):
     print "logerr", failure
     print failure.value
@@ -66,7 +68,7 @@ class MapperTest(unittest.TestCase):
         self.checkUPnP()
         mapper = UPnPMapper()
         uprot = DatagramProtocol()
-        uport = reactor.listenUDP(0, uprot)
+        uport = reactor.listenUDP(random.randint(10000,26000), uprot)
         class tfactory(Factory):
             protocol = Protocol
         tport = reactor.listenTCP(0, tfactory())
