@@ -10,6 +10,7 @@ Before 0.1:
       2. if called broken address (e.g. "sip:") can't hang up
 
 Before 0.2:
+    - EsounD support for Gnome, aRts for KDE
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
       that supports UPnP (Thanks, divmod!) Specs are available from
       http://www.upnp.org/resources/standards.asp
