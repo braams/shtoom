@@ -34,12 +34,16 @@ class TCPAudioProtocol(Protocol):
         rval, self.readbuffer = self.readbuffer[:bytes], self.readbuffer[bytes:]
         return rval
 
+
+class TCPAudioFactory(Factory):
+    protocol = TCPAudioProtocol
+
+
 class TCPAudioDevice(baseaudio.AudioDevice):
 
     def __init__(self, port=SHTOOM_PORT):
         self.connection = None
-        self.factory = factory = Factory()
-        factory.protocol = TCPAudioProtocol
+        self.factory = factory = TCPAudioFactory()
         factory.device = self
         from twisted.internet import reactor
         self.connector = reactor.listenTCP(port, factory, interface='127.0.0.1')
