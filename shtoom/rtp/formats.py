@@ -86,8 +86,8 @@ PT_MP2T =       VideoPTMarker('MP2T', clock=90000, pt=33)
 PT_H263 =       VideoPTMarker('H263', clock=90000, pt=34)
 
 TryCodecs = OrderedDict() 
-TryCodecs[PT_GSM] = codecs.gsm
 TryCodecs[PT_SPEEX] = codecs.speex
+TryCodecs[PT_GSM] = codecs.gsm
 TryCodecs[PT_DVI4] = codecs.dvi4
 TryCodecs[PT_ILBC] = codecs.ilbc
 
