@@ -1,3 +1,11 @@
+Shtoom Coding Standards
+-----------------------
+
+78 character line lengths.
+4 space indents (no tabstops!)
+ideally, run through reindent.py 
+where possible, new code gets a test suite
+
 Working with Branches in Subversion
 -----------------------------------
 
@@ -12,15 +20,18 @@ Sample::
  cd somedir
  # Either:
      svn co $ShtoomRoot/branches/$branchName 
-     cd branchtesting
+     cd $branchName
  # Or
      cp -a svntrunk $branchName
      cd $branchName
      svn switch $ShtoomRoot/branches/$branchName 
- # Make a note of the revision you branched from, or from inside the
- # branch checkout, 'svn up ; svn log --stop-on-copy' and find the 
- # last mentioned revision
- branchRev=671
+ 
+ # Make a note of the revision you branched from - 
+ svn ps branchRoot 1043 
+ svn ps trunkURI $ShtoomRoot/trunk/shtoom
+
+ # Merging
+ branchRev=`svn pg branchRoot` 
  cd trunk-wc
  svn merge -r$branchRev:HEAD $ShtoomRoot/branches/$branchName 
  svn stat
