@@ -107,10 +107,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self.app.register()
 
     def callConnected(self, cookie):
-        self.statusMessage("Call connected: %r"%(e))
+        self.statusMessage("Call connected")
 
     def callDisconnected(self, cookie, message):
-        self.statusMessage("Call disconnected: %r"%(message))
+        status = "Call disconnected"
+        if message: 
+            status = "%s: %r"%(status, message)
+        self.statusMessage(status)
         self._hangupButton.config(state=DISABLED)
         self._callButton.config(state=NORMAL)
         self.cookie = None
