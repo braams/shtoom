@@ -31,7 +31,7 @@ class ALSAAudioDevice(baseaudio.AudioDevice):
     def write(self, data):
         wrote = self.writedev.write(data)
         if not wrote: log.msg("ALSA overrun")
-            
+
     def close(self):
         log.msg("alsaaudiodev closing")
         del self.writedev

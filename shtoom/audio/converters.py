@@ -162,7 +162,7 @@ class Codecker:
         return self.format
 
     def setDefaultFormat(self, format, noexc=False):
-        if (isinstance(format, AudioPTMarker) 
+        if (isinstance(format, AudioPTMarker)
                 and format not in (PT_CN, PT_xCN)
                 and self.codecs.has_key(format)):
             self.format = format

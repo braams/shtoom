@@ -63,7 +63,7 @@ class BrainDeadPlayoutTests(unittest.TestCase):
 
         ae = self.assertEquals
         for playout in ( BrainDeadPlayout, ): # Add more as I write them
-           
+
             def _packetgen():
                 ts = 0
                 while True:

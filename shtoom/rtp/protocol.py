@@ -234,7 +234,7 @@ class RTPProtocol(DatagramProtocol):
         else:
             cnpt = None
         if cnpt:
-            log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt, 
+            log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt,
                                     self.dest[0], self.dest[1]), system='rtp')
             hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, self.ts,self.ssrc)
             self.transport.write(hdr+chr(0), self.dest)

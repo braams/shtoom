@@ -72,7 +72,7 @@ PT_ILBC =       AudioPTMarker('iLBC',    clock=8000,  params=1)
 #PT_L8 =         AudioPTMarker('L8',      clock=None,  params=1)
 #PT_RED =        AudioPTMarker('RED',     clock=8000,  params=1)
 #PT_VDVI =       AudioPTMarker('VDVI',    clock=None,  params=1)
-PT_NTE =        PTMarker('telephone-event', clock=8000, params=None, 
+PT_NTE =        PTMarker('telephone-event', clock=8000, params=None,
                         fmtp='0-16')
 # Internal shtoom codec. Note that the L16 format, above, is at 44100 KHz.
 PT_RAW =        AudioPTMarker('RAW_L16', clock=8000, params=1)
@@ -85,7 +85,7 @@ PT_MPV =        VideoPTMarker('MPV',  clock=90000, pt=32)
 PT_MP2T =       VideoPTMarker('MP2T', clock=90000, pt=33)
 PT_H263 =       VideoPTMarker('H263', clock=90000, pt=34)
 
-TryCodecs = OrderedDict() 
+TryCodecs = OrderedDict()
 TryCodecs[PT_GSM] = codecs.gsm
 TryCodecs[PT_SPEEX] = codecs.speex
 TryCodecs[PT_DVI4] = codecs.dvi4

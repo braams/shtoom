@@ -26,5 +26,3 @@ def main(application):
     print "UI done"
     log.startLogging(UI.getLogger(), setStdout=False)
     return UI
-
-

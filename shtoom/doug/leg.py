@@ -244,7 +244,7 @@ class BridgeSource(Source):
     def write(self, bytes):
         if self.other is not None:
             self.other.copyData(bytes)
-    
+
     def close(self):
         if self.bridge is not None:
             self.leg._sourceDone(self)
@@ -271,7 +271,7 @@ class Bridge:
     def closeBridge(self, bs):
         # Nothing for now.
         pass
-        
+
 try:
     import numarray
 except ImportError:
@@ -302,5 +302,3 @@ if numarray is not None:
                     self.leg.leg_stopDTMFevent(old)
                     self.leg.leg_startDTMFevent(self.digit)
             self.prev = samp
-
-

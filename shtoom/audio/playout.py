@@ -61,7 +61,7 @@ class BacklogPlayout(_Playout):
 
         if self.expect_seq == None:
             self.expect_seq = packet.seq # First packet. Initialize seq
-        
+
         backlog = len(self.queue)
         if packet.seq == self.expect_seq:
             self.expect_seq = packet.seq+1
@@ -80,7 +80,7 @@ class BacklogPlayout(_Playout):
                     log.msg("BacklogPlayout got hole at %d"%offset)
             elif offset < 0 and offset > -backlog:
                 if self.queue[offset] != None:
-                    if DEBUG: 
+                    if DEBUG:
                         log.msg("BacklogPlayout discarding duplicate packet")
                 else:
                     if DEBUG:
@@ -94,14 +94,14 @@ class BacklogPlayout(_Playout):
             self.count += 1
             if self.count%10==0:
                 print available
-            
+
         if available:
             data = self.queue.pop(0)
             return data
         elif DEBUG:
             log.msg("BacklogPlayout audio underrun")
-	# Note that we should really be doing something better than silence!
+        # Note that we should really be doing something better than silence!
         return '\0'*320
-    
+
 
 Playout = BrainDeadPlayout

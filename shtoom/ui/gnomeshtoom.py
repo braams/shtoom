@@ -23,4 +23,3 @@ def main(application):
     UI.connectApplication(application)
     log.startLogging(UI.getLogger(), setStdout=False)
     return UI
-

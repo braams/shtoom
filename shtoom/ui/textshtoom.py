@@ -22,4 +22,3 @@ def main(application):
     if not app.getPref('logfile'):
         log.startLogging(sys.stdout, setStdout=False)
     return UI
-

@@ -145,4 +145,3 @@ def main(shtoomapp):
     #log.startLogging(wxapp.frame.getLogger(), setStdout=False)
 
     return wxproxy
-

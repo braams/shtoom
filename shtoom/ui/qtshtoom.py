@@ -24,4 +24,3 @@ def main(application):
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), reactor.stop)
 
     return UI
-

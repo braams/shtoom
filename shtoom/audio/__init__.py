@@ -19,7 +19,7 @@ def findAudioInterface():
                      'file': av_audio.fileaudio,
                    }
     allAudioOptions = [
-                        av_audio.alsaaudio, 
+                        av_audio.alsaaudio,
                         av_audio.ossaudio,
                         av_audio.fastaudio,
                         av_audio.osxaudio

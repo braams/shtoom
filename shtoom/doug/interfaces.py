@@ -98,4 +98,3 @@ class ISource:
 
 class ILeg:
     """A Leg is a SIP connection into the voice app"""
-

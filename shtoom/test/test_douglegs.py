@@ -89,6 +89,6 @@ class DougLegTests(unittest.TestCase):
         # XXX should be an exception
         l.rejectCall('because')
         twisted.trial.util.wait(d)
-        # rejectCall triggers an errback, so we get 
+        # rejectCall triggers an errback, so we get
         # Failure(DefaultException(reason))
         ae(a.res.value.args, ('because',))
