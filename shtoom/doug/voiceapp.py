@@ -169,6 +169,9 @@ class VoiceApp(StateMachine):
     def placeCall(self, toURI, fromURI=None):
         print "place call to ", toURI
         self.__appl.placeCall(self.__cookie, toURI, fromURI)
+
+    def hangupCall(self, cookie):
+        self.__appl.dropCall(self.__cookie)
     
     def connectLeg(self, leg):
         self._inbound = leg

@@ -74,3 +74,5 @@ class Leg(object):
             log.msg("can't reject call %s, already answered/rejected"%(
                                                             self.cookie))
     
+    def hangupCall(self):
+        self._voiceapp.hangupCall(self._cookie)

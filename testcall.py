@@ -28,7 +28,7 @@ class PlayingApp(VoiceApp):
         return ( ( CallStartedEvent, self.makeACall), )
 
     def makeACall(self, event):
-        self.placeCall(self.callURL)
+        self.placeCall(self.callURL, 'sip:testcall@divmod.com')
         return ( (CallAnsweredEvent, self.callAnswered),
                  (CallRejectedEvent, self.callFailed), 
                  (Event,            self.unknownEvent), 
@@ -41,14 +41,20 @@ class PlayingApp(VoiceApp):
     def callAnswered(self, event):
         leg = event.getLeg()
 
+        self.leg = leg
+        self.leg.hijackLeg(self)
         username = leg._dialog.getCallee().getURI().username
         print "voiceapp.__start__ to user %s"%(username)
-        self.connectLeg(leg)
         self.mediaPlay(self.announceFile)
         return ( (MediaDoneEvent, self.messageDone),
                )
 
     def messageDone(self, event):
+        self.leg.hangupCall()
+        return ( (CallEndedEvent, self.doneDoneAndDone),
+               )
+
+    def doneDoneAndDone(self, event):
         self.returnResult('done')
 
     def callFailed(self, event):
