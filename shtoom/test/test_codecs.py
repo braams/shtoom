@@ -8,7 +8,14 @@ from shtoom.rtp.packets import RTPPacket
 
 from shtoom.avail import codecs
 
+from shtoom.audio.converters import isLittleEndian
 instr = ''.join([chr(x*32) for x in range(8)]) * 40
+if not isLittleEndian():
+    import array
+    a = array.array('w')
+    a.fromstring(instr)
+    a.byteswap()
+    instr = a.tostring()
 
 class DummyDev:
     # Should have read/write
