@@ -3,8 +3,6 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
-    - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
-      dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - all interfaces must be current and correct
     - doug: use dropCall()'s deferred to generate correct events
     - doug: implement leg bridging (inbound and outbound)

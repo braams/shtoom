@@ -2,7 +2,9 @@ Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
   - massive changes to RTP and SDP handling, to fix a lot of the ugliness
-    under the hood.
+    under the hood. Amongst other things, we now handle dynamic payload 
+    types correctly. Plus, we can do more intelligent things with the RTP
+    we receive. Finally, it sucks much, much less.
   - even under ALSA, some audio devices used by ossaudiodev can only do
     stereo. Handle these broken/idiotic/annoying drivers.
   - -p0 means 'listen on any random port', not 'default port'. Useful for

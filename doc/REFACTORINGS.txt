@@ -10,8 +10,8 @@ areas that are currently blocked.
 [xxx work in progress - please give me comments on details if 
 you're interested in looking at any of these]
 
-SDP/RTP/Payload Types refactoring
----------------------------------
+SDP/RTP/Payload Types refactoring - COMPLETED
+---------------------------------------------
 
 At the moment, the responsibility for the handling of RTP payload
 types is smeared over a few pieces of code. This means, for instance,
@@ -40,7 +40,8 @@ as it's going away soon.
  ``Import testing'' section, below.
 
 
-This refactoring is in progress on the branch rtp-sdp-refactor.
+This refactoring is in progress on the branch rtp-sdp-refactor, branched
+at r677, and merged at r717.
 
 Call
 ----
