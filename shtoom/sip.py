@@ -32,6 +32,7 @@ class Call(object):
 
     cookie = _callID = uri = None
     sip = None
+    _invite = None
     def __init__(self, phone, deferred, uri=None, callid=None):
         self.sip = phone
         self.compDef = deferred
@@ -150,7 +151,6 @@ class Call(object):
     def getRemoteSIPAddress(self):
         return (self.remote.host, (self.remote.port or 5060))
 
-
     def acceptedCall(self, junk):
         self.sendResponse(self._invite, 200)
         self.setState('INVITE_OK')
@@ -200,10 +200,10 @@ class Call(object):
         resp.addHeader('server', 'Shtoom/%s'%shtoom.Version)
         resp.addHeader('cseq', message.headers['cseq'][0])
         if message.method == 'INVITE' and code == 200:
-            if message.headers.get('contact'):
-                resp.addHeader('contact', message.headers['contact'][0])
-            else:
-                resp.addHeader('contact', message.headers['to'][0])
+            lhost, lport = self.getLocalSIPAddress()
+            username = self.sip.app.getPref('username')
+            resp.addHeader('contact', '<sip:%s@%s:%s>'%(
+                                        username, lhost, lport))
             # We include SDP here
             resp.addHeader('content-type', 'application/sdp')
             sdp = sdp.show()
@@ -495,7 +495,7 @@ class Call(object):
             return
         elif message.code == 200:
             if state == 'SENT_INVITE':
-                self.sip.app.debugMessage(message.body)
+                self.sip.app.debugMessage("Got Response 200\n")
                 self.sendAck(message, startRTP=1)
             elif state == 'CONNECTED':
                 self.sip.app.debugMessage('Got duplicate OK to our ACK')
