@@ -2,6 +2,10 @@
 # Copyright (C) 2004 Anthony Baxter
 
 from distutils.core import setup
+try:
+    import py2exe
+except:
+    pass
 
 from shtoom import Version
 
