@@ -160,7 +160,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.SetStatusText('Not connected')
         self.cookie = False
 
-    def incomingCall(self, description, cookie):
+    def incomingCall(self, description, cookie, defsetup):
         from shtoom.exception import CallRejected
         dlg = wxMessageDialog(self, 'Incoming Call: %s\nAnswer?'%description,
             "Shtoom Call", wxYES_NO|wxICON_QUESTION)
@@ -169,9 +169,9 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             self.cookie = call
             self.updateCallButton(do_call=False)
             self.SetStatusText('Connected to %s'%description)
-            return defer.succeed(cookie)
+            defsetup.addCallback(lambda x: cookie)
         else:
-            return defer.fail(CallRejected())
+            defsetup.addCallback(lambda x: defer.fail(CallRejected()))
 
     def DoErrorLog(self, event):
         self.errorlog.Show(True)

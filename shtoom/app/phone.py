@@ -80,9 +80,7 @@ class Phone(BaseApplication):
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
             # Otherwise we chain callbacks
-            d.addCallback(lambda x: 
-                            self.ui.incomingCall(call.dialog.getCaller(), 
-                                                 cookie))
+            self.ui.incomingCall(call.dialog.getCaller(), cookie, d)
         elif calltype == 'outbound':
             d.addCallback(lambda x, cookie=cookie: cookie )
         else:
@@ -148,6 +146,7 @@ class Phone(BaseApplication):
 
     def endCall(self, callcookie, reason=''):
         rtp = self._rtp.get(callcookie)
+        self._currentCall = None
         if rtp:
             rtp = self._rtp[callcookie]
             rtp.stopSendingAndReceiving()
@@ -155,6 +154,7 @@ class Phone(BaseApplication):
             if self._calls.get(callcookie):
                 del self._calls[callcookie]
             self.closeAudioDevice()
+        print "ending"
         self.ui.callDisconnected(callcookie, reason)
 
     def openAudioDevice(self):
@@ -173,7 +173,8 @@ class Phone(BaseApplication):
 
     def closeAudioDevice(self):
         self._audio.close()
-        self._audio = None
+        self._audioFormat = None
+        #self._audio = None
 
     def receiveRTP(self, callcookie, payloadType, payloadData):
         if self._currentCall != callcookie:
@@ -211,8 +212,8 @@ class Phone(BaseApplication):
         call = self._calls.get(cookie)
         if call:
             call.dropCall()
-        else:
-            self.ui.callDisconnected(None, "no call")
+        #else:
+        #    self.ui.callDisconnected(None, "no call")
 
     def startDTMF(self, cookie, digit):
         rtp = self._rtp[cookie]

@@ -139,7 +139,7 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def preferences_discard(self):
         self.prefs.hide()
 
-    def incomingCall(self, description, cookie):
+    def incomingCall(self, description, cookie, defsetup):
         # XXX not good. Blockage.
         from twisted.internet import defer
         from shtoom.exceptions import CallRejected
@@ -151,9 +151,9 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
             self.cookie = cookie
             self.callButton.setEnabled(False)
             self.addressComboBox.setEnabled(False)
-            return defer.succeed(cookie)
+            defsetup.addCallback(lambda x: cookie)
         else:
-            return defer.fail(CallRejected())
+            defsetup.addCallback(lambda x: defer.fail(CallRejected()))
 
     def dtmfButtonHash_pressed(self):
         if self.cookie is not None:

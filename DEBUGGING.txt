@@ -18,6 +18,7 @@ Some test addresses to try calling:
 
   sip:echotest@divmod.com -- Another echo test
   
+See also the section later titled "Test Harness"
 
 Firewalls
 ---------
@@ -138,5 +139,22 @@ exarkun reports, on selecting the correct sound driver under ALSA:
 my card is "ALi Corporation M5451".  w/ oss, it was using the trident 
 driver.  There is also an alsa driver for trident cards, but it does 
 not work.  The "ALi M5451" alsa driver does, though. 
+
+
+Test Harness
+------------
+
+The script 'shtoom/test/harness.py' is a test harness for running
+the phone. It will bring up the phone, and accepts all the normal
+arguments and options - calling anything will connect to a special
+network layer that echoes back audio. In addition, every 5 seconds it
+checks for a file called 'call.txt' in the current directory, and checks
+it's modification time. If there's no call running, it simulates an
+incoming call. If there's a call, it simulates the remote end hanging
+up. Example::
+
+   % PYTHONPATH=`pwd` python shtoom/test/harness.py --ui qt  &
+   % touch call.txt   # a new incoming call
+   % touch call.txt   # hang it up.
 
 

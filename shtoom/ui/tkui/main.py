@@ -182,10 +182,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
             user, passwd = None, None
         return defer.succeed((user, passwd))
 
-    def incomingCall(self, description, cookie):
+    def incomingCall(self, description, cookie, defsetup):
+        defsetup.addCallback(lambda x: self.popupIncoming(description, cookie))
+
+    def popupIncoming(self, description, cookie):
         # XXX Not good - blockage
-        from twisted.internet import defer
         import tkMessageBox
+        from twisted.internet import defer
         answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
         if answer:
             self.cookie = cookie

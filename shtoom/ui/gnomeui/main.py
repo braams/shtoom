@@ -95,14 +95,12 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
 
-    def incomingCall(self, description, cookie):
+    def incomingCall(self, description, cookie, defsetup):
         from shtoom.exceptions import CallRejected
         # XXX multiple incoming calls won't work
-        d = defer.Deferred()
-        self.incoming.append(Incoming(self, cookie, description, d))
+        self.incoming.append(Incoming(self, cookie, description, defsetup))
         if len(self.incoming) == 1:
             self.incoming[0].show()
-        return d
 
     def _cbAcceptDone(self, result):
         """Called when user accepts/denies call."""

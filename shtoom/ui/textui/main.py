@@ -28,12 +28,12 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         from twisted.internet import reactor
         reactor.stop()
 
-    def incomingCall(self, description, cookie):
+    def incomingCall(self, description, cookie, defsetup):
         defresp = defer.Deferred()
         self._pending = ( cookie, defresp )
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
-        return defresp
+        defsetup.addCallback(lambda x: defresp)
 
     def connectionMade(self):
         self.transport.write("Welcome to shtoom\n>> \n")
