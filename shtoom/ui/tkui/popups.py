@@ -1,6 +1,9 @@
 
 from Tkinter import Toplevel, Tk
 
+if __name__ == "__main__":
+    _ = lambda x:x
+
 
 class Popup(Toplevel):
     deferred = None
@@ -29,7 +32,12 @@ class Popup(Toplevel):
                 d.callback((None,self.addnl))
                 self.addnl = None
 
-    def selected(self, option):
+    def getResult(self):
+        return None
+
+    def selected(self, option=None):
+        if option is None:
+            option = self.getResult()
         self.hideWindow()
         if self.deferred:
             d, self.deferred = self.deferred, None
@@ -70,6 +78,62 @@ class Dialog(Popup):
             if self.initial_focus == self:
                 self.initial_focus = b
             b.focus_set()
+
+class AuthDialog(Popup):
+    message = _('Enter username and password\nfor "%(method)s" at "%(realm)s"')
+
+    def __init__(self, parent, deferred, method, realm, addnl=None):
+        self.deferred = deferred
+        self.method = method
+        self.realm = realm
+        self._saveOK = False
+        Popup.__init__(self, parent, addnl)
+
+    def _saveBoolean(self, *value):
+        self._saveOK = not self._saveOK
+
+    def getResult(self):
+        return (self.uentry.get(), self.pentry.get(), self._saveOK)
+
+    def body(self):
+        print "auth body"
+        from Tkinter import NW, E, W, Frame, Label, Button, Entry, Checkbutton
+        defargs = { 'padx':5, 'pady':5, 'sticky':W }
+
+        self.top = Frame(self)
+        self.top.grid(row=1,column=1,sticky=NW)
+
+        msg = self.message % { 'realm':self.realm, 'method':self.method }
+        self.label = Label(self.top, text=msg, justify='center')
+        self.label.grid(row=1, column=1, columnspan=4, **defargs)
+
+        self.ulabel = Label(self.top, text=_('User Name')+':', justify='left')
+        self.ulabel.grid(row=2, column=1, columnspan=2, **defargs)
+
+        self.uentry = Entry(self.top)
+        self.uentry.grid(row=2, column=3, columnspan=2, **defargs)
+        self.uentry.focus_set()
+
+        self.plabel = Label(self.top, text=_('Password')+':', justify='left')
+        self.plabel.grid(row=3, column=1, columnspan=2, **defargs)
+
+        self.pentry = Entry(self.top, show="*")
+        self.pentry.grid(row=3, column=3, columnspan=2, **defargs)
+
+        self._saveOk = False
+        self.saveCheck = Checkbutton(self.top, command=self._saveBoolean)
+        self.saveCheck.grid(row=4, column=1, columnspan=1, **defargs)
+
+        self.savelabel = Label(self.top, 
+                                text=_('Save this username and password'))
+        self.savelabel.grid(row=4, column=2, columnspan=3, **defargs)
+
+        defargs['sticky'] = W
+        self.cancelb = Button(self.top, text=_('Cancel'), command=self.cancel)
+        self.cancelb.grid(row=5, column=3, columnspan=1, **defargs)
+
+        self.okb = Button(self.top, text=_('OK'), command=self.selected)
+        self.okb.grid(row=5, column=4, columnspan=1, **defargs)
 
 class MovingDialog(Dialog):
     "A Dialog that slides in on the bottom right"
@@ -143,11 +207,21 @@ if __name__ == "__main__":
         popup = MovingDialog(main, d, 'hello world', ('OK', 'Cancel'))
         d.addCallback(optionClicked)
 
+    def oops(failure):
+        print "arg", failure
+
+    def popupAuth():
+        print "popup"
+        d = defer.Deferred()
+        popup = AuthDialog(main, d, 'INVITE', 'fwd.pulver.com')
+        d.addCallback(optionClicked)
+        d.addErrback(oops)
+
     def ping():
         print "ping"
     
     p = LoopingCall(ping)
     p.start(0.5)
     reactor.callLater(0, mainWindow)
-    reactor.callLater(1, popupWindow)
+    reactor.callLater(1, popupAuth)
     reactor.run()
