@@ -38,7 +38,7 @@ def findAudioInterface():
 
 _device = None
 
-def getAudioDevice(mode='ignored'):
+def getAudioDevice(mode='ignored', *ignored):
     global _device
     if _device is None:
         audioint = findAudioInterface()
