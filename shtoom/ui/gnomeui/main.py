@@ -66,7 +66,10 @@ class ShtoomWindow(ShtoomBaseUI):
         self.address.entry.set_text("")
 
     def on_preferences_activate(self, widget):
-        self.statusMessage("Editing Preferences with Gnome UI not supported yet.")
+        #self.statusMessage("Editing Preferences with Gnome UI not supported yet.")
+        from prefs import PreferencesDialog
+        p = PreferencesDialog(self.xml.get_widget("callwindow"), self, self.app.getOptions())
+        p.show()
 
     def on_quit_activate(self, widget):
         reactor.stop()
@@ -241,4 +244,4 @@ class Incoming:
         if self.current:
             self.main.acceptDialog.hide()
         self.deferredResponse.errback(CallNotAnswered)
-        del self.deferredSetup
+        del self.deferredResponse
