@@ -174,6 +174,6 @@ class Logger:
     def flush(self):
         pass
     def write(self, text):
-        self._t.insert('end', msg+'\n')
+        self._t.insert('end', text+'\n')
         self._t.yview('end')
 
