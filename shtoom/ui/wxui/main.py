@@ -168,14 +168,13 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             'Re-register by entering new details in the identity preferences.\nContinue registering?',
             "Register", wxYES_NO|wxICON_QUESTION)
         accept = dlg.ShowModal()
-        if wxID_YES:
+        if accept == wxID_YES:
             self.app.register()
 
     def DoPreferences(self, event):
         dlg = PreferencesDialog(main=self, opts=self.app.getOptions())
         val = dlg.ShowModal()
         if val == wxID_OK:
-            print "Saving..."
             dlg.savePreferences(self.app)
 
     def getHistoryFilename(self):
@@ -219,6 +218,9 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.SetSize((-1, newheight))
         self.Show(1)
 
+    def debugSize(self):
+        print "size=",self.GetSize()
+
     def OnAdvanced(self, event):
         # Hide the extended interface. Basically the last slot in the
         # frames sizer. Modifies the advanced button label. Fixes up window
@@ -245,7 +247,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             self.button_advanced.SetToolTipString("Hide extra controls")
         #self.Layout()
         #sizer.Layout()
-        sizer.Fit(self)
+        #sizer.Fit(self)
         #sizer.SetSizeHints(self)
         self.UpdateHeight(newheight)
 
