@@ -5,7 +5,9 @@ Before 0.1:
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
     - lots more error handling
-    - Hang up a phone call that is still "ringing"
+    - Hang up a phone call that is still "ringing":
+      1. doesn't seem to stop RTP/RTCP udp ports
+      2. if called broken address (e.g. "sip:") can't hang up
 
 Before 0.2:
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
