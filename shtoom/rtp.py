@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.25 2003/12/21 16:38:33 itamar Exp $
+# $Id: rtp.py,v 1.26 2004/01/10 11:32:12 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -32,6 +32,8 @@ class RTPProtocol(DatagramProtocol):
     Also manages a RTCP instance.
     """
     
+    _stunAttempts = 0
+
     if itimer:
         use_setitimer = 1
     else:
@@ -51,8 +53,16 @@ class RTPProtocol(DatagramProtocol):
 
 	    Returns a Deferred, which is triggered when the sockets are 
 	    connected, and any STUN has been completed. The deferred 
-	    callback will be passed (extIP, extPort).
+	    callback will be passed (extIP, extPort). (The port is the RTP
+            port.) We don't guarantee a working RTCP port, just RTP.
         """
+        self.needSTUN=needSTUN
+        d = defer.Deferred()
+        self._socketCompleteDef = d
+        self._socketCreationAttempt(locIP)
+        return d
+
+    def _socketCreationAttempt(self, locIP=None):
         from twisted.internet.error import CannotListenError
         import rtcp
         self.RTCP = rtcp.RTCPProtocol()
@@ -84,19 +94,18 @@ class RTPProtocol(DatagramProtocol):
             else:
                 break
         #self.rtpListener.stopReading()
-        if needSTUN is False:
+        if self.needSTUN is False:
             # The pain can stop right here
             self._extRTPPort = rtpPort
             self._extIP = locIP
-            d = defer.Deferred()
+            d = self._socketCompleteDef 
+            del self._socketCompleteDef 
             d.callback((locIP, rtpPort))
         else:
             # If the NAT is doing port translation as well, we will just 
             # have to try STUN and hope that the RTP/RTCP ports are on
             # adjacent port numbers. Please, someone make the pain stop.
-            d = defer.Deferred()
-            self.discoverStun(d)
-	return d
+            self.discoverStun()
 
     def getVisibleAddress(self):
 	''' returns the local IP address used for RTP (as visible from the
@@ -104,7 +113,7 @@ class RTPProtocol(DatagramProtocol):
 	'''
         return (self._extIP, self._extRTPPort)
 
-    def discoverStun(self, deferred):
+    def discoverStun(self):
 	''' Uses STUN to discover the external address for the RTP/RTCP
             ports. deferred is a Deferred to be triggered when STUN is 
             complete.
@@ -113,7 +122,6 @@ class RTPProtocol(DatagramProtocol):
         # We have to do STUN for both RTP and RTCP, and hope we get a sane
         # answer.
         from shtoom.stun import StunHook
-        self._stunCompleteDef = deferred
         rtpDef = defer.Deferred()
         rtcpDef = defer.Deferred()
         stunrtp = StunHook(self)
@@ -137,15 +145,26 @@ class RTPProtocol(DatagramProtocol):
             code2, rtcp = rtcpres
             if rtp[0] != rtcp[0]:
                 print "stun gave different IPs for rtp and rtcp", results
-            elif ((rtcp[1] % 2) != 1) or ((rtp[1] % 2) != 0):
+            # We _should_ try and see if we have working rtp and rtcp, but
+            # this seems almost impossible with most firewalls. So just try
+            # to get a working rtp port (an even port number is required).
+            elif ((rtp[1] % 2) != 0):
                 print "stun showed unusable rtp/rtcp ports", results
                 # XXX close connection, try again, tell user
+                if self._stunAttempts > 5:
+                    print "Giving up. Made %d attempts to get a working port"%(
+                        self._stunAttempts)
+                self._stunAttempts += 1
+                self.rtpListener.stopListening()
+                self.rtcpListener.stopListening()
+                self._socketCreationAttempt()
             else:
                 # phew. working NAT
                 print "discovered sane NAT for RTP/RTCP"
                 self._extIP, self._extRTPPort = rtp
-                d = self._stunCompleteDef 
-                del self._stunCompleteDef 
+                self._stunAttempts = 0
+                d = self._socketCompleteDef 
+                del self._socketCompleteDef 
                 d.callback(rtp)
 
     def getSDP(self):
