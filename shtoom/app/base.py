@@ -70,6 +70,7 @@ class BaseApplication:
 
     def stopSIP(self):
         from shtoom.nat import getMapper
+        log.msg("stopping SIP, and unmapping it (%r)"%(self._NATMapping,))
         if self._NATMapping:
             d = getMapper()
             d.addCallback(self._cb_unmapSipPort).addErrback(log.err)
@@ -78,6 +79,7 @@ class BaseApplication:
             self._cb_unmapSipPort(None)
 
     def _cb_unmapSipPort(self, mapper):
+        log.msg("unmapping sip (%r)"%(mapper,))
         if hasattr(self, 'sipListener'):
             if mapper:
                 mapper.unmap(self.sipListener)
