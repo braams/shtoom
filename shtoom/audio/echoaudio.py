@@ -2,7 +2,7 @@
 
 # A special audio device. It merely echoes back what you send it.
 
-from converters import MultipleConv
+from converters import AudioLayer
 
 opened = None
 
@@ -24,4 +24,4 @@ class EchoAudio:
         self._data = ''
 
 def getEchoAudio():
-    return MultipleConv(EchoAudio())
+    return AudioLayer(EchoAudio())

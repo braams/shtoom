@@ -68,8 +68,12 @@ if gsm is None:
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4, FMT_RAW
 
-class MultipleConv(NullConv):
-    """ Goddam Asterisk """
+class AudioLayer(NullConv):
+    """ The AudioLayer sits between the network and the raw
+        audio device. It converts the audio to/from the codec on
+        the network to the format used by the lower-level audio
+        devices (16 bit signed ints at 8KHz).
+    """
 
     def __init__(self, *args, **kwargs):
         self._fmt = FMT_PCMU

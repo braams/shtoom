@@ -1,6 +1,6 @@
 # Copyright (C) 2004 Anthony Baxter
 
-from converters import MultipleConv
+from converters import AudioLayer
 import baseaudio, ossaudiodev
 
 opened = None
@@ -13,32 +13,46 @@ class OSSAudioDevice(baseaudio.AudioDevice):
         dev = ossaudiodev.open(self._mode)
         dev.speed(8000)
         dev.nonblock()
-        dev.channels(1)
+        # Some devices, even using ALSA, will only do stereo! Suckage.
+        ch = dev.channels(1)
         formats = listFormats(dev)
         if not self._wrapped:
             self.dev = dev
         if 'AFMT_S16_LE' in formats:
             dev.setfmt(ossaudiodev.AFMT_S16_LE)
             if self.dev is None:
-                self.dev = MultipleConv(Wrapper(dev))
+                self.dev = AudioLayer(Wrapper(dev, ch))
             else:
-                self.dev.setDevice(Wrapper(dev))
+                self.dev.setDevice(Wrapper(dev, ch))
         else:
             raise ValueError, \
                 "Couldn't find signed 16 bit PCM, got %s"%(
                 ", ".join(formats))
 
 class Wrapper:
-    def __init__(self, d):
+    def __init__(self, d, channels=1):
         self._d = d
+        if channels not in (1, 2): 
+            raise ValueError, channels
+        self._channels = channels
         self.write = self._d.write
         self.close = self._d.close
 
     def read(self):
+        from audioop import tomono
         try:
-            return self._d.read(320)
+            data = self._d.read(320*self._channels)
         except IOError:
             return None
+        if self._channels == 2:
+            data = tomono(data, 2, 1, 1)
+        return data
+
+    def write(self, data):
+        from audioop import tostereo
+        if self._channels == 2:
+            data = tostereo(data, 2, 1, 1)
+        self._d.write(data)
 
     def __getattr__(self,a):
         return getattr(self._d, a)

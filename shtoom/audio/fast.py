@@ -14,7 +14,7 @@ import fastaudio
 # sibling imports
 import interfaces
 
-from converters import MultipleConv
+from converters import AudioLayer
 import baseaudio
 
 class FastAudioDevice(baseaudio.AudioDevice):
@@ -32,7 +32,7 @@ class FastAudioDevice(baseaudio.AudioDevice):
                                                            'int16', 160, 2))
         self._rdev.open()
         if self.dev is None:
-            self.dev = MultipleConv(self._rdev)
+            self.dev = AudioLayer(self._rdev)
         else:
             self.dev.setDevice(self._rdev)
 

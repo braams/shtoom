@@ -10,7 +10,7 @@ from math import sin, sqrt
 from numarray import multiply, add, Int16, Int32, zeros, Float32
 from twisted.internet import reactor
 import sys, traceback, audioop
-from converters import MultipleConv
+from converters import AudioLayer
 from time import time
 
 opened = None
@@ -130,6 +130,6 @@ class OSXAudio(object):
 def getAudioDevice(mode):
     global opened
     if opened is None:
-        opened = MultipleConv(OSXAudio())
+        opened = AudioLayer(OSXAudio())
     return opened
 
