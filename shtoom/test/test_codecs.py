@@ -83,6 +83,7 @@ class CodecTest(unittest.TestCase):
         ae(len(p.data), 33)
         ae(p.pt, PT_GSM)
         ae(len(c.decode(p)), 320)
+        ae(c.encode('\0'*32), None)
 
     def testSpeexCodec(self):
         if codecs.gsm is None:
@@ -95,6 +96,7 @@ class CodecTest(unittest.TestCase):
         ae(len(p.data), 40)
         ae(p.pt, PT_SPEEX)
         ae(len(c.decode(p)), 320)
+        ae(c.encode('\0'*30), None)
 
     def testMediaLayer(self):
         ae = self.assertEquals

@@ -63,7 +63,7 @@ class GSMCodec(_Codec):
 
     def encode(self, bytes):
         if len(bytes) != 320:
-            log.msg("GSM: got short read len = %s"%len(indata))
+            log.msg("GSM: got short read len = %s"%len(bytes))
             return None
         return self.enc.encode(bytes)
 
