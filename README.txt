@@ -4,7 +4,8 @@ At the moment it's functionality is pretty limited, but is growing
 quickly:
 
   - Qt or Tk user interface (others coming soon)
-  - Can make simple calls and hang them up
+  - Can make simple calls and hang them up - tested with kphone, linphone and
+    cisco AS5x00 running 12.3(3a).
   - Uses the G711 ULAW codec by default 
   - It should work on any system with ossaudiodev, or on most other
     systems (with the fastaudio/portaudio module installed, see the
