@@ -16,7 +16,6 @@ Definite before 0.3:
           maybe need a hide/show option
         - Prefs support
     - ui(qt): finish multiple Call UI, including new tab for incoming call
-    - doug: sending of DTMF
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
       dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - stun: timeout the STUN call, generate a nice error

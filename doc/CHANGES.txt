@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - There's now some rough code in doug for detecting inband DTMF
+    (aka the little beepy noises). Thank you _very_ much cisco for
+    not generating oob dtmf events.
   - doug can detect DTMF, play, record, and make outbound calls
   - wx UI is now in a separate thread to the twisted event loop
   - Large amounts of refactoring to call control to make it unit testable.
