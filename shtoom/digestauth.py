@@ -25,7 +25,7 @@ class DigestAuthServer:
     def __init__(self, default_realm, algorithm="MD5"):
         self.default_realm = default_realm
         if algorithm != 'MD5':
-            raise ValueError, "Don't know about algorithm %s"%(MD5)
+            raise ValueError, "Don't know about algorithm %s"%(algorithm)
         self.algorithm = algorithm
         self._user_hashes = {}
 
@@ -91,8 +91,9 @@ class DigestAuthServer:
         from urllib2 import parse_http_list
         H, KD = self.get_algorithm_impls()
         resp = parse_keqv_list(parse_http_list(header))
-        if resp.get('algorithm', 'MD5').upper() != self.algorithm:
-            return False, "unknown algo %s"%algorithm
+        algo = resp.get('algorithm', 'MD5').upper()
+        if algo != self.algorithm:
+            return False, "unknown algo %s"%algo
         user = resp['username']
         realm = resp['realm']
         nonce = resp['nonce']
