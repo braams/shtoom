@@ -56,10 +56,10 @@ class CodecTest(unittest.TestCase):
         ae = self.assertEquals
         ae(p.encode('frobozulate'), 'frobozulate')
         ae(p.decode('frobozulate'), 'frobozulate')
-        p = RTPPacket(PT_RAW, 'farnarkling', ts=None)
+        p = RTPPacket(0, 0, 0, 'farnarkling', ct=PT_RAW)
         ae(c.decode(p), 'farnarkling')
         ae(c.encode('farnarkling').data, 'farnarkling')
-        ae(c.encode('farnarkling').pt, PT_RAW)
+        ae(c.encode('farnarkling').header.pt, PT_RAW.pt)
 
     # XXX testing other codecs - endianness issues? crap.
 
@@ -72,7 +72,7 @@ class CodecTest(unittest.TestCase):
         ae(c.getDefaultFormat(), PT_PCMU)
         ae(len(c.encode(instr).data), 160)
         ae(c.encode(instr).data, ulawout)
-        ae(c.encode(instr).pt, PT_PCMU)
+        ae(c.encode(instr).header.ct, PT_PCMU)
 
     def testGSMCodec(self):
         if codecs.gsm is None:
@@ -83,7 +83,7 @@ class CodecTest(unittest.TestCase):
         ae(c.getDefaultFormat(), PT_GSM)
         p = c.encode(instr)
         ae(len(p.data), 33)
-        ae(p.pt, PT_GSM)
+        ae(p.header.ct, PT_GSM)
         ae(len(c.decode(p)), 320)
         ae(c.encode('\0'*32), None)
 
@@ -96,7 +96,7 @@ class CodecTest(unittest.TestCase):
         ae(c.getDefaultFormat(), PT_SPEEX)
         p = c.encode(instr)
         ae(len(p.data), 40)
-        ae(p.pt, PT_SPEEX)
+        ae(p.header.ct, PT_SPEEX)
         ae(len(c.decode(p)), 320)
         ae(c.encode('\0'*30), None)
 

@@ -12,7 +12,7 @@ from twisted.internet.task import LoopingCall
 from twisted.python import log
 
 from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN
-from shtoom.rtp.packets import RTPPacket, RTPParser
+from shtoom.rtp.packets import RTPPacket, parse_rtppacket
 
 TWO_TO_THE_16TH = 2<<16
 TWO_TO_THE_32ND = 2<<32
@@ -46,14 +46,12 @@ class RTPProtocol(DatagramProtocol):
 
     def setSDP(self, sdp):
         "This is the canonical SDP for the call"
-        from shtoom.rtp.packets import RTPParser
         self.app.selectDefaultFormat(self.cookie, sdp)
         rtpmap = sdp.getMediaDescription('audio').rtpmap
-        ptdict = {}
+        self.ptdict = {}
         for pt, (text, marker) in rtpmap.items():
-            ptdict[pt] = marker
-            ptdict[marker] = pt
-        self.rtpParser = RTPParser(ptdict)
+            self.ptdict[pt] = marker
+            self.ptdict[marker] = pt
 
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
@@ -226,6 +224,26 @@ class RTPProtocol(DatagramProtocol):
         d.addCallback(lambda x: self.rtpListener.stopListening())
         d.addCallback(lambda x: self.rtcpListener.stopListening())
 
+    def _send_packet(self, pt, data, xhdrtype=None, xhdrdata=''):
+        packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
+
+        self.seq += 1
+        self.transport.write(packet.netbytes(), self.dest)
+
+    def _send_cn_packet(self):
+        # PT 13 is CN.
+        if self.ptdict.has_key(PT_CN):
+            cnpt = PT_CN.pt
+        elif self.ptdict.has_key(PT_xCN):
+            cnpt = PT_xCN.pt
+        else:
+            # We need to send SOMETHING!?!
+            cnpt = 0
+
+        log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt, self.dest[0], self.dest[1]), system='rtp')
+
+        self._send_packet(cnpt, chr(127))
+
     def startSendingAndReceiving(self, dest, fp=None):
         self.dest = dest
         self.prevInTime = self.prevOutTime = time()
@@ -248,32 +266,14 @@ class RTPProtocol(DatagramProtocol):
         self.LC.start(0.020)
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
-        # PT 13 is CN.
-        if self.rtpParser.haspt(PT_CN):
-            cnpt = PT_CN.pt
-        elif self.rtpParser.haspt(PT_xCN):
-            cnpt = PT_xCN.pt
-        else:
-            cnpt = None
-        if cnpt:
-            log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt,
-                                    self.dest[0], self.dest[1]), system='rtp')
-            hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, self.ts,self.ssrc)
-            self.transport.write(hdr+chr(0), self.dest)
-        else:
-            log.msg("hack - seeding firewall with PT_PCMU")
-            hdr = struct.pack('!BBHII', 0x80, 0, self.seq, self.ts,self.ssrc)
-            self.transport.write(hdr+(160*chr(0)), self.dest)
-            # We need to send SOMETHING!?!
+        self._send_cn_packet()
         if hasattr(self.transport, 'connect'):
             self.transport.connect(*self.dest)
 
     def datagramReceived(self, datagram, addr):
         # XXX check for late STUN packets here. see, e.g datagramReceived in sip.py
-        if self.rtpParser is None:
-            log.msg("early(?) rtp packet, no rtpParser available")
-            return
-        packet = self.rtpParser.fromnet(datagram, addr)
+        packet = parse_rtppacket(datagram)
+        packet.header.ct = self.ptdict[packet.header.pt]
         if packet:
             self.app.receiveRTP(self.cookie, packet)
 
@@ -340,26 +340,19 @@ class RTPProtocol(DatagramProtocol):
         # when we go from silent->talking, set the marker bit. Other end
         # can use this as an excuse to adjust playout buffer.
         if self.sample is not None:
-            packet = self.sample
+            pt = self.ptdict[self.sample.header.ct]
+            self._send_packet(pt, self.sample.data)
             self.sent += 1
-            data = self.rtpParser.tonet(packet, self.seq, self.ts, self.ssrc)
-            self.transport.write(data, self.dest)
             self.sample = None
-        else:
-            if (self.packets - self.sent) % 100 == 0:
-                if self.rtpParser.haspt(PT_CN):
-                    cn = RTPPacket(PT_CN, chr(127), 0)
-                    cn = self.rtpParser.tonet(cn, self.seq, self.ts, self.ssrc)
-                    self.transport.write(cn, self.dest)
-        self.seq += 1
+        elif (self.packets - self.sent) % 100 == 0:
+            self._send_cn_packet()
+
         # Now send any pending DTMF keystrokes
         if self._pendingDTMF:
             payload = self._pendingDTMF[0].getPayload(self.ts)
             if payload:
-                # XXX Hack. telephone-event isn't always 101!
-                hdr = struct.pack('!BBHII', 0x80, 101, self.seq, self.ts, self.ssrc)
-                self.transport.write(hdr+payload, self.dest)
-                self.seq += 1
+                # XXX FIXME FIXME FIXME! telephone-event isn't always 101!
+                self._send_packet(pt=101, data=payload)
                 if self._pendingDTMF[0].isDone():
                     self._pendingDTMF = self._pendingDTMF[1:]
         try:

@@ -68,8 +68,7 @@ class BrainDeadPlayoutTests(unittest.TestCase):
                 ts = 0
                 seq = 10017
                 while True:
-                    p = RTPPacket(data='', pt=None, ts=ts)
-                    p.seq = seq
+                    p = RTPPacket(0, seq, ts, '')
                     yield p
                     ts += 160
                     seq += 1

@@ -45,33 +45,29 @@ class TestRTP(unittest.TestCase):
             ae(pt, RTPDict[(pt.name.lower(),pt.clock,pt.params or 1)])
 
     def testRTPPacketRoundTrip(self):
-        from shtoom.rtp.packets import RTPParser, RTPPacket
+        from shtoom.rtp.packets import RTPPacket
+        from shtoom.rtp.protocol import parse_rtppacket
         from shtoom.rtp.formats import PT_PCMU, PT_SPEEX, PT_GSM, PT_CN
         ae = self.assertEquals
 
-        ptdict = {}
-        for pt, byte in ((PT_PCMU, 0),(PT_GSM,3),(PT_SPEEX,101),(PT_CN,13)):
-            ptdict[pt] = byte
-            ptdict[byte] = pt
-        parser = RTPParser(ptdict)
         ts = 12345678
         seq = 12345
         ssrc = 100001
         packets = [
-            RTPPacket(PT_PCMU, ''.join([chr(x) for x in range(160)]), 0),
-            RTPPacket(PT_GSM, '\0'*33, 0, 1),
-            RTPPacket(PT_GSM, '\0'*33, 0, 0),
-            RTPPacket(PT_CN, chr(127), 0, 0),
-            RTPPacket(PT_CN, chr(127), 0, 1),
+            RTPPacket(ssrc, seq, ts, ''.join([chr(x) for x in range(160)]), 0, ct=PT_PCMU),
+            RTPPacket(ssrc, seq, ts, '\0'*33, 1, ct=PT_GSM),
+            RTPPacket(ssrc, seq, ts, '\0'*33, 0, ct=PT_GSM),
+            RTPPacket(ssrc, seq, ts, chr(127), 0, ct=PT_CN),
+            RTPPacket(ssrc, seq, ts, chr(127), 1, ct=PT_CN),
                   ]
         for pack in packets:
-            rpack = parser.fromnet(parser.tonet(pack, seq, ts, ssrc), None)
-            ae(pack.pt, rpack.pt)
-            ae(pack.marker, rpack.marker)
+            rpack = parse_rtppacket(pack.netbytes())
+            ae(pack.header.pt, rpack.header.pt)
+            ae(pack.header.marker, rpack.header.marker)
             ae(pack.data, rpack.data)
-            ae(rpack.seq, seq)
-            ae(rpack.ts, ts)
-            ae(rpack.ssrc, ssrc)
+            ae(rpack.header.seq, seq)
+            ae(rpack.header.ts, ts)
+            ae(rpack.header.ssrc, ssrc)
 
     def testSDPGen(self):
         from shtoom.rtp.formats import SDPGenerator, PTMarker

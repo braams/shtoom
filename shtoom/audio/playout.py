@@ -61,22 +61,22 @@ class BacklogPlayout(_Playout):
             raise ValueError("playout got %s instead of bytes"%(type(bytes)))
 
         if self.expect_seq == None:
-            self.expect_seq = packet.seq # First packet. Initialize seq
+            self.expect_seq = packet.header.seq # First packet. Initialize seq
 
         backlog = len(self.queue)
-        if packet.seq == self.expect_seq:
-            self.expect_seq = packet.seq+1
+        if packet.header.seq == self.expect_seq:
+            self.expect_seq = packet.header.seq+1
             if backlog < self.backlog+1:
                 self.queue.append(bytes)
             elif DEBUG:
                 log.msg("BacklogPlayout discarding")
         else:
-            offset = packet.seq-self.expect_seq
+            offset = packet.header.seq-self.expect_seq
             if offset > 0 and offset < 3:
                 # Fill with empty packets
                 self.queue += [None]*offset
                 self.queue.append(bytes)
-                self.expect_seq = packet.seq+1
+                self.expect_seq = packet.header.seq+1
                 if DEBUG:
                     log.msg("BacklogPlayout got hole at %d"%offset)
             elif offset < 0 and offset > -backlog:

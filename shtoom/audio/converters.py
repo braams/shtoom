@@ -202,15 +202,15 @@ class Codecker:
         encaudio = codec.encode(bytes)
         if not encaudio:
             return None
-        return RTPPacket(self.format, encaudio, ts=None)
+        return RTPPacket(0, 0, 0, encaudio, ct=self.format)
 
     def decode(self, packet):
         "Accepts an RTPPacket, emits audio as bytes"
         if not packet.data:
             return None
-        codec = self.codecs.get(packet.pt)
+        codec = self.codecs.get(packet.header.ct)
         if not codec:
-            raise ValueError("can't decode format %r"%packet.pt)
+            raise ValueError("can't decode format %r"%packet.header.ct)
         encaudio = codec.decode(packet.data)
         return encaudio
 
