@@ -1,0 +1,251 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-01-19 20:55+1100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: shtoom/ui/qtui/debugging.py:52
+msgid "Debugging"
+msgstr ""
+
+#: shtoom/ui/qtui/debugging.py:53 shtoom/ui/qtui/dtmf.py:143
+msgid "Close"
+msgstr ""
+
+#: shtoom/ui/qtui/debugging.py:54
+msgid "Clear"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:130 shtoom/ui/qtui/shtoommainwindow.py:114
+#: shtoom/ui/qtui/shtoommainwindow.py:115 shtoom/ui/gnomeui/shtoom.glade:42
+msgid "DTMF"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:131 shtoom/ui/gnomeui/shtoom.glade:885
+msgid "8"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:132 shtoom/ui/gnomeui/shtoom.glade:1000
+msgid "2"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:133 shtoom/ui/gnomeui/shtoom.glade:175
+#: shtoom/ui/gnomeui/shtoom.glade:560 shtoom/ui/gnomeui/shtoom.glade:581
+#: shtoom/ui/gnomeui/shtoom.glade:793
+msgid "*"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:134 shtoom/ui/gnomeui/shtoom.glade:816
+msgid "#"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:135 shtoom/ui/gnomeui/shtoom.glade:1023
+msgid "3"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:136 shtoom/ui/gnomeui/shtoom.glade:931
+msgid "6"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:137 shtoom/ui/gnomeui/shtoom.glade:954
+msgid "5"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:138 shtoom/ui/gnomeui/shtoom.glade:977
+msgid "4"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:139 shtoom/ui/gnomeui/shtoom.glade:908
+msgid "7"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:140 shtoom/ui/gnomeui/shtoom.glade:862
+msgid "9"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:141 shtoom/ui/gnomeui/shtoom.glade:1046
+msgid "1"
+msgstr ""
+
+#: shtoom/ui/qtui/dtmf.py:142 shtoom/ui/gnomeui/shtoom.glade:839
+msgid "0"
+msgstr ""
+
+#: shtoom/ui/qtui/main.py:135 shtoom/ui/tkui/main.py:129
+msgid "ERROR"
+msgstr ""
+
+#: shtoom/ui/qtui/main.py:161
+msgid "Calling..."
+msgstr ""
+
+#: shtoom/ui/qtui/main.py:165 shtoom/ui/tkui/main.py:168
+msgid "Call Failed"
+msgstr ""
+
+#: shtoom/ui/qtui/main.py:172
+msgid "Call Connected"
+msgstr ""
+
+#: shtoom/ui/qtui/main.py:177 shtoom/ui/tkui/main.py:150
+msgid "Call Disconnected"
+msgstr ""
+
+#: shtoom/ui/qtui/prefs.py:96 shtoom/ui/qtui/shtoommainwindow.py:136
+#: shtoom/ui/tkui/main.py:39
+msgid "Help"
+msgstr ""
+
+#: shtoom/ui/qtui/prefs.py:97
+msgid "F1"
+msgstr ""
+
+#: shtoom/ui/qtui/prefs.py:98
+msgid "Save"
+msgstr ""
+
+#: shtoom/ui/qtui/prefs.py:99
+msgid "Alt+S"
+msgstr ""
+
+#: shtoom/ui/qtui/prefs.py:100
+msgid "Cancel"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:107 shtoom/ui/gnomeui/shtoom.glade:9
+msgid "Shtoom"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:108 shtoom/ui/gnomeui/shtoom.glade:148
+msgid "Address:"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:109 shtoom/ui/gnomeui/shtoom.glade:191
+msgid "..."
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:110 shtoom/ui/tkui/main.py:59
+#: shtoom/ui/gnomeui/shtoom.glade:222
+msgid "Call"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:111 shtoom/ui/gnomeui/shtoom.glade:235
+msgid "Hang Up"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:112 shtoom/ui/tkui/main.py:66
+#: shtoom/ui/gnomeui/shtoom.glade:249
+msgid "Register"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:116
+msgid "Show DTMF Window"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:117
+msgid "Ctrl+D"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:118
+#: shtoom/ui/qtui/shtoommainwindow.py:119 shtoom/ui/gnomeui/shtoom.glade:305
+msgid "Debug Log"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:120
+msgid "Show Debugging Log"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:121
+msgid "Ctrl+O"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:122
+#: shtoom/ui/qtui/shtoommainwindow.py:123 shtoom/ui/tkui/main.py:30
+msgid "Exit"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:125
+#: shtoom/ui/qtui/shtoommainwindow.py:126 shtoom/ui/tkui/main.py:38
+msgid "About"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:128
+#: shtoom/ui/qtui/shtoommainwindow.py:129 shtoom/ui/tkui/main.py:34
+msgid "Preferences"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:130
+msgid "Ctrl+P"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:132 shtoom/ui/tkui/main.py:31
+msgid "File"
+msgstr ""
+
+#: shtoom/ui/qtui/shtoommainwindow.py:134 shtoom/ui/tkui/main.py:35
+msgid "Edit"
+msgstr ""
+
+#: shtoom/ui/tkui/main.py:62
+msgid "Hang up"
+msgstr ""
+
+#: shtoom/ui/tkui/main.py:69
+msgid "Mute"
+msgstr ""
+
+#: shtoom/ui/tkui/main.py:75
+msgid "Status"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:82
+msgid "Address_Book"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:189
+msgid "Lookup entry in address book"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:358
+msgid "Shtoom, a VoIP client"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:366
+msgid "Accept call?"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:453
+msgid "Shtoom - Authentication"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:523
+msgid "Some authentication information is required"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:596
+msgid "Password"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:620
+msgid "Username"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:680
+msgid "Save username and password"
+msgstr ""
+
+#: shtoom/ui/gnomeui/shtoom.glade:734
+msgid "Shtoom - dtmf"
+msgstr ""
