@@ -95,7 +95,9 @@ class MultipleConv(NullConv):
         if format is None:
             format = self._fmt
         if format == FMT_PCMU:
-            return audioop.lin2ulaw(self._d.read(), 2)
+            lin = self._d.read()
+            if lin is None: return None
+            return audioop.lin2ulaw(lin, 2)
         elif format == FMT_RAW:
             return self._d.read()
         elif format == FMT_GSM:
@@ -113,7 +115,7 @@ class MultipleConv(NullConv):
             raise ValueError, "Unknown format %s"%(format)
 
     def write(self, data, format):
-        print "audio: write"
+        #print "audio: write"
         if format == FMT_PCMU:
             return self._d.write(audioop.ulaw2lin(data, 2))
         elif format == FMT_RAW:
