@@ -283,7 +283,7 @@ class Call(object):
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        self.uri = invite.headers['from'][0]
+        self.uri = tpsip.parseURL(self.contact)
         self.sendResponse(invite, 180)
         if self.getState() != 'ABORTED':
             self.setState('SENT_RINGING')
@@ -357,7 +357,6 @@ class Call(object):
 
     def sendAck(self, okmessage, startRTP=0):
         from shtoom.multicast.SDP import SDP
-        print "sending ACK"
         username = self.sip.app.getPref('username')
         email_address = self.sip.app.getPref('email_address')
         oksdp = SDP(okmessage.body)
@@ -375,10 +374,9 @@ class Call(object):
         to = okmessage.headers['to']
         if type(to) is list:
             to = to[0]
-        self.uri = self.extractURI(contact)
-        uri = tpsip.parseURL(self.uri)
+        self.uri = tpsip.parseURL(self.extractURI(contact))
 
-        ack = tpsip.Request('ACK', self.uri)
+        ack = tpsip.Request('ACK', self.remote)
         # XXX refactor all the common headers and the like
         ack.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
@@ -394,8 +392,10 @@ class Call(object):
             del self.compDef
         else:
             cb = lambda *args: None
-        log.msg("sending ACK to %s %s"%(uri.host, uri.port or 5060))
-        self.sip.transport.write(ack.toString(), (uri.host, (uri.port or 5060)))
+        addr = self.uri.host, self.uri.port or 5060
+        log.msg("sending ACK to %s %s"%addr)
+        print "sending ACK to %s %s"%addr
+        self.sip.transport.write(ack.toString(), addr)
         self.setState('CONNECTED')
         if startRTP:
             self.sip.app.startCall(self.cookie, (oksdp.ipaddr,oksdp.port), cb)
@@ -404,13 +404,13 @@ class Call(object):
     def sendBye(self):
         username = self.sip.app.getPref('username')
         email_address = self.sip.app.getPref('email_address')
-        uri = self.remote
+        uri = self.uri
         dest = uri.host, (uri.port or 5060)
         bye = tpsip.Request('BYE', self.remote)
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
-        bye.addHeader('to', self.uri)
+        bye.addHeader('to', str(self.uri))
         bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             username, email_address, self.getTag()))
         bye.addHeader('call-id', self.getCallID())
@@ -433,8 +433,8 @@ class Call(object):
         cancel = tpsip.Request('CANCEL', self.remote)
         # XXX refactor all the common headers and the like
         cancel.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
-        cancel.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
-        cancel.addHeader('to', self.uri)
+        cancel.addHeader('cseq', '%s CANCEL'%self.getCSeq(incr=1))
+        cancel.addHeader('to', self.remote)
         cancel.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
                             username, email_address, self.getTag()))
         cancel.addHeader('call-id', self.getCallID())
