@@ -11,7 +11,7 @@ class AuthTest(unittest.TestCase):
 
     def test_sipSimpleAuth(self):
         from shtoom.sip import Registration
-        reg = Registration(None, None)
+        reg = Registration(None)
         resp = reg.calcAuth('REGISTER', 'sip:divmod.com',
                      'Digest realm="asterisk", nonce="24a52b3a"',
                      ('anthony', 'foo'))
