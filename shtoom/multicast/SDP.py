@@ -1,7 +1,6 @@
 # -*- test-case-name: shtoom.test.test_sdp -*-#
 # Copyright (C) 2004 Anthony Baxter
 #
-
 rtpPTDict = {
     0: ('PCMU',8000,1),
     3: ('GSM',8000,1),
@@ -177,23 +176,25 @@ class SimpleSDP:
                                           ((encparams and '/') or ""),
                                            encparams or "")))
     def show(self):
+	from time import time
         out = []
         out.append("v=0")
-        out.append("o=- 0 0 IN IP4 %s"%self.serverIP)
-        out.append("s=<No title>")
-        out.append("i=<No author> <No copyright>")
+	sess = int(time()%1000 * 100)
+        out.append("o=root %d %d IN IP4 %s"%(sess, sess, self.serverIP))
+        out.append("s=session")
+        #out.append("i=<No author> <No copyright>")
+        out.append("c=IN IP4 %s"%(self.serverIP))
         out.append("t=0 0")
         payloads = ' '.join([ str(x[0]) for x in self.rtpmap ])
         out.append("m=%s %s %s %s"%(self.media, self.localPort,
                                     self.transport,payloads))
-        out.append("c=IN IP4 %s"%(self.serverIP))
-        out.append("a=control:streamid=0")
+        #out.append("a=control:streamid=0")
         for payload,mapentry in self.rtpmap:
             out.append("a=rtpmap:%s"%(mapentry))
-        out.append('a=AvgPacketSize:integer;%d'%self.packetsize)
-        out.append('a=MaxPacketSize:integer;%d'%self.packetsize)
+        #out.append('a=AvgPacketSize:integer;%d'%self.packetsize)
+        #out.append('a=MaxPacketSize:integer;%d'%self.packetsize)
         out.append('')
-        s = '\n'.join(out)
+        s = '\r\n'.join(out)
         return s
 
     def intersect(self, other):
