@@ -138,6 +138,23 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         auth, realm, user, password = toks
         self.app.creds.addCred(realm, user, password, save=True)
 
+    def cmd_dtmf(self, line, duration=0.1, delay=0.1):
+        from twisted.internet import reactor
+        initial = 0.2
+        toks = line.split(' ',1)
+        for n, key in enumerate(toks[1]):
+            if key not in '01234567890#*, ':
+                self.transport.write('ignoring unknown key %r\n'%(key))
+                continue
+            if key in ' ,':
+                # pause
+                continue
+            n = float(n)
+            reactor.callLater(initial+n*(duration+delay),
+                lambda k=key: self.app.startDTMF(self._cookie, k))
+            reactor.callLater(initial+n*(duration+delay)+duration,
+                lambda k=key: self.app.stopDTMF(self._cookie, k))
+
     def _timeout_incoming(self, which):
         # Not using 'which' for now
         self.transport.write("CALL NOT ANSWERED\n")
