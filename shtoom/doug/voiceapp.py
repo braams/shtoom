@@ -61,9 +61,10 @@ class VoiceApp(StateMachine):
         self._start(callstart=0)
 
     def va_callstart(self, inboundLeg):
-        self.__legs[inboundLeg.getCookie()] = inboundLeg
-        if self._inbound is None:
-            self._inbound = inboundLeg
+        if inboundLeg is not None:
+            self.__legs[inboundLeg.getCookie()] = inboundLeg
+            if self._inbound is None:
+                self._inbound = inboundLeg
         self._triggerEvent(CallStartedEvent(inboundLeg))
 
     def va_callanswered(self, leg=None):
