@@ -6,11 +6,13 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.3 2003/11/14 08:35:29 anthonybaxter Exp $
+# $Id: rtp.py,v 1.4 2003/11/14 09:07:24 anthonybaxter Exp $
 #
 
 import time, signal, socket, struct
 from time import time, sleep
+
+from select import select as Select
 
 try:
     import itimer
@@ -66,6 +68,8 @@ class RTPProtocol(DatagramProtocol):
             break
             self.rtpPort = rtpPort
             self.rtcpPort = rtcpPort
+            # New approach - let the main timer loop deal with this
+            self.rtpListener.stopReading()
         return (rtpPort, rtcpPort)
 
     def whenDone(self, cbDone):
@@ -124,6 +128,8 @@ class RTPProtocol(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
         # XXX keep stats
         if self.outfp:
+            if len(datagram) != 172:
+                print "datagram len %d!!"%(len(datagram))
             try:
                 self.outfp.write(datagram[12:])
             except IOError:
@@ -194,6 +200,13 @@ class RTPProtocol(DatagramProtocol):
                 self.sample = self.fp.read(160)
         except IOError:
             pass
+
+        # We do the select ourself, to stop the UDP listener and the 
+        # timer loop from tripping over each other. Kinda sucky.
+        r, ignored, ignored = Select([self.rtpListener], [], [], 0.0)
+        if r:
+            r[0].doRead()
+        
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
