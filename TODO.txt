@@ -11,10 +11,14 @@ Before 0.1:
 
 Before 0.2:
     - EsounD support for Gnome, aRts for KDE
+      Note that aRts (and, I suspect, esd) only handle playing of audio,
+      not the recording of audio.
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
       that supports UPnP (Thanks, divmod!) Specs are available from
       http://www.upnp.org/resources/standards.asp
       See also http://icepick.info/index.php?p=175
+      UPnP could be used just for the SIP port, then STUN for the RTP/RTCP,
+      or else use UPnP for all 3.
     - Handle more of SIP 
         - registration
         - Lookup servers/proxies using multicast, SRV
