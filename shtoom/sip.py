@@ -211,7 +211,8 @@ class Call(object):
                                             host)))
                 self.abortCall()
                 return None
-        useStun = getPolicy().checkStun(locAddress[0], remAddress[0])
+        pol = getPolicy()
+        useStun = pol.checkStun(locAddress[0], remAddress[0])
         if useStun is True:
             self._needSTUN = True
             log.msg("stun policy says yes, use STUN")
@@ -226,6 +227,7 @@ class Call(object):
             self.sip.updateCallObject(self, self.getCallID())
             self.setupDeferred.callback((self._localIP, self._localPort))
         else:
+            print "STUN policy %r failed for %r %r"%(pol, locAddress[0], remAddress[0])
             # None. STUN stuff failed. Abort.
             from shtoom.exceptions import HostNotKnown
             d = self.compDef
@@ -364,6 +366,8 @@ class Call(object):
 
     def startInboundCall(self, invite):
         via = tpsip.parseViaHeader(invite.headers['via'][0])
+        if via.host.startswith(' '):
+            via.host = via.host.strip()
         d = self.setupLocalSIP(via=via)
         contact = invite.headers['contact']
         if type(contact) is list:
