@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'shtoommainwindow.ui'
 #
-# Created: Fri Nov 14 20:03:43 2003
-#      by: The PyQt User Interface Compiler (pyuic) 3.8.1
+# Created: Sat Feb 21 14:53:01 2004
+#      by: The PyQt User Interface Compiler (pyuic) 3.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -16,156 +16,59 @@ class ShtoomMainWindow(QMainWindow):
         self.statusBar()
 
         if not name:
-            self.setName("ShtoomMainWindow")
+            self.setProperty("name",QVariant("ShtoomMainWindow"))
 
 
         self.setCentralWidget(QWidget(self,"qt_central_widget"))
 
         self.textLabel1 = QLabel(self.centralWidget(),"textLabel1")
-        self.textLabel1.setGeometry(QRect(10,20,40,30))
-
-        self.frame3 = QFrame(self.centralWidget(),"frame3")
-        self.frame3.setGeometry(QRect(380,120,99,138))
-        self.frame3.setPaletteBackgroundColor(QColor(230,230,230))
-        self.frame3.setFrameShape(QFrame.StyledPanel)
-        self.frame3.setFrameShadow(QFrame.Raised)
-        frame3Layout = QHBoxLayout(self.frame3,11,6,"frame3Layout")
-
-        layout1 = QGridLayout(None,1,1,0,6,"layout1")
-
-        self.dtmfButton9 = QPushButton(self.frame3,"dtmfButton9")
-        dtmfButton9_font = QFont(self.dtmfButton9.font())
-        dtmfButton9_font.setPointSize(10)
-        self.dtmfButton9.setFont(dtmfButton9_font)
-
-        layout1.addWidget(self.dtmfButton9,2,2)
-
-        self.dtmfButton0 = QPushButton(self.frame3,"dtmfButton0")
-        dtmfButton0_font = QFont(self.dtmfButton0.font())
-        dtmfButton0_font.setPointSize(10)
-        self.dtmfButton0.setFont(dtmfButton0_font)
-
-        layout1.addWidget(self.dtmfButton0,3,1)
-
-        self.dtmfButton1 = QPushButton(self.frame3,"dtmfButton1")
-        dtmfButton1_font = QFont(self.dtmfButton1.font())
-        dtmfButton1_font.setPointSize(10)
-        self.dtmfButton1.setFont(dtmfButton1_font)
-
-        layout1.addWidget(self.dtmfButton1,0,0)
-
-        self.dtmfButtonStar = QPushButton(self.frame3,"dtmfButtonStar")
-        dtmfButtonStar_font = QFont(self.dtmfButtonStar.font())
-        dtmfButtonStar_font.setPointSize(10)
-        self.dtmfButtonStar.setFont(dtmfButtonStar_font)
-
-        layout1.addWidget(self.dtmfButtonStar,3,0)
-
-        self.dtmfButton5 = QPushButton(self.frame3,"dtmfButton5")
-        dtmfButton5_font = QFont(self.dtmfButton5.font())
-        dtmfButton5_font.setPointSize(10)
-        self.dtmfButton5.setFont(dtmfButton5_font)
-
-        layout1.addWidget(self.dtmfButton5,1,1)
-
-        self.dtmfButton7 = QPushButton(self.frame3,"dtmfButton7")
-        dtmfButton7_font = QFont(self.dtmfButton7.font())
-        dtmfButton7_font.setPointSize(10)
-        self.dtmfButton7.setFont(dtmfButton7_font)
-
-        layout1.addWidget(self.dtmfButton7,2,0)
-
-        self.dtmfButton6 = QPushButton(self.frame3,"dtmfButton6")
-        dtmfButton6_font = QFont(self.dtmfButton6.font())
-        dtmfButton6_font.setPointSize(10)
-        self.dtmfButton6.setFont(dtmfButton6_font)
-
-        layout1.addWidget(self.dtmfButton6,1,2)
-
-        self.dtmfButton8 = QPushButton(self.frame3,"dtmfButton8")
-        dtmfButton8_font = QFont(self.dtmfButton8.font())
-        dtmfButton8_font.setPointSize(10)
-        self.dtmfButton8.setFont(dtmfButton8_font)
-
-        layout1.addWidget(self.dtmfButton8,2,1)
-
-        self.dtmfButton4 = QPushButton(self.frame3,"dtmfButton4")
-        dtmfButton4_font = QFont(self.dtmfButton4.font())
-        dtmfButton4_font.setPointSize(10)
-        self.dtmfButton4.setFont(dtmfButton4_font)
-
-        layout1.addWidget(self.dtmfButton4,1,0)
-
-        self.dtmfButton3 = QPushButton(self.frame3,"dtmfButton3")
-        dtmfButton3_font = QFont(self.dtmfButton3.font())
-        dtmfButton3_font.setPointSize(10)
-        self.dtmfButton3.setFont(dtmfButton3_font)
-
-        layout1.addWidget(self.dtmfButton3,0,2)
-
-        self.dtmfButton2 = QPushButton(self.frame3,"dtmfButton2")
-        dtmfButton2_font = QFont(self.dtmfButton2.font())
-        dtmfButton2_font.setPointSize(10)
-        self.dtmfButton2.setFont(dtmfButton2_font)
-
-        layout1.addWidget(self.dtmfButton2,0,1)
-
-        self.dtmfButtonHash = QPushButton(self.frame3,"dtmfButtonHash")
-        dtmfButtonHash_font = QFont(self.dtmfButtonHash.font())
-        dtmfButtonHash_font.setPointSize(10)
-        self.dtmfButtonHash.setFont(dtmfButtonHash_font)
-
-        layout1.addWidget(self.dtmfButtonHash,3,2)
-        frame3Layout.addLayout(layout1)
+        self.textLabel1.setProperty("geometry",QVariant(QRect(10,20,40,30)))
 
         self.textLabel4 = QLabel(self.centralWidget(),"textLabel4")
-        self.textLabel4.setGeometry(QRect(10,138,50,30))
+        self.textLabel4.setProperty("geometry",QVariant(QRect(10,138,50,30)))
 
         self.lookupAddressButton = QPushButton(self.centralWidget(),"lookupAddressButton")
-        self.lookupAddressButton.setGeometry(QRect(370,20,31,31))
-        self.lookupAddressButton.setPixmap(QPixmap.fromMimeSource("filefind.png"))
+        self.lookupAddressButton.setProperty("geometry",QVariant(QRect(370,20,31,31)))
 
         self.callButton = QPushButton(self.centralWidget(),"callButton")
-        self.callButton.setGeometry(QRect(50,60,80,30))
+        self.callButton.setProperty("geometry",QVariant(QRect(50,60,80,30)))
 
         self.hangupButton = QPushButton(self.centralWidget(),"hangupButton")
-        self.hangupButton.setEnabled(0)
-        self.hangupButton.setGeometry(QRect(140,60,80,30))
+        self.hangupButton.setProperty("enabled",QVariant(QVariant(0,0)))
+        self.hangupButton.setProperty("geometry",QVariant(QRect(140,60,80,30)))
 
         self.statusLabel = QLabel(self.centralWidget(),"statusLabel")
-        self.statusLabel.setGeometry(QRect(60,140,180,31))
+        self.statusLabel.setProperty("geometry",QVariant(QRect(60,140,180,31)))
 
         self.debuggingTextEdit = QTextEdit(self.centralWidget(),"debuggingTextEdit")
-        self.debuggingTextEdit.setGeometry(QRect(0,270,490,120))
-        self.debuggingTextEdit.setSizePolicy(QSizePolicy(7,7,0,0,self.debuggingTextEdit.sizePolicy().hasHeightForWidth()))
+        self.debuggingTextEdit.setProperty("geometry",QVariant(QRect(0,270,490,120)))
+        self.debuggingTextEdit.setProperty("sizePolicy",QVariant(QSizePolicy(7,7,0,0,self.debuggingTextEdit.sizePolicy().hasHeightForWidth())))
         debuggingTextEdit_font = QFont(self.debuggingTextEdit.font())
         debuggingTextEdit_font.setFamily("Courier")
-        debuggingTextEdit_font.setPointSize(10)
         self.debuggingTextEdit.setFont(debuggingTextEdit_font)
-        self.debuggingTextEdit.setTextFormat(QTextEdit.PlainText)
-        self.debuggingTextEdit.setWrapPolicy(QTextEdit.Anywhere)
-        self.debuggingTextEdit.setUndoDepth(0)
-        self.debuggingTextEdit.setReadOnly(1)
-        self.debuggingTextEdit.setUndoRedoEnabled(0)
+        self.debuggingTextEdit.setProperty("textFormat",QVariant(QTextEdit.PlainText))
+        self.debuggingTextEdit.setProperty("wrapPolicy",QVariant(QTextEdit.Anywhere))
+        self.debuggingTextEdit.setProperty("undoDepth",QVariant(0))
+        self.debuggingTextEdit.setProperty("readOnly",QVariant(QVariant(1,0)))
+        self.debuggingTextEdit.setProperty("undoRedoEnabled",QVariant(QVariant(0,0)))
 
         self.addressComboBox = QComboBox(0,self.centralWidget(),"addressComboBox")
-        self.addressComboBox.setGeometry(QRect(50,20,311,31))
-        self.addressComboBox.setEditable(1)
-        self.addressComboBox.setSizeLimit(20)
-        self.addressComboBox.setInsertionPolicy(QComboBox.AtTop)
-        self.addressComboBox.setAutoCompletion(1)
-        self.addressComboBox.setDuplicatesEnabled(0)
+        self.addressComboBox.setProperty("geometry",QVariant(QRect(50,20,311,31)))
+        self.addressComboBox.setProperty("editable",QVariant(QVariant(1,0)))
+        self.addressComboBox.setProperty("sizeLimit",QVariant(20))
+        self.addressComboBox.setProperty("insertionPolicy",QVariant(QComboBox.AtTop))
+        self.addressComboBox.setProperty("autoCompletion",QVariant(QVariant(1,0)))
+        self.addressComboBox.setProperty("duplicatesEnabled",QVariant(QVariant(0,0)))
 
         self.clearButton = QPushButton(self.centralWidget(),"clearButton")
-        self.clearButton.setGeometry(QRect(10,400,71,31))
+        self.clearButton.setProperty("geometry",QVariant(QRect(10,400,71,31)))
 
         LayoutWidget = QWidget(self.centralWidget(),"layout6")
-        LayoutWidget.setGeometry(QRect(11,191,246,28))
+        LayoutWidget.setProperty("geometry",QVariant(QRect(11,191,246,28)))
         layout6 = QHBoxLayout(LayoutWidget,11,6,"layout6")
 
         self.textLabel2 = QLabel(LayoutWidget,"textLabel2")
         textLabel2_font = QFont(self.textLabel2.font())
-        textLabel2_font.setPointSize(10)
         self.textLabel2.setFont(textLabel2_font)
         layout6.addWidget(self.textLabel2)
 
@@ -176,12 +79,11 @@ class ShtoomMainWindow(QMainWindow):
         layout6.addWidget(self.sentPacketsLineEdit)
 
         LayoutWidget_2 = QWidget(self.centralWidget(),"layout6_2")
-        LayoutWidget_2.setGeometry(QRect(10,220,246,28))
+        LayoutWidget_2.setProperty("geometry",QVariant(QRect(10,220,246,28)))
         layout6_2 = QHBoxLayout(LayoutWidget_2,11,6,"layout6_2")
 
         self.textLabel2_r = QLabel(LayoutWidget_2,"textLabel2_r")
         textLabel2_r_font = QFont(self.textLabel2_r.font())
-        textLabel2_r_font.setPointSize(10)
         self.textLabel2_r.setFont(textLabel2_r_font)
         layout6_2.addWidget(self.textLabel2_r)
 
@@ -191,15 +93,83 @@ class ShtoomMainWindow(QMainWindow):
         self.rcvdPacketsLineEdit.setFont(rcvdPacketsLineEdit_font)
         layout6_2.addWidget(self.rcvdPacketsLineEdit)
 
+        self.frame3 = QFrame(self.centralWidget(),"frame3")
+        self.frame3.setProperty("geometry",QVariant(QRect(330,100,80,100)))
+        self.frame3.setProperty("paletteBackgroundColor",QVariant(QColor(230,230,230)))
+        self.frame3.setProperty("frameShape",QVariant(QFrame.StyledPanel))
+        self.frame3.setProperty("frameShadow",QVariant(QFrame.Raised))
+
+        self.dtmfButton1 = QPushButton(self.frame3,"dtmfButton1")
+        self.dtmfButton1.setProperty("geometry",QVariant(QRect(10,10,15,15)))
+        self.dtmfButton1.setProperty("maximumSize",QVariant(QSize(15,15)))
+        dtmfButton1_font = QFont(self.dtmfButton1.font())
+        self.dtmfButton1.setFont(dtmfButton1_font)
+
+        self.dtmfButton4 = QPushButton(self.frame3,"dtmfButton4")
+        self.dtmfButton4.setProperty("geometry",QVariant(QRect(10,30,15,15)))
+        self.dtmfButton4.setProperty("maximumSize",QVariant(QSize(15,15)))
+        dtmfButton4_font = QFont(self.dtmfButton4.font())
+        self.dtmfButton4.setFont(dtmfButton4_font)
+
+        self.dtmfButton2 = QPushButton(self.frame3,"dtmfButton2")
+        self.dtmfButton2.setProperty("geometry",QVariant(QRect(30,10,15,15)))
+        dtmfButton2_font = QFont(self.dtmfButton2.font())
+        self.dtmfButton2.setFont(dtmfButton2_font)
+
+        self.dtmfButton3 = QPushButton(self.frame3,"dtmfButton3")
+        self.dtmfButton3.setProperty("geometry",QVariant(QRect(50,10,15,15)))
+        dtmfButton3_font = QFont(self.dtmfButton3.font())
+        self.dtmfButton3.setFont(dtmfButton3_font)
+
+        self.dtmfButton5 = QPushButton(self.frame3,"dtmfButton5")
+        self.dtmfButton5.setProperty("geometry",QVariant(QRect(30,30,15,15)))
+        dtmfButton5_font = QFont(self.dtmfButton5.font())
+        self.dtmfButton5.setFont(dtmfButton5_font)
+
+        self.dtmfButton6 = QPushButton(self.frame3,"dtmfButton6")
+        self.dtmfButton6.setProperty("geometry",QVariant(QRect(50,30,15,15)))
+        dtmfButton6_font = QFont(self.dtmfButton6.font())
+        self.dtmfButton6.setFont(dtmfButton6_font)
+
+        self.dtmfButton7 = QPushButton(self.frame3,"dtmfButton7")
+        self.dtmfButton7.setProperty("geometry",QVariant(QRect(10,50,15,15)))
+        dtmfButton7_font = QFont(self.dtmfButton7.font())
+        self.dtmfButton7.setFont(dtmfButton7_font)
+
+        self.dtmfButton8 = QPushButton(self.frame3,"dtmfButton8")
+        self.dtmfButton8.setProperty("geometry",QVariant(QRect(30,50,15,15)))
+        dtmfButton8_font = QFont(self.dtmfButton8.font())
+        self.dtmfButton8.setFont(dtmfButton8_font)
+
+        self.dtmfButton9 = QPushButton(self.frame3,"dtmfButton9")
+        self.dtmfButton9.setProperty("geometry",QVariant(QRect(50,50,15,15)))
+        dtmfButton9_font = QFont(self.dtmfButton9.font())
+        self.dtmfButton9.setFont(dtmfButton9_font)
+
+        self.dtmfButtonStar = QPushButton(self.frame3,"dtmfButtonStar")
+        self.dtmfButtonStar.setProperty("geometry",QVariant(QRect(10,70,15,15)))
+        dtmfButtonStar_font = QFont(self.dtmfButtonStar.font())
+        self.dtmfButtonStar.setFont(dtmfButtonStar_font)
+
+        self.dtmfButton0 = QPushButton(self.frame3,"dtmfButton0")
+        self.dtmfButton0.setProperty("geometry",QVariant(QRect(30,70,15,15)))
+        dtmfButton0_font = QFont(self.dtmfButton0.font())
+        self.dtmfButton0.setFont(dtmfButton0_font)
+
+        self.dtmfButtonHash = QPushButton(self.frame3,"dtmfButtonHash")
+        self.dtmfButtonHash.setProperty("geometry",QVariant(QRect(50,70,15,15)))
+        dtmfButtonHash_font = QFont(self.dtmfButtonHash.font())
+        self.dtmfButtonHash.setFont(dtmfButtonHash_font)
+
         self.fileNewAction = QAction(self,"fileNewAction")
-        self.fileNewAction.setIconSet(QIconSet(QPixmap.fromMimeSource("icon-network.png")))
+        self.fileNewAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileOpenAction = QAction(self,"fileOpenAction")
-        self.fileOpenAction.setIconSet(QIconSet(QPixmap.fromMimeSource("fileopen")))
+        self.fileOpenAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileSaveAction = QAction(self,"fileSaveAction")
-        self.fileSaveAction.setIconSet(QIconSet(QPixmap.fromMimeSource("filesave")))
+        self.fileSaveAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileSaveAsAction = QAction(self,"fileSaveAsAction")
         self.filePrintAction = QAction(self,"filePrintAction")
-        self.filePrintAction.setIconSet(QIconSet(QPixmap.fromMimeSource("print")))
+        self.filePrintAction.setProperty("iconSet",QVariant(QIconSet()))
         self.fileExitAction = QAction(self,"fileExitAction")
         self.helpContentsAction = QAction(self,"helpContentsAction")
         self.helpIndexAction = QAction(self,"helpIndexAction")
@@ -248,59 +218,83 @@ class ShtoomMainWindow(QMainWindow):
         self.connect(self.callButton,SIGNAL("clicked()"),self.callButton_clicked)
         self.connect(self.hangupButton,SIGNAL("clicked()"),self.hangupButton_clicked)
         self.connect(self.clearButton,SIGNAL("clicked()"),self.clearButton_clicked)
+        self.connect(self.dtmfButton1,SIGNAL("pressed()"),self.dtmfButton1_pressed)
+        self.connect(self.dtmfButton1,SIGNAL("released()"),self.dtmfButton1_released)
+        self.connect(self.dtmfButton2,SIGNAL("pressed()"),self.dtmfButton2_pressed)
+        self.connect(self.dtmfButton2,SIGNAL("released()"),self.dtmfButton2_released)
+        self.connect(self.dtmfButton3,SIGNAL("pressed()"),self.dtmfButton3_pressed)
+        self.connect(self.dtmfButton3,SIGNAL("released()"),self.dtmfButton3_released)
+        self.connect(self.dtmfButton4,SIGNAL("pressed()"),self.dtmfButton4_pressed)
+        self.connect(self.dtmfButton4,SIGNAL("released()"),self.dtmfButton4_released)
+        self.connect(self.dtmfButton5,SIGNAL("pressed()"),self.dtmfButton5_pressed)
+        self.connect(self.dtmfButton5,SIGNAL("released()"),self.dtmfButton5_released)
+        self.connect(self.dtmfButton6,SIGNAL("pressed()"),self.dtmfButton6_pressed)
+        self.connect(self.dtmfButton6,SIGNAL("released()"),self.dtmfButton6_released)
+        self.connect(self.dtmfButton7,SIGNAL("pressed()"),self.dtmfButton7_pressed)
+        self.connect(self.dtmfButton7,SIGNAL("released()"),self.dtmfButton7_released)
+        self.connect(self.dtmfButton8,SIGNAL("pressed()"),self.dtmfButton8_pressed)
+        self.connect(self.dtmfButton8,SIGNAL("released()"),self.dtmfButton8_released)
+        self.connect(self.dtmfButton9,SIGNAL("pressed()"),self.dtmfButton9_pressed)
+        self.connect(self.dtmfButton9,SIGNAL("released()"),self.dtmfButton9_released)
+        self.connect(self.dtmfButton0,SIGNAL("pressed()"),self.dtmfButton0_pressed)
+        self.connect(self.dtmfButton0,SIGNAL("released()"),self.dtmfButton0_released)
+        self.connect(self.dtmfButtonHash,SIGNAL("pressed()"),self.dtmfButtonHash_pressed)
+        self.connect(self.dtmfButtonHash,SIGNAL("released()"),self.dtmfButtonHash_released)
+        self.connect(self.dtmfButtonStar,SIGNAL("pressed()"),self.dtmfButtonStar_pressed)
+        self.connect(self.dtmfButtonStar,SIGNAL("released()"),self.dtmfButtonStar_released)
 
 
     def languageChange(self):
-        self.setCaption(self.__tr("Shtoom - Qt UI"))
-        self.textLabel1.setText(self.__tr("Call:"))
-        self.dtmfButton9.setText(self.__tr("9"))
-        self.dtmfButton0.setText(self.__tr("0"))
-        self.dtmfButton1.setText(self.__tr("1"))
-        self.dtmfButtonStar.setText(self.__tr("*"))
-        self.dtmfButton5.setText(self.__tr("5"))
-        self.dtmfButton7.setText(self.__tr("7"))
-        self.dtmfButton6.setText(self.__tr("6"))
-        self.dtmfButton8.setText(self.__tr("8"))
-        self.dtmfButton4.setText(self.__tr("4"))
-        self.dtmfButton3.setText(self.__tr("3"))
-        self.dtmfButton2.setText(self.__tr("2"))
-        self.dtmfButtonHash.setText(self.__tr("#"))
-        self.textLabel4.setText(self.__tr("Status"))
-        self.lookupAddressButton.setText(QString.null)
-        self.callButton.setText(self.__tr("Call"))
-        self.hangupButton.setText(self.__tr("Hang Up"))
-        self.statusLabel.setText(QString.null)
+        self.setProperty("caption",QVariant(self.__tr("Shtoom - Qt UI")))
+        self.textLabel1.setProperty("text",QVariant(self.__tr("Call:")))
+        self.textLabel4.setProperty("text",QVariant(self.__tr("Status")))
+        self.lookupAddressButton.setProperty("text",QVariant(QString.null))
+        self.callButton.setProperty("text",QVariant(self.__tr("Call")))
+        self.hangupButton.setProperty("text",QVariant(self.__tr("Hang Up")))
+        self.statusLabel.setProperty("text",QVariant(QString.null))
         QToolTip.add(self.debuggingTextEdit,self.__tr("Debugging Messages"))
-        self.clearButton.setText(self.__tr("Clear"))
-        self.textLabel2.setText(self.__tr("Sent Pkts"))
-        self.textLabel2_r.setText(self.__tr("Rcvd Pkts"))
-        self.fileNewAction.setText(self.__tr("New"))
-        self.fileNewAction.setMenuText(self.__tr("&New"))
-        self.fileNewAction.setAccel(self.__tr("Ctrl+N"))
-        self.fileOpenAction.setText(self.__tr("Open"))
-        self.fileOpenAction.setMenuText(self.__tr("&Open..."))
-        self.fileOpenAction.setAccel(self.__tr("Ctrl+O"))
-        self.fileSaveAction.setText(self.__tr("Save"))
-        self.fileSaveAction.setMenuText(self.__tr("&Save"))
-        self.fileSaveAction.setAccel(self.__tr("Ctrl+S"))
-        self.fileSaveAsAction.setText(self.__tr("Save As"))
-        self.fileSaveAsAction.setMenuText(self.__tr("Save &As..."))
-        self.fileSaveAsAction.setAccel(QString.null)
-        self.filePrintAction.setText(self.__tr("Print"))
-        self.filePrintAction.setMenuText(self.__tr("&Print..."))
-        self.filePrintAction.setAccel(self.__tr("Ctrl+P"))
-        self.fileExitAction.setText(QString.null)
-        self.fileExitAction.setMenuText(self.__tr("E&xit"))
-        self.fileExitAction.setAccel(QString.null)
-        self.helpContentsAction.setText(self.__tr("Contents"))
-        self.helpContentsAction.setMenuText(self.__tr("&Contents..."))
-        self.helpContentsAction.setAccel(QString.null)
-        self.helpIndexAction.setText(self.__tr("Index"))
-        self.helpIndexAction.setMenuText(self.__tr("&Index..."))
-        self.helpIndexAction.setAccel(QString.null)
-        self.helpAboutAction.setText(self.__tr("About"))
-        self.helpAboutAction.setMenuText(self.__tr("&About"))
-        self.helpAboutAction.setAccel(QString.null)
+        self.clearButton.setProperty("text",QVariant(self.__tr("Clear")))
+        self.textLabel2.setProperty("text",QVariant(self.__tr("Sent Pkts")))
+        self.textLabel2_r.setProperty("text",QVariant(self.__tr("Rcvd Pkts")))
+        self.dtmfButton1.setProperty("text",QVariant(self.__tr("1")))
+        self.dtmfButton4.setProperty("text",QVariant(self.__tr("4")))
+        self.dtmfButton2.setProperty("text",QVariant(self.__tr("2")))
+        self.dtmfButton3.setProperty("text",QVariant(self.__tr("3")))
+        self.dtmfButton5.setProperty("text",QVariant(self.__tr("5")))
+        self.dtmfButton6.setProperty("text",QVariant(self.__tr("6")))
+        self.dtmfButton7.setProperty("text",QVariant(self.__tr("7")))
+        self.dtmfButton8.setProperty("text",QVariant(self.__tr("8")))
+        self.dtmfButton9.setProperty("text",QVariant(self.__tr("9")))
+        self.dtmfButtonStar.setProperty("text",QVariant(self.__tr("*")))
+        self.dtmfButton0.setProperty("text",QVariant(self.__tr("0")))
+        self.dtmfButtonHash.setProperty("text",QVariant(self.__tr("#")))
+        self.fileNewAction.setProperty("text",QVariant(self.__tr("New")))
+        self.fileNewAction.setProperty("menuText",QVariant(self.__tr("&New")))
+        self.fileNewAction.setProperty("accel",QVariant(self.__tr("Ctrl+N")))
+        self.fileOpenAction.setProperty("text",QVariant(self.__tr("Open")))
+        self.fileOpenAction.setProperty("menuText",QVariant(self.__tr("&Open...")))
+        self.fileOpenAction.setProperty("accel",QVariant(self.__tr("Ctrl+O")))
+        self.fileSaveAction.setProperty("text",QVariant(self.__tr("Save")))
+        self.fileSaveAction.setProperty("menuText",QVariant(self.__tr("&Save")))
+        self.fileSaveAction.setProperty("accel",QVariant(self.__tr("Ctrl+S")))
+        self.fileSaveAsAction.setProperty("text",QVariant(self.__tr("Save As")))
+        self.fileSaveAsAction.setProperty("menuText",QVariant(self.__tr("Save &As...")))
+        self.fileSaveAsAction.setProperty("accel",QVariant(QString.null))
+        self.filePrintAction.setProperty("text",QVariant(self.__tr("Print")))
+        self.filePrintAction.setProperty("menuText",QVariant(self.__tr("&Print...")))
+        self.filePrintAction.setProperty("accel",QVariant(self.__tr("Ctrl+P")))
+        self.fileExitAction.setProperty("text",QVariant(QString.null))
+        self.fileExitAction.setProperty("menuText",QVariant(self.__tr("E&xit")))
+        self.fileExitAction.setProperty("accel",QVariant(QString.null))
+        self.helpContentsAction.setProperty("text",QVariant(self.__tr("Contents")))
+        self.helpContentsAction.setProperty("menuText",QVariant(self.__tr("&Contents...")))
+        self.helpContentsAction.setProperty("accel",QVariant(QString.null))
+        self.helpIndexAction.setProperty("text",QVariant(self.__tr("Index")))
+        self.helpIndexAction.setProperty("menuText",QVariant(self.__tr("&Index...")))
+        self.helpIndexAction.setProperty("accel",QVariant(QString.null))
+        self.helpAboutAction.setProperty("text",QVariant(self.__tr("About")))
+        self.helpAboutAction.setProperty("menuText",QVariant(self.__tr("&About")))
+        self.helpAboutAction.setProperty("accel",QVariant(QString.null))
         self.menubar.findItem(1).setText(self.__tr("&File"))
         self.menubar.findItem(2).setText(self.__tr("&Help"))
 
@@ -403,6 +397,12 @@ class ShtoomMainWindow(QMainWindow):
 
     def dtmfButton2_released(self):
         print "ShtoomMainWindow.dtmfButton2_released(): Not implemented yet"
+
+    def dtmfButton1_pressed(self):
+        print "ShtoomMainWindow.dtmfButton1_pressed(): Not implemented yet"
+
+    def dtmfButton1_released(self):
+        print "ShtoomMainWindow.dtmfButton1_released(): Not implemented yet"
 
     def callButton_clicked(self):
         print "ShtoomMainWindow.callButton_clicked(): Not implemented yet"
