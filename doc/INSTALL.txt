@@ -1,0 +1,77 @@
+[XXX note that this document is for the 0.3 release, so some things 
+(like the binary installer for OSX) aren't done yet]
+
+Installation Choices
+--------------------
+
+If you're on Windows or OSX, there are binary installers available. 
+For other platforms, grab the source tarball or zip, unpack and run 
+"python setup.py install". See the distutils documentation in the 
+Python documentation for more on this.
+
+Prerequisites
+-------------
+
+Shtoom itself has only Python 2.3 and Twisted as a pre-requisite, although 
+there are many other optional added features that require additional packages.
+Note that a binary installer comes with every that you need.
+
+Optional Packages
+-----------------
+
+User interfaces - Shtoom has support for a number of different user 
+interfaces. The simplest is the text interface, which requires no 
+additional packages. The other user interfaces:
+
+  Tk    -- needs the Tkinter package, which should be installed with your
+           Python release. OSX users will also need to install TclTkAqua
+  wx    -- needs wx and wxPython installed. 
+  qt    -- needs Qt and PyQt installed. Only tested on Linux (Windows Qt 
+           is not freely available)
+  gnome -- requires Gnome, Gtk and PyGnome/PyGtk
+
+Audio Drivers - On Linux with a pre 2.4 kernel, Shtoom uses the default 
+Python ossaudiodev module. On other platforms, additional packages may
+be needed:
+
+  portaudio  -- needs the PortAudio library, and the fastaudio interface.
+                This will work on Windows and older Linux platforms (but not
+                ALSA)
+  ALSA       -- needs the PyAlsaAudio package. This is the new audio 
+                driver in Linux kernel 2.6, and gives better performance.
+  CocoaAudio -- On OSX, you'll need to install the CocoaAudio package.
+
+
+Codecs - For better bandwidth utilisation, Shtoom can use one of a number
+of other codecs than the default. These require additional packages:
+
+  gsm   --
+  speex --
+  g72x  --
+
+
+
+Installation Frequently Asked Questions
+---------------------------------------
+
+Q. Do I need a compiler to install Shtoom?
+
+Not unless you want to build one of the additional packages, and there's
+not already a binary version.
+
+Q. setup.py fails with 'ImportError: no such module distutils.core'
+
+Debian (and other distributions derived from it, such as Knoppix and    
+Ubuntu) made the stupid decision to split their python installation     
+into two parts, and put an essential part of the standard library into  
+the python-dev package. You'll need to install that package as well.
+Feel free to log a bug report with your distribution vendor to ask
+them to fix this idiocy.
+
+Q. How do I get started?
+
+See the user guide.
+
+Q. How do I make free phone calls?
+
+...
