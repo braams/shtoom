@@ -17,11 +17,22 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             self.dev = dev
         if 'AFMT_S16_LE' in formats:
             dev.setfmt(ossaudiodev.AFMT_S16_LE)
-            self.dev = MultipleConv(dev)
+            self.dev = MultipleConv(Wrapper(dev))
         else:
             raise ValueError, \
                 "Couldn't find signed 16 bit PCM, got %s"%(
                 ", ".join(formats))
+
+class Wrapper:
+    def __init__(self, d):
+        self._d = d
+        self.write = self._d.write
+
+    def read(self):
+        return self._d.read(320)
+
+    def __getattr__(self,a):
+        return getattr(self._d, a)
 
 def getAudioDevice(mode, wrapped=1):
     global opened
