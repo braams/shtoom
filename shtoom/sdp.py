@@ -269,9 +269,9 @@ class SDP:
 
     def get(self, typechar, option=None):
         if option is None:
-            return self._ann.get(typechar)
+            return get(self, typechar)
         elif typechar is 'a':
-            return self._ann.getA(option)
+            return getA(self, option)
         else:
             raise ValueError, "only know about suboptions for 'a' so far"
 
