@@ -108,13 +108,13 @@ class ShtoomProxy(AppProxy):
         reactor.callFromThread(self.shtoomapp.dropCall, cookie)
     
     def register(self):
-        reactor.callFromThread(self.shtoomapp.register())
+        reactor.callFromThread(self.shtoomapp.register)
 
     def getOptions(self):
         return self.shtoomapp.getOptions()
 
     def updateOptions(self, opts):
-        reactor.callFromThread(self.shtoomapp.updateOptions(opts))
+        reactor.callFromThread(self.shtoomapp.updateOptions, opts)
 
 
 class WxShtoomApplication(wxApp):
