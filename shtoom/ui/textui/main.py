@@ -139,6 +139,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         self.app.creds.addCred(realm, user, password, save=True)
 
     def cmd_dtmf(self, line, duration=0.1, delay=0.1):
+        "dtmf <digits> -- send dtmf key presses to the other end"
         from twisted.internet import reactor
         initial = 0.2
         toks = line.split(' ',1)
