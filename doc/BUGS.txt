@@ -21,6 +21,10 @@ details:
         exceptions.AttributeError: TestCall instance has no attribute 'cookie'
 
 name: fwd hates our ACKS
+
+more details: Asterisk on FWD hates our ACKS. I don't know why - calling
+a local asterisk works fine.
+
 to reproduce: call sip:613@fwd.pulver.com
 details: you should hear the automated message then hangup.  packet sniffer will tell you that FWD didn't believe our ACKs to it kept sending 200 OK until it gave up and hung up on us:
   1   0.000000 192.168.1.101 -> 192.98.81.87 STUN Message : Binding Request
@@ -54,3 +58,79 @@ details: you should hear the automated message then hangup.  packet sniffer will
  29  15.745872 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
  30  19.783432 69.90.155.70 -> 192.168.1.101 SIP Request: BYE sip:24.222.141.10:5060
  31  19.785357 192.168.1.101 -> 69.90.155.70 SIP Status: 481 Call/Transaction Does Not Exist
+p
+
+
+
+When the audio device is busy, bad things happen:
+
+2004/09/26 17:53 EST [shtoom.sip.SipPhone (UDP)] startCall reopening None
+<MediaLayer wrapped around <shtoom.audio.ossaudio.OSSAudioDevice object at
+0xf69948ac>>
+
+2004/09/26 17:53 EST [shtoom.sip.SipPhone (UDP)] Traceback (most recent call
+last):
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/python/context.py", line 43,
+in callWithContext
+            return func(*args,**kw)
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/internet/default.py", line
+535, in _doReadOrWrite
+            why = getattr(selectable, method)()
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/internet/udp.py", line 114, in
+doRead
+            self.protocol.datagramReceived(data, addr)
+          File "/home/anthony/projects/shtoom/svntrunk/shtoom/sip.py", line
+1081, in datagramReceived
+            mp.dataReceived(datagram)
+        --- <exception caught here> ---
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/protocols/sip.py", line 554,
+in dataReceived
+            basic.LineReceiver.dataReceived(self, data)
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/protocols/basic.py", line 233,
+in dataReceived
+            return self.rawDataReceived(data)
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/protocols/sip.py", line 641,
+in rawDataReceived
+            self.messageDone()
+          File
+"/usr/local/lib/python2.3/site-packages/twisted/protocols/sip.py", line 621,
+in messageDone
+            self.messageReceived(self.message)
+          File "/home/anthony/projects/shtoom/svntrunk/shtoom/sip.py", line
+1143, in sipMessageReceived
+            call.recvResponse(message)
+          File "/home/anthony/projects/shtoom/svntrunk/shtoom/sip.py", line
+742, in recvResponse
+            self.sendAck(message, startRTP=1)
+          File "/home/anthony/projects/shtoom/svntrunk/shtoom/sip.py", line
+573, in sendAck
+            self.sip.app.startCall(self.cookie, oksdp, cb)
+          File "/home/anthony/projects/shtoom/svntrunk/shtoom/app/phone.py",
+line 146, in startCall
+            self._audio.reopen()
+          File
+"/home/anthony/projects/shtoom/svntrunk/shtoom/audio/converters.py", line 222,
+in reopen
+            NullConv.reopen(self)
+          File
+"/home/anthony/projects/shtoom/svntrunk/shtoom/audio/converters.py", line 36,
+in reopen
+            return self._d.reopen()
+          File
+"/home/anthony/projects/shtoom/svntrunk/shtoom/audio/baseaudio.py", line 15,
+in reopen
+            self.openDev()
+          File
+"/home/anthony/projects/shtoom/svntrunk/shtoom/audio/ossaudio.py", line 10, in
+openDev
+            dev = ossaudiodev.open('rw')
+        exceptions.IOError: [Errno 16] Device or resource busy: '/dev/dsp'
+        
+
+
