@@ -11,7 +11,7 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.task import LoopingCall
 from twisted.python import log
 
-from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN
+from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN, PT_NTE
 from shtoom.rtp.packets import RTPPacket, parse_rtppacket
 
 TWO_TO_THE_16TH = 2<<16
@@ -352,7 +352,9 @@ class RTPProtocol(DatagramProtocol):
             payload = self._pendingDTMF[0].getPayload(self.ts)
             if payload:
                 # XXX FIXME FIXME FIXME! telephone-event isn't always 101!
-                self._send_packet(pt=101, data=payload)
+                ntept = self.ptdict.get(PT_NTE)
+                if ntept is not None:
+                    self._send_packet(pt=ntept, data=payload)
                 if self._pendingDTMF[0].isDone():
                     self._pendingDTMF = self._pendingDTMF[1:]
         try:
