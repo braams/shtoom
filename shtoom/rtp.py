@@ -21,7 +21,7 @@ RTP_PT_CN=13
 #RTP_PT_CN=None
 
 class NTE:
-    "An object representing an RTP NTE"
+    "An object representing an RTP NTE (rfc2833)"
     def __init__(self, key, startTS):
         self.startTS = startTS
         self.ending = False
@@ -54,7 +54,8 @@ class NTE:
                 end = 128
             else:
                 end = 0
-            payload = self._payKey + chr(10|end) + struct.pack('!H', ts - self.startTS)
+            payload = self._payKey + chr(10|end) + \
+                                struct.pack('!H', ts - self.startTS)
             self.counter -= 1
             return payload
         else:
@@ -110,6 +111,9 @@ class RTPProtocol(DatagramProtocol):
         # RTP port must be even, RTCP must be odd
         # We select a RTP port at random, and try to get a pair of ports
         # next to each other. What fun!
+        # Note that it's kinda pointless when we're behind a NAT that 
+        # rewrites ports. We can at least send RTCP out in that case, 
+        # but there's no way we'll get any back.
         rtpPort = self.app.getPref('force_rtp_port')
         if not rtpPort:
             rtpPort = 30000 + random.randint(0, 20000)
@@ -191,24 +195,27 @@ class RTPProtocol(DatagramProtocol):
             # this seems almost impossible with most firewalls. So just try
             # to get a working rtp port (an even port number is required).
             elif ((rtp[1] % 2) != 0):
-                log.msg("stun showed unusable rtp/rtcp ports %r, retry number %d"%(results, self._stunAttempts), system='rtp')
+                log.msg("stun: unusable RTP/RTCP ports %r, retry #%d"%
+                                            (results, self._stunAttempts), 
+                                            system='rtp')
                 # XXX close connection, try again, tell user
                 if self._stunAttempts > 8:
                     # XXX
                     print "Giving up. Made %d attempts to get a working port"%(
                         self._stunAttempts)
                 self._stunAttempts += 1
-                defer.maybeDeferred(self.rtpListener.stopListening).addCallback(
-                                        lambda x:self.rtcpListener.stopListening()
-                                                                   ).addCallback(
-                                        lambda x:self._socketCreationAttempt()
-                                                                    )
+                defer.maybeDeferred(
+                            self.rtpListener.stopListening).addCallback(
+                                    lambda x:self.rtcpListener.stopListening()
+                                                          ).addCallback(
+                                    lambda x:self._socketCreationAttempt()
+                                                          )
                 #self.rtpListener.stopListening()
                 #self.rtcpListener.stopListening()
                 #self._socketCreationAttempt()
             else:
                 # phew. working NAT
-                log.msg("discovered sane NAT for RTP/RTCP", system='rtp')
+                log.msg("stun: sane NAT for RTP/RTCP", system='rtp')
                 self._extIP, self._extRTPPort = rtp
                 self._stunAttempts = 0
                 d = self._socketCompleteDef
@@ -251,7 +258,8 @@ class RTPProtocol(DatagramProtocol):
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
-        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest), system='rtp')
+        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest), 
+                                                                system='rtp')
         if RTP_PT_CN is not None:
             cnpt = RTP_PT_CN
         else:
@@ -276,6 +284,7 @@ class RTPProtocol(DatagramProtocol):
         # Python-ish hack at RFC1889, Appendix A.6
         m = md5.new()
         m.update(str(time()))
+        m.update(str(id(self)))
         if hasattr(os, 'getuid'):
             m.update(str(os.getuid()))
             m.update(str(os.getgid()))
