@@ -1,5 +1,12 @@
 # Copyright (C) 2004 Anthony Baxter
 
+class _IgnoranceIsBliss:
+    pass
+
+IGNORE_EVENT = _IgnoranceIsBliss()
+
+del _IgnoranceIsBliss
+
 class Event(object):
     """
     """
