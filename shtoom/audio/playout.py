@@ -1,3 +1,4 @@
+from twisted.python import log
 
 DEBUG=False
 
@@ -97,6 +98,7 @@ class BacklogPlayout(_Playout):
 
         if available:
             data = self.queue.pop(0)
+            if not data: return '\0'*320
             return data
         elif DEBUG:
             log.msg("BacklogPlayout audio underrun")
