@@ -191,7 +191,6 @@ class Message(BaseApplication):
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
         app = OptionGroup('shtoom', 'Shtoom')
         app.addOption(StringOption('audio_infile','read audio from this file'))
-        app.addOption(StringOption('audio_outfile','write audio to this file'))
         opts.addGroup(app)
         opts.setOptsFile('.shmessagerc')
 
