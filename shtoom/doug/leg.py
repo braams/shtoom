@@ -76,3 +76,7 @@ class Leg(object):
     
     def hangupCall(self):
         self._voiceapp.va_hangupCall(self._cookie)
+
+    def sendDTMF(self, digits, duration=0.1, delay=0.05):
+        self._voiceapp.sendDTMF(digits, cookie=self._cookie, 
+                                duration=duration, delay=delay)

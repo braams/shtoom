@@ -28,6 +28,7 @@ class DougApplication(BaseApplication):
         # Mapping from callcookies to voiceapp instances
         self._voiceapps = {}
         self._voiceappClass = voiceapp
+        self._voiceappArgs = {}
 
     def boot(self, options=None):
         from shtoom.opts import buildOptions
@@ -43,6 +44,11 @@ class DougApplication(BaseApplication):
     def start(self):
         "Start the application."
         from twisted.internet import reactor
+        vargs = self.getPref('dougargs')
+        if vargs:
+            kwargs = [x.split('=') for x in vargs.split(',') ]
+            self._voiceappArgs = dict(kwargs)
+            
         register_uri = self.getPref('register_uri')
         if register_uri is not None:
             d = self.sip.register()
@@ -55,7 +61,7 @@ class DougApplication(BaseApplication):
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x), 
                        lambda x: self.acceptErrors(callcookie,x))
         try:
-            v = self._voiceappClass(d, self, callcookie)
+            v = self._voiceappClass(d, self, callcookie, **self._voiceappArgs)
             v.va_start()
         except:
             ee,ev,et = sys.exc_info() 
@@ -267,10 +273,12 @@ class DougApplication(BaseApplication):
             raise defer.fail(CallFailed("No auth available"))
 
     def startDTMF(self, cookie, digit):
-        rtp = self._rtp[cookie]
-        rtp.startDTMF(digit)
+        rtp = self._rtp.get(cookie)
+        if rtp:
+            rtp.startDTMF(digit)
 
     def stopDTMF(self, cookie, digit):
-        rtp = self._rtp[cookie]
-        rtp.stopDTMF(digit)
+        rtp = self._rtp.get(cookie)
+        if rtp:
+            rtp.stopDTMF(digit)
 

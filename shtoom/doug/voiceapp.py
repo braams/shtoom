@@ -24,7 +24,7 @@ except ImportError:
 if numarray is not None:
     class InbandDtmfDetector:
         def __init__(self, voiceapp):
-            from shtoom.doug.dtmfdetector import DtmfDetector
+            from shtoom.doug.dtmfdetect import DtmfDetector
             self.voiceapp = voiceapp
             self.prev = None
             self.D = DtmfDetector()
@@ -37,14 +37,15 @@ if numarray is not None:
             if nd != self.digit:
                 if self.digit == '':
                     self.digit = nd
-                    self.voiceapp._va_startDTMFEvent(nd)
+                    self.voiceapp.va_startDTMFevent(nd)
                 elif nd == '':
-                    old, self.digit = nd, self.digit
-                    self.voiceapp._va_stopDTMFEvent(old)
+                    old, self.digit = self.digit, nd
+                    self.voiceapp.va_stopDTMFevent(old)
                 else:
                     old, self.digit = nd, self.digit
-                    self.voiceapp._va_stopDTMFEvent(old)
-                    self.voiceapp._va_startDTMFEvent(self.digit)
+                    self.voiceapp.va_stopDTMFevent(old)
+                    self.voiceapp.va_startDTMFevent(self.digit)
+            self.prev = samp
 
 class Timer:
     def __init__(self, voiceapp, delay):
@@ -146,9 +147,9 @@ class VoiceApp(StateMachine):
 
     def va_receiveRTP(self, format, data):
         data = self.__converter.convertInbound(format, data)
-        self.__connected.write(data)
         if self.__inbandDTMFdetector is not None:
             self.__inbandDTMFdetector(data)
+        self.__connected.write(data)
 
     def va_start(self):
         self._start(callstart=0)
@@ -158,7 +159,6 @@ class VoiceApp(StateMachine):
         self._triggerEvent(CallStartedEvent(inboundLeg))
 
     def va_callanswered(self, leg=None):
-        print "leg is", leg
         if leg is None: 
             leg = self._inbound
         self._triggerEvent(CallAnsweredEvent(leg))
@@ -207,7 +207,6 @@ class VoiceApp(StateMachine):
         # XXX handle timeout
 
     def placeCall(self, toURI, fromURI=None):
-        print "place call to ", toURI
         self.__appl.placeCall(self.__cookie, toURI, fromURI)
 
     def va_hangupCall(self, cookie):
@@ -219,14 +218,17 @@ class VoiceApp(StateMachine):
         else:
             raise NotImplementedError, "can't connect legs yet"
 
-    def sendDTMF(self, keys, duration=0.1, delay=0.05):
+    def sendDTMF(self, digits, cookie=None, duration=0.1, delay=0.05):
         "Send a string of DTMF keystrokes"
-        for n,key in enumerate(keys):
+        for n,key in enumerate(digits):
             if key not in '01234567890#*':
                 raise ValueError, key
             n = float(n) # just in case
-            reactor.callLater(n*(duration+delay), 
-                lambda : self.__appl.startDTMF(self.cookie, key))
-            reactor.callLater(n*(duration+delay)+duration, 
-                lambda : self.__appl.stopDTMF(self.cookie, key))
+            if cookie is None:
+                cookie = self.__cookie
+            i = 0.2
+            reactor.callLater(i+n*(duration+delay), 
+                lambda k=key: self.__appl.startDTMF(cookie, k))
+            reactor.callLater(i+n*(duration+delay)+duration, 
+                lambda k=key: self.__appl.stopDTMF(cookie, k))
 
