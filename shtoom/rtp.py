@@ -5,21 +5,21 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# $Id: rtp.py,v 1.36 2004/03/04 14:20:47 anthony Exp $
+# $Id: rtp.py,v 1.37 2004/03/06 10:08:24 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
 from time import sleep, time
 
 from twisted.internet import reactor, defer
-from twisted.internet.protocol import DatagramProtocol
+from twisted.internet.protocol import ConnectedDatagramProtocol
 from twisted.internet.task import LoopingCall
 from twisted.python import log
 
 from shtoom.multicast.SDP import rtpPTDict
 
 
-class RTPProtocol(DatagramProtocol):
+class RTPProtocol(ConnectedDatagramProtocol):
     """Implementation of the RTP protocol.
 
     Also manages a RTCP instance.
@@ -165,7 +165,7 @@ class RTPProtocol(DatagramProtocol):
         self.rtcpListener.stopListening()
 
     def startSendingAndReceiving(self, dest, fp=None):
-        self.dest = dest
+        reactor.connectUDP(dest[0], dest[1], self)
         self.prevInTime = self.prevOutTime = time()
         self.sendFirstData()
 
@@ -189,7 +189,7 @@ class RTPProtocol(DatagramProtocol):
         # PT 13 is CN.
         log.msg("sending comfort noise to seed firewall")
         hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
-        self.transport.write(hdr+chr(0), self.dest)
+        self.transport.write(hdr+chr(0))
 
     def reactorWakeUp(self, n, f, reactor=reactor):
         reactor.wakeUp()
@@ -200,6 +200,11 @@ class RTPProtocol(DatagramProtocol):
         PT = hdr[1]&127
         data = datagram[12:]
         self.app.receiveRTP(self.cookie, PT, data)
+
+    def connectionRefused(self):
+        log.err("RTP got a connection refused, ending call")
+        self.Done = True
+        self.app.dropCall(self.cookie)
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
@@ -254,7 +259,7 @@ class RTPProtocol(DatagramProtocol):
             fmt, sample = self.sample
             self.sent += 1
             hdr = pack('!BBHII', 0x80, fmt, self.seq, self.ts, self.ssrc)
-            self.transport.write(hdr+sample, self.dest)
+            self.transport.write(hdr+sample)
             self.sample = None
         else:
             if (self.packets - self.sent) %10 == 0:
