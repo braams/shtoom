@@ -48,7 +48,7 @@ class DTMFDetectTest(unittest.TestCase):
         self._test_with_codec(codec)
 
     def test_dtmfdetect_gsm(self):
-        raise unittest.SkipTest('gsm codec breaks dtmf detection :-(')
+        #raise unittest.SkipTest('gsm codec breaks dtmf detection :-(')
         # Test DTMF after the mangling of GSM
         import shtoom.avail.codecs
         if shtoom.avail.codecs.gsm is None:
@@ -63,8 +63,10 @@ class DTMFDetectTest(unittest.TestCase):
         for k in dtmf.dtmf2freq.keys():
             s = dtmf.dtmfGenerator(k, 320)
             s1, s2 = s[:320], s[320:]
-            e1, e2 = codec.encode(s1), codec.encode(s2)
-            s1, s2 = codec.decode(e1), codec.decode(e2)
+            codec.decode(codec.encode(s1))
+            codec.decode(codec.encode(s2))
+            s1 = codec.decode(codec.encode(s1))
+            s2 = codec.decode(codec.encode(s2))
             s = s1+s2
             digit = detect.detect(s)
             self.assertEquals(k, digit)

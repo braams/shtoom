@@ -21,4 +21,4 @@ remind me. <wink>
     Allen Short - debugging, advice, maintenance of the hosting
     Itamar Shtull-Trauring - original Gtk UI, many bugfixes
     Casper Wilstrup - ALSA interface, new playout code, bugfixes
-
+    Moshe Zadka - numarray advice (dtmf detection)

@@ -1,13 +1,6 @@
 """
-    Extraordinarily brutal DTMF detection code. This is just
-    "something that works". Anyone who's got a better grasp
-    of signal processing than me (which wouldn't be hard - I
-    last studied it 12 years ago, and haven't touched it since
-    then) is encouraged to suggest a better approach. I'm not
-    that happy with the getpeaks() code, to be honest the 8 times
-    greater than average level seems somehow hacky. If you are
-    interested, let me know and I can provide you with some sample
-    files to experiment on.
+    DTMF generation and detection code. This replaces the old nasty
+    code with something a bit nicer (but a bit slower, too :-( 
 """
 
 # DTMF tones (aka "the beeps when you hit a keypad consist of a pair
@@ -24,6 +17,9 @@
 # 40ms of audio at a time (1/25th of a second).
 
 HZ = 8000.0
+SAMPLETIME = 0.040
+SAMPLESIZE = int(1/SAMPLETIME)
+SCALING = 1/SAMPLETIME
 
 freq2dtmf = {
         (697,1209):'1', (697,1336):'2',(697,1477):'3',(697,1633):'A',
@@ -61,10 +57,7 @@ class DtmfDetector:
         self.freqmatch = {}
         self.dtmf = freq2dtmf
         for val in frequencies:
-            sine = getSineWave(val)
-            peaks = self.getpeaks(sine)
-            for peak in peaks:
-                self.freqmatch[peak] = val
+            self.freqmatch[int(val/SCALING)+1] = val
 
     def detect(self, sample):
         """ Test for DTMF in a sample. Returns either a string with the
@@ -83,35 +76,56 @@ class DtmfDetector:
         for p in peaks:
             m = self.freqmatch.get(p)
             if m is None:
-                if p-1 in peaks:
+                if p-1 in self.freqmatch:
                     m = self.freqmatch.get(p-1)
-                elif p+1 in peaks:
+                elif p+1 in self.freqmatch:
                     m = self.freqmatch.get(p+1)
             matched.add(m)
         # If we got a None, that means there was a significant component
         # that wasn't a DTMF frequency.
         if None in matched:
+            print "mismatched: peaks were %r"%(peaks,)
             return ''
         else:
             m = list(matched)
             m.sort()
             return self.dtmf.get(tuple(m), '')
 
-    def getpeaks(self, a):
-        # This could be better.
+    def getpeaks(self, sample):
+        from numarray import nonzero
         from numarray.fft import real_fft
-        from numarray import add, abs, greater, nonzero
-        from sets import Set
-        res = real_fft(a)
-        res1 = abs(res)
-        mres = add.reduce(res1)/len(res1)
-        if not mres:
-            return []
-        # Here's the bit I'm uncomfortable with. The 'eight times average'
-        # seems a hack. On the other hand, it works for me.
-        res2 = res1/mres
-        peaks = Set(nonzero(greater(res2, 8))[0])
-        return peaks
+        fft = abs(real_fft(sample))
+        # We compare each point to the point on either side - we must be 
+        # greater than both.
+        # To do this, we left-shift and right-shift the array by one to 
+        # compare.
+        peaks = nonzero((fft[1:-1] > fft[:-2]) * (fft[1:-1] > fft[2:]))
+        if not len(peaks) or not len(peaks[0]): 
+            return ()
+        # Avoiding 'zip; sort; reverse' will give a big speedup. 
+        try:
+            peakvals = zip(fft[1:-1].take(peaks)[0], peaks[0])
+        except:
+            print "pppp", peaks
+            raise
+        peakvals.sort(); peakvals.reverse()
+        if len(peakvals) > 2:
+            (val1,ind1),(val2,ind2),(val3,ind3) = peakvals[:3]
+            # Peak 3 should be no more than 2/3 the size of peak 2
+            # For GSM/Speex mangled audio, peak3 is about 0.55 * peak2
+            # at the worst case.
+            if val2 > 1.5*val3:
+                # Add one to the index because we took [1:-1] before
+                return (ind2+1,ind1+1)
+            else:
+                return ()
+        elif len(peakvals) == 2:
+            (val2,ind2),(val1,ind1) = peakvals
+            # Add one to the index because we took [1:-1] before
+            return (ind2+1,ind1+1)
+        else:
+            (val1,ind1), = peakvals
+            return (ind1,0)
 
 def dtmfGenerator(key, duration=160):
     import struct
