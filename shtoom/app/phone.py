@@ -172,7 +172,7 @@ class Phone(BaseApplication):
             else:
                 aF = None
             log.msg("Getting new audio device", system='phone')
-            self._audio = getAudioDevice('rw', audioPref, aF)
+            self._audio = getAudioDevice()
             self._audio.close()
             log.msg("Got new audio device")
 
