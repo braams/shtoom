@@ -1,0 +1,152 @@
+Notes on Shtoom, Doug and the like
+----------------------------------
+
+Motivations
+-----------
+
+I want to see the same level of experimentation with the voice network
+as with the rest of the net. 
+
+I want to crack the skulls of the incumbent telcos open and feast on the 
+nougatty goodness inside. 
+
+I want to build something that lets one person with a wacky idea or
+two try it out and see how it works. If they subsequently decide to
+rewrite a working idea in C++ or whatever, meh, good luck to them. 
+
+It Would Be Nice If:
+  a) The phone network didn't suck - and it was possible to make this
+  happen.
+  b) Everything I can do in an office environment, I can also do when
+  working from home.
+
+Some thoughts
+-------------
+
+Doug should be able to play audio (and prompts), collect digits and
+audio, and have events triggered, both from the call itself, _and_
+externally. The latter is vital for, e.g. queueing, onhold, and christ
+only else knows what. It also breaks the nice clean abstraction of the
+state machine - no longer are only events from the call going to be part
+of the fsm.
+
+Unlike ciscos, we should be able to handle more than 2 legs on a given
+call - conference mixing should just be built in. The multi-leg support
+also makes it easy to, e.g. record a call to a file. Or record a
+conference call, anyway.
+
+I want additional sources of data - for conferences, something like
+IRC notifications in a nice log (user X has joined...) No point not
+completely enabling full media chat, which has audio (video, in the
+future, maybe) as well as something like an IRC channel (note - not IM,
+as IM handling of groups is totally screwed).
+
+The text channel should handle both short text, e.g. for pasting URLs,
+or larger things, an image. Can SIP pass this stuff? I assume so, it
+does everything else. (Where's my HTTP-over-SIP, dammit!)
+
+It's not clear on the distinction between shtoom and doug - once upon a
+time, they were clearly different things. Now I'm not so sure - a bunch
+of the functionality would be very useful in the phone. I'm thinking
+that the phone app object sits alongside the main app object in the same
+process. Then we can do tasty tasty things with the voicemail and the
+like. Trying to bolt everything into a common app object is going to be
+hideous. As an added advantage, we could have the phone app object glue
+onto an app server for debugging - listen in to calls in progress, that
+sort of thing. This could be a YAGNI, I'm not sure...
+
+The UI stuff on the phone has the potential to kill me. Possibilities:
+
+    -- Find people to maintain the other UIs, and pick one as the
+    standard one for experimenting with (wx? tk? cocoa has some appeal,
+    because of ib)
+
+    -- Try to figure out some way to have an "application-specific
+    area" where I can put HTML with links that do calls, or something?
+    Some way to do this... argh.
+
+Normal Use Cases
+----------------
+
+Basic stuff you'd do with a phone.
+
+
+
+Wacky Use Cases
+---------------
+
+These are more... non-obvious. In many cases they're things you can't
+do with the voice network at the moment.
+
+I. Ad-hoc conference - on a call, a new call comes in and is joined to 
+existing call. 
+
+    -- How to get assent from all parties on call? How to notify this to
+    all current participants?
+    -- Should all participants in a call be able to do this? I can't think
+    of a reason why not. 
+    -- Users are routed via a different user. What happens when that user 
+    hangs up? We should reconnect the remaining users (somehow). Preferably
+    transparently, without duplicated packets. Can we use RTP CSRC? Pretty 
+    sure SIP has some way of doing this, but it's possibly in the interminable
+    conference I-Ds. Really don't want to go full-mesh for this - for 3 
+    participants that's fine, but it should be possible to scale this up
+    in a peer-to-peer way. The problem is that in a p2p fileshare app, a
+    momentary break is perfectly fine - we don't want that here. This 
+    becomes insanely trickier if the user just drops out. We'll probably
+    need some sort of central server for this. :-(
+
+II. Ad-hoc conference - on a call want to place a new outbound call and
+contact someone and join them into the call.
+
+    -- All issues from I, plus...
+    -- How to do this painlessly. Ideally, we should know if they're 
+    available, before placing the call.
+    -- Quite likely to want to do a brief intro ("Hi Barry, Bob and are
+    just discussing FooWidgets, and since you know stuff...") - should 
+    we mute (or partial-mute) the call participant making the outbound
+    call?
+
+III. Alice places a call to Bob, gets redirected to voicemail. Bob just
+misses the call, wants to recover the call from the voicemail system.
+
+    -- This is actually pretty easy. But it requires a voicemail UI to 
+    be added to the phone. Note also that you can't do this if the 
+    phone isn't running, or if you start they phone after the diversion
+    to voicemail (since it will be talking to a different VM system).
+    -- If you're running with a server side VM, then you need to work
+    out the comms signalling for the user who wants to both listen into
+    and break into a voice call.
+
+IV. Call Screening. Why can't I use a SIP phone like I'd use a crappy
+tape-based answering machine? Yes, just a variant to III. Once SIP gets
+more utilised, say hello to goddammed telemarketers. I'm guessing the
+DNC list won't apply to SIP, and I can't imagine how long the regulatory
+regime will take to catch up.
+
+V. PBX Queuing. Nuff said, although we can (assuming full media chat is
+available) hopefully provide all sorts of stuff while on hold. Potential
+for annoyance from being spammed by a company who you're waiting for. On
+the plus side, you don't need to be physically on the call - we can do
+some sort of callback thing. For a decent PBX queueing system, you 
+really want the ability to define your own menus - this should be 
+exposed somehow.
+
+VI. Callback. No, really. I'm back at my desk, see that Andy wishes 
+to talk to me when I get back, and he's left a simple one-line reason. 
+I should be able to click on the 'reply' button (or call, or whatever) 
+and it'll Do The Right  Thing. Shouldn't have to drop into email for 
+this - should be as simple as sending an IM.
+
+VII. Call break-in - if someone's on an automated system, it'd be nice
+to be able to do this. III. requires most of this to be hooked up.
+
+VIII. Call monitoring/tapping. I really don't like the possibilities
+here - let the fucking FBI do their own damn work, but it's possible
+someone will find a use for this. At a minimum, call screening...
+
+IX. Wakeup/reminder calls. An external system should be able to trigger
+an event to say 'ring this address, and play this audio'. There may then
+be a subsequent IVR interaction with the user.
+
+
