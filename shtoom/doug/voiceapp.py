@@ -173,5 +173,20 @@ class VoiceApp(StateMachine):
     def va_hangupCall(self, cookie):
         self.__appl.dropCall(cookie)
     
-    def connectLeg(self, leg):
-        self._inbound = leg
+    def connectLeg(self, leg1, leg2=None):
+        if leg2 is None:
+            self._inbound = leg1
+        else:
+            raise NotImplementedError, "can't connect legs yet"
+
+    def sendDTMF(self, keys, duration=0.1, delay=0.05):
+        "Send a string of DTMF keystrokes"
+        for n,key in enumerate(keys):
+            if key not in '01234567890#*':
+                raise ValueError, key
+            n = float(n) # just in case
+            reactor.callLater(n*(duration+delay), 
+                lambda : self.__appl.startDTMF(self.cookie, key))
+            reactor.callLater(n*(duration+delay)+duration, 
+                lambda : self.__appl.stopDTMF(self.cookie, key))
+

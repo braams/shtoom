@@ -108,13 +108,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._statusW.configure(text=msg)
 
     def errorMessage(self, message, exc=None):
-        log.msg("error %s"%(message))
+        log.msg("error %s"%(message), system='ui')
 
     def callButton_clicked(self, evt=None):
         sipURL = self._urlentry.get()
         sipURL = sipURL.strip()
         if not sipURL.startswith('sip:'):
-            log.msg("Invalid SIP url %s"%(sipURL))
+            log.msg("Invalid SIP url %s"%(sipURL), system='ui')
             return
         self._callButton.config(state=DISABLED)
         deferred = self.app.placeCall(sipURL)

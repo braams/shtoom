@@ -3,6 +3,7 @@ import audioop
 
 class NullConv:
     def __init__(self, device):
+        print "audio: __init__"
         self._d = device
     def getDevice(self):
         return self._d
@@ -17,8 +18,10 @@ class NullConv:
     def write(self, data):
         return self._d.write(data)
     def close(self):
+        print "audio: close"
         return self._d.close()
     def reopen(self):
+        print "audio: reopen"
         return self._d.reopen()
     def isClosed(self):
         return self._d.isClosed()
@@ -75,12 +78,14 @@ class MultipleConv(NullConv):
         NullConv.__init__(self, *args, **kwargs)
 
     def listFormats(self):
+        print "audio: listFormats"
         if gsm is not None:
             return [FMT_GSM, FMT_PCMU, FMT_RAW,]
         else:
             return [FMT_PCMU, FMT_RAW,]
 
     def selectFormat(self, fmt):
+        print "audio: selectFormats"
         if not fmt in self.listFormats():
             raise ValueError, "unknown format"
         else:
@@ -108,6 +113,7 @@ class MultipleConv(NullConv):
             raise ValueError, "Unknown format %s"%(format)
 
     def write(self, data, format):
+        print "audio: write"
         if format == FMT_PCMU:
             return self._d.write(audioop.ulaw2lin(data, 2))
         elif format == FMT_RAW:

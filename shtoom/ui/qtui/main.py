@@ -42,13 +42,13 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
         self._newCallURL = None
 
     def debugMessage(self, message):
-        log.msg(message)
+        log.msg(message, system='ui')
 
     def statusMessage(self, message):
         self.statusLabel.setText(message)
 
     def errorMessage(self, message, exception=None):
-        log.msg("ERROR: %s"%message)
+        log.msg("ERROR: %s"%message, system='ui')
 
     def hangupButton_clicked(self):
         self.app.dropCall(self.cookie)

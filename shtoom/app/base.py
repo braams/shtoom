@@ -45,7 +45,7 @@ class BaseApplication:
         p = sip.SipPhone(self)
         self.sip = p
         self.sipListener = reactor.listenUDP(self.getPref('listenport') or 5060, p)
-        log.msg('sip listener installed')
+        log.msg('sip listener installed', system='app')
 
     def stopSIP(self):
         self.sipListener.stopListening()

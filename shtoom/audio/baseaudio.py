@@ -13,6 +13,7 @@ class AudioDevice(object):
             self.dev.close()
 
     def reopen(self):
+        print "audio: reopen"
         self.openDev()
         self._closed = False
 

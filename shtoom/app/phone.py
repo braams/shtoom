@@ -138,8 +138,10 @@ class Phone(BaseApplication):
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
+        print "startCall reopening", self._currentCall, self._audio
         if not self._currentCall:
             self._audio.reopen()
+        print "call Start", callcookie
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         self._currentCall = callcookie
         cb(callcookie)
@@ -164,7 +166,7 @@ class Phone(BaseApplication):
                 aF = ( audio_in, audio_out )
             else:
                 aF = None
-            log.msg("Getting new audio device")
+            log.msg("Getting new audio device", system='phone')
             self._audio = getAudioDevice('rw', audioPref, aF)
             self._audio.close()
             log.msg("Got new audio device")

@@ -170,11 +170,11 @@ class RTPProtocol(DatagramProtocol):
         ''' Handle results of the rtp/rtcp STUN. We have to check that
             the results have the same IP and usable port numbers
         '''
-        log.msg("got STUN back! %r"%(results))
+        log.msg("got STUN back! %r"%(results), system='rtp')
         rtpres, rtcpres = results
         if rtpres[0] != defer.SUCCESS or rtcpres[0] != defer.SUCCESS:
             # barf out.
-            log.msg("uh oh, stun failed %r"%(results))
+            log.msg("uh oh, stun failed %r"%(results), system='rtp')
         else:
             code1, rtp = rtpres
             code2, rtcp = rtcpres
@@ -184,7 +184,7 @@ class RTPProtocol(DatagramProtocol):
             # this seems almost impossible with most firewalls. So just try
             # to get a working rtp port (an even port number is required).
             elif ((rtp[1] % 2) != 0):
-                log.msg("stun showed unusable rtp/rtcp ports %r, retry number %d"%(results, self._stunAttempts))
+                log.msg("stun showed unusable rtp/rtcp ports %r, retry number %d"%(results, self._stunAttempts), system='rtp')
                 # XXX close connection, try again, tell user
                 if self._stunAttempts > 8:
                     # XXX
@@ -201,7 +201,7 @@ class RTPProtocol(DatagramProtocol):
                 #self._socketCreationAttempt()
             else:
                 # phew. working NAT
-                log.msg("discovered sane NAT for RTP/RTCP")
+                log.msg("discovered sane NAT for RTP/RTCP", system='rtp')
                 self._extIP, self._extRTPPort = rtp
                 self._stunAttempts = 0
                 d = self._socketCompleteDef
@@ -244,7 +244,7 @@ class RTPProtocol(DatagramProtocol):
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
         # PT 13 is CN.
-        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest))
+        log.msg("sending comfort noise to seed firewall to %s:%d"%(self.dest), system='rtp')
         hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
         self.transport.write(hdr+chr(0), self.dest)
         if hasattr(self.transport, 'connect'):

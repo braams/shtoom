@@ -19,7 +19,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             print "status", msg
 
     def errorMessage(self, message, exc=None):
-        log.msg("error %s"%(message))
+        log.msg("error %s"%(message), system='ui')
 
     def shutdown(self):
         # XXX Hang up any calls
@@ -71,16 +71,16 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def callStarted(self, cookie):
         self._cookie = cookie
-        log.msg("Call to %s STARTED"%(self.sipURL))
+        log.msg("Call to %s STARTED"%(self.sipURL), system='ui')
 
     def callConnected(self, cookie):
-        log.msg("Call to %s CONNECTED"%(self.sipURL))
+        log.msg("Call to %s CONNECTED"%(self.sipURL), system='ui')
 
     def callFailed(self, e, message=None):
-        log.msg("Call to %s FAILED: %r"%(self.sipURL, e))
+        log.msg("Call to %s FAILED: %r"%(self.sipURL, e), system='ui')
 
     def callDisconnected(self, cookie, message):
-        log.msg("Call to %s DISCONNECTED"%(self.sipURL))
+        log.msg("Call to %s DISCONNECTED"%(self.sipURL), system='ui')
         self._cookie = None
 
     def cmd_hangup(self, line):

@@ -57,7 +57,7 @@ class StunProtocol(DatagramProtocol, object):
             log.err("error, unknown transaction ID %s, have %r"%(tid,self._pending.keys()))
             return
         if mt == 0x0101:
-            log.msg("got STUN response from %s"%repr(address))
+            log.msg("got STUN response from %s"%repr(address), system='stun')
             # response
             remainder = dgram[20:]
             while remainder:
@@ -69,17 +69,17 @@ class StunProtocol(DatagramProtocol, object):
                               'CHANGED-ADDRESS',
                               'SOURCE-ADDRESS'):
                     dummy,family,port,addr = struct.unpack('!ccH4s', val)
-                    #log.msg("STUN response %s: %s %s"%(avtype,socket.inet_ntoa(addr),port))
+                    #log.msg("STUN response %s: %s %s"%(avtype,socket.inet_ntoa(addr),port), system='stun')
                     if avtype == 'MAPPED-ADDRESS':
                         self.gotMappedAddress(socket.inet_ntoa(addr),port)
                 else:
-                    log.msg("STUN: unhandled AV %s, val %r"%(avtype, repr(val)))
+                    log.msg("STUN: unhandled AV %s, val %r"%(avtype, repr(val)), system='stun')
         elif mt == 0x0111:
             log.error("STUN got an error response")
 
     def gotMappedAddress(self, addr, port):
         log.msg("got address %s %s (should I have been overridden?)"%(addr,
-                                                                      port))
+                                                                      port), system='stun')
 
     def sendRequest(self, server, avpairs=()):
         tid = getRandomTID()

@@ -87,7 +87,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         self.SetStatusText(message)
 
     def debugMessage(self, message):
-        log.msg(message)
+        log.msg(message, system='ui')
 
     def errorMessage(self, message):
         log.err("ERROR: %s"%message)

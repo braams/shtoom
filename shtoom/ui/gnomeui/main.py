@@ -112,7 +112,7 @@ class ShtoomWindow(ShtoomBaseUI):
         return result
 
     def debugMessage(self, msg):
-        log.msg(msg)
+        log.msg(msg, system='ui')
 
     def statusMessage(self, msg):
         self.status.set_text(msg)

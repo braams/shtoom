@@ -64,7 +64,7 @@ class Message(BaseApplication):
             d.addCallback(lambda x: cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
-            log.msg("accepting incoming call from %s"%calldesc['desc'])
+            log.msg("accepting incoming call from %s"%calldesc['desc'], system='app')
             d.addCallback(lambda x: cookie)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
