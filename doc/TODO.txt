@@ -1,29 +1,28 @@
 Mac installer: bundlebuilder
-Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net
+Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net. 
 Linux installer: rpmbuilder??, deb?
 
-      http://www.fwd.pulver.com/support/configuration_guide/configure_your_fwd_certified_phone/kphone)
-
 Definite before 0.3:
-    - documentation, documentation, documentation
     - deal with stupid devices that only work in stereo
     - sip: dropCall() must return a deferred
     - doug: implement a leg.hangup() method (and it's events)
-    - doug: implement leg connection (inbound and outbound)
-    - doug: hook up and debug s.d.conferencing - entrance soundburst
-    - sip: retry registration failures (e.g. for testcall)
-    - sip: move more stuff into the Dialog class
-    - ui(gnome): a new Gtk UI - Nafai
-        - Re-hookup the debugging log to the GUI for all GUIs - 
-          maybe need a hide/show option
-    - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
-      dynamic payload types. Audio shouldn't need to pass in the RTP PT.
-    - ui(tk): new dialogs that don't block, and have a timeout.
+    - doug: implement leg bridging (inbound and outbound)
+    - doug: s.d.conferencing's entrance soundburst bug
     - ui(qt): hide multiple call support for now
+    - documentation, documentation, documentation
 
 Maybe before 0.3:
+    - doug: placeCall to a broken address doesn't give generate a 
+      correct event
+    - shtam: rewrite in doug
+    - cocoa native UI, os x native sound. depends on the mac arriving.
+    - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
+      dynamic payload types. Audio shouldn't need to pass in the RTP PT.
     - stun: timeout the STUN call, generate a nice error (at least when
       run interactively)
+    - sip: retry registration failures (e.g. for testcall)
+    - sip: move more stuff into the Dialog class
+    - ui(tk): new dialogs that don't block, and have a timeout.
 
 Not before 0.3:
     - ui(qt): finish multiple Call UI, including new tab for incoming call
@@ -81,7 +80,6 @@ Future:
     - sip: Handle call failure gracefully - alert the user
     - sip: lots more error handling
     - sip, app, ui(all): a seperate debugging log for network level events
-    - shtam: rewrite in doug
     - UPnP: Hookup the discovery code in shtoom.upnp. 
     - UPnP: Finish forwardPort and cancelForwardPort. 
       Annoyingly, it doesn't seem like responses include some sort 
