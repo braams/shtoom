@@ -472,11 +472,8 @@ class Call(object):
         if authmethod.lower() != 'digest':
             raise ValueError, "Unknown auth method %s"%(authmethod)
         chal = digestauth.parse_keqv_list(parse_http_list(auth))
-        print chal
-        qop = chal.get('qop')
-        if not qop:
-            qop = 'auth'
-        if qop.lower() != 'auth':
+        qop = chal.get('qop', None)
+        if qop and qop.lower() != 'auth':
             raise ValueError, "can't handle qop '%s'"%(qop)
         realm = chal.get('realm')
         algorithm = chal.get('algorithm', 'md5')
@@ -487,20 +484,24 @@ class Call(object):
             raise RuntimeError, "Auth required, %s %s"%(user,passwd)
         A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
         A2 = '%s:%s'%(method, uri)
-        self.nonce_count += 1
-        ncvalue = '%08x'%(self.nonce_count)
-        cnonce = digestauth.generate_nonce(bits=16,
+        if qop is not None:
+            self.nonce_count += 1
+            ncvalue = '%08x'%(self.nonce_count)
+            cnonce = digestauth.generate_nonce(bits=16,
                                            randomness=
                                               str(nonce)+str(self.nonce_count))
-        # XXX nonce isn't there for proxy-auth. :-(
-        noncebit =  "%s:%s:%s:%s:%s" % (nonce,ncvalue,cnonce,qop,H(A2))
-        respdig = KD(H(A1), noncebit)
+            # XXX nonce isn't there for proxy-auth. :-(
+            noncebit =  "%s:%s:%s:%s:%s" % (nonce,ncvalue,cnonce,qop,H(A2))
+            respdig = KD(H(A1), noncebit)
+        else:
+            noncebit =  "%s:%s" % (nonce,H(A2))
+            respdig = KD(H(A1), noncebit)
         base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
                'response="%s"' % (authmethod, user, realm, nonce, 
                                   uri, respdig)
         if opaque:
             base = base + ', opaque="%s"' % opaque
-        if algorithm != 'MD5':
+        if algorithm.lower() != 'md5':
             base = base + ', algorithm="%s"' % algorithm
         if qop:
             base = base + ', qop=auth, nc=%s, cnonce="%s"'%(ncvalue, cnonce)
@@ -592,12 +593,14 @@ class Registration(Call):
         self.regServer = tpsip.parseURL(self.sip.app.getPref('register_uri'))
         self.regAOR = copy.copy(self.regServer)
         self.regAOR.username = self.sip.app.getPref('username')
+        self.regURI = copy.copy(self.regServer)
+        #self.regURI.port = None
         d = self.setupLocalSIP(self.regServer)
         d.addCallback(self.sendRegistration).addErrback(log.err)
 
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
-        invite = tpsip.Request('REGISTER', str(self.regServer))
+        invite = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
@@ -649,7 +652,7 @@ class Registration(Call):
                     inH, outH = 'proxy-authenticate', 'proxy-authorization'
                 a = message.headers.get(inH)
                 if a:
-                    uri = str(self.regServer)
+                    uri = str(self.regURI)
                     credDef = self.sip.app.authCred('REGISTER', uri)
                     credDef.addCallback(lambda c, uri=uri, chal=a[0]:
                                         self.calcAuth('REGISTER', 
