@@ -123,5 +123,7 @@ def convertToSource(thing, mode='r'):
             fp = open(thing, 'wb')
         else:
             raise ValueError("mode must be r or w")
+    else:
+        raise ValueError('source must be filename or source, not %r'%(type(thing)))
     return FileSource(fp, mode)
 
