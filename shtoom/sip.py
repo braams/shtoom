@@ -224,7 +224,7 @@ class Call(object):
         resp.creationFinished()
         try:
             self.sip.transport.write(resp.toString(), self.getRemoteSIPAddress())
-            print "Response sent", resp.toString()
+            self.sip.app.debugMessage("Response sent\n"+resp.toString)
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             #self.compDef.errback(e(v))
@@ -646,7 +646,6 @@ class Registration(Call):
         invite.creationFinished()
         try:
             self.sip.transport.write(invite.toString(), self.getRemoteSIPAddress())
-            print "register sent", invite.toString()
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             self.compDef.errback(e(v))
@@ -654,6 +653,7 @@ class Registration(Call):
         else:
             if self.getState() in ( 'NEW', 'REGISTERED' ):
                 self.setState('SENT_REGISTER')
+        self.sip.app.debugMessage("register sent\n"+invite.toString())
 
     def sendAuthResponse(self, authhdr, auth):
         self.sendRegistration(auth=auth, authhdr=authhdr)
@@ -695,7 +695,7 @@ class Registration(Call):
                     else: 
                         self.sip.app.statusMessage("Registration: auth failed")
             else:
-                print "Unknown state '%s' for a 401/407"%(state)
+                print "Unknown registration state '%s' for a 401/407"%(state)
         elif message.code in ( 200, ):
             self.sip.app.statusMessage("Registration: OK")
             # Woo. registration succeeded.
