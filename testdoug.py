@@ -121,16 +121,13 @@ class RecordingApp(VoiceApp):
 # Hack hack hack.
 import sys ; sys.path.append(sys.path.pop(0))
 
-app = None
 
-def main():
-    from shtoom.app.doug import DougApplication
-    global app
+from shtoom.doug.service import DougService
+global app
+srv = DougService(RecordingApp)
+srv.startService()
+app = srv.app
+#app.boot()
+#app.start()
 
-    app = DougApplication(RecordingApp)
-    app.boot()
-    app.start()
-
-if __name__ == "__main__":
-    main()
 
