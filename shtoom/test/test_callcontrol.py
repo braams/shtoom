@@ -172,7 +172,7 @@ class TestCall:
 
 
 class TestSip:
-    "Just like shtoom.sip.SipPhone, only not"
+    "Just like shtoom.sip.SipProtocol, only not"
     def __init__(self, app):
         self.app = app
 

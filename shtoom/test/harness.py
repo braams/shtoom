@@ -68,7 +68,7 @@ class TestCall:
 class TestSip:
     callFile = 'call.txt'
 
-    "Just like shtoom.sip.SipPhone, only not"
+    "Just like shtoom.sip.SipProtocol, only not"
     def __init__(self, app):
         from twisted.internet import reactor
         self.app = app

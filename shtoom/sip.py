@@ -990,15 +990,15 @@ class Registration(Call):
 
 
 
-class SipPhone(DatagramProtocol, object):
-    '''A SIP phone.'''
+class SipProtocol(DatagramProtocol, object):
+    '''A SIP protocol handler.'''
 
     __implements__ = ISip,
 
     def __init__(self, app, *args, **kwargs):
         self.app = app
         self._calls = {}
-        super(SipPhone, self).__init__(*args, **kwargs)
+        super(SipProtocol, self).__init__(*args, **kwargs)
 
     def getCalls(self):
         return [c for c in self._calls.values() if not isinstance(c, Registration)]

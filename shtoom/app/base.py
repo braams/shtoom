@@ -42,7 +42,7 @@ class BaseApplication:
     def connectSIP(self):
         from twisted.internet import reactor
         from shtoom import sip
-        p = sip.SipPhone(self)
+        p = sip.SipProtocol(self)
         self.sip = p
         lport = self.getPref('listenport')
         if lport is None:
