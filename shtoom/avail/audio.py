@@ -27,8 +27,6 @@ except ImportError:
 if fastaudio is not None:
     del fastaudio
     from shtoom.audio import fast as fastaudio
-else:
-    fastaudio = None
 
 
 try:
@@ -44,6 +42,15 @@ else:
     osxaudio = None
 
 from shtoom.audio import fileaudio
+
+try:
+    import alsaaudio
+except ImportError:
+    alsaaudio = None
+    _removeImport('alsaaudio')
+
+if alsaaudio is not None:
+    from shtoom.audio import alsa as alsaaudio
 
 
 def listAudio():
