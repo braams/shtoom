@@ -109,17 +109,20 @@ class        OutboundCallStartedEvent(CallStartedEvent):
     """ A new outbound call started
     """
 
-class    CallEndedEvent(Event):
+class    CallEndedEvent(CallLegEvent):
     """ A call under the control of this VoiceApp ended.
     """
-    def __init__(self, leg):
-        self.leg = leg
 
 class    TimeoutEvent(Event):
     """ A user-specified timeout occurred.
 
         The value of this exception is the timer that expired.
     """
+    def __init__(self, timer):
+        self.timer = timer
+
+    def getTimer(self):
+        return self.timer
 
 class    ApplicationSpecificEvent(Event):
     """ An Application-Specific Event.

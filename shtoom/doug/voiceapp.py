@@ -16,6 +16,20 @@ from shtoom.doug.statemachine import StateMachine
 from twisted.internet import reactor
 from shtoom.audio.converters import DougConverter
 
+class Timer:
+    def __init__(self, voiceapp, delay):
+        self._delay = delay
+        self._voiceapp = voiceapp
+        self._timer = reactor.callLater(delay, self._trigger)
+
+    def _trigger(self):
+        v, self._voiceapp = self._voiceapp, None
+        v._triggerEvent(TimeoutEvent(self))
+
+    def cancel(self):
+        self._timer.cancel()
+        self._voicapp = None
+
 class VoiceApp(StateMachine):
 
     def __init__(self, defer, **kwargs):
@@ -133,6 +147,9 @@ class VoiceApp(StateMachine):
         if old.isRecording():
             old.close()
             self.__recordDest = None
+
+    def setTimer(self, delay):
+        return Timer(self, delay)
 
     def isPlaying(self):
         return self.__connected.isPlaying()
