@@ -42,23 +42,28 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
             return
         self.callButton.setEnabled(False)
         defer = self.app.placeCall(sipURL)
-        defer.addCallbacks(self.callStarted, self.callFailed).addErrback(log.err)
+        defer.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
 
     def callStarted(self, cookie):
         self.cookie = cookie
         self.hangupButton.setEnabled(True)
         self.statusMessage('Calling...')
 
-    def callFailed(self, e):
-        self.errorMessage("call failed", e)
+    def callFailed(self, e, message=None):
+        self.errorMessage("call failed", e.getErrorMessage())
         self.hangupButton.setEnabled(False)
         self.callButton.setEnabled(True)
+        self.cookie = None
 
     def callConnected(self, cookie):
+        self.hangupButton.setEnabled(True)
         self.statusMessage('Call Connected')
 
-    def callDisconnected(self, e):
-        self.statusMessage('Call disconnected: %r'%(e))
+    def callDisconnected(self, cookie, message):
+        self.statusMessage('Call disconnected: %s'%message)
+        self.hangupButton.setEnabled(False)
+        self.callButton.setEnabled(True)
+        self.cookie = None
 
     def setAudioSource(self, fn):
         self.audiosource = fn

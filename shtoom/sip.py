@@ -122,19 +122,27 @@ class Call(object):
                                             host)))
                 self.abortCall()
                 return None
-        if getPolicy().checkStun(locAddress[0], remAddress[0]):
+        useStun = getPolicy().checkStun(locAddress[0], remAddress[0])
+        if useStun is True:
             self._needSTUN = True
             log.msg("stun policy says yes, use STUN")
             deferred = defer.Deferred()
             deferred.addCallback(self.setStunnedLocalIP).addErrback(log.err)
             SH = StunHook(self.sip)
             deferred = SH.discoverStun(deferred)
-        else:
+        elif useStun is False:
             self._localIP, self._localPort = locAddress
             if not self._callID:
                 self.setCallID()
             self.sip.updateCallObject(self, self.getCallID())
             self.setupDeferred.callback((host,port))
+        else:
+            # None. STUN stuff failed. Abort.
+            from shtoom.exceptions import HostNotKnown
+            d = self.compDef
+            del self.compDef
+            d.errback(HostNotKnown)
+            self.setState('ABORTED')
 
     def setStunnedLocalIP(self, (host, port)):
         log.msg("according to STUN, local address is %s:%s"%(host, port))
@@ -231,6 +239,9 @@ class Call(object):
             self.setState('ABORTED')
 
     def startOutboundCall(self, toAddr):
+        # XXX Set up a callLater in case we don't get a response, for a 
+        # retransmit
+        # XXX Set up a timeout for the call completion
         uri = tpsip.parseURL(toAddr)
         d = self.setupLocalSIP(uri=uri)
         d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)).addErrback(log.err)
@@ -292,7 +303,11 @@ class Call(object):
             self.sendInvite(toAddr, init=0)
 
     def sendInvite(self, toAddr, auth=None, authhdr=None, init=0):
-        print "sendInvite"
+        if self.getState() == "ABORTED":
+            d = self.compDef
+            del self.compDef
+            d.callback('call aborted')
+            return
         self._toAddr = toAddr
         if toAddr is None:
             toAddr = self._toAddr
@@ -408,7 +423,25 @@ class Call(object):
         """ Sends a CANCEL message to kill a call that's in the process of
             being established
         """
-        raise NotImplementedError
+        username = self.sip.app.getPref('username')
+        email_address = self.sip.app.getPref('email_address')
+        uri = self.remote
+        dest = uri.host, (uri.port or 5060)
+        cancel = tpsip.Request('CANCEL', self.remote)
+        # XXX refactor all the common headers and the like
+        cancel.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
+        cancel.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
+        cancel.addHeader('to', self.uri)
+        cancel.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
+                            username, email_address, self.getTag()))
+        cancel.addHeader('call-id', self.getCallID())
+        cancel.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
+        cancel.addHeader('content-length', 0)
+        cancel.creationFinished()
+        cancel = cancel.toString()
+        print "sending CANCEL to %s %s"%dest
+        self.sip.transport.write(cancel, dest)
+        self.setState('SENT_CANCEL')
 
     def recvBye(self, message):
         ''' An in-progress call got a BYE from the other end. Hang up
@@ -462,6 +495,8 @@ class Call(object):
         elif state in ( 'SENT_INVITE', ):
             self.sendCancel()
             self.setState('SENT_CANCEL')
+        elif state in ( 'NEW', ):
+            self.setState('ABORTED')
 
     def _getHashingImplementation(self, algorithm):
         # lambdas assume digest modules are imported at the top level
@@ -537,6 +572,13 @@ class Call(object):
             else:
                 self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
+            if state == 'SENT_CANCEL' and message.code == 487:
+                print "cancelled"
+                self.sip.app.endCall(self.cookie)
+                self.sip._delCallObject(self.getCallID())
+                self.sip.app.debugMessage("Hung up on call %s"%self.getCallID())
+                self.sip.app.statusMessage("Call Disconnected")
+                return
             self.call_attempts += 1
             if self.call_attempts > 5:
                 print "TOO MANY AUTH FAILURES"
@@ -816,12 +858,18 @@ class SipPhone(DatagramProtocol, object):
         """
         self.app.debugMessage("placeCall starting")
         _d = defer.Deferred()
-        call = self._newCallObject(_d, to=uri)
+        try:
+            call = self._newCallObject(_d, to=uri)
+        except:
+            e,v,t = sys.exc_info()
+            print "call creation failed", v
+            return defer.fail(v)
+        print "call is", call
         if call is None:
-            return '', _d
+            from shtoom.exceptions import CallFailed
+            _d.errback(CallFailed)
+            return _d
         invite = call.startOutboundCall(uri)
-        # Set up a callLater in case we don't get a response, for a retransmit
-        # Set up a timeout for the call completion
         return _d
 
 
@@ -863,6 +911,7 @@ class SipPhone(DatagramProtocol, object):
         if message.response and not call:
             self.app.debugMessage("SIP response refers to unknown call %s %r"%(
                                                     callid, self._calls.keys()))
+            print "unknown", message.toString()
             return
         if message.request and message.method.lower() != 'invite' and not call:
             self.app.debugMessage("SIP request refers to unknown call %s %r"%(

@@ -65,6 +65,7 @@ class Phone(BaseApplication):
         self._calls[cookie] = call
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
+            self.ui.callStarted(cookie)
             d.callback('')
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
