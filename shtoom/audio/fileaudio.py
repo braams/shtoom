@@ -17,12 +17,20 @@ class AudioFromFiles:
         return self._outfp.write(bytes)
 
     def reopen(self):
-        self._infp = open(self.infile, 'rb')
-        self._outfp = open(self.outfile, 'wb')
+        if self.infile is not None:
+            self._infp = open(self.infile, 'rb')
+        else:
+            self._infp = None
+        if self.outfile is not None:
+            self._outfp = open(self.outfile, 'wb')
+        else:
+            self._outfp = None
 
     def close(self):
-        self._infp.close()
-        self._outfp.close()
+        if self._infp is not None:
+            self._infp.close()
+        if self._outfp is not None:
+            self._outfp.close()
 
 def getAudioDevice(mode):
     from __main__ import app

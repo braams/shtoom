@@ -6,10 +6,16 @@ from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
 from twisted.internet import defer
 from twisted.python import log
+from twisted.protocols import sip as tpsip
 import sys
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 from shtoom.audio.fileaudio import getFileAudio
+
+STATE_NONE = 0x0
+STATE_SENDING = 0x1
+STATE_RECEIVING = 0x2
+STATE_BOTH = 0x3
 
 class Message(BaseApplication):
     __implements__ = ( Application, )
@@ -22,6 +28,7 @@ class Message(BaseApplication):
         self._pendingRTP = {}
         self._audios = {}
         self._audioFormats = {}
+        self._audioStates = {}
 
     def boot(self, options=None):
         from shtoom.opts import buildOptions
@@ -72,6 +79,7 @@ class Message(BaseApplication):
     def openAudioDevice(self, callcookie):
         audio_in = self.getPref('audio_infile')
         self._audios[callcookie] = getFileAudio(audio_in, '/dev/null')
+        self._audioStates[callcookie] = STATE_NONE
 
     def selectFormat(self, callcookie, rtpmap):
         rtp =  self._rtp[callcookie]
@@ -112,24 +120,28 @@ class Message(BaseApplication):
         return s
 
     def startCall(self, callcookie, remoteAddr, cb):
+        self._audioStates[callcookie] = STATE_SENDING 
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         log.msg("call %s connected"%callcookie)
         cb(callcookie)
 
     def endCall(self, callcookie, reason=''):
+        log.msg("call %s disconnected"%callcookie, reason)
         rtp = self._rtp[callcookie]
         rtp.stopSendingAndReceiving()
         del self._rtp[callcookie]
         if self._calls.get(callcookie):
             del self._calls[callcookie]
         self.closeAudioDevice(callcookie)
-        log.msg("call %s disconnected"%callcookie, reason)
 
     def closeAudioDevice(self, callcookie):
+        del self._audioStates[callcookie]
         self._audios[callcookie].close()
         del self._audios[callcookie]
 
     def receiveRTP(self, callcookie, payloadType, payloadData):
+        if not (self._audioStates[callcookie] & STATE_RECEIVING):
+            return 
         fmt = None
         if payloadType == 0:
             fmt = FMT_PCMU
@@ -148,7 +160,15 @@ class Message(BaseApplication):
 
     def giveRTP(self, callcookie):
         # Check that callcookie is the active call!
-        return self._audioFormats[callcookie], self._audios[callcookie].read()
+        if not (self._audioStates[callcookie] & STATE_SENDING):
+            return self._audioFormats[callcookie], '' # XXX comfort noise??
+        data = self._audios[callcookie].read()
+        if not data:
+            self.finishedAudio(callcookie)
+        return self._audioFormats[callcookie], data
+
+    def finishedAudio(self, callcookie):
+        self.dropCall(callcookie)
 
     def placeCall(self, sipURL):
         return self.sip.placeCall(sipURL)
