@@ -1,3 +1,5 @@
+from shtoom.doug.events import *
+
 class Source(object):
     "A Source object is a source and sink of audio data"
     def __init__(self):
@@ -9,7 +11,7 @@ class Source(object):
 class SilenceSource(Source):
     "A SilenceSource generates silence and eats all audio given to it"
     def __init__(self):
-        super(SilenceSource, self).__init__(self)
+        super(SilenceSource, self).__init__()
 
     def isPlaying(self):
         return False
@@ -32,7 +34,7 @@ class FileSource(Source):
     def __init__(self, fp, mode):
         self._fp = fp
         self._mode = mode
-        super(FileSource, self).__init__(self)
+        super(FileSource, self).__init__()
 
     def isPlaying(self):
         return self._mode == 'r'
@@ -60,6 +62,7 @@ class FileSource(Source):
                 self.app._triggerEvent(MediaRecordStoreFailedEvent(self))
 
 def convertToSource(thing, mode='r'):
+    print "opening thing", thing
     if isinstance(thing, basestring):
         if mode == 'r':
             fp = open(thing, 'rb')
