@@ -29,6 +29,15 @@ class IPhoneUIFeedback(Interface):
         """ The call to 'url' has been disconnected
         """
 
+    def incomingCall(self, description, deferred):
+        """ An incoming call (described by text 'description') has arrived.
+
+            The UI should call deferred.callback() to accept the call, 
+            and deferred.errback() to reject it.
+            
+            XXX should pass reject reasons back.
+        """
+
 
 class ISipPhone(Interface):
     """ SIP glue layer. The UI keeps a reference to a ISipPhone, and
