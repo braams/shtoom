@@ -17,6 +17,17 @@ def tryQtInterface(application):
         from shtoom.ui.qtshtoom import main
         return main(application)
 
+def tryWxInterface(application):
+    import sys
+    try:
+        import wx
+    except ImportError:
+        wx = None
+    if wx is not None:
+        from shtoom.ui.wxshtoom import main
+        return main(application)
+
+
 def tryTkInterface(application):
     import sys
     try:
@@ -52,12 +63,14 @@ def findUserInterface(application, prefui):
             ui = tryTkInterface(application)
         elif prefui.lower() == "gnome":
             ui = tryGnomeInterface(application)
+        elif prefui.lower() == "wx":
+            ui = tryWxInterface(application)
         elif prefui.lower() == "text":
             ui = tryTextInterface(application)
     if ui is not None:
         return ui
-    for attempt in ( tryQtInterface, tryGnomeInterface, tryTkInterface,
-                    tryTextInterface, ):
+    for attempt in ( tryQtInterface, tryGnomeInterface, tryWxInterface, 
+                    tryTkInterface, tryTextInterface, ):
         ui = attempt(application)
         if ui is not None:
             return ui
