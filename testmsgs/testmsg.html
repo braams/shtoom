@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>SIP Test Messages</title>
+<meta name="author" content="Jonathan Rosenberg, Henning Schulzrinne and
+Neal Deason">
+<body bgcolor="white">
+
+<h1>SIP Test Messages</h1>
+
+<p>The files in here are test messages for SIP servers to exercise
+various functions.  Contributed by Neil Deason, Anders Kristensen,
+Jonathan Rosenberg, Henning Schulzrinne.
+
+<p>SIP interoperabilty test event entrants are strongly encouraged to
+run these tests.  In particular entrants to advanced scenario testing at
+these events will be expected to have passed all torture tests.
+
+<h2><a href="test1.txt">test1.txt</a></h2>
+
+This message is a correctly formatting SIP message. It contains:
+
+<ul>
+<li>line folding all over
+<li>escaped characters within quotes
+<li>LWS between colons, semicolons, headers, and other fields
+<li>both comma separated and separate listing of headers
+<li>mix or short and long form for the same header
+<li>unknown header field
+<li>unusual header ordering
+<li>nested comments
+<li>unknown parameters of a known header
+</ul>
+
+<h2><a href="test2.txt">test2.txt</a></h2>
+
+This message tests support for Proxy-Require and Require. It is a
+request that contains both headers, listing new features. Proxies and
+clients should respond with a 420 Bad Extension, and an Unsupported
+header listing these features.
+
+<h2><a href="test3.txt">test3.txt</a></h2>
+
+This message contains unknown schemes in the Request URI, To, From and
+Contact headers of a request.  A server should probably return a not
+found error; but other behaviors are acceptable.
+
+<h2><a href="test4.txt">test4.txt</a></h2>
+
+This message is a registration request with an expiration year of 2040. 
+This makes sure that a server doesn't crash on seeing a date past Y2038. 
+The correct behavior is probably to limit the lifetime to some
+configured maximum.
+
+<h2><a href="test5.txt">test5.txt</a></h2>
+
+This is a UAS test.  It is a request that includes an Accept header
+without SDP.  The UAS should respond with an error.
+
+<h2><a href="test6.txt">test6.txt</a></h2>
+
+This is a UAS test.  It is a request that includes a body of a non-SDP
+type.  The UAS should respond with an error.
+
+<h2><a href="test7.txt">test7.txt</a></h2>
+
+This request message contains a new method, NEWMETHOD.  A proxy should
+forward this using the same retransmission rules as OPTIONS or BYE.  A
+UAS should reject it with an error, and list the available methods in
+the response.
+
+<h2><a href="test8.txt">test8.txt</a></h2>
+
+This message is nearly identical to test7.  It is a request with a new
+method, but with a CSeq method tag which does not match.  A proxy should
+either respond with an error, or correct the method tag.
+
+<h2><a href="test9.txt">test9.txt</a></h2>
+
+This message is a REGISTER request with an unknown authorization scheme. 
+The server should do something reasonable, such as rejecting the
+request.
+
+<h2><a href="test10.txt">test10.txt</a></h2>
+
+This message contains two requests, separated by a bunch of whitespace. 
+Since the message exceeds the length indicated in the Content-Length
+header, the message should be rejected. (Multiple SIP requests per UDP
+packet are no longer allowed.)
+
+<h2><a href="test11.txt">test11.txt</a></h2>
+
+This message contains no Call-ID, From, or To header. The server
+should not crash, and ideally should respond with an error.
+
+<h2><a href="test12.txt">test12.txt</a></h2>
+
+The message contains a request with an extra Call-ID and To field. The 
+server should not crash, and should ideally respond with an error.
+
+<h2><a href="test13.txt">test13.txt</a></h2>
+
+This message contains an Expires header which has illegal values for a 
+number of components, but otherwise is syntactically correct.
+
+<h2><a href="test14.txt">test14.txt</a></h2>
+
+This message is a response with a 2nd Via header of
+255.255.255.255. The top Via header will need to be modified to
+represent the address of the server. On receiving this response, the
+top Via header is stripped and the packet forwarded. Since the next
+address is the broadcast address, it causes the packet to be broadcast
+onto the network. A smart server should ignore packets with 2nd Via
+headers that are 255.255.255.255 or 127.0.0.1. At the very least it
+should not crash.
+
+<h2><a href="test15.txt">test15.txt</a></h2>
+
+<p>This is a request with the Via and Contact headers incorrect.  They
+contain additional semicolons and commas without parameters or values. 
+The server should respond with a Bad Request error.
+
+<h2><a href="test16.txt">test16.txt</a></h2>
+
+<p>This is a request message with a  Content Length that is much larger
+than the length of the body. When sent UDP, the server should respond
+with an error. With TCP, there's not much you can do but wait...
+
+<h2><a href="test17.txt">test17.txt</a></h2>
+
+<p>This is a request message with a negative value for
+Content-Length. The server should respond with an error.
+
+<h2><a href="test18.txt">test18.txt</a></h2>
+
+<p>This is a request message with garbage after the end of the SDP
+included in the body.  In fact, the server should treat this garbage as
+a second request.  However, it is not even close to a valid message. 
+The server should therefore ignore it, and forward the first message
+normally.
+
+<h2><a href="test19.txt">test19.txt</a></h2>
+
+<p>This is a request with an unterminated quote in the display name of
+the To field.  The server can either return an error, or proxy it if it
+is successful parsing without the terminating quote.
+
+<h2><a href="test20.txt">test20.txt</a></h2>
+
+<p>This is an INVITE request with a semicolon-separated parameter in the
+"user" part. Outbound proxies should direct it appropriately.
+
+<hr>
+
+<p>The files below are additional test messages for SIP servers to
+exercise various functions.  Comments and corrections should be sent to
+<a href=mailto:ndeason@ubiquity.net>Neil Deason</a>. 
+
+<h2><a href="test21.txt">test21.txt</a></h2>
+<p>This INVITE is illegal because the Request-URI has been enclosed within
+in "&lt;>".
+<p>An intelligent server may be able to deal with this and fix up the
+Request-URI if acting as a Proxy.  If not it should respond 400&nbsp;
+with an appropriate reason phrase.
+
+<h2>
+<a href="test22.txt">test22.txt</a></h2>
+<p>This INVITE has illegal LWS within the SIP URL.
+<p>An intelligent server may be able to deal with this and fix up the
+Request-URI if acting as a proxy.  If not it should respond 400 with an
+appropriate reason phrase.
+
+<h2>
+<a href="test23.txt">test23.txt</a></h2>
+<p>This INVITE has illegal >1 SP between elements of the Request-URI.
+
+<p>An intelligent server may be able to deal with this and fix up the
+Request-URI if acting as a proxy.  If not it should respond 400 with an
+appropriate reason phrase.
+
+<h2>
+<a href="test24.txt">test24.txt</a></h2>
+<p>This INVITE is legal and has a Request-URI with a SIP URL containing
+escaped characters.
+
+<h2>
+<a href="test25.txt">test25.txt</a></h2>
+<p>This INVITE is illegal as it the Request-URI contains a SIP URL
+containing escaped headers.
+
+<p>An intelligent server may be liberal enough to accept this. A server
+acting as a proxy should remove the escaped header before processing.
+
+<h2>
+<a href="test26.txt">test26.txt</a></h2>
+<p>This INVITE contains an unknown URI scheme in the Request-URI.
+
+<p>A server should reject this message with a 400 response plus an
+appropriate reason phrase despite being able to understand the To header
+as a SIP URL.
+
+<h2>
+<a href="test27.txt">test27.txt</a></h2>
+<p>This OPTIONS request is legal despite there being no LWS between the
+display name and &lt; in the From header.
+
+<h2>
+<a href="test28.txt">test28.txt</a></h2>
+<p>This OPTIONS request is legal despite there being extra LWS between the
+display name and &lt; in the From header.
+
+<h2>
+<a href="test29.txt">test29.txt</a></h2>
+<p>This INVITE is illegal as it contains a non GMT time zone in the SIP Date
+of the Expires header.
+<p>An intelligent server may be able to fix this up and correct the time
+to GMT.  Alternatively this message may illicit a 400 response with an
+appropriate reason phrase.
+
+<h2>
+<a href="test30.txt">test30.txt</a></h2>
+<p>This is a legal INVITE but the message content has long since expired.
+<p>A server should respond 408 (Timeout).
+
+<h2>
+<a href="test31.txt">test31.txt</a></h2>
+<p>This is a legal SIP request with the Max-Forwards header set to zero.
+<p>A proxy or gateway should not forward the request and respond 483 (Too
+Many Hops).
+
+<h2>
+<a href="test32.txt">test32.txt</a></h2>
+<p>This is a legal REGISTER message where the Contact header contains a
+SIP URL with an escaped header within it.
+
+<h2>
+<a href="test33.txt">test33.txt</a></h2>
+<p>This is an illegal message as the REGISTER request contains a SIP URL with
+an escaped header but it is not enclosed in &lt;>
+
+<p>A server should respond 400 with an appropriate reason phrase.
+
+<h2>
+<a href="test34.txt">test34.txt</a></h2>
+<p>This is a legal message that contains long values in many headers.
+
+<h2>
+<a href="test35.txt">test35.txt</a></h2>
+This is an illegal and badly mangled message.
+<p>A server should respond 400 with an appropriate reason phrase if it
+can. It may just drop this message.
+
+<h2>
+<a href="test36.txt">test36.txt</a></h2>
+<p>This is a legal message with a large number of SDP attributes and a long
+telephone subscriber Request-URI
+
+<h2>
+<a href="test37.txt">test37.txt</a></h2>
+<p>This REGISTER contains a contact where the 'user' parameter should be
+interpreted as being a contact-param and not a url-param.  The register
+should succeed but a subsequent retrieval of the registration must not
+include "user=phone" as a url-parameter.
+
+<h2>
+<a href="test38.txt">test38.txt</a></h2>
+<p>This register contains a contact where the 'user' parameter is a
+url-param.  The register should succeed and a subsequent retrieval of
+the registration must include "user=phone" as a url-parameter.
+
+<h2>
+<a href="test39.txt">test39.txt</a></h2>
+<p>This is a legal INVITE where the To and From header contain display
+names that contain multiple tokens but are unquoted,
+
+<h2>
+<a href="test40.txt">test40.txt</a></h2>
+<p>This is an illegal invite at the display names in the To and From
+headers contain non-token characters but are unquoted.  A server may be
+intelligent enough to cope with this but may also return a 400 response
+with an appropriate reason phrase.
+
+<h2>
+<a href="test41.txt">test41.txt</a></h2>
+<p>This should be rejected with 400.  Section 4.1 lists SIP version as a
+literal and doesn't say anything about ignoring leading zeros.  As an
+example of why rejecting it is a good idea, consider version numbers
+like 2.1 and 2.01 - they are unlikely to refer to the same version.
+
+<h2>
+<a href="test42.txt">test42.txt</a></h2>
+This is an illegal INVITE as the SIP Protocol version is unknown.
+<p>The server should respond to the request with a bad version error.
+<br>
+<hr><font size=-1>Last updated&nbsp;<script type="text/JavaScript">
+document.write(document.lastModified)
+</script>
+
+by <a href=mailto:ndeason@ubiquity.net>Neil Deason</a></font>
+</body>
+</html>
+<hr>
+<small>Last updated 
+<script type="text/JavaScript">
+document.write(document.lastModified)
+</script>
+by <a href="http://www.cs.columbia.edu/~hgs">Henning Schulzrinne</a>
+</small>
+
+</body>
+</html>
