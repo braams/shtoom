@@ -11,7 +11,6 @@ from shtoom.app.interfaces import Application
 from shtoom.app.base import BaseApplication
 from shtoom.exceptions import CallFailed
 from shtoom.audio import getAudioDevice
-from shtoom.rtp.protocol import RTPProtocol
 from shtoom.sdp import SDP, MediaDescription
 from shtoom.ui.select import findUserInterface
 from shtoom.opts import buildOptions
@@ -103,6 +102,7 @@ class Phone(BaseApplication):
         return d
 
     def _createRTP(self, cookie, localIP, withSTUN):
+        from shtoom.rtp.protocol import RTPProtocol
         if self._rtpProtocolClass is None:
             rtp = RTPProtocol(self, cookie)
         else:

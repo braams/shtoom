@@ -6,7 +6,7 @@
 import struct, random, os, md5, socket
 from time import sleep, time
 
-from twisted.internet import reactor, defer
+from twisted.internet import defer
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.task import LoopingCall
 from twisted.python import log

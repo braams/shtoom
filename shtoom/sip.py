@@ -17,7 +17,6 @@ from interfaces import SIP as ISip
 
 from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
 from twisted.internet import defer
-from twisted.internet import reactor
 from twisted.protocols import sip as tpsip
 from twisted.python import log
 
@@ -269,6 +268,7 @@ class Call(object):
             with multiple interfaces, we'll get the right one
         """
         # XXX Allow over-riding
+        from twisted.internet import reactor
         global _CACHED_LOCAL_IP
         host, port = dest
         getPref = self.sip.app.getPref
@@ -646,6 +646,7 @@ class Call(object):
         """
 
     def installTeardownTrigger(self):
+        from twisted.internet import reactor
         if 0 and self.cancel_trigger is None:
             t = reactor.addSystemEventTrigger('before',
                                               'shutdown',
@@ -655,6 +656,7 @@ class Call(object):
 
     def dropCall(self, appTeardown=False):
         '''Drop call '''
+        from twisted.internet import reactor
         # XXX return a deferred, and handle responses properly
         if not appTeardown and self.cancel_trigger is not None:
             reactor.removeSystemEventTrigger(self.cancel_trigger)
@@ -899,6 +901,7 @@ class Registration(Call):
         self.sendRegistration(auth=auth, authhdr=authhdr)
 
     def recvResponse(self, message):
+        from twisted.internet import reactor
         state = self.getState()
         if message.code in ( 401, 407 ):
             self.register_attempts += 1
