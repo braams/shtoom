@@ -7,6 +7,7 @@ opened = None
 class OSSAudioDevice(baseaudio.AudioDevice):
 
     def openDev(self):
+        print "ossaudiodev opening"
         dev = ossaudiodev.open('rw')
         dev.speed(8000)
         dev.nonblock()
@@ -37,6 +38,10 @@ class OSSAudioDevice(baseaudio.AudioDevice):
         if self._channels == 2:
             data = tostereo(data, 2, 1, 1)
         self.dev.write(data)
+
+    def close(self):
+        print "ossaudiodev closing"
+        self.dev.close()
 
 def listFormats(dev):
     import ossaudiodev as O
