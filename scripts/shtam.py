@@ -31,6 +31,7 @@ class VoicemailApp(VoiceApp):
     announceFile = 'voicemail.raw'
     # Maximum record time, in seconds
     maxDuration = 300 
+    draftDir = '/tmp'
 
     def __start__(self):
         print "voiceapp.__start__"
@@ -87,7 +88,8 @@ class VoicemailApp(VoiceApp):
             return self.beginRecording(event=None)
 
     def beginRecording(self, event):
-        self.draftFile = '/tmp/vmdraft%s.raw'%draftTemp(self.destination)
+        self.draftFile = os.path.join(self.draftDir, 
+                                'vmdraft%s.raw'%draftTemp(self.destination))
         self.recordingTimeout = self.setTimer(self.maxDuration)
         self.mediaRecord(self.draftFile)
         return ( (CallEndedEvent, self.recordingDone), 
@@ -110,7 +112,7 @@ class VoicemailApp(VoiceApp):
 
 def encodeAudio(infp, dest):
     import wave
-    draft = '/tmp/voicemail%s.wav'%draftTemp(dest)
+    draft = os.path.join('/tmp','voicemail%s.wav'%draftTemp(dest))
     fp = wave.open(draft, 'wb')
     fp.setparams((1,2,8000,0,'NONE','NONE'))
     fp.writeframes(infp.read())
@@ -135,7 +137,7 @@ def sendVoicemail(dest, sender, draftfile):
     server.quit()
 
 class VoicemailApplication(DougApplication):
-    configFileName = '.shechorc'
+    configFileName = '.shtamrc'
 
     def acceptResults(self, cookie, result):
         from twisted.internet import reactor
