@@ -381,13 +381,14 @@ class Call(object):
         self.setState('CONNECTED')
         if startRTP:
             self.sip.app.startCall(self.cookie, (oksdp.ipaddr,oksdp.port), cb)
+        self.sip.app.statusMessage("Call Connected")
 
     def sendBye(self):
         username = self.sip.app.getPref('username')
         email_address = self.sip.app.getPref('email_address')
         uri = self.remote
         dest = uri.host, (uri.port or 5060)
-        bye = tpsip.Request('BYE', str(self.remote))
+        bye = tpsip.Request('BYE', self.remote)
         # XXX refactor all the common headers and the like
         bye.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
@@ -532,7 +533,7 @@ class Call(object):
                 self.sip.app.endCall(self.cookie)
                 self.sip._delCallObject(self.getCallID())
                 self.sip.app.debugMessage("Hung up on call %s"%self.getCallID())
-                self.sip.app.statusMessage("idle")
+                self.sip.app.statusMessage("Call Disconnected")
             else:
                 self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
@@ -578,14 +579,20 @@ class Call(object):
                 self.sip.app.debugMessage(message.toString())
                 self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
                 self.sip._delCallObject(self.getCallID())
+                self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
+                                                             message.phrase))
         elif message.code - (message.code%100) == 500:
             self.sip.app.debugMessage(message.toString())
             self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
+            self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
+                                                             message.phrase))
         elif message.code - (message.code%100) == 600:
             self.sip.app.debugMessage(message.toString())
             self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
+            self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
+                                                             message.phrase))
         else:
             self.sip.app.debugMessage(message.toString())
 
@@ -686,10 +693,11 @@ class Registration(Call):
                     if self.register_attempts > 1:
                         self.sendRegistration()
                     else: 
-                        print "401/407 and no auth header"
+                        self.sip.app.statusMessage("Registration: auth failed")
             else:
                 print "Unknown state '%s' for a 401/407"%(state)
         elif message.code in ( 200, ):
+            self.sip.app.statusMessage("Registration: OK")
             # Woo. registration succeeded.
             self.register_attempts = 0
             if state == 'SENT_REGISTER':
@@ -837,6 +845,7 @@ class SipPhone(DatagramProtocol, object):
         if message.request and message.method.lower() != 'invite' and not call:
             self.app.debugMessage("SIP request refers to unknown call %s %r"%(
                                                     callid, self._calls.keys()))
+            # XXX In this case, send a 481!
             return
         if message.request:
             print "handling request", message.method
@@ -860,7 +869,6 @@ class SipPhone(DatagramProtocol, object):
                     call.recvInvite(message)
                 elif message.method == 'ACK':
                     call.recvAck(message)
-
 
         elif message.response:
             print "handling response", message.code
