@@ -12,7 +12,7 @@ def getLocalUsername():
     return username
 
 def buildOptions(app):
-    from shtoom.Options import AllOptions, OptionGroup, StringOption, NumberOption, ChoiceOption, BooleanOption
+    from shtoom.Options import AllOptions, OptionGroup, StringOption, PasswordOption, NumberOption, ChoiceOption, BooleanOption
     opts = AllOptions()
 
     app.appSpecificOptions(opts)
@@ -43,7 +43,7 @@ def buildOptions(app):
                         'URI of registration server (e.g. sip:divmod.com:5060)'))
     register.addOption(StringOption('register_user','Username to register'))
     register.addOption(StringOption('register_authuser','Username to use for auth'))
-    register.addOption(StringOption('register_authpasswd','Passwd to use for auth'))
+    register.addOption(PasswordOption('register_authpasswd','Passwd to use for auth'))
     opts.addGroup(register)
 
     debug = OptionGroup('debug', 'Debugging', gui=False)
