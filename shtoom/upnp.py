@@ -21,7 +21,6 @@
 
 
 
-import struct, socket, time
 from twisted.internet import reactor, defer, protocol
 from twisted.internet.protocol import DatagramProtocol
 from twisted.protocols import http
@@ -135,7 +134,7 @@ class UPnPProtocol(DatagramProtocol, object):
 
     def listenMulticast(self):
         import socket
-        mcast = reactor.listenMulticast(1900, upnp)
+        mcast = reactor.listenMulticast(1900, self)
         mcast.joinGroup('239.255.255.250', socket.INADDR_ANY)
 
     def gotRootDesc(self, headers, body):
