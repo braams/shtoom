@@ -23,6 +23,8 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def shutdown(self):
         # XXX Hang up any calls
+        if self._cookie:
+            self.app.dropCall(self._cookie)
         from twisted.internet import reactor
         reactor.stop()
 
@@ -32,7 +34,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
 
     def connectionMade(self):
-        self.transport.write("Welcome to shtoom\n>> ")
+        self.transport.write("Welcome to shtoom\n>> \n")
 
     def lineReceived(self, line):
         args = line.strip().split()
@@ -82,6 +84,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
     def cmd_hangup(self, line):
         if self._cookie is not None:
             self.app.dropCall(self._cookie)
+            self._cookie = None
         else:
             self.transport.write("error: no active call\n")
 
