@@ -25,7 +25,10 @@ class FastAudioDevice(baseaudio.AudioDevice):
 
     def openDev(self):
         if self._rdev is None:
-            self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1, 'int16'))
+            # Thanks to dotz for putting me on the track of the magic
+            # options 160, 2
+            self._rdev = FastAudioWrapper(fastaudio.stream(8000, 1, 
+                                                           'int16', 160, 2))
         self._rdev.open()
         self.dev = MultipleConv(self._rdev)
 
