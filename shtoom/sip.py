@@ -245,7 +245,9 @@ class Call(object):
                                             calltype='inbound',
                                             desc=desc,
                                             fromIP=self.getRemoteSIPAddress()[0],
-                                            withSTUN=self.getSTUNState() 
+                                            withSTUN=self.getSTUNState() ,
+                                            toAddr=invite.headers.get('to'),
+                                            fromAddr=invite.headers.get('from'),
                                            )
         defaccept.addCallbacks(self.acceptedCall, self.rejectCall).addErrback(
                                                                         log.err)
