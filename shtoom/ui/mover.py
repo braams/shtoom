@@ -12,12 +12,12 @@ _Debug = False
 
 class ISlidable(Interface):
     """ A window that the mover can slide around. The underlying window
-        should have override direct set (so the window manager leaves it
+        should have override redirect set (so the window manager leaves it
         alone.
 
         Note very well:
 
-            A window with 'override direct' set (a Gtk Popup, or 
+            A window with 'override redirect' set (a Gtk Popup, or 
             Tk's Toplevel.overrideredirect(1), can NOT get input focus.
             The window manager ignores it. Things you click on will work.
             Things you attempt to type into will NOT work.
