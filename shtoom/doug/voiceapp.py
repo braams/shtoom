@@ -37,6 +37,7 @@ class VoiceApp(StateMachine):
         self.__cookie = cookie
         self.__appl = appl
         self.__legs = OrderedDict()
+        self.__dict__.update(kwargs)
         super(VoiceApp, self).__init__(defer, **kwargs)
 
     def getDefaultLeg(self):
