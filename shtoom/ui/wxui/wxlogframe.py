@@ -8,9 +8,10 @@ class LogFrame(wx.Frame):
         # begin wxGlade: LogFrame.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
+        self.panel_1 = wx.Panel(self, -1)
         self.text_errorlog = wx.TextCtrl(self, -1, "", style=wx.TE_MULTILINE|wx.TE_READONLY)
-        self.button_clear = wx.Button(self, self.BUTT_CLEAR, "Clear Log")
-        self.button_close = wx.Button(self, self.BUTT_CLOSE, "Close Window")
+        self.button_clear = wx.Button(self.panel_1, self.BUTT_CLEAR, "Clear Log")
+        self.button_close = wx.Button(self.panel_1, self.BUTT_CLOSE, "Close Window")
 
         self.__set_properties()
         self.__do_layout()
@@ -19,17 +20,21 @@ class LogFrame(wx.Frame):
     def __set_properties(self):
         # begin wxGlade: LogFrame.__set_properties
         self.SetTitle("Log Messages")
-        self.SetSize((271, 210))
+        self.SetSize((367, 232))
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: LogFrame.__do_layout
         sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_1.Add(self.text_errorlog, 1, wx.ALL|wx.EXPAND, 2)
+        sizer_1.Add(self.text_errorlog, 1, wx.ALL|wx.EXPAND, 0)
         sizer_2.Add(self.button_clear, 1, wx.ALL, 5)
         sizer_2.Add(self.button_close, 1, wx.ALL, 5)
-        sizer_1.Add(sizer_2, 0, wx.EXPAND, 0)
+        self.panel_1.SetAutoLayout(1)
+        self.panel_1.SetSizer(sizer_2)
+        sizer_2.Fit(self.panel_1)
+        sizer_2.SetSizeHints(self.panel_1)
+        sizer_1.Add(self.panel_1, 0, wx.EXPAND, 0)
         self.SetAutoLayout(1)
         self.SetSizer(sizer_1)
         self.Layout()
