@@ -175,7 +175,7 @@ class MediaDescription:
         self.port = l
 
     def setKeyManagement(self, km):
-        parse_a(self, 'keymgmt', keyManagement)
+        parse_a(self, 'keymgmt', km)
 
     def clearRtpMap(self):
         self.rtpmap = OrderedDict()
