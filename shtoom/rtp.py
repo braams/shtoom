@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.6 2003/11/15 07:22:32 itamar Exp $
+# $Id: rtp.py,v 1.7 2003/11/15 19:32:09 itamar Exp $
 #
 
 import time, signal, struct, random
@@ -22,6 +22,46 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 
 from shtoom.audio import getAudioDevice
+
+
+# XXX anthony, suggested strategies to try:
+# 1. without itimer, using LoopingCall for sending packets,
+#    don't use doRead hack. This should wake reactor often
+#    enough that it should be fine. Perhaps add another LoopingCall
+#    with slightly  higher resolution that does nothing, just
+#    wakes reactor.
+# 2. with itimer... have the itimer do a reactor.wakeUp() every 10ms,
+#    and using LoopingCall to schedule writes.
+
+class LoopingCall:
+    """Move into twisted if this helps."""
+    def __init__(self, f, *a, **kw):
+        self.f = f
+        self.a = a
+        self.kw = kw
+        self.running = True
+
+    def loop(self, interval):
+        self._loop(time.time(), 0, interval)
+
+    def stop(self):
+        self.running = False
+        if hasattr(self, "call"):
+            self.call.cancel()
+    
+    def _loop(self, starttime, count, interval):
+        if hasattr(self, "call"):
+            del self.call
+        self.f(*self.a, **self.kw)
+        now = time.time()
+        while self.running:
+            count += 1
+            fromStart = count * interval
+            fromNow = starttime - now
+            delay = fromNow + fromStart
+            if delay > 0:
+                self.call = reactor.callLater(delay, self._loop, starttime, count, interval)
+                return
 
 
 class RTPProtocol(DatagramProtocol):
@@ -80,7 +120,10 @@ class RTPProtocol(DatagramProtocol):
         self.Done = 1
         self.rtpListener.stopListening()
         self.rtcpListener.stopListening()
-        del self.fp, self.outfp
+        if hasattr(self, "fp"):
+            del self.fp
+        if hasattr(self, "outfp"):
+            del self.outfp
 
     def startReceiving(self, fp=None):
         if fp is None:
