@@ -156,7 +156,7 @@ def main():
     from twisted.internet import reactor
 
     app = VoicemailApplication(VoicemailApp)
-    app.boot()
+    app.boot(sys.argv[1:])
     app.start()
 
 if __name__ == "__main__":

@@ -22,10 +22,11 @@ class AppStartup(unittest.TestCase):
         from shtoom.Options import AllOptions, OptionGroup, \
                 StringOption, NumberOption
         o = AllOptions()
+        o.no_config_file = True
         g = OptionGroup('whatever', 'some settings')
         g.addOption(StringOption('ui', 'whatever', 'tk'))
         g.addOption(StringOption('no_config_file', 'whatever', True))
-        g.addOption(NumberOption('listenport', 'port', 5060))
+        g.addOption(NumberOption('listenport', 'port', 0))
         o.addGroup(g)
         return o
 
@@ -33,20 +34,19 @@ class AppStartup(unittest.TestCase):
         opts = self.getMinimalOptions()
         ae = self.assertEqual
         p = self.buildPhone()
-        p.boot(options=opts)
+        p.boot(options=opts, args=[])
         p.stopSIP()
         ae(p.getOptions(), opts)
         ae(p.getPref('ui'), 'tk')
 
     def test_phoneBootOpenSIP(self):
+        ae = self.assertEqual
         import random
         opts = self.getMinimalOptions()
         l=random.randint(20000,30000)
-        opts.updateOptions(listenport=l)
-        ae = self.assertEqual
-        ae(opts.getValue('listenport'), l)
         ae = self.assertEqual
         p = self.buildPhone()
-        p.boot(options=opts)
+        p.boot(options=opts, args=['--listenport=%d'%l])
+        ae(opts.getValue('listenport'), l)
         ae(p.sipListener.port, p.getPref('listenport'))
         p.stopSIP()

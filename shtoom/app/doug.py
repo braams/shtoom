@@ -31,11 +31,11 @@ class DougApplication(BaseApplication):
         self._voiceappClass = voiceapp
         self._voiceappArgs = {}
 
-    def boot(self, options=None):
+    def boot(self, options=None, args=None):
         from shtoom.opts import buildOptions
         if options is None:
             options = buildOptions(self)
-        self.initOptions(options)
+        self.initOptions(options, args)
         if not self.getPref('logfile'):
             print "logging to stdout"
             log.startLogging(sys.stdout)

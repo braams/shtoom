@@ -40,10 +40,10 @@ class Phone(BaseApplication):
     def needsThreadedUI(self):
         return self.ui.threadedUI
 
-    def boot(self, options=None):
+    def boot(self, options=None, args=None):
         if options is None:
             options = buildOptions(self)
-        self.initOptions(options)
+        self.initOptions(options, args)
 
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))

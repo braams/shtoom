@@ -20,12 +20,12 @@ class BaseApplication:
     def boot(self):
         self.connectSIP()
 
-    def initOptions(self, options=None):
+    def initOptions(self, options=None, args=None):
         import shtoom
         from shtoom.opts import buildOptions
         if options is None:
             options = buildOptions(self)
-        options.optionsStartup(version='%%prog %s'%shtoom.__version__)
+        options.optionsStartup(version='%%prog %s'%shtoom.__version__,args=args)
         self._options = options
 
     def getOptions(self):

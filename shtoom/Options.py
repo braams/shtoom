@@ -344,11 +344,11 @@ class AllOptions(object):
             val = dflt
         return val
 
-    def optionsStartup(self, version='%prog'):
+    def optionsStartup(self, version='%prog', args=None):
         import optparse
         parser = optparse.OptionParser(version=version)
         self.buildOptParse(parser)
-        (opts, args) = parser.parse_args()
+        (opts, args) = parser.parse_args(args=args)
         if getattr(opts, 'no_config_file'):
             self.setOptsFile(None)
         self.loadOptsFile()

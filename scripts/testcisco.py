@@ -192,7 +192,7 @@ def main():
     global app
 
     app = MyDougApplication(PlayingApp)
-    app.boot()
+    app.boot(sys.argv[1:])
     reactor.callLater(0,app.startVoiceApp)
     app.start()
 
