@@ -48,7 +48,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
             return
         self._callButton.config(state=DISABLED)
         self.connected, deferred = self.sip.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callFailed)
+        deferred.addCallbacks(self.callConnected, self.callDisconnected)
 
     def callConnected(self, call):
         self._hangupButton.config(state=NORMAL)
