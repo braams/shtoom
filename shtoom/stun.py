@@ -7,8 +7,31 @@ import struct, socket, time
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
-from interfaces import StunPolicy
+import warnings
 
+
+from shtoom.interfaces import NATMapper as INATMapper
+from shtoom.interfaces import StunPolicy as IStunPolicy
+
+from shtoom.defcache import DeferredCache
+from shtoom.nat import BaseMapper
+
+STUNVERBOSE = False
+# If we're going to follow RFC recommendation, make this 7
+MAX_RETRANSMIT = 5
+
+# Work to be done:
+#  - Reverse engineer the C code stun client - why is it giving up so fast?
+#  - Do the shared secret stuff? looks like it needs TLS and crap like that.
+#  - Move the StunPolicy code to become nat.NATPolicy - we still don't want to 
+#    use a NAT if both addresses are RFC1918 addresses.
+#  - Make the STUN discovery code use a deferred for it's result!
+#  - Cache the first responding STUN server after discovery (in the NatType
+#    object, maybe?) and only use it? Then need to handle it failing later.
+#
+#  What happens to any delayed STUN packets that arrive after the Hook gives
+#  the transport back? The code that uses the transport should be forgiving,
+#  I guess.
 
 # This should be replaced with lookups of 
 # _stun._udp.divmod.com and _stun._udp.wirlab.net
@@ -16,10 +39,10 @@ DefaultServers = [
     ('stun.xten.net', 3478),
     ('sip.iptel.org', 3478),
     ('stun2.wirlab.net', 3478),
-    ('stun.wirlab.net', 3478),
-    ('stun1.vovida.org', 3478),
-    ('tesla.divmod.net', 3478),
-    ('erlang.divmod.net', 3478),
+#    ('stun.wirlab.net', 3478),
+#    ('stun1.vovida.org', 3478),
+#    ('tesla.divmod.net', 3478),
+#    ('erlang.divmod.net', 3478),
 ]
 
 StunTypes = {
@@ -36,33 +59,55 @@ StunTypes = {
    0x000b: 'REFLECTED-FROM',
 }
 
+CHANGE_NONE = struct.pack('!i',0)
+CHANGE_PORT = struct.pack('!i',2)
+CHANGE_IP = struct.pack('!i',4)
+CHANGE_BOTH = struct.pack('!i',6)
+
+for k,v in StunTypes.items():
+    StunTypes[v] = k
+del k, v
+
+class _NatType: 
+    def __init__(self, name, useful=True, blocked=False):
+        self.name = name
+        self.useful = useful
+        self.blocked = blocked
+    def __repr__(self):
+        return '<NatType %s>'%(self.name)
+
+NatTypeUDPBlocked = _NatType('UDPBlocked', useful=False, blocked=True)
+NatTypeNone = _NatType('None')
+NatTypeSymUDP = _NatType('SymUDP')
+NatTypeFullCone = _NatType('FullCone')
+NatTypeSymmetric = _NatType('Symmetric', useful=False)
+NatTypeRestrictedCone = _NatType('RestrictedCone')
+NatTypePortRestricted = _NatType('PortRestricted')
+
+
+
 import os
-if os.path.exists('/dev/urandom'):
+if hasattr(os, 'urandom'):
+    def getRandomTID():
+        return os.urandom(16)
+elif os.path.exists('/dev/urandom'):
     def getRandomTID():
         return open('/dev/urandom').read(16)
 else:
     def getRandomTID():
-        # It's not necessary to have a particularly strong TID here
+        # It's not absolutely necessary to have a particularly strong TID here
         import random
         tid = [ chr(random.randint(0,255)) for x in range(16) ]
         tid = ''.join(tid)
         return tid
 
-class StunProtocol(DatagramProtocol, object):
-    def __init__(self, servers=DefaultServers, *args, **kwargs):
-        self._pending = {}
-        self.servers = servers
-        super(StunProtocol, self).__init__(*args, **kwargs)
-
-    def datagramReceived(self, dgram, address):
+class _StunBase(object):
+    def _parseStunResponse(self, dgram, address):
         mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
-        # Check tid is one we sent and haven't had a reply to yet
-        if self._pending.has_key(tid):
-            del self._pending[tid]
-        else:
-            log.err("error, unknown transaction ID %s, have %r"%(tid,
-                                                      self._pending.keys()))
+        if self.expectedTID and self.expectedTID != tid:
+            # a response from an earlier request
             return
+        resdict = {}
         if mt == 0x0101:
             log.msg("got STUN response from %s"%repr(address), system='stun')
             # response
@@ -76,66 +121,324 @@ class StunProtocol(DatagramProtocol, object):
                               'CHANGED-ADDRESS',
                               'SOURCE-ADDRESS'):
                     dummy,family,port,addr = struct.unpack('!ccH4s', val)
+                    addr = socket.inet_ntoa(addr)
+                    if STUNVERBOSE:
+                        print avtype, addr, port
                     if avtype == 'MAPPED-ADDRESS':
-                        self.gotMappedAddress(socket.inet_ntoa(addr),port)
+                        resdict['externalAddress'] = (addr, port)
+                    elif avtype == 'CHANGED-ADDRESS':
+                        resdict['_altStunAddress'] = (addr, address[1])
+                    elif address[0] != addr:
+                        # Some son of a bitch is rewriting packets on the way
+                        # back. AAARGH.
+                        log.msg('WARNING: packets are being rewritten %r != %r'%
+                                (address, (addr,port)), system='stun')
+                        return
                 else:
                     log.msg("STUN: unhandled AV %s, val %r"%(avtype, 
                                                              repr(val)), 
                                                              system='stun')
         elif mt == 0x0111:
             log.error("STUN got an error response")
+        return resdict
 
-    def gotMappedAddress(self, addr, port):
-        log.msg("got address %s %s (should I have been overridden?)"%(addr,
-                                                                port), 
-                                                                system='stun')
-
-    def sendRequest(self, server, avpairs=()):
-        tid = getRandomTID()
+    def sendRequest(self, server, tid=None, avpairs=()):
+        if tid is None:
+            tid = getRandomTID()
         mt = 0x1 # binding request
         avstr = ''
         # add any attributes
+        if not avpairs: 
+            avpairs = ('CHANGE-REQUEST', CHANGE_NONE),
         for a,v in avpairs:
-            raise NotImplementedError, "implement avpairs"
+            avstr = avstr + struct.pack('!hh', StunTypes[a], len(v)) + v
         pktlen = len(avstr)
         if pktlen > 65535:
             raise ValueError, "stun request too big (%d bytes)"%pktlen
         pkt = struct.pack('!hh16s', mt, pktlen, tid) + avstr
-        self._pending[tid] = (time.time(), server)
-        # install a callLater for retransmit and timeouts
+        if STUNVERBOSE:
+            print "sending request with %d avpairs to %r (in state %s)"%(
+                                        len(avpairs), server, self._stunState)
         self.transport.write(pkt, server)
 
-    def blatServers(self):
-        for s in self.servers:
-            print "sending to", s
-            self.sendRequest(s)
+class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
 
-class StunHook(StunProtocol):
+    def __init__(self, servers=DefaultServers, *args, **kwargs):
+        # Potential STUN servers
+        self._potentialStuns = {}
+        # See flowchart ascii art at bottom of file.
+        self._stunState = '1'
+        self._finished = False
+        self._altStunAddress = None
+        self.externalAddress = None
+        self.localAddress = None
+        self.expectedTID = None
+        self.natType = None
+        self.servers = servers
+        super(StunDiscoveryProtocol, self).__init__(*args, **kwargs)
+
+    def initialStunRequest(self, address):
+        tid = getRandomTID()
+        delayed = reactor.callLater(0.100, self.retransmitInitial, address, tid)
+        self._potentialStuns[tid] = delayed
+        self.sendRequest(address, tid=tid)
+
+    def retransmitInitial(self, address, tid, count=1):
+        if count <= MAX_RETRANSMIT:
+            t = 0.1 * 2**min(count,4)
+            delayed = reactor.callLater(t, self.retransmitInitial, address, tid, count+1)
+            self._potentialStuns[tid] = delayed
+            self.sendRequest(address, tid=tid)
+        else:
+            if STUNVERBOSE:
+                print "giving up on %r"%(address,)
+            del self._potentialStuns[tid]
+            if not self._potentialStuns:
+                if STUNVERBOSE:
+                    print "stun state 1 timeout - no internet UDP possible"
+                self.natType = NatTypeUDPBlocked
+                self._finishedStun()
+
+    def datagramReceived(self, dgram, address):
+        if self._finished: 
+            return
+        mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
+        # Check tid is one we sent and haven't had a reply to yet
+        if tid in self._potentialStuns:
+            delayed = self._potentialStuns.get(tid)
+            if delayed is not None:
+                delayed.cancel()
+            del self._potentialStuns[tid]
+            if self._stunState == '1':
+                # We got a (potentially) working STUN server!
+                # Cancel the retransmit timers for the other ones
+                for k in self._potentialStuns.keys():
+                    self._potentialStuns[k].cancel()
+                    self._potentialStuns[k] = None
+                self.handleStunState1(dgram, address)
+            else:
+                # We already have a working STUN server to play with.
+                pass
+            return
+        if STUNVERBOSE: print 'calling handleStunState%s'%(self._stunState)
+        getattr(self, 'handleStunState%s'%(self._stunState))(dgram, address)
+
+    def handleStunState1(self, dgram, address):
+        resdict = self._parseStunResponse(dgram, address)
+        self.__dict__.update(resdict)
+
+        if self.externalAddress and self._altStunAddress:
+            if self.localAddress == self.externalAddress[0]:
+                self._stunState = '2a'
+            else:
+                self._stunState = '2b'
+            self.expectedTID = tid = getRandomTID()
+            self.state2DelayedCall = reactor.callLater(0.1, 
+                                                self.retransmitStunState2,
+                                                address, tid)
+            self.sendRequest(address, tid, avpairs=(
+                                    ('CHANGE-REQUEST', CHANGE_BOTH),))
+
+    def handleStunState2a(self, dgram, address):
+        resdict = self._parseStunResponse(dgram, address)
+        if not resdict: 
+            return
+        self.state2DelayedCall.cancel()
+        del self.state2DelayedCall
+        if STUNVERBOSE:
+            print "2a", resdict
+        self.natType = NatTypeNone
+        self._finishedStun()
+
+    def handleStunState2b(self, dgram, address):
+        resdict = self._parseStunResponse(dgram, address)
+        if not resdict: 
+            return
+        self.state2DelayedCall.cancel()
+        del self.state2DelayedCall
+        if STUNVERBOSE:
+            print "2b", resdict
+        self.natType = NatTypeFullCone
+        self._finishedStun()
+
+    def retransmitStunState2(self, address, tid, count=1):
+        if count <= MAX_RETRANSMIT:
+            t = 0.1 * 2**min(count,4)
+            self.state2DelayedCall = reactor.callLater(t, 
+                                                    self.retransmitStunState2, 
+                                                    address, tid, count+1)
+            self.sendRequest(address, tid, avpairs=(
+                                    ('CHANGE-REQUEST', CHANGE_BOTH),))
+        elif self._stunState == '2a':
+            self.natType = NatTypeSymUDP
+            self._finishedStun()
+        else: # 2b
+            # Off to state 3 we go!
+            self._stunState = '3'
+            self.state3DelayedCall = reactor.callLater(0.1, 
+                                                    self.retransmitStunState3, 
+                                                    address, tid)
+            self.expectedTID = tid = getRandomTID()
+            self.sendRequest(self._altStunAddress, tid)
+
+    def handleStunState3(self, dgram, address):
+        self.state3DelayedCall.cancel()
+        del self.state3DelayedCall
+        resdict = self._parseStunResponse(dgram, address)
+        if not resdict: 
+            return
+        if STUNVERBOSE:
+            print "3", resdict
+        if self.externalAddress == resdict['externalAddress']:
+            # State 4! wheee!
+            self._stunState = '4'
+            self.expectedTID = tid = getRandomTID()
+            self.state4DelayedCall = reactor.callLater(0.1, 
+                                                self.retransmitStunState4,
+                                                address, tid)
+            self.expectedTID = tid = getRandomTID()
+            self.sendRequest(address, tid, avpairs=(
+                                    ('CHANGE-REQUEST', CHANGE_PORT),))
+        else:
+            self.natType = NatTypeSymmetric
+            self._finishedStun()
+
+    def retransmitStunState3(self, address, tid, count=1):
+        if count <= MAX_RETRANSMIT:
+            t = 0.1 * 2**min(count,4)
+            self.state3DelayedCall = reactor.callLater(t, 
+                                                    self.retransmitStunState3, 
+                                                    address, tid, count+1)
+            self.sendRequest(self._altStunAddress, tid)
+        else:
+            self._finished = True
+            raise ValueError("STUN Failed in state 3")
+
+    def handleStunState4(self, dgram, address):
+        resdict = self._parseStunResponse(dgram, address)
+        if not resdict: 
+            return
+        self.state4DelayedCall.cancel()
+        del self.state4DelayedCall
+        self.natType = NatTypeRestrictedCone
+        self._finishedStun()
+
+    def retransmitStunState4(self, address, tid, count = 1):
+        if count < MAX_RETRANSMIT:
+            t = 0.1 * 2**min(count,4)
+            self.state4DelayedCall = reactor.callLater(t, 
+                                                    self.retransmitStunState4, 
+                                                    address, tid, count+1)
+            self.sendRequest(address, tid, avpairs=(
+                                    ('CHANGE-REQUEST', CHANGE_PORT),))
+        else:
+            self.natType = NatTypePortRestricted
+            self._finishedStun()
+
+
+    def _finishedStun(self):
+        self._finished = True
+        self.finishedStun()
+
+    def finishedStun(self):
+        # Override in a subclass
+        if STUNVERBOSE:
+            print "firewall type is", self.natType
+
+    def startDiscovery(self):
+        from shtoom.nat import isBogusAddress, getLocalIPAddress
+        localAddress = self.transport.getHost().host
+        if isBogusAddress(localAddress):
+            d = getLocalIPAddress()
+            d.addCallback(self._resolveStunServers)
+        self._resolveStunServers(localAddress)
+
+
+    def _resolveStunServers(self, localAddress):
+        self.localAddress = localAddress
+        # reactor.resolve the hosts!
+        for host, port in self.servers:
+            d = reactor.resolve(host)
+            d.addCallback(lambda x,p=port: self.initialStunRequest((x, p)))
+
+class StunHook(_StunBase):
     """Hook a StunHook into a UDP protocol object, and it will discover
-       STUN settings for it
+       STUN settings for it. 
+       
+       You should probably use the NATMapper approach rather than using
+       StunHook directly.
     """
-    def __init__(self, prot, *args, **kwargs):
+    def __init__(self, prot, servers=DefaultServers, *args, **kwargs):
         self._protocol = prot
+        self._pending = {}
+        self.servers = servers
+        self.expectedTID = None
         super(StunHook, self).__init__(*args, **kwargs)
+
+    def initialStunRequest(self, address):
+        tid = getRandomTID()
+        delayed = reactor.callLater(0.100, self.retransmitInitial, address, tid)
+        self._pending[tid] = delayed
+        self.sendRequest(address, tid=tid)
+
+    def retransmitInitial(self, address, tid, count=1):
+        if count <= MAX_RETRANSMIT:
+            t = 0.1 * 2**min(count,4)
+            delayed = reactor.callLater(t, self.retransmitInitial, address, tid, count+1)
+            self._pending[tid] = delayed
+            self.sendRequest(address, tid=tid)
+        else:
+            if STUNVERBOSE:
+                print "giving up on %r"%(address,)
+            del self._potentialStuns[tid]
+            if not self._potentialStuns:
+                if STUNVERBOSE:
+                    print "stun state 1 timeout - no internet UDP possible"
+                self.natType = NatTypeUDPBlocked
+                self.finishedStun()
+
+    def datagramReceived(self, dgram, address):
+        if self.deferred is None:
+            # We're already done
+            return 
+
+        mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
+        if self._pending.has_key(tid):
+            delayed = self._pending[tid]
+            if delayed is not None:
+                delayed.cancel()
+            del self._pending[tid]
+            resdict = self._parseStunResponse(dgram, address)
+            if not resdict or not resdict.get('externalAddress'):
+                # Crap response, ignore it.
+                return
+
+            # Got a valid response. Clean up around here first.
+            self.uninstallStun()
+            # kill any pending retransmits
+            for delayed in self._pending.values():
+                if delayed is not None: 
+                    delayed.cancel()
+            # send response
+            d, self.deferred = self.deferred, None
+            d.callback(resdict['externalAddress'])
 
     def installStun(self):
         self._protocol._mp_datagramReceived = self._protocol.datagramReceived
         self._protocol.datagramReceived = self.datagramReceived
         self.transport = self._protocol.transport
 
-    def discoverStun(self, deferred):
-        """ Work out STUN settings. Trigger the deferred with (ip,port)
-            when we're done.
+    def discoverAddress(self):
+        """ Sniff out external address. Returns a deferred with the external
+            address as a 2-tuple (ip, port)
         """
+        from twisted.internet import defer
         self.installStun()
-        self.sendRequest(self.servers[0])
-        self.deferred = deferred
-
-    def gotMappedAddress(self, address, port):
-        self.deferred.callback((address, port))
-        if not self._pending.keys():
-            self.uninstallStun()
-        # Check for timeouts here
+        self.deferred = defer.Deferred()
+        for host, port in self.servers[:3]:
+            d = reactor.resolve(host)
+            d.addCallback(lambda x, p=port: self.initialStunRequest((x, p)))
+        return self.deferred
 
     def uninstallStun(self):
         self._protocol.datagramReceived = self._protocol._mp_datagramReceived
@@ -194,20 +497,20 @@ class NetAddress:
 
 
 class AlwaysStun:
-    __implements__ = StunPolicy
+    __implements__ = IStunPolicy
 
     def checkStun(self, localip, remoteip):
         return True
 
 class NeverStun:
-    __implements__ = StunPolicy
+    __implements__ = IStunPolicy
 
     def checkStun(self, localip, remoteip):
         return False
 
 class RFC1918Stun:
     "A sane default policy"
-    __implements__ = StunPolicy
+    __implements__ = IStunPolicy
 
     addresses = ( NetAddress('10/8'),
                   NetAddress('172.16/12'),
@@ -258,34 +561,167 @@ def installPolicy(policy):
 def getPolicy():
     return _defaultPolicy
 
+class _DetectSTUNProt(StunDiscoveryProtocol):
+    d = None
+    def finishedStun(self):
+        self.d.callback(self.natType)
+
+def _getSTUN():
+    stunClient = _DetectSTUNProt()
+    stunClient.d = defer.Deferred()
+    l = reactor.listenUDP(0, stunClient)
+    reactor.callLater(0, stunClient.startDiscovery)
+    def _stundone(x, l=l):
+        l.stopListening()
+        return x
+    stunClient.d.addCallback(_stundone)
+    return stunClient.d
+
+getSTUN = DeferredCache(_getSTUN)
+
+_cached_mapper = None
+def getMapper():
+    global _cached_mapper
+    if _cached_mapper is None:
+        _cached_mapper = StunMapper()
+    return _cached_mapper
+
+def clearCache():
+    global _cached_mapper
+    _cached_mapper = None
+    getSTUN.clearCache()
+    
+
+class STUNMapper(BaseMapper):
+    __implements__ = INATMapper
+    _ptypes = [ 'UDP', ]
+    def __init__(self):
+        self._mapped = {}
+
+    def map(self, port):
+        "See shtoom.interfaces.NATMapper.map"
+        self._checkValidPort(port)
+        cd = defer.Deferred()
+        self._mapped[port] = cd
+        d = getSTUN()
+        d.addCallback(lambda x: self._cb_map_gotSTUN(x, port))
+        return cd
+    map = DeferredCache(map, inProgressOnly=True)
+
+    def _cb_map_gotSTUN(self, stun, port):
+        if not stun.useful:
+            cd = self._mapped[port]
+            del self._mapped[port]
+            cd.errback(ValueError('%r means STUN is useless'))
+            return
+        SH = StunHook(port.protocol)
+        d = SH.discoverAddress()
+        d.addCallback(lambda x: self._cb_map_discoveredAddress(x, port))
+    map = DeferredCache(map, inProgressOnly=True)
+
+    def _cb_map_discoveredAddress(self, addr, port):
+        cd = self._mapped[port]
+        self._mapped[port] = addr
+        cd.callback(addr)
+
+    def info(self, port):
+        "See shtoom.interfaces.NATMapper.info"
+        if port in self._mapped:
+            return self._mapped[port]
+        else:
+            raise ValueError('Port %r is not currently mapped'%(port))
+
+    def unmap(self, port):
+        "See shtoom.interfaces.NATMapper.unmap"
+        # A no-op for STUN
+        if port not in self._mapped:
+            raise ValueError('Port %r is not currently mapped'%(port))
+        del self._mapped[port]
+        return defer.succeed(None)
 
 
 if __name__ == "__main__":
+    STUNVERBOSE=True
+    log.FileLogObserver.timeFormat = "%H:%M:%S"
     import sys
-    class TestStunProtocol(StunProtocol):
-        responses = None
-        def gotMappedAddress(self, addr, port):
-            log.msg("got address %s %s"%(addr, port))
-            if self.responses is None:
-                self.responses = [(addr, port)]
-            else:
-                self.responses.append((addr, port))
+    class TestStunDiscoveryProtocol(StunDiscoveryProtocol):
 
-        def stunTimedOut(self):
-            if self.responses:
-                print "Time's up. Got the following responses"
-                for addr,port in self.responses:
-                    print "%s:%s"%(addr, port)
+        def finishedStun(self):
+            print "STUN finished, results:"
+            print "You're behind a %r"%(self.natType)
+            if self.natType is NatTypeSymmetric:
+                print "You're going to have to use an outbound proxy"
             else:
-                print "Time's up. No STUN responses were seen - your "\
-                      "firewall is not letting packets back and is "\
-                      "unlikely to work with SIP"
+                print "and external address is %r"%(self.externalAddress,)
             reactor.stop()
 
         
-    stunClient = TestStunProtocol()
+    stunClient = TestStunDiscoveryProtocol()
     log.startLogging(sys.stdout)
-    reactor.listenUDP(5061, stunClient)
-    reactor.callLater(10, stunClient.stunTimedOut)
-    reactor.callLater(0, stunClient.blatServers)
+    try:
+        reactor.listenUDP(5061, stunClient)
+    except:
+        reactor.listenUDP(0, stunClient)
+    #reactor.callLater(20, stunClient.stunTimedOut)
+    reactor.callLater(0, stunClient.startDiscovery)
     reactor.run()
+
+
+
+"""
+
+Copied from RFC 3489
+
+
+                        +--------+
+                        |  Test  | S:1
+                        |   I    |
+                        +--------+
+                             |
+                             |
+                             V             S:1a
+                            /\              /\
+                         N /  \ Y          /  \ Y             +--------+
+          UDP     <-------/Resp\--------->/ IP \------------->|  Test  | S:2a
+          Blocked         \ ?  /          \Same/              |   II   |
+                           \  /            \? /               +--------+
+                            \/              \/                    |
+                                             | N                  |
+                                             |                    V
+                                             V                    /\
+                                         +--------+  Sym.      N /  \
+                                    S:2b |  Test  |  UDP    <---/Resp\
+                                         |   II   |  Firewall   \ ?  /
+                                         +--------+              \  /
+                                             |                    \/
+                                             V                     |Y
+                  /\           S:3           /\                    |
+   Symmetric  N  /  \       +--------+   N  /  \                   V
+      NAT  <--- / IP \<-----|  Test  |<--- /Resp\               Open
+                \Same/      |   III  |     \ ?  /               Internet
+                 \? /       +--------+      \  /
+                  \/                         \/
+                  |                           |Y
+                  |                           |
+                  |                           V
+                  |                           Full
+                  |                           Cone
+                  V              /\
+              +--------+        /  \ Y
+         S:4  |  Test  |------>/Resp\---->Restricted
+              |    IV  |       \ ?  /
+              +--------+        \  /
+                                 \/
+                                  |N
+                                  |       Port
+                                  +------>Restricted
+
+                 Figure 2: Flow for type discovery process
+
+Test I: A Binding Request with no change port/change ip
+Test II: A Binding Request with change port & change ip
+Test III: A Binding Request with no change port/change ip, sent to the
+          address from CHANGED-ADDRESS in response to Test I.
+Test IV: A Binding Request with change port
+
+"""

@@ -14,7 +14,7 @@ Some test addresses to try calling:
 
   sip:613@fwd.pulver.com -- An echo test
 
-  sip:echotest@divmod.org:5065 -- Another echo test
+  sip:echotest@divmod.org:5085 -- Another echo test
   
 See also the section later titled "Test Harness"
 

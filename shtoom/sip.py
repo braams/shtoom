@@ -22,7 +22,7 @@ from twisted.python import log
 
 from shtoom.exceptions import CallRejected, CallFailed, HostNotKnown
 from shtoom import __version__ as ShtoomVersion
-from shtoom.stun import StunHook, getPolicy
+from shtoom.stun import getPolicy
 from shtoom.sdp import SDP
 
 _CACHED_LOCAL_IP = None
@@ -230,6 +230,7 @@ class Call(object):
         self.setupDeferred = defer.Deferred()
         outboundProxyURI = self.sip.app.getPref('outbound_proxy_url')
         if outboundProxyURI:
+            print outboundProxyURI
             log.msg('outboundProxyURI=%s'%(outboundProxyURI,))
             self._outboundProxyURI = tpsip.parseURL(outboundProxyURI)
         if via is not None:
@@ -269,6 +270,7 @@ class Call(object):
         """
         # XXX Allow over-riding
         from twisted.internet import reactor
+        from shtoom.nat import getMapper
         global _CACHED_LOCAL_IP
         host, port = dest
         getPref = self.sip.app.getPref
@@ -302,15 +304,13 @@ class Call(object):
                 self.abortCall()
                 return None
         pol = getPolicy()
-        useStun = pol.checkStun(locAddress[0], remAddress[0])
-        if useStun is True:
+        useNAT = pol.checkStun(locAddress[0], remAddress[0])
+        if useNAT is True:
             self._needSTUN = True
-            log.msg("stun policy says yes, use STUN", system='sip')
-            deferred = defer.Deferred()
-            deferred.addCallback(self.setStunnedAddress).addErrback(log.err)
-            SH = StunHook(self.sip)
-            deferred = SH.discoverStun(deferred)
-        elif useStun is False:
+            log.msg("NAT policy says yes, we're transitting a NAT",system='sip')
+            getMapper().addCallback(self._cb_getMappedAddress
+                                                    ).addErrback(log.err)
+        elif useNAT is False:
             self._localIP, self._localPort = locAddress
             if not self.dialog.getCallID():
                 self.setCallID()
@@ -324,8 +324,16 @@ class Call(object):
             d.errback(HostNotKnown)
             self.setState('ABORTED')
 
-    def setStunnedAddress(self, (host, port)):
-        log.msg("according to STUN, local address is %s:%s"%(host, port), system='sip')
+    def _cb_getMappedAddress(self, mapper):
+        deferred = mapper.map(self.sip.transport)
+        deferred.addCallback(self.setStunnedAddress).addErrback(log.err)
+
+    def setStunnedAddress(self, address):
+        if address:
+            host,port = address
+        else:
+            host,port = '',''
+        log.msg("after NAT mapping,external address is %s:%s"%(host, port), system='sip')
         self._localIP = host
         self._localPort = port
         # XXX Check for multiple firings!
@@ -448,7 +456,13 @@ class Call(object):
         self.dialog.setDirection(inbound=True)
         self.dialog.setCaller(Address(invite.headers['from'][0]))
         self.dialog.setCallee(Address(invite.headers['to'][0], ensureTag=True))
-        self._remoteURI = Address(self.contact).getURI(parsed=True)
+        if invite.headers.get('record-route'):
+            rr = invite.headers['record-route']
+            if type(rr) is list: rr = rr[0]
+            self._remoteURI = Address(self.extractURI(rr)).getURI(parsed=True)
+        else:
+            self._remoteURI = Address(self.extractURI(contact)
+                                                ).getURI(parsed=True)
         self._remoteAOR = self.dialog.getCaller().getURI()
         d.addCallback(lambda x:self.recvInvite(invite)).addErrback(log.err)
         if invite.headers.has_key('subject'):
@@ -498,7 +512,7 @@ class Call(object):
             return
         invite = tpsip.Request('INVITE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s'%
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s INVITE'%self.dialog.getCSeq(incr=1))
         invite.addHeader('to', str(self.dialog.getCallee()))
@@ -542,11 +556,27 @@ class Call(object):
             self.sendResponse(okmessage, 406)
             self.setState('ABORTED')
             return
+        via = okmessage.headers.get('via')
+        if type(via) is list: via = via[0]
+        via = tpsip.parseViaHeader(via)
+        if via.rport:
+            print "correcting local port to %r"%(via.rport)
+            self._localPort = int(via.rport)
         contact = okmessage.headers['contact']
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
-        self._remoteURI = Address(self.extractURI(contact)).getURI(parsed=True)
+        # If there's a record-route header, we need to send to the specified
+        # host, not the contact. 
+        if okmessage.headers.get('record-route'):
+            rr = okmessage.headers['record-route']
+            if type(rr) is list: rr = rr[0]
+            self._remoteURI = Address(self.extractURI(rr)).getURI(parsed=True)
+            print "using record-route header of", self._remoteURI
+        else:
+            self._remoteURI = Address(self.extractURI(contact)
+                                                ).getURI(parsed=True)
+
         self.dialog.setCallee(Address(okmessage.headers['to'][0]))
         ack = tpsip.Request('ACK', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
@@ -571,9 +601,10 @@ class Call(object):
         self.setState('CONNECTED')
         if startRTP:
             self.sip.app.startCall(self.cookie, oksdp, cb)
+        log.msg("sending ACK to %r\n%s"%(addr, ack.toString()))
         self.sip.app.statusMessage("Call Connected")
 
-    def sendBye(self):
+    def sendBye(self, toAddr="ignored", auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
         uri = self._remoteURI
         dest = uri.host, (uri.port or 5060)
@@ -586,6 +617,8 @@ class Call(object):
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         bye.addHeader('content-length', 0)
+        if auth:
+            bye.addHeader(authhdr, auth)
         bye.creationFinished()
         bye = bye.toString()
         log.msg("sending BYE to %r\n%s"%(dest, bye))
@@ -742,7 +775,7 @@ class Call(object):
                 self.sendAck(message, startRTP=1)
             elif state == 'CONNECTED':
                 self.sip.app.debugMessage('Got duplicate OK to our ACK')
-                self.sendAck(message)
+                #self.sendAck(message)
             elif state == 'SENT_BYE':
                 self.sip.app.endCall(self.cookie)
                 self.sip._delCallObject(self.getCallID())
@@ -766,7 +799,12 @@ class Call(object):
                 self.setState('ABORTED')
                 return
             if message.code in ( 401, 407 ):
-                if state in ( 'SENT_INVITE', ):
+                if state in ( 'SENT_INVITE', 'SENT_BYE'):
+                    method = message.headers['cseq'][0].split()[1]
+                    if method == "BYE":
+                        resend = self.sendBye
+                    else:
+                        resend = self.sendInvite
                     if message.code == 401:
                         inH, outH = 'www-authenticate', 'authorization'
                     else:
@@ -775,16 +813,16 @@ class Call(object):
                     if a:
                         uri = str(self._remoteAOR)
 
-                        credDef = self.sip.app.authCred('INVITE', uri,
+                        credDef = self.sip.app.authCred(method, uri,
                                                 retry=(self.call_attempts > 1)
                                                           ).addErrback(log.err)
                         credDef.addCallback(lambda c, uri=uri, chal=a[0]:
-                                        self.calcAuth('INVITE',
+                                        self.calcAuth(method,
                                                       uri=uri,
                                                       authchal=chal,
                                                       cred=c)
                             ).addCallback(lambda a, h=outH:
-                                        self.sendInvite(toAddr=None,
+                                        resend(toAddr=None,
                                                         auth=a,
                                                         authhdr=h)
                             ).addErrback(log.err)
@@ -852,22 +890,23 @@ class Registration(Call):
 
     def startRegistration(self):
         self.regServer = Address(self.sip.app.getPref('register_uri'))
-        self.regAOR = self.regServer.getURI(parsed=True)
+        self.regURI = copy.copy(self.regServer)
+        self.regAOR = copy.copy(self.regServer.getURI(parsed=True))
         self._remoteURI = self._remoteAOR = self.regAOR
         # XXX Display Name
         self.regAOR.username = self.sip.app.getPref('username')
         self.regAOR = Address(self.regAOR)
         self._localAOR = self._localFullAOR = Address(self.regAOR)
-        self.regURI = copy.copy(self.regServer)
         #self.regURI.port = None
         d = self.setupLocalSIP(self.regServer)
         d.addCallback(self.sendRegistration).addErrback(log.err)
 
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
+        print "self.regURI2", self.regURI
         invite = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s'%
+        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
                                                 self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s REGISTER'%self.dialog.getCSeq(incr=1))
         invite.addHeader('to', str(self.regAOR))

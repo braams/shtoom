@@ -12,12 +12,13 @@ class BaseApplication:
     """ Base class for all applications. """
 
     __cookieCount = 0
+    _NATMapping = True
 
     def __init__(self, prefs=None):
         #self._options = _dummy()
         pass
 
-    def boot(self):
+    def boot(self, options=None, args=None):
         self.connectSIP()
 
     def initOptions(self, options=None, args=None):
@@ -42,6 +43,7 @@ class BaseApplication:
     def connectSIP(self):
         from twisted.internet import reactor
         from shtoom import sip
+        from shtoom.nat import getMapper
         p = sip.SipProtocol(self)
         self.sip = p
         lport = self.getPref('listenport')
@@ -52,11 +54,35 @@ class BaseApplication:
         if lport == 0:
             self.getOptions().setValue('listenport', listenport, dynamic=True)
         log.msg('sip listener installed on %d'%(listenport), system='app')
+        if self._NATMapping:
+            getMapper().addCallback(self._cb_mapSipPort)
+        else:
+            self._cb_mapSipPort(None)
+
+    def _cb_mapSipPort(self, mapper):
+        from twisted.internet import reactor
+        if mapper:
+            mapper.map(self.sipListener)
+            t = reactor.addSystemEventTrigger('before',
+                                              'shutdown',
+                                              self.stopSIP)
 
     def stopSIP(self):
-        self.sipListener.stopListening()
-        del self.sip
-        del self.sipListener
+        from shtoom.nat import getMapper
+        if self._NATMapping:
+            d = getMapper()
+            d.addCallback(self._cb_unmapSipPort).addErrback(log.err)
+            return d
+        else:
+            self._cb_unmapSipPort(None)
+
+    def _cb_unmapSipPort(self, mapper):
+        if hasattr(self, 'sipListener'):
+            if mapper:
+                mapper.unmap(self.sipListener)
+            self.sipListener.stopListening()
+            del self.sip
+            del self.sipListener
 
     def acceptCall(self, call):
         raise NotImplementedError

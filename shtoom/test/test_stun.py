@@ -6,8 +6,13 @@ You can run this with command-line:
   $ trial shtoom.test.test_stun
 """
 
-from twisted.trial import unittest
+from twisted.trial import unittest, util
+from twisted.internet import defer, reactor
+from twisted.internet.protocol import Factory, Protocol, DatagramProtocol
 
+class Saver:
+    def save(self, arg):
+        self.arg = arg
 
 class NetAddressTests(unittest.TestCase):
 
@@ -60,3 +65,14 @@ class NetAddressTests(unittest.TestCase):
         ae(n4.check('10.0.0.0'), True)
         ae(n4.check('172.20.10.200'), True)
         ae(n4.check('224.255.0.1'), True)
+
+    def test_stundiscovery(self):
+        from shtoom.stun import getSTUN, _NatType
+        ae = self.assertEquals
+        a_ = self.assert_
+        d = getSTUN()
+        s = Saver()
+        d.addCallback(s.save)
+        util.wait(d)
+        a_(isinstance(s.arg, _NatType))
+

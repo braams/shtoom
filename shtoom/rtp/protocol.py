@@ -117,7 +117,7 @@ class RTPProtocol(DatagramProtocol):
             # If the NAT is doing port translation as well, we will just
             # have to try STUN and hope that the RTP/RTCP ports are on
             # adjacent port numbers. Please, someone make the pain stop.
-            self.discoverStun()
+            self.natMapping()
 
     def getVisibleAddress(self):
         ''' returns the local IP address used for RTP (as visible from the
@@ -125,7 +125,7 @@ class RTPProtocol(DatagramProtocol):
         '''
         return (self._extIP, self._extRTPPort)
 
-    def discoverStun(self):
+    def natMapping(self):
         ''' Uses STUN to discover the external address for the RTP/RTCP
             ports. deferred is a Deferred to be triggered when STUN is
             complete.
@@ -133,21 +133,42 @@ class RTPProtocol(DatagramProtocol):
         # See above comment about port translation.
         # We have to do STUN for both RTP and RTCP, and hope we get a sane
         # answer.
-        from shtoom.stun import StunHook
-        rtpDef = defer.Deferred()
-        rtcpDef = defer.Deferred()
-        stunrtp = StunHook(self)
-        stunrtcp = StunHook(self.RTCP)
+        from shtoom.nat import getMapper
+        d = getMapper()
+        d.addCallback(self._cb_gotMapper)
+        return d
+
+    def unmapRTP(self):
+        from shtoom.nat import getMapper
+        # Currently removing an already-fired trigger doesn't hurt,
+        # but this seems likely to change.
+        try:
+            reactor.removeSystemEventTrigger(self._shutdownHook)
+        except:
+            pass
+        d = getMapper()
+        d.addCallback(self._cb_unmap_gotMapper)
+        return d
+
+    def _cb_unmap_gotMapper(self, mapper):
+        rtpDef = mapper.unmap(self.transport)
+        rtcpDef = mapper.unmap(self.RTCP.transport)
+        dl = defer.DeferredList([rtpDef, rtcpDef])
+        return dl
+
+    def _cb_gotMapper(self, mapper):
+        rtpDef = mapper.map(self.transport)
+        rtcpDef = mapper.map(self.RTCP.transport)
+        self._shutdownHook =reactor.addSystemEventTrigger('before', 'shutdown',
+                                                          self.unmapRTP)
         dl = defer.DeferredList([rtpDef, rtcpDef])
         dl.addCallback(self.setStunnedAddress).addErrback(log.err)
-        stunrtp.discoverStun(rtpDef)
-        stunrtcp.discoverStun(rtcpDef)
 
     def setStunnedAddress(self, results):
         ''' Handle results of the rtp/rtcp STUN. We have to check that
             the results have the same IP and usable port numbers
         '''
-        log.msg("got STUN back! %r"%(results), system='rtp')
+        log.msg("got NAT mapping back! %r"%(results), system='rtp')
         rtpres, rtcpres = results
         if rtpres[0] != defer.SUCCESS or rtcpres[0] != defer.SUCCESS:
             # barf out.
@@ -163,7 +184,7 @@ class RTPProtocol(DatagramProtocol):
             # We _should_ try and see if we have working rtp and rtcp, but
             # this seems almost impossible with most firewalls. So just try
             # to get a working rtp port (an even port number is required).
-            elif ((rtp[1] % 2) != 0):
+            elif False and ((rtp[1] % 2) != 0):
                 log.msg("stun: unusable RTP/RTCP ports %r, retry #%d"%
                                             (results, self._stunAttempts),
                                             system='rtp')
@@ -201,8 +222,9 @@ class RTPProtocol(DatagramProtocol):
 
     def stopSendingAndReceiving(self):
         self.Done = 1
-        self.rtpListener.stopListening()
-        self.rtcpListener.stopListening()
+        d = self.unmapRTP()
+        d.addCallback(lambda x: self.rtpListener.stopListening())
+        d.addCallback(lambda x: self.rtcpListener.stopListening())
 
     def startSendingAndReceiving(self, dest, fp=None):
         self.dest = dest

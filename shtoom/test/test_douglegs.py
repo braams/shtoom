@@ -76,7 +76,7 @@ class DougLegTests(unittest.TestCase):
         l.answerCall(voiceapp=None)
         twisted.trial.util.wait(d)
         ae(a.res, cookie)
-        l.rejectCall('because')
+        l.rejectCall(Exception('because'))
         twisted.trial.util.wait(d)
         ae(a.res, cookie)
 
@@ -87,7 +87,7 @@ class DougLegTests(unittest.TestCase):
         l.incomingCall(d)
         ae(a.res, None)
         # XXX should be an exception
-        l.rejectCall('because')
+        l.rejectCall(Exception('because'))
         twisted.trial.util.wait(d)
         # rejectCall triggers an errback, so we get
         # Failure(DefaultException(reason))

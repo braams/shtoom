@@ -79,7 +79,7 @@ Not before 0.3:
     - doug: create application frameworky bit (look at quotient.deployment?)
     - ui(all): multi-tab view for multiple calls
     - shtoomphone: ringing tone for incoming call?
-    - Mac UI checked in - dp/bob
+      use a callwaiting type tone when busy
     - doug: expose the auth headers to/from the call?
 
 Future:

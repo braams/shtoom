@@ -230,7 +230,7 @@ class TestCallControl(unittest.TestCase):
         ui.connectApplication(p)
         p.connectSIP = lambda x=None: None
         p._startReactor = False
-        p.boot()
+        p.boot(args=[])
         p.sip = TestSip(p)
         for l in range(loopcount):
             testdef = ui.compdef = defer.Deferred()
@@ -263,7 +263,7 @@ class TestCallControl(unittest.TestCase):
         testdef = ui.compdef = defer.Deferred()
         reactor.callLater(0, ui.fakeCall)
         p.connectSIP = lambda x=None: None
-        p.boot()
+        p.boot(args=[])
         p.sip = TestSip(p)
         reactor.callLater(0.3, lambda : p.sip.dropCall(ui.cookie))
         p.start()
@@ -289,7 +289,7 @@ class TestCallControl(unittest.TestCase):
         ui.connectApplication(p)
         testdef = ui.compdef = defer.Deferred()
         p.connectSIP = lambda x=None: None
-        p.boot()
+        p.boot(args=[])
         p.sip = TestSip(p)
         d =  p.sip.fakeInbound()
         d.addCallback(p.sip.dropFakeInbound)

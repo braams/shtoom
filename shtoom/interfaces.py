@@ -118,3 +118,37 @@ class StunPolicy(Interface):
 
     def checkStun(self, localip, remoteip):
         """ return True/False for whether STUN should apply """
+
+class NATMapper(Interface):
+    """ NAT Mapper interface. 
+
+        A NAT Mapper is passed a Port object, and does the appropriate
+        thing to make the port available on the outside of a NAT. 
+        
+        The STUN NAT Mapper can only do this for UDP, while the UPnP Mapper
+        can do both UDP and TCP.
+    """
+
+    def map(self, port):
+        """ Passed a Port object, returns a Deferred. The Deferred will
+            be triggered with a t.i.address.IPv4Address of the external
+            address. If the same Port is passed a second time, the same 
+            address will be returned.
+        """
+
+    def info(self, port):
+        """ Returns an IPv4Address of a mapped Port. .map() should have 
+            been called with this Port object first - otherwise a ValueError 
+            will be raised.
+        """
+
+    def unmap(self, port):
+        """ Remove the external port mapping for the given port. .map() 
+            should have already been called with the given Port. 
+            Returns a deferred that will be triggered when the mapping 
+            has been removed.
+
+            Note that for the STUN mapper, this is a no-op, but you should do
+            it anyway.
+        """
+

@@ -96,7 +96,7 @@ class PreferencesDialog:
                     buttons = []
                     for c in choices[::-1]:
                         b = gtk.RadioButton(lb, c)
-                        self.tooltips.set_tip(b, option.getDescription())
+                        self.tooltips.set_tip(b, option.getDescription(), None)
                         if c == option.getValue():
                             #print "setting", c
                             b.set_active(gtk.TRUE)
@@ -128,3 +128,4 @@ class PreferencesDialog:
 
                 tab.pack_start(optBox, gtk.FALSE, gtk.FALSE)
             notebook.append_page(tab, gtk.Label(group.getName()))
+        self.tooltips.enable()

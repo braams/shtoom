@@ -12,11 +12,15 @@ class TestAudio:
 
 class AppStartup(unittest.TestCase):
 
+
     def buildPhone(self):
         ui = TestUI()
         audio = TestAudio()
         from shtoom.app.phone import Phone
-        return Phone(ui, audio)
+        p = Phone(ui, audio)
+        # Disable the NAT Mapping code for these tests
+        p._NATMapping = False
+        return p
 
     def getMinimalOptions(self):
         from shtoom.Options import AllOptions, OptionGroup, \

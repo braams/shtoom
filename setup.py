@@ -13,18 +13,18 @@ from shtoom import __version__
 class DependencyFailed(Exception): pass
 class VersionCheckFailed(DependencyFailed): pass
 
-#import sys
-#if sys.version < '2.3':
-#    raise VersionCheckFailed, "Python 2.3 is required"
+import sys
+if sys.version < '2.3':
+    raise VersionCheckFailed("Python 2.3 or later is required")
 
-#try:
-#    import twisted
-#except ImportError:
-#    raise DependencyFailed, "You need Twisted - http://www.twistedmatrix.com/"
+try:
+    import twisted
+except ImportError:
+    raise DependencyFailed("You need Twisted - http://www.twistedmatrix.com/")
 
-#from twisted.copyright import version as tcversion
-#if tcversion < '1.1.1':
-#    raise VersionCheckFailed, "Twisted 1.1.1 or later is required"
+from twisted.copyright import version as tcversion
+if tcversion < '1.3':
+    raise VersionCheckFailed("Twisted 1.3 or later is required")
 
 if py2exe is not None:
     addnl = { 'console':['scripts/shtoomphone.py'],
