@@ -4,241 +4,66 @@
 # with the UI-specific preferences handling as a part of it.
 
 import os
+import shtoom.schema
+from shtoom.schema import Dict as OptionGroup
+from shtoom.schema import NoDefaultValue as NoDefaultOption
+from shtoom.schema import Boolean, String, List, Choice, Dict, Password, Integer
 
-class OptionValueInvalid(Exception):
-    pass
+OptionGroup = List
+OptionDict = Dict
+StringOption = String
+PasswordOption = Password
+NumberOption = Integer
+BooleanOption = Boolean
+DuplicateOptionError = shtoom.schema.DuplicateItemError
 
-class DuplicateOptionError(Exception):
-    pass
+def getPrettyName(opt):
+    n = opt.name
+    return n.replace('_', ' ')
 
-class _NoDefaultOption: pass
+def ChoiceOption(name, description, default=None, choices=[]):
+    C = Choice(name, description)
+    for c in choices:
+        s = String(c)
+        s.value = c
+        C.add(s)
+    if default is not None:
+        C.value = default
+        C.default = default
+    return C
 
-NoDefaultOption = _NoDefaultOption()
+def _valueSetter(opt, value):
+    "Sets opt.value to value, returns True if it changed"
+    if isinstance(opt, String) and value == '':
+        value = opt.default
+    if opt.value == value:
+        ret = False
+    else:
+        ret = True
+    ovalue = opt.value
+    opt.value = value
+    #print "_valueSetter: %s %r %r %s"%(opt.name, ovalue, opt.value, ret)
+    return ret
 
-class Option(object):
-    _value = NoDefaultOption
-    _default = NoDefaultOption
-    _dynamic = False
-    optionType = 'Option'
-
-    def __init__(self, name='', description='', default=NoDefaultOption, shortopt=''):
-        self._name = name
-        if default is not NoDefaultOption:
-            self._default = default
-        self._description = description
-        self._shortopt = shortopt
-
-    def getValue(self):
-        if (self._value is NoDefaultOption and
-            self._default is not NoDefaultOption):
-            return self._default
+def _optParseBuilder(opt, parser):
+    args = {}
+    if isinstance(opt, Boolean):
+        if opt.default is False:
+            args['action'] = 'store_true' 
+        elif opt.default is True:
+            args['action'] = 'store_false'
         else:
-            return self._value
-
-    def getName(self):
-        return self._name
-
-    def getDefault(self):
-        return self._default
-
-    def setValue(self, value):
-        self.validate(value)
-        value = self.massageValue(value)
-        return self._setValue(value)
-
-    def validate(self, value):
-        return
-
-    def massageValue(self, value):
-        return value
-
-    def _setValue(self, value):
-        ovalue = self._value
-        self._value = value
-        if ovalue != value:
-            # Modified. Signal that.
-            return True
-        else:
-            return False
-
-    def getCmdLineOption(self):
-        n = self._name
-        n = n.replace('_', '-')
-        return '--%s'%n
-
-    def getCmdLineType(self):
-        return None
-
-    def getPrettyName(self):
-        n = self._name
-        n = n.replace('_', ' ')
-        return n
-
-    def getDescription(self):
-        return self._description
-
-    def buildOptParse(self, parser):
-        t = self.getCmdLineType()
-        if t:
-            t.update({'dest':self._name, 'help':self._description, 'default':self._default})
-        else:
-            t = {'dest':self._name, 'help':self._description, 'default':self._default}
-        if self._shortopt:
-            short = '-'+self._shortopt
-        else:
-            short = ''
-        parser.add_option(short, self.getCmdLineOption(), **t)
-
-    # A dynamic option is not written to any stored config file
-    def getDynamic(self):
-        return self._dynamic
-
-    def setDynamic(self, dynamic):
-        self._dynamic = dynamic
-
-class BooleanOption(Option):
-
-    _default = False
-    optionType = 'Boolean'
-
-    def massageValue(self, value):
-        if isinstance(value, str):
-            if value.lower() in ( 'true', '1', 't', 'y', 'yes' ):
-                return True
-            elif value.lower() in ( 'false', '0', 'f', 'n', 'no' ):
-                return False
-            else:
-                raise OptionValueInvalid, value
-        elif value in ( True, 1, ):
-            return True
-        elif value in ( False, 0, ):
-            return False
-        else:
-            raise OptionValueInvalid("expected a true/false value, got %r"%(value))
-
-    def getCmdLineType(self):
-        if self._default is False:
-            return { 'action':'store_true' }
-        elif self._default is True:
-            return { 'action':'store_false' }
-        else:
-            raise ValueError, "Boolean must default to True or False, not %r"%self._default
-
-class StringOption(Option):
-    optionType = 'String'
-
-    def massageValue(self, value):
-        if not isinstance(value, basestring):
-            # print a warning
-            value = str(value)
-        if not value:
-            value = self._default
-        return value
-
-class PasswordOption(StringOption):
-    optionType = 'Password'
-
-class ChoiceOption(Option):
-    optionType = 'Choice'
-
-    def __init__(self, name='', description='', default=NoDefaultOption, choices=[], shortopt=''):
-        self._choices = choices
-        Option.__init__(self, name, description, default, shortopt)
-
-    def validate(self, value):
-        if not isinstance(value, basestring):
-            # print a warning
-            value = str(value)
-        if not value in self._choices:
-            raise OptionValueInvalid("%s is not one of %s"%(value, ', '.join(self._choices)))
-
-    def getChoices(self):
-        return self._choices[:]
-
-class NumberOption(Option):
-    optionType = 'Number'
-
-    def massageValue(self, value):
-        if value is NoDefaultOption:
-            return value
-        if not isinstance(value, int):
-            # print a warning
-            value = int(value)
-        return value
-
-    def validate(self, value):
-        if value is NoDefaultOption:
-            return
-        try:
-            int(value)
-        except ValueError:
-            raise OptionValueInvalid("expected a number, got %r"%(value))
-
-    def getCmdLineType(self):
-        return { 'type':'int' }
-
-class OptionGroup(object):
-
-    variableNames = False
-
-    def __init__(self, name='', description='', gui=True):
-        self._name = name
-        self._description = description
-        self._options = []
-        self._optdict = {}
-        self._gui = gui
-
-    def getGUI(self):
-        return self._gui
-
-    def getName(self):
-        return self._name
-
-    def getDescription(self):
-        return self._description
-
-    def __iter__(self):
-        for o in self._options:
-            yield o
-
-    def addOption(self, option):
-        n = option.getName()
-        if n in self._optdict:
-            raise DuplicateOptionError(n)
-        self._optdict[n] = option
-        self._options.append(option)
-
-    def buildOptParse(self, parser):
-        for o in self._options:
-            o.buildOptParse(parser)
-
-class OptionDict(OptionGroup):
-    "A dict of arbitrary values"
-
-    variableNames = True
-
-    def buildOptParse(self, parser):
-        # No optparse for you!
-        pass
-
-    def removeOption(self, option=None, name=None):
-        if option is None:
-            option = self._optdict[name]
-        del self._optdict[option.getName()]
-        self._options.remove(option)
-
-    def getOption(self, name):
-        return self._optdict.get(name)
-
-    def addOption(self, option):
-        n = option.getName()
-        if n in self._optdict:
-            old = self._optdict[n]
-            self._options.remove(old)
-            del self._optdict[n]
-        self._optdict[n] = option
-        self._options.append(option)
-
+            raise ValueError("Boolean must default to True or False, not %r"%
+                                                                self._default) 
+    args.update({'dest': opt.name, 
+                 'help': opt.description, 
+                 'default':opt.default})
+    cmdopt = '--' + opt.name.replace('_', '-')
+    if hasattr(opt, 'shortOpt'):
+        shortopt = '-' + opt.shortOpt
+    else:
+        shortopt = ''
+    parser.add_option(shortopt, cmdopt, **args)
 
 class AllOptions(object):
     def __init__(self):
@@ -251,38 +76,42 @@ class AllOptions(object):
         for g in self._groups:
             yield g
 
-    def addGroup(self, group):
-        n = group.getName()
+    def add(self, group):
+        n = group.name
         if n in self._groupdict:
             raise DuplicateOptionError(n)
         # Ick. n^2 behaviour. Oh well, it's only at startup
-        for opt in group._optdict:
+        for opt in group:
             for g in self:
-                if opt in g._optdict:
+                gopts = [x.name for x in g]
+                if opt.name in gopts:
                     raise DuplicateOptionError(n)
         self._groupdict[n] = group
         self._groups.append(group)
+    addGroup = add
 
     def buildOptParse(self, parser):
-        [ g.buildOptParse(parser) for g in self ]
+        for g in self:
+            for o in g:
+                _optParseBuilder(o, parser)
 
     def handleOptParse(self, opts, args):
         for g in self:
-            if g.variableNames:
+            if getattr(g, 'variableNames', None):
                 continue
             for o in g:
-                val = getattr(opts, o.getName())
+                val = getattr(opts, o.name)
                 if val is not NoDefaultOption and val is not None:
-                    o.setValue(val)
+                    o.value = val
 
     def setOptions(self, opts):
         for group in self:
-            if g.variableNames:
+            if getattr(g, 'variableNames', None):
                 # Then don't cache everything, just the group
-                setattr(opts, g.getName(), g)
+                setattr(opts, g.name, g)
                 continue
             for opt in group:
-                key, val = opt.getName(), opt.getValue()
+                key, val = opt.name, opt.value
                 if val is not NoDefaultOption and val is not None:
                     setattr(opts, key, val)
 
@@ -291,11 +120,11 @@ class AllOptions(object):
         for g in self:
             thisblock = {}
             for o in g:
-                if o.getValue() not in (NoDefaultOption, o.getDefault()) \
-                                                and not o.getDynamic():
-                    thisblock[o.getName()] = o.getValue()
+                if o.value not in (NoDefaultOption, o.default) \
+                                        and not getattr(o, 'dynamic', None):
+                    thisblock[o.name] = o.value
             if thisblock:
-                out.append('[%s]'%g.getName())
+                out.append('[%s]'%g.name)
                 for k,v in thisblock.items():
                     out.append("%s=%s"%(k, v))
                 out.append('')
@@ -325,19 +154,19 @@ class AllOptions(object):
             cfg = SafeConfigParser()
             cfg.readfp(loadData)
         for g in self:
-            gname = g.getName()
+            gname = g.name
             if cfg.has_section(gname):
-                if g.variableNames:
+                if getattr(g, 'variableNames', None):
                     for name, value in cfg.items(gname):
-                        opt = StringOption(name, name)
-                        opt.setValue(value)
+                        opt = String(name, name)
+                        _valueSetter(opt,value)
                         g.addOption(opt)
                 else:
                     for o in g:
-                        oname = o.getName()
+                        oname = o.name
                         if cfg.has_option(gname, oname):
                             val= cfg.get(gname, oname)
-                            o.setValue(val)
+                            o.value = val
 
     def saveOptsFile(self):
         if self._filename is None:
@@ -355,12 +184,12 @@ class AllOptions(object):
 
         for g in self:
             for o in g:
-                n = o.getName()
+                n = o.name
                 if dict.get(n) is not None:
-                    if dict[n] == '' and o.optionType == 'Number':
-                        if o.setValue(o.getDefault()):
-                            modified[n] = o.getDefault()
-                    elif o.setValue(dict[n]):
+                    if dict[n] == '' and o.type == 'Integer':
+                        if _valueSetter(o, o.default):
+                            modified[n] = o.default
+                    elif _valueSetter(o, dict[n]):
                         modified[n] = dict[n]
                     else:
                         pass
@@ -374,35 +203,36 @@ class AllOptions(object):
         else:
             for g in self:
                 for o in g:
-                    if o.getName() == option:
-                        o.setValue(value)
+                    if o.name == option:
+                        o.value = value
                         if option in self._cached_options:
                             del self._cached_options[option]
-                        o.setDynamic(dynamic)
+                        if dynamic:
+                            o.dynamic = True
 
     def hasValue(self, option):
         if not self._cached_options.has_key(option):
             for g in self:
-                if g.variableNames:
+                if getattr(g, 'variableNames', None):
                     # Then cache the group object, not the items in it
-                    self._cached_options[g.getName()] = g
+                    self._cached_options[g.name] = g
                     continue
                 for o in g:
-                    self._cached_options[o.getName()] = o
+                    self._cached_options[o.name] = o
         return option in self._cached_options
 
     def getValue(self, option, dflt=NoDefaultOption):
         if not self._cached_options.has_key(option):
             for g in self:
-                if g.variableNames:
+                if getattr(g, 'variableNames', None):
                     # Then cache the group object, not the items in it
-                    self._cached_options[g.getName()] = g
+                    self._cached_options[g.name] = g
                     continue
                 for o in g:
-                    self._cached_options[o.getName()] = o
+                    self._cached_options[o.name] = o
         val = self._cached_options[option]
-        if hasattr(val, 'getValue'):
-            val = val.getValue()
+        if hasattr(val, 'value'):
+            val = val.value
         if val is NoDefaultOption:
             val = dflt
         return val

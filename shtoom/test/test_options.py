@@ -84,14 +84,14 @@ class OptionsTests(unittest.TestCase):
 
         for g in all:
             s1, s2, s3 = g
-            s2.setValue('hello')
+            s2.value = 'hello'
         cfg = _getConfigParsed(all)
         ae(cfg.sections(), ['group'])
         opts = cfg.options('group')
         opts.sort()
         ae(opts, ['optionb'])
         ae(cfg.get('group', 'optionb'), 'hello')
-        s1.setValue('goodbye')
+        s1.value = 'goodbye'
 
         all.setValue('optiona', 'testing')
         cfg = _getConfigParsed(all)

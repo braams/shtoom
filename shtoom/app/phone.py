@@ -230,15 +230,15 @@ class Phone(BaseApplication):
 
     def appSpecificOptions(self, opts):
         app = OptionGroup('shtoom', 'Shtoom')
-        app.addOption(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','wx', 'tk','text']))
-        app.addOption(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port', 'alsa']))
-        app.addOption(StringOption('audio_infile','read audio from this file'))
-        app.addOption(StringOption('audio_outfile','write audio to this file'))
-        app.addOption(StringOption('ringing_command','run this command when a call comes in'))
-        app.addOption(StringOption('logfile','log to this file'))
-        opts.addGroup(app)
+        app.add(ChoiceOption('ui','use UI for interface', choices=['qt','gnome','wx', 'tk','text']))
+        app.add(ChoiceOption('audio','use AUDIO for interface', choices=['oss', 'fast', 'port', 'alsa']))
+        app.add(StringOption('audio_infile','read audio from this file'))
+        app.add(StringOption('audio_outfile','write audio to this file'))
+        app.add(StringOption('ringing_command','run this command when a call comes in'))
+        app.add(StringOption('logfile','log to this file'))
+        opts.add(app)
         creds = OptionDict('credentials', 'cached credentials', gui=False)
-        opts.addGroup(creds)
+        opts.add(creds)
         opts.setOptsFile('.shtoomrc')
 
     def authCred(self, method, uri, realm='unknown', retry=False):

@@ -1,3 +1,32 @@
+import warnings
+
+class DuplicateItemError(Exception):
+    pass
+
+class _BackwardsCompatMixin:
+    def _getOptionType(self):
+        warnings.warn("object.optionValue", DeprecationWarning, stacklevel=2)
+        t = self.type
+        return {'Integer':'Number'}.get(t, t)
+    optionType = property(_getOptionType)
+
+    def getDescription(self): 
+        warnings.warn("object.getDescription()", DeprecationWarning, 
+                                                        stacklevel=2)
+        return self.description
+
+    def getValue(self): 
+        warnings.warn("object.getValue()", DeprecationWarning, stacklevel=2)
+        return self.value
+
+    def getName(self): 
+        warnings.warn("object.getName()", DeprecationWarning, stacklevel=2)
+        return self.name
+
+    def getPrettyName(self):
+        warnings.warn("object.getPrettyName()", DeprecationWarning, stacklevel=2)
+        return self.name.replace('_', ' ')
+
 
 class SchemaError(Exception):
     pass
@@ -6,25 +35,32 @@ class SchemaValueError(SchemaError):
     pass
 
 # construct a singleton marker
-class _NoDefaultValue: 
+class _NoDefaultValue(object): 
     "Marker indicating no default value was specified"
+    def _getValue(self):
+        return self
+    value = property(_getValue)
 
 NoDefaultValue = _NoDefaultValue()
 del _NoDefaultValue
 
-class SchemaObject(object):
+class SchemaObject(_BackwardsCompatMixin, object):
     "Base class for all schema objects"
     _value = NoDefaultValue
     _requiredType = None
 
     def __init__(self, name='', description='', default=NoDefaultValue, 
-                 shortName='', help=''):
+                 shortName='', help='', **kwargs):
         self.name = name
         self.description = description
         self.default = default
+        if default is not NoDefaultValue: 
+            self.value = default
         self.shortName = shortName
         self.help = help
         self.type = self.__class__.__name__
+        # Allow additional values, e.g. shortopt
+        self.__dict__.update(kwargs)
         
     def _getValue(self):
         return self._value
@@ -39,6 +75,9 @@ class SchemaObject(object):
 
     def _coerceValue(self, value):
         # XXX try adaption
+        if value is NoDefaultValue:
+            return value
+
         if not self._requiredType:
             return value
         try:
@@ -49,6 +88,8 @@ class SchemaObject(object):
         return value
 
     def _validateValue(self, value):
+        if value is NoDefaultValue:
+            return 
         if self._requiredType and not isinstance(value, self._requiredType):
             raise SchemaValueError('expected %s, got %r'%(
                                                 self._requiredType, value))
@@ -98,12 +139,12 @@ class Boolean(SchemaObject):
 class ObjectGroup(object):
     "base class for all object containers"
 
-    def __init__(self, name='', description='', help=''):
+    def __init__(self, name='', description='', help='', **kwargs):
         self.name = name
         self.description = description
         self.help = help
         self.type = self.__class__.__name__
-        
+        self.__dict__.update(kwargs)
 
     def _setValue(self, value):
         raise TypeError('%s is valueless'%(self.type))
@@ -113,16 +154,20 @@ class ObjectGroup(object):
     value = property(_getValue, _setValue)
 
     def add(self, other):
-        if not isinstance(other, SchemaObject):
+        if not isinstance(other, (SchemaObject, Choice)):
             raise TypeError("expected SchemaObject, not %r"%(other))
         self._addObject(other)
+
+    def addOption(self, other):
+        warnings.warn("object.addOption()", DeprecationWarning, stacklevel=2)
+        self.add(other)
 
     def _addObject(self, other):
         raise NotImplementedError
 
     def remove(self, other):
         if hasattr(self, '_removeObjectByName'):
-            if isinstance(other, SchemaObject):
+            if isinstance(other, (SchemaObject, Choice)):
                 name = other.name
             elif isinstance(other, basestring):
                 name = other
@@ -130,7 +175,7 @@ class ObjectGroup(object):
                 raise TypeError("expected object or object name, not %r"%(other))
             self._removeObjectByName(name)
         elif hasattr(self, '_removeObjectByValue'):
-            if isinstance(other, SchemaObject):
+            if isinstance(other, (SchemaObject, Choice)):
                 value = other.value
             elif isinstance(other, basestring):
                 value = other
@@ -138,14 +183,22 @@ class ObjectGroup(object):
                 raise TypeError("expected object or object value, not %r"%(other))
             self._removeObjectByValue(value)
 
-class List(ObjectGroup):
+    def getGUI(self):
+        warnings.warn("object.getGUI()", DeprecationWarning, stacklevel=2)
+        return getattr(self, 'gui', True)
+
+class List(_BackwardsCompatMixin, ObjectGroup):
     "A list of objects"
     def __init__(self, *args, **kwargs):
         self._subobjects = []
+        self._objectNames = {}
         ObjectGroup.__init__(self, *args, **kwargs)
 
     def _addObject(self, object):
+        if object.name in self._objectNames: 
+            raise DuplicateItemError(object)
         self._subobjects.append(object)
+        self._objectNames[object.name] = True
 
     def _removeObjectByValue(self, value):
         # Completely non-optimal (O(2N)), but not a time-critical function
@@ -162,6 +215,7 @@ class List(ObjectGroup):
 class Choice(List):
     "A choice from one of the objects in the container"
     _value = NoDefaultValue
+    default = NoDefaultValue
 
     def _setValue(self, value):
         for sub in self._subobjects:
@@ -169,15 +223,22 @@ class Choice(List):
                 self._value = sub
                 break
         else:
-            raise ValueError('%s is not a known value'%(value,))
+            vals = [x.value for x in self]
+            raise ValueError('%s is not a known value (know: %r)'%(value,vals))
 
     def _getValue(self):
         return self._value.value
 
     value = property(_getValue, _setValue)
 
-class Dict(ObjectGroup):
+    def getChoices(self):
+        warnings.warn("object.optionValue", DeprecationWarning, stacklevel=2)
+        return [ x.value for x in self ]
+
+class Dict(_BackwardsCompatMixin, ObjectGroup):
     "A dictionary of objects"
+    variableNames = True
+
     def __init__(self, *args, **kwargs):
         self._subobjects = {}
         ObjectGroup.__init__(self, *args, **kwargs)

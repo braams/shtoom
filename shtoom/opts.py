@@ -18,38 +18,38 @@ def buildOptions(app):
     app.appSpecificOptions(opts)
 
     network = OptionGroup('network', 'Network Settings')
-    network.addOption(StringOption('localip','listen on this local ip address'))
-    network.addOption(NumberOption('listenport','run the sip listener on this port',
+    network.add(StringOption('localip','listen on this local ip address'))
+    network.add(NumberOption('listenport','run the sip listener on this port',
                                     shortopt='p'))
-    network.addOption(StringOption('outbound_proxy','use this outbound proxy to make calls'))
-    network.addOption(ChoiceOption('stun_policy','When should STUN be used?', 'rfc1918',
+    network.add(StringOption('outbound_proxy','use this outbound proxy to make calls'))
+    network.add(ChoiceOption('stun_policy','When should STUN be used?', 'rfc1918',
                                     choices=['never','always','rfc1918']))
-    network.addOption(BooleanOption('use_upnp','Use UPnP to punch holes in firewalls', False))
+    network.add(BooleanOption('use_upnp','Use UPnP to punch holes in firewalls', False))
 
-    network.addOption(NumberOption('force_rtp_port','force RTP to use this port'))
-    opts.addGroup(network)
+    network.add(NumberOption('force_rtp_port','force RTP to use this port'))
+    opts.add(network)
 
     identity = OptionGroup('identity', 'Identity Settings')
-    identity.addOption(StringOption('email_address','use this email address'))
-    identity.addOption(StringOption('username','use this user name'))
-    opts.addGroup(identity)
+    identity.add(StringOption('email_address','use this email address'))
+    identity.add(StringOption('username','use this user name'))
+    opts.add(identity)
 
     proxy = OptionGroup('proxy', 'SIP Proxy Settings')
-    proxy.addOption(StringOption('outbound_proxy_url','use this proxy for outbound SIP messages'))
-    opts.addGroup(proxy)
+    proxy.add(StringOption('outbound_proxy_url','use this proxy for outbound SIP messages'))
+    opts.add(proxy)
 
     register = OptionGroup('register', 'Registration')
-    register.addOption(StringOption('register_uri',
+    register.add(StringOption('register_uri',
                         'URI of registration server (e.g. sip:divmod.com:5060)'))
-    register.addOption(StringOption('register_user','Username to register'))
-    register.addOption(StringOption('register_authuser','Username to use for auth'))
-    register.addOption(PasswordOption('register_authpasswd','Passwd to use for auth'))
-    opts.addGroup(register)
+    register.add(StringOption('register_user','Username to register'))
+    register.add(StringOption('register_authuser','Username to use for auth'))
+    register.add(PasswordOption('register_authpasswd','Passwd to use for auth'))
+    opts.add(register)
 
     debug = OptionGroup('debug', 'Debugging', gui=False)
-    debug.addOption(BooleanOption('stdout','Log to stdout', False))
-    debug.addOption(BooleanOption('no_config_file',
+    debug.add(BooleanOption('stdout','Log to stdout', False))
+    debug.add(BooleanOption('no_config_file',
                                   "Don't read from or write to config file",
                                   False, shortopt='N'))
-    opts.addGroup(debug)
+    opts.add(debug)
     return opts

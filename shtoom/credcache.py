@@ -36,10 +36,10 @@ class CredCache:
         self._cred[realm] = (user, password)
         opt = StringOption(realm, 'cred for %s'%realm)
         if not save:
-            opt.setDynamic(True)
-        opt.setValue(self.encodeSavedCred(user, password))
+            opt.dynamic = True
+        opt.value = self.encodeSavedCred(user, password)
         cred = self.app.getPref('credentials')
-        cred.addOption(opt)
+        cred.add(opt)
         if save:
             self.app.updateOptions({}, forceSave=True)
 
