@@ -42,6 +42,9 @@ class Phone(BaseApplication):
         reactor.run()
         self.ui.resourceUsage()
 
+    def getAuth(self, method, realm):
+        self.ui.getString("Please enter user,passwd for %s at %s"%(method, realm))
+
     def acceptCall(self, call, **calldesc):
         print "acceptCall for %r"%calldesc
 
@@ -170,11 +173,13 @@ class Phone(BaseApplication):
         if self._calls.get(cookie):
             del self._calls[cookie]
 
-    def startDTMF(self, callid, digit):
-        rtp = self._rtp[callid]
+    def startDTMF(self, cookie, digit):
+        rtp = self._rtp[cookie]
+        rtp.startDTMF(digit)
 
-    def stopDTMF(self, callid, digit):
-        rtp = self._rtp[callid]
+    def stopDTMF(self, cookie, digit):
+        rtp = self._rtp[cookie]
+        rtp.stopDTMF(digit)
 
     def statusMessage(self, message):
         self.ui.statusMessage(message)
