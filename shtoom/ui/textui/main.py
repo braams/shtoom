@@ -108,11 +108,11 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def cmd_accept(self, line):
         "accept -- accept an incoming call"
-        self._incoming_timeout.cancel()
-        self._incoming_timeout = None
         if not self._pending:
             self.transport.write("no pending calls")
             return
+        self._incoming_timeout.cancel()
+        self._incoming_timeout = None
         self._cookie, resp = self._pending
         self._pending = None
         resp.callback(self._cookie)
