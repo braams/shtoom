@@ -1,6 +1,10 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - Universal Plug n Play support. This works with Microsoft Internet
+    Connection Sharing and many off-the-shelf firewalls.
+  - Much better STUN support.
+  - Handle Record-Route in a simplistic way.
   - address book support (CW)
   - textui's logging is saner - shtoomphone got a --logfile option
   - another playout algorithm, with a better buffering strategy (CW)

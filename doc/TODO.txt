@@ -3,18 +3,17 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 Definite before 0.3:
-    - Record-Route handling in requests/responses
     - go through and make sure Doug is up-to-date with recent refactorings
     - all interfaces must be current and correct
-    - Asterisk is rejecting our ACK - e.g. to 613@fwd.pulver.com
     - doug: use dropCall()'s deferred to generate correct events
     - doug: move the DTMF code from shtoom.app.doug to shtoom.doug.leg.Leg
     - doug: s.d.conferencing's entrance soundburst bug
     - doug: after a connectLegs(), forward on DTMF? How?
     - doug: flesh out leg tests, then voiceapp tests
     - ui(qt): hide multiple call support for now
-    - Some sort of "debug dump" command that dumps relevant info (ui, audio,
-      &c) for bugreports.
+    - shtoom.avail.ui
+    - finish credcache
+    - fix brokenness with acceptCall deferreds
     - package for Mac, Windows
     - phone: when on a call, decline a second incoming call?
     - documentation, documentation, documentation
@@ -31,7 +30,6 @@ Maybe before 0.3:
     - let doug handle wav and au files natively.
     - MediaLayer: a more sophisticated playout buffer
     - cocoa native UI into it's own thread to workaround broken cfreactor
-    - stun: timeout the STUN call, generate a nice error 
     - sip: retry registration failures (e.g. for testcall)
     - sip: move more stuff into the Dialog class
     - ui(tk): new dialogs that don't block, and have a timeout.
@@ -98,11 +96,6 @@ Future:
     - sip: Handle call failure gracefully - alert the user
     - sip: lots more error handling
     - sip, app, ui(all): a seperate debugging log for network level events
-    - UPnP: Hookup the discovery code in shtoom.upnp. 
-    - UPnP: Finish forwardPort and cancelForwardPort. 
-      Annoyingly, it doesn't seem like responses include some sort 
-      of response cookie to indicate which query it is for.
-      Needs SOAP client in Twisted 1.1.2.
     - Handle more of SIP 
         - Lookup servers/proxies using multicast, SRV
         - redirects
