@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: stun.py,v 1.14 2004/03/02 13:04:14 anthony Exp $
+# $Id: stun.py,v 1.15 2004/03/02 14:22:31 anthony Exp $
 
 import struct, socket, time
 from twisted.internet import reactor, defer
@@ -211,11 +211,11 @@ class RFC1918Stun:
         remoteIsRFC1918 = False
         remoteIsLocalhost = False
         # Yay. getPeer() returns a name, not an IP
-        # Since (according to radix), I should use "a non-existant
-        # high-level interface to twisted.names.client", and I have
-        # no intentions of writing said interface just for this,
-        # punting to socket.gethostbyname() now.
-        # This is a filthy filthy hack. But I'm screwed either way.
+        #  XXX tofix: grab radix's goodns.py until it
+        # lands in twisted proper.
+        # Until then, use this getaddrinfo() hack.
+        if not remoteip:
+            return None
         if remoteip[0] not in '0123456789':
             import socket
             try:
