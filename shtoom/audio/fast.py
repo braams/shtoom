@@ -50,7 +50,7 @@ class FastAudioWrapper(object):
         self._f.stop()
         self._f.close()
 
-    def read(self, length):
+    def read(self, length=320):
         while len(self.buffer) < length:
             self.buffer += self._f.read()
         result, self.buffer = self.buffer[:length], self.buffer[length:]
