@@ -28,6 +28,33 @@ class SilenceSource(Source):
     def write(self, bytes):
         pass
 
+
+class EchoSource(Source):
+    "An EchoSource just repeats back whatever you send it"
+
+    def __init__(self):
+        self._buffer = ''
+
+    def isPlaying(self):
+        return True
+
+    def isRecording(self):
+        return True
+
+    def close(self):
+        self._buffer = ''
+        return
+
+    def read(self):
+        if len(self._buffer) >= 320:
+            r, self._buffer = self._buffer[:320], self._buffer[320:]
+            return r
+        else:
+            return ''
+
+    def write(self, bytes):
+        self._buffer += bytes
+
 class FileSource(Source):
     "A FileSource connects to a file for either reading or writing"
 
