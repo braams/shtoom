@@ -8,6 +8,9 @@ import sys ; sys.path.append(sys.path.pop(0))
 app = None
 
 def main():
+    from twisted.python import threadable
+    threadable.init(1)
+
     from shtoom.app.phone import Phone
     global app
 
