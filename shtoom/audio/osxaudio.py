@@ -1,17 +1,17 @@
 # Copyright (C) 2004 Anthony Baxter
 
-import thread
 ## Have to initialize the threading mechanisms in order for PyGIL_Ensure to work
-thread.start_new_thread(lambda: None, ())
+from twisted.python import threadable
+threadable.init(1)
+import thread ; thread.start_new_thread(lambda: None, ())
 
 import coreaudio
-from numarray import zeros, Float32
-from numarray import multiply, add, Int16, Int32
 from math import sin, sqrt
-import time, sys, traceback, audioop
-
+from numarray import multiply, add, Int16, Int32, zeros, Float32
+from twisted.internet import reactor
+import sys, traceback, audioop
 from converters import MultipleConv
-from rateformat import CoreAudioConverter
+from time import time
 
 opened = None
 
@@ -25,6 +25,7 @@ def RMS(b):
 class OSXAudio(object):
     fromstate = None
     tostate = None
+    prevtime = None
     SCALE = 32768/2
 
     def __init__(self):
@@ -33,17 +34,24 @@ class OSXAudio(object):
         self.running = False
         self.reopen()
 
-    def read(self, bytes=320):
-        if len(self.outbuffer) < bytes:
+    def read(self, bytes=320, buffer=320*3):
+        if self.prevtime is None:
+            delta = 0
+        else:
+            delta = 1000*(time() - self.prevtime)
+        self.prevtime = time()
+        if len(self.outbuffer) < (buffer + bytes):
+            #print "sent silence"
             return ''
         else:
-            sound, self.outbuffer = self.outbuffer[:320], self.outbuffer[:320]
-        #print "sent %d to the network"%len(sound)
+            #sound, self.outbuffer = self.outbuffer[:bytes], self.outbuffer[bytes:]
+            sound, self.outbuffer = self.outbuffer[:bytes], self.outbuffer[bytes:]
+        #print "[%d] sent %d to the network, %s remaining"%(delta, len(sound), len(self.outbuffer))
         return sound
 
     def write(self, data):
         #print "got %d bytes from network"%(len(data))
-        out = self.to44Kstereo(data)
+        out = self.to44KStereo(data)
         self.inbuffer += out
 
     def reopen(self):
@@ -58,55 +66,69 @@ class OSXAudio(object):
             #coreaudio.stopAudio(self)
             #self.running = False
 
-    def toStdFmt(self, buffer):
-        r = []
+    def from44KStereo(self, buffer):
+        b, self.tostate = audioop.ratecv(buffer, 2, 2, 44100, 8000, self.tostate)
+        b = audioop.tomono(b, 2, 1, 1)
+        return b
+
+    def toPCMString(self, buffer):
         b = buffer * self.SCALE - self.SCALE/2
         b = b.astype(Int16)
         # Damn. Endianness?  
         b = b.tostring()
-        b, self.tostate = audioop.ratecv(b, 2, 2, 44100, 8000, self.tostate)
-        b = audioop.tomono(b, 2, 1, 1)
         return b
 
-    def to44Kstereo(self, buffer):
+    def to44KStereo(self, buffer):
         b = audioop.tostereo(buffer, 2, 1, 1)
         b, self.fromstate = audioop.ratecv(b, 2, 2, 8000, 44100, self.fromstate)
         return b
 
     def fromPCMString(self, buffer):
         from numarray import fromstring, Int16, Float32
-        r = []
+        #print "buffer", len(buffer)
         b = fromstring(buffer, Int16)
-        r.append(int(RMS(b)))
         b = b.astype(Float32)
-        r.append(int(RMS(b)))
         b = ( b + 32768/2 ) / self.SCALE
-        r.append(int(RMS(b)))
-        #print "out", r
         return b
 
+    def _maybeLoopback(self):
+        # For test purposes - copies the audio from the audio device back out again
+        if len(self.outbuffer) > 200:
+            buf, self.outbuffer = self.outbuffer[:200], self.outbuffer[200:]
+            buf = self.to44KStereo(buf)
+            self.inbuffer = self.inbuffer + buf
+
+    def storeSamples(self, samples):
+        "Takes an array of 512 32bit float samples, stores as 8KHz 16bit ints"
+        std = self.toPCMString(samples)
+        std = self.from44KStereo(std)
+        self.outbuffer = self.outbuffer + std
+        #self._maybeLoopback()
+
+    def getSamples(self):
+        "Returns an array of 512 32 bit samples from the pending audio"
+        if len(self.inbuffer) < 2048:
+            return None
+        else:
+            res, self.inbuffer = self.inbuffer[:2048], self.inbuffer[2048:]
+            res = self.fromPCMString(res)
+            return res
+
     def callback(self, buffer):
-        # Gets passed in a 1024-element buffer. Put the output
-        # sound in the buffer and return it
-        r1 = RMS(buffer)
-        sound = self.toStdFmt(buffer)
-        r2 = RMS(buffer)
-        #print r1, r2
-        self.outbuffer += sound
-        return 
         try:
-            if len(self.inbuffer) < 2048:
-                # we got nothing. pad.
+            self.storeSamples(buffer)
+            out = self.getSamples()
+            if out is None:
                 buffer[:] = zeros(1024)
-                return buffer
+                return
             else:
-                sound, self.inbuffer = self.inbuffer[:2048], self.inbuffer[:2048]
-                buffer[:] = self.fromPCMString(sound)
-                return buffer
+                buffer[:] = out
+                return
         except:
             e,v,t = sys.exc_info()
             print e, v
             traceback.print_tb(t)
+        return
 
 def getAudioDevice(mode):
     from __main__ import app
