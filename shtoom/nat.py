@@ -155,14 +155,19 @@ def detectNAT():
 
 def cb_getMapper(res):
     from shtoom.upnp import getMapper as getUMapper
+    from shtoom.stun import getMapper as getSTUNMapper
     (ufired,upnp), (sfired,stun) = res
+    log.msg("detectNAT got %r"%res, system="nat")
     if not upnp and not stun:
         log.msg("no STUN or UPnP results", system="nat")
         return getNullMapper()
     if upnp:
+        log.msg("using UPnP mapper", system="nat")
         return getUMapper()
     if not stun.blocked:
-        return stun
+        log.msg("using STUN mapper", system="nat")
+        return getSTUNMapper()
+    log.msg("No UPnP, and STUN is useless", system="nat")
     return getNullMapper()
 
 def getMapper():
