@@ -8,7 +8,7 @@ from twisted.python.components import Interface
 #      Test on Windows, see if it works there
 # 
 
-_Debug = False
+_Debug = True
 
 class ISlidable(Interface):
     """ A window that the mover can slide around. The underlying window
@@ -41,8 +41,11 @@ class ISlidable(Interface):
     def windowHidden():
         "Called when the window is fully hidden"
 
-class IMover(Interface):
-    """ A Mover slides a notification window in and out.
+    def callLater(time, callable, *args):
+        "UI-specific callLater"
+
+class ISlider(Interface):
+    """ A Slider slides a notification window in and out.
         Ctor args:
            win: an ISlidable window
            showTime: how long (in seconds) to take to display the
@@ -119,8 +122,8 @@ def updatepos(cur, delta, final):
             return final
 
 
-class Mover:
-    __implements__ = (IMover,)
+class Slider:
+    __implements__ = (ISlider,)
 
     stepTime = 0.020
 
@@ -157,17 +160,14 @@ class Mover:
         showx, showy = endPosition[direction]((sx,sy),(wx,wy),self.offset)
         hidex = showx + (-dx * (wx+self.offset))
         hidey = showy + (-dy * (wy+self.offset))
-        if dx: 
-            distance = abs(showx-hidex)
-        else:
-            distance = abs(showy-hidey)
+        distance = max(abs(showx-hidex), abs(showy-hidey))
 
         if show: 
-            steps = self.showTime / self.stepTime
+            steps = float(self.showTime) / self.stepTime
             startx, starty = hidex, hidey
             endx, endy = showx, showy
         else:
-            steps = self.hideTime / self.stepTime
+            steps = float(self.hideTime) / self.stepTime
             startx, starty = self.win.getPosition()
             endx, endy = hidex, hidey
             dx, dy = -dx, -dy
@@ -181,8 +181,8 @@ class Mover:
             if _Debug: print "jumping to",(startx, startx)
             self.win.movePosition((int(startx), int(starty)))
         if _Debug: print "jumped to",(startx, starty)
-        self._cl = reactor.callLater(self.stepTime, 
-            self._moveTo, (startx,starty),(dx,dy),(endx,endy), show)
+        self._cl = self.win.callLater(self.stepTime, 
+            self._moveTo, (startx,starty), (dx,dy), (endx,endy), show)
 
     def _moveTo(self, (cx,cy), (dx,dy), (fx,fy), show):
         from twisted.internet import reactor
@@ -198,81 +198,65 @@ class Mover:
             if _Debug: 
                 print "done with this one"
         else:
-            self._cl = reactor.callLater(self.stepTime, lambda: self._moveTo((nx,ny),(dx,dy),(fx,fy),show))
+            self._cl = self.win.callLater(self.stepTime, 
+                    self._moveTo, (nx,ny), (dx,dy), (fx,fy), show)
 
-class TkSlidingWindow:
-    __implements__ = (ISlidable,)
+
+class SliderDemo:
+    def __init__(self, slidableClass):
+        self.slidable = slidableClass(self)
+        self.mover = Slider(self, hideTime=0.25)
+        self._cl = None
 
     def getScreenSize(self):
-        return (self.win.winfo_screenwidth(), self.win.winfo_screenheight())
+        return self.slidable.getScreenSize()
 
     def getWindowSize(self):
-        return (self.win.winfo_width(), self.win.winfo_height())
+        return self.slidable.getWindowSize()
 
     def getPosition(self):
-        return (self.win.winfo_rootx(), self.win.winfo_rooty())
+        return self.slidable.getPosition()
 
     def movePosition(self, (x, y)):
-        self.win.geometry('+%d+%d'%(x,y))
+        self.slidable.movePosition((x,y))
 
-    def windowHidden(self):
-        pass
+    def callLater(self, *args):
+        return self.slidable.callLater(*args)
 
-    def windowShown(self):
-        pass
-
-def demo():
-    from twisted.internet import reactor, tksupport
-    from Tkinter import Tk, Label, Button
-
-    class DemoWindow(TkSlidingWindow):
-
-        def __init__(self):
-            self.win = Tk(className='moving')
-            self.win.overrideredirect(1)
-            self.win.tkraise()
-            self.label = Label(self.win, text=' '*25, font='fixed')
-            self.label.pack(padx=20, pady=10)
-            self.button = Button(self.win, text='OK', command=self.hide)
-            self.button.pack(pady=5)
-            tksupport.install(self.win)
-            self.mover = Mover(self, hideTime=0.25)
+    def hide(self):
+        if self._cl is not None:
+            self._cl.cancel()
             self._cl = None
+        self.mover.hide()
 
-        def hide(self):
-            if self._cl is not None:
-                self._cl.cancel()
-                self._cl = None
-            self.mover.hide()
-
-        def timeout(self):
+    def timeout(self, d):
+        if d == self.cd:
             self._cl = None
             self.hide()
 
-        def windowShown(self):
-            self._cl = reactor.callLater(2, self.timeout)
+    def windowShown(self):
+        from twisted.internet import reactor
+        self._cl = self.slidable.callLater(2, lambda d=self.cd: self.timeout(d))
 
-        def windowHidden(self):
-            reactor.callLater(1, self.nextDirection)
+    def windowHidden(self):
+        from twisted.internet import reactor
+        self.slidable.callLater(1, self.nextDirection)
 
-        def nextDirection(self):
-            from twisted.internet import reactor
-            if not self.directions: 
-                reactor.callLater(2, reactor.stop)
-            else:
-                self.label.configure(text='%25s'%('This is direction %s'%self.directions[0]))
-                self.win.geometry('+%d+%d'%self.getScreenSize())
-                self.label.pack()
-                reactor.callLater(0, self.mover.show, self.directions.pop(0))
+    def nextDirection(self):
+        from twisted.internet import reactor
+        if not self.directions:
+            self.slidable.callLater(2, reactor.stop)
+        else:
+            if hasattr(self.slidable, 'demoText'):
+                self.slidable.demoText('%25s'%(
+                            'This is direction %s'%self.directions[0]))
+            self.cd = self.directions.pop(0)
+            self.slidable.callLater(0, self.mover.show, self.cd)
 
-        def demo(self):
-            self.directions = ['n','nne','ene','e','ese','sse','s','ssw','wsw','w','wnw','nnw']
-            reactor.callLater(0, self.nextDirection)
+    def demo(self):
+        from twisted.internet import reactor
+        self.directions = ['n','nne','ene','e','ese','sse',
+                           's','ssw','wsw','w','wnw','nnw']
+        self.slidable.callLater(0, self.nextDirection)
 
-    slide = DemoWindow()
-    slide.demo()
 
-if __name__ == "__main__":
-    from twisted.internet import reactor
-    reactor.callLater(0, demo)
-    reactor.run()

@@ -7,7 +7,7 @@ class GnomeWizardDisplay:
 
     def __init__(self, wizard):
         import gtk
-        self.win = gtk.Window(gtk.WINDOW_TOP_LEVEL, wizard.title)
+        self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)#, wizard.title)
         self.frame = gtk.Frame('Wizard')
         self.frame.set_border_width(8)
         self.vbox = gtk.VBox()
