@@ -74,7 +74,8 @@ class Call(object):
 
     def getTag(self):
         if not hasattr(self, '_tag'):
-            self._tag = ('%08x'%(random.randint(0, 2**32)))[:8]
+            self._tag = ('%04x'%(random.randint(0, 2**10)))[:4]
+            self._tag += ('%04x'%(random.randint(0, 2**10)))[:4]
         return self._tag
 
     def setLocalIP(self, dest):
