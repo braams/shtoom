@@ -1,6 +1,7 @@
 
 Before 0.1:
     - Test and fix Windows audio
+    - Handle bogus NATted ports - retry a couple of times?
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
@@ -15,7 +16,7 @@ Before 0.2:
       not the recording of audio.
     - UPnP support in order to bust out of NAT. Anthony now has a Netgear
       that supports UPnP (Thanks, divmod!) Specs are available from
-      http://www.upnp.org/resources/standards.asp
+      http://www.upnp.org/resources/documents.asp
       See also http://icepick.info/index.php?p=175
       UPnP could be used just for the SIP port, then STUN for the RTP/RTCP,
       or else use UPnP for all 3.
@@ -29,6 +30,7 @@ Before 0.2:
     - Codec switchability - DVI4?, Speex, GSM
 
 Later:
+
     - Statistics display
     - Preferences storage
     - New codec support: 
@@ -42,7 +44,11 @@ Later:
     - KDE addressbook integration. KDE panel integration.
     - Mac OS X UI and addressbook integration.
     - Mac OS CoreAudio support for Mac audio
-    - Windows address book? Is there such a beast?
+    - Native Windows audio - see 
+      http://www.cs.columbia.edu/~hgs/teaching/ais/slides/windows_audio.ppt
+      for an overview - DirectSound or DirectKS. It appears that WinMM isn't
+      suitable.
+    - Windows address book? Is there such a beast? Windows Messenger?
     - PGP integration for SIP
     - Crypto for RTP (via codec? what's the standard?)
 
