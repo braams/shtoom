@@ -17,7 +17,6 @@ class RecordingApp(VoiceApp):
     testRecordingFile = 'tmp/recording.raw'
 
     def __init__(self, *args, **kwargs):
-        print args, kwargs
         self.__dict__.update(kwargs)
         if not self.announceFile:
             raise ValueError, "must supply announceFile"        
@@ -79,8 +78,10 @@ class RecordingApp(VoiceApp):
                          (CallEndedEvent, self.allDone), 
                        )
             if event.digits == '5':
+                self._recordT = self.setTimer(10.0)
                 self.mediaRecord(self.testRecordingFile)
                 return ( (DTMFReceivedEvent, self.recordingDone), 
+                         (TimeoutEvent, self.recordingDone),
                          (CallEndedEvent, self.allDone), 
                        )
         elif event.digits == '#':
@@ -102,6 +103,8 @@ class RecordingApp(VoiceApp):
         return self.waitForAKey(event=None)
 
     def recordingDone(self, event):
+        if not isinstance(event, TimeoutEvent):
+            self._recordT.cancel()
         self.mediaStop()
         self.mediaPlay(self.testRecordingFile)
         return ( (CallEndedEvent, self.allDone),
