@@ -1,4 +1,7 @@
-"""Use fastaudio.
+"""Use fastaudio, a python wrapper for PortAudio.
+
+Apparently this means it'll work on 'Windows, Macintosh (8,9,X),
+Unix (OSS), SGI, and BeOS'.
 
 Requires http://www.freenet.org.nz/python/pyPortAudio/fastaudio.tar.gz
 """
