@@ -1018,7 +1018,7 @@ class SipPhone(DatagramProtocol, object):
             callid = callid[1:-1]
         del self._calls[callid]
 
-    def placeCall(self, uri, fromuri=None):
+    def placeCall(self, uri, fromuri=None, cookie=None):
         """Place a call.
 
         uri should be a string, an address of the person we are calling,
@@ -1039,6 +1039,8 @@ class SipPhone(DatagramProtocol, object):
             from shtoom.exceptions import CallFailed
             _d.errback(CallFailed)
             return _d
+        if cookie is not None:
+            call.cookie = cookie
         invite = call.startOutboundCall(uri, fromAddr=fromuri)
         return _d
 

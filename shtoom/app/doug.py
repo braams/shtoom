@@ -55,7 +55,7 @@ class DougApplication(BaseApplication):
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x), 
                        lambda x: self.acceptErrors(callcookie,x))
         try:
-            v = self._voiceappClass(d, self)
+            v = self._voiceappClass(d, self, callcookie)
             v.va_start()
         except:
             ee,ev,et = sys.exc_info() 
@@ -73,26 +73,31 @@ class DougApplication(BaseApplication):
         print "callcookie %s ended with ERROR %r"%(callcookie, error)
         self.dropCall(callcookie)
 
+    def startVoiceApp(self):
+        "Start a voiceapp (without an inbound leg)"
+        cookie = self.getCookie()
+        self.initVoiceapp(cookie)
+        self._voiceapps[cookie].va_callstart(None)
+        print self._voiceapps.keys()
+
     def acceptCall(self, call):
         from shtoom.doug.leg import Leg
-
         print "dialog is", call.dialog
         calltype = call.dialog.getDirection()
-        cookie = self.getCookie()
+        if call.cookie is None:
+            cookie = self.getCookie()
+        else:
+            cookie = call.cookie
         self._calls[cookie] = call
-        self.initVoiceapp(cookie)
         d = self._createRTP(cookie, 
                             call.getLocalSIPAddress()[0], 
                             call.getSTUNState())
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
-            outbound = Leg(cookie, call.dialog)
-            outbound.outgoingCall()
-            d.addCallback(lambda x:self._voiceapps[cookie].va_callstart(
-                                                                   outbound))
             d.addCallback(lambda x: cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
+            self.initVoiceapp(cookie)
             d.addErrback(lambda x: self.rejectedCall(cookie, x))
             ad = defer.Deferred()
             inbound = Leg(cookie, call.dialog)
@@ -158,7 +163,9 @@ class DougApplication(BaseApplication):
         # create an inboundLeg
         from shtoom.doug.leg import Leg
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
-        self._voiceapps[callcookie].va_callanswered()
+        call = self._calls[callcookie]
+        if call.dialog.getDirection() == "inbound":
+            self._voiceapps[callcookie].va_callanswered()
         log.msg("call %s connected"%callcookie)
         cb(callcookie)
 
@@ -208,8 +215,21 @@ class DougApplication(BaseApplication):
         fmt, data = v.va_giveRTP()
         return fmt, data
 
-    def placeCall(self, sipURL, fromURI=None):
-        return self.sip.placeCall(sipURL, fromURI=None)
+    def placeCall(self, cookie, sipURL, fromURI=None):
+        ncookie = self.getCookie()
+        self._voiceapps[ncookie] = self._voiceapps[cookie] 
+        print "connecting %s to %s"%(ncookie, cookie), self._voiceapps.keys()
+        d = self.sip.placeCall(sipURL, fromURI, cookie=ncookie)
+        d.addCallback(lambda x: self.outboundCallConnected(cookie, x)).addErrback(log.err)
+        return d
+
+    def outboundCallConnected(self, voiceappCookie, outboundCookie):
+        from shtoom.doug.leg import Leg
+        print "outbound connected!", voiceappCookie, outboundCookie
+        call = self._calls[outboundCookie]
+        outbound = Leg(outboundCookie, call.dialog)
+        outbound.outgoingCall()
+        self._voiceapps[voiceappCookie].va_callanswered(outbound)
 
     def dropCall(self, cookie):
         call = self._calls.get(cookie)

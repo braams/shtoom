@@ -32,8 +32,9 @@ class Timer:
 
 class VoiceApp(StateMachine):
 
-    def __init__(self, defer, appl, **kwargs):
+    def __init__(self, defer, appl, cookie, **kwargs):
         self.__playoutList = []
+        self.__cookie = cookie
         self.__recordDest = None
         self.__connected = None
         self.__currentDTMFKey = None
@@ -123,8 +124,11 @@ class VoiceApp(StateMachine):
         self._inbound = inboundLeg
         self._triggerEvent(CallStartedEvent(inboundLeg))
 
-    def va_callanswered(self):
-        self._triggerEvent(CallAnsweredEvent(self._inbound))
+    def va_callanswered(self, leg=None):
+        print "leg is", leg
+        if leg is None: 
+            leg = self._inbound
+        self._triggerEvent(CallAnsweredEvent(leg))
 
     def va_abort(self):
         self.mediaStop()
@@ -162,6 +166,9 @@ class VoiceApp(StateMachine):
         self.__dtmfSingleMode = single
         # XXX handle timeout
 
-    def placeCall(self, toURI, fromURI):
-        appl.placeCall(toURI, fromURI)
+    def placeCall(self, toURI, fromURI=None):
+        print "place call to ", toURI
+        self.__appl.placeCall(self.__cookie, toURI, fromURI)
     
+    def connectLeg(self, leg):
+        self._inbound = leg

@@ -95,6 +95,10 @@ class      CallAnsweredEvent(CallLegEvent):
     """ A call was connected
     """
 
+class      CallRejectedEvent(CallLegEvent):
+    """ A call was rejected
+    """
+
 class      CallEndedEvent(CallLegEvent):
     """ A call started
     """
