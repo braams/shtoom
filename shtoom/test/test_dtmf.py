@@ -39,20 +39,28 @@ class DTMFDetectTest(unittest.TestCase):
             self.assertEquals(k, digit)
 
     def test_dtmfdetect_speex(self):
-        raise unittest.SkipTest('codecs break dtmf detection :-(')
-        # Test DTMF after the mangling of GSM
+        # Test DTMF after the mangling of speex
         import shtoom.avail.codecs
         if shtoom.avail.codecs.speex is None:
             raise unittest.SkipTest('needs speex support')
-
-        from shtoom.doug import dtmf
         from shtoom.audio.converters import SpeexCodec
-
         codec = SpeexCodec()
-        detect = dtmf.DtmfDetector()
+        self._test_with_codec(codec)
 
+    def test_dtmfdetect_gsm(self):
+        raise unittest.SkipTest('gsm codec breaks dtmf detection :-(')
+        # Test DTMF after the mangling of GSM
+        import shtoom.avail.codecs
+        if shtoom.avail.codecs.gsm is None:
+            raise unittest.SkipTest('needs gsm support')
+        from shtoom.audio.converters import GSMCodec
+        codec = GSMCodec()
+        self._test_with_codec(codec)
+
+    def _test_with_codec(self, codec):
+        from shtoom.doug import dtmf
+        detect = dtmf.DtmfDetector()
         for k in dtmf.dtmf2freq.keys():
-            print k
             s = dtmf.dtmfGenerator(k, 320)
             s1, s2 = s[:320], s[320:]
             e1, e2 = codec.encode(s1), codec.encode(s2)
@@ -60,3 +68,5 @@ class DTMFDetectTest(unittest.TestCase):
             s = s1+s2
             digit = detect.detect(s)
             self.assertEquals(k, digit)
+            silence = '\0'*320
+            codec.decode(codec.encode(silence))

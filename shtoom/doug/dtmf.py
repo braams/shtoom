@@ -81,7 +81,13 @@ class DtmfDetector:
         peaks = self.getpeaks(a)
         matched = Set()
         for p in peaks:
-            matched.add(self.freqmatch.get(p))
+            m = self.freqmatch.get(p)
+            if m is None:
+                if p-1 in peaks:
+                    m = self.freqmatch.get(p-1)
+                elif p+1 in peaks:
+                    m = self.freqmatch.get(p+1)
+            matched.add(m)
         # If we got a None, that means there was a significant component
         # that wasn't a DTMF frequency.
         if None in matched:
@@ -95,6 +101,7 @@ class DtmfDetector:
         # This could be better.
         from numarray.fft import real_fft
         from numarray import add, abs, greater, nonzero
+        from sets import Set
         res = real_fft(a)
         res1 = abs(res)
         mres = add.reduce(res1)/len(res1)
@@ -103,7 +110,7 @@ class DtmfDetector:
         # Here's the bit I'm uncomfortable with. The 'eight times average'
         # seems a hack. On the other hand, it works for me.
         res2 = res1/mres
-        peaks = list(nonzero(greater(res2, 8))[0])
+        peaks = Set(nonzero(greater(res2, 8))[0])
         return peaks
 
 def dtmfGenerator(key, duration=160):
