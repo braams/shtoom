@@ -127,12 +127,14 @@ class Phone(BaseApplication):
         cb(callcookie)
 
     def endCall(self, callcookie, reason=''):
-        rtp = self._rtp[callcookie]
-        rtp.stopSendingAndReceiving()
-        del self._rtp[callcookie]
-        if self._calls.get(callcookie):
-            del self._calls[callcookie]
-        self.closeAudioDevice()
+        rtp = self._rtp.get(callcookie)
+        if rtp:
+            rtp = self._rtp[callcookie]
+            rtp.stopSendingAndReceiving()
+            del self._rtp[callcookie]
+            if self._calls.get(callcookie):
+                del self._calls[callcookie]
+            self.closeAudioDevice()
         self.ui.callDisconnected(callcookie, reason)
 
     def openAudioDevice(self):
