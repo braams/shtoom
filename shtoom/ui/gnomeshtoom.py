@@ -10,6 +10,10 @@ def shutdown():
     reactor.stop()
 
 def main(application):
+    import gnome
+    global gnomeProgram
+    gnomeProgram = gnome.init("Shtoom", "Whatever Version")
+
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
 
@@ -20,6 +24,7 @@ def main(application):
     from shtoom.ui.gnomeui.main import ShtoomWindow
     UI = ShtoomWindow()
     UI.connectApplication(application)
+    log.startLogging(sys.stdout)
     return UI
 
 
