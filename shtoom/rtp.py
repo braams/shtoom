@@ -264,14 +264,10 @@ class RTPProtocol(DatagramProtocol):
             cnpt = RTP_PT_CN
         else:
             cnpt = 13
-            hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, 
-                                        self.ts, self.ssrc)
-            self.transport.write(hdr+chr(0), self.dest)
+        hdr = struct.pack('!BBHII', 0x80, cnpt, self.seq, self.ts, self.ssrc)
+        self.transport.write(hdr+chr(0), self.dest)
         if hasattr(self.transport, 'connect'):
             self.transport.connect(*self.dest)
-
-    def reactorWakeUp(self, n, f, reactor=reactor):
-        reactor.wakeUp()
 
     def datagramReceived(self, datagram, addr, unpack=struct.unpack):
         hdr = struct.unpack('!BBHII', datagram[:12])
