@@ -49,7 +49,7 @@ class FileSource(Source):
         if self._mode == 'w':
             return ''
         else:
-            bytes = self._fp.read()
+            bytes = self._fp.read(320)
             if not bytes:
                 self.app._triggerEvent(MediaPlayContentDoneEvent(self))
             else:

@@ -8,6 +8,7 @@ from twisted.internet import defer
 from twisted.python import log
 from twisted.protocols import sip as tpsip
 from shtoom.exceptions import CallFailed
+from shtoom.multicast.SDP import rtpPTDict
 import sys, traceback
 
 from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
@@ -104,10 +105,10 @@ class DougApplication(BaseApplication):
         v = self._voiceapps.get(callcookie)
         for entry,desc in rtpmap:
             if entry == rtp.PT_pcmu:
-                v.va_selectFormat(FMT_PCMU)
+                v.va_selectFormat(FMT_PCMU, entry)
                 break
             elif entry == rtp.PT_gsm:
-                v.va_selectFormat(FMT_GSM)
+                v.va_selectFormat(FMT_GSM, entry)
                 break
             else:
                 raise ValueError, "couldn't set to %r"%entry

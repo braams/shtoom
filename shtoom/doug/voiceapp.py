@@ -32,7 +32,8 @@ class VoiceApp(StateMachine):
     def va_listFormats(self):
         return self.__converter.listFormats()
 
-    def va_selectFormat(self, format):
+    def va_selectFormat(self, format, rtpPT):
+        self.__rtpPT = rtpPT
         return self.__converter.selectFormat(format)
 
     def _legConnect(self, target):
@@ -87,7 +88,7 @@ class VoiceApp(StateMachine):
         data = self.__connected.read()
         if data:
             data = self.__converter.convertOutbound(data)
-            fmt = self.__converter.getFormat()
+            fmt = self.__rtpPT
             return fmt, data
         return None, None # comfort noise
 
