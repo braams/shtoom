@@ -5,6 +5,10 @@ Finish current UI
 Replace shtoom/multicast package with something that doesn't suck
 
 Handle rest of SIP 
+ 
+   - Incoming calls, including registration
+
+   - Lookup servers/proxies using multicast, SRV
 
 Integrate existing RTCP code
 
@@ -45,3 +49,4 @@ linphone uses:
     a=fmtp:101 0-11
 
 
+STUN and possibly UPnP support in order to bust out of NAT.
