@@ -12,7 +12,7 @@ factory = None
 class TCPAudioProtocol(Protocol):
     def connectionMade(self):
         log.msg("TCPAudioProtocol.connectionMade")
-        self.factory.connection = self
+        self.factory.device.connection = self
         self.readbuffer = ''
 
     def dataReceived(self, data):
@@ -54,12 +54,14 @@ class TCPAudioDevice(baseaudio.AudioDevice):
             self.connection.open()
 
     def read(self):
+        print 'read'
         if self.connection is None:
             log.msg("read: no connection yet")
             return ''
         return self.connection.read(320)
 
     def write(self, data):
+        print 'write', repr(data)
         if self.connection is None:
             log.msg("write: no connection yet")
         else:
