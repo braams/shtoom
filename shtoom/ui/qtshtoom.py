@@ -4,13 +4,6 @@
 
 
 def shutdown():
-    try:
-        import itimer
-        itimer.setitimer(itimer.ITIMER_REAL, 0.0, 0.0)
-    except:
-        pass
-    from twisted.internet import reactor
-    reactor.stop()
 
 def main(application):
     import qt
@@ -30,7 +23,7 @@ def main(application):
     #log.startLogging(sys.stdout)
 
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
-    app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
+    app.connect(app, qt.SIGNAL("lastWindowClosed()"), reactor.stop)
 
     return UI
 
