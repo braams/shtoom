@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.10 2003/11/16 04:44:01 anthonybaxter Exp $
+# $Id: rtp.py,v 1.11 2003/11/16 05:53:43 anthonybaxter Exp $
 #
 
 import time, signal, struct, random, sys
@@ -52,9 +52,11 @@ class LoopingCall:
     def _loop(self, starttime, count, interval):
         if hasattr(self, "call"):
             del self.call
-        sys.__stdout__.write("OUT %s\n"%(time()))
+        if not hasattr(self, "prevTime"):
+            self.prevTime = time()
+        snow = time() 
         self.f(*self.a, **self.kw)
-        now = time()
+        now = time() 
         while self.running:
             count += 1
             fromStart = count * interval
@@ -62,6 +64,8 @@ class LoopingCall:
             delay = fromNow + fromStart
             if delay > 0:
                 self.call = reactor.callLater(delay, self._loop, starttime, count, interval)
+                t = time()
+                self.prevTime = t
                 return
 
 
@@ -75,6 +79,7 @@ class RTPProtocol(DatagramProtocol):
         use_setitimer = 1
     else:
         use_setitimer = 0
+    use_setitimer = 0
     _cbDone = None
     fp = None
     outfp = None
@@ -115,6 +120,7 @@ class RTPProtocol(DatagramProtocol):
                 continue
             else:
                 break
+        #self.rtpListener.stopReading()
         return (rtpPort, rtcpPort)
 
     def whenDone(self, cbDone):
@@ -169,7 +175,7 @@ class RTPProtocol(DatagramProtocol):
             self.sample = None
             pass
         self.LC = LoopingCall(self.nextpacket)
-        self.LC.loop(0.019)
+        self.LC.loop(0.020)
         if self.use_setitimer:
             import signal, itimer 
             signal.signal(signal.SIGALRM, self.reactorWakeUp)
@@ -246,7 +252,11 @@ class RTPProtocol(DatagramProtocol):
             # done, the first two bytes will change (but should be mostly
             # constant across a RTP session).
             hdr = pack('!BBHII', 0x80, 0x0, self.seq, self.ts, self.ssrc)
+            # Very very bad. When I write an audio packet, the callLater
+            # starts hitting every 70ms, rather than 20ms!
+            t = time()
             self.transport.write(hdr+self.sample, self.dest)
+            print "send %.4f"%(time()-t)
             self.sample = None
         else:
             print "skipping audio, %s/%s sent"%(self.sent, self.packets)
