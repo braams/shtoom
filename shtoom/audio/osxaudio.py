@@ -128,7 +128,6 @@ class OSXAudio(object):
         return
 
 def getAudioDevice(mode):
-    from __main__ import app
     global opened
     if opened is None:
         opened = MultipleConv(OSXAudio())
