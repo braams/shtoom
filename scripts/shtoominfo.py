@@ -54,7 +54,7 @@ def gotResults(natresults):
         if not ures:
             if stun.blocked:
                 print "You will be unable to make calls to the internet"
-            elif stun.useful:
+            elif not stun.useful:
                 print "You will need to use an outbound proxy to make calls to the internet"
     else:
         print "STUN was unable to get a result. This is bad"
