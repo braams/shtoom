@@ -560,10 +560,10 @@ class Call(object):
                     else:
                         # We got bounced and told to bugger off.
                         print "407, no further possible actions"
-
-            self.sip.app.debugMessage(message.toString())
-            self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
-            self.sip._delCallObject(self.getCallID())
+            else:
+                self.sip.app.debugMessage(message.toString())
+                self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
+                self.sip._delCallObject(self.getCallID())
         elif message.code - (message.code%100) == 500:
             self.sip.app.debugMessage(message.toString())
             self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
