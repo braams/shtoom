@@ -79,6 +79,8 @@ if __name__ == "__main__":
     import sys
     from twisted.python import log
     if len(sys.argv) > 1 and sys.argv[1] == "-v":
+	import shtoom.stun
+	shtoom.stun.STUNVERBOSE = True
         log.startLogging(sys.stdout)
     reactor.callLater(0, main)
     reactor.run()

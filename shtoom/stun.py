@@ -16,7 +16,7 @@ from shtoom.interfaces import StunPolicy as IStunPolicy
 from shtoom.defcache import DeferredCache
 from shtoom.nat import BaseMapper
 
-STUNVERBOSE = True
+STUNVERBOSE = False
 # If we're going to follow RFC recommendation, make this 7
 MAX_RETRANSMIT = 5
 
