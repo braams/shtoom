@@ -29,3 +29,10 @@ Later:
 
     More clients - shtam (answering machine), shtoomcu (conferencing server)
 
+    Putting calls on hold, allowing multiple calls to go at once.
+
+    Gnome addressbook integration. Gnome notification bar integration.
+
+    KDE addressbook integration. KDE panel integration.
+
+    Mac OS X UI and addressbook integration.
