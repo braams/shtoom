@@ -1,5 +1,9 @@
 #!/usr/bin/env python2.3
 
+# 
+# A modfied versin of shreadder that does the correct magic for 
+# OSX. Also works through a MediaLayer.
+#
 
 import struct, math, sys
 sys.path.append(sys.path.pop(0))
@@ -54,12 +58,13 @@ class Recorder:
 
 def main(Recorder = Recorder):
     from shtoom.audio import tcpaudio
+    from shtoom.audio.converters import MediaLayer
     from shtoom.rtp import formats
     from twisted.internet.task import LoopingCall
     from twisted.internet import reactor
     import sys
 
-    dev = tcpaudio.TCPAudioDevice()
+    dev = MediaLayer(tcpaudio.TCPAudioDevice())
     dev.close()
     dev.reopen()
     if len(sys.argv) > 1:
@@ -69,7 +74,7 @@ def main(Recorder = Recorder):
             sys.exit(1)
         dev.selectDefaultFormat(getattr(formats,fmt))
     else:
-        dev.selectDefaultFormat(formats.PT_RAW)
+        dev.selectDefaultFormat(formats.PT_PCMU)
     outfp = None
     rec = Recorder(dev, play=True, outfp=outfp)
 
