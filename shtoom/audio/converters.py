@@ -1,5 +1,6 @@
 # Copyright (C) 2004 Anthony Baxter
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4, PT_RAW
+from shtoom.rtp.formats import PT_PCMA, PT_ILBC
 from shtoom.rtp.formats import PT_CN, PT_xCN, AudioPTMarker
 from shtoom.rtp.packets import RTPPacket
 from shtoom.avail import codecs
@@ -152,10 +153,10 @@ class Codecker:
             self.codecs[PT_GSM] = GSMCodec()
         if codecs.speex is not None:
             self.codecs[PT_SPEEX] = SpeexCodec()
-        if codecs.dvi4 is not None:
-            self.codecs[PT_DVI4] = DVI4Codec()
-        if codecs.ilbc is not None:
-            self.codecs[PT_ILBC] = ILBCCodec()
+        #if codecs.dvi4 is not None:
+        #    self.codecs[PT_DVI4] = DVI4Codec()
+        #if codecs.ilbc is not None:
+        #    self.codecs[PT_ILBC] = ILBCCodec()
 
     def getDefaultFormat(self):
         return self.format
@@ -189,7 +190,7 @@ class Codecker:
             return None
         codec = self.codecs.get(packet.pt)
         if not codec:
-            raise ValueError("can't decode format %r"%format)
+            raise ValueError("can't decode format %r"%packet.pt)
         encaudio = codec.decode(packet.data)
         return encaudio
 

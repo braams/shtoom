@@ -31,6 +31,7 @@ class AudioFromFiles:
 opened = None
 def Device():
     from __main__ import app
+    from shtoom.audio.converters import MediaLayer
     global opened
     if opened is None:
         if app is not None:
