@@ -30,10 +30,15 @@ class SilenceSource(Source):
 
 
 class EchoSource(Source):
-    "An EchoSource just repeats back whatever you send it"
+    """ An EchoSource just repeats back whatever you send it. An optional 
+        'delay' argument to the constructor specifies a delay - the 
+        EchoSource will buffer that many seconds of audio before returning
+        anything. 
+    """
 
-    def __init__(self):
+    def __init__(self, delay=0.0):
         self._buffer = ''
+        self._delay = delay
 
     def isPlaying(self):
         return True
@@ -46,7 +51,8 @@ class EchoSource(Source):
         return
 
     def read(self):
-        if len(self._buffer) >= 320:
+        # 2 bytes per sample, 8000 samples per second
+        if len(self._buffer) >= 320+(self._delay * 16000.0):
             r, self._buffer = self._buffer[:320], self._buffer[320:]
             return r
         else:
