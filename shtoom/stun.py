@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: stun.py,v 1.13 2004/03/02 12:09:45 anthony Exp $
+# $Id: stun.py,v 1.14 2004/03/02 13:04:14 anthony Exp $
 
 import struct, socket, time
 from twisted.internet import reactor, defer
@@ -218,7 +218,10 @@ class RFC1918Stun:
         # This is a filthy filthy hack. But I'm screwed either way.
         if remoteip[0] not in '0123456789':
             import socket
-            ai = socket.getaddrinfo(remoteip, None)
+            try:
+                ai = socket.getaddrinfo(remoteip, None)
+            except (socket.error, socket.gaierror):
+                return None
             remoteips = [x[4][0] for x in ai]
         else:
             remoteips = [remoteip,]
