@@ -30,6 +30,7 @@ class VideoPTMarker(PTMarker):
 
 PT_PCMU =       AudioPTMarker('PCMU',    clock=8000,  params=1, pt=0)
 PT_GSM =        AudioPTMarker('GSM',     clock=8000,  params=1, pt=3)
+# G723 is actually G.723.1, but is the same as G.723. XXX test against cisco
 PT_G723 =       AudioPTMarker('G723',    clock=8000,  params=1, pt=4)
 PT_DVI4 =       AudioPTMarker('DVI4',    clock=8000,  params=1, pt=5)
 PT_DVI4_16K =   AudioPTMarker('DVI4',    clock=16000, params=1, pt=6)
@@ -48,7 +49,15 @@ PT_xCN =        AudioPTMarker('xCN',     clock=8000,  params=1, pt=19)
 PT_SPEEX =      AudioPTMarker('speex',   clock=8000,  params=1)
 PT_SPEEX_16K =  AudioPTMarker('speex',   clock=16000, params=1)
 PT_G726_40 =    AudioPTMarker('G726-40', clock=8000,  params=1)
+# Deprecated - gone from RFC3551
+PT_1016 =       AudioPTMarker('1016', clock=8000,  params=1, pt=1)
+# aka G723-40 (5 bit data)
+PT_G726_40 =    AudioPTMarker('G726-40', clock=8000,  params=1)
+# G726-32 aka G721-32 (4 bit data)
 PT_G726_32 =    AudioPTMarker('G726-32', clock=8000,  params=1)
+# Deprecated spelling for G726-32 - gone from RFC3551
+PT_G721 =       AudioPTMarker('G721', clock=8000,  params=1, pt=2)
+# G726-24 aka G723-24 (3 bit data)
 PT_G726_24 =    AudioPTMarker('G726-24', clock=8000,  params=1)
 PT_G726_16 =    AudioPTMarker('G726-16', clock=8000,  params=1)
 PT_G729D =      AudioPTMarker('G729D',   clock=8000,  params=1)
@@ -59,9 +68,16 @@ PT_ILBC =       AudioPTMarker('iLBC',    clock=8000,  params=1)
 #PT_RED =        AudioPTMarker('RED',     clock=8000,  params=1)
 #PT_VDVI =       AudioPTMarker('VDVI',    clock=None,  params=1)
 PT_NTE =        PTMarker('telephone-event', clock=8000, params=None)
+# Internal shtoom codec. Note that the L16 format, above, is at 44100 KHz.
 PT_RAW =        AudioPTMarker('RAW_L16', clock=8000, params=1)
 
-# ...
+PT_CELB =       VideoPTMarker('CelB', clock=90000, pt=25)
+PT_JPEG =       VideoPTMarker('JPEG', clock=90000, pt=26)
+PT_NV =         VideoPTMarker('nv',   clock=90000, pt=28)
+PT_H261 =       VideoPTMarker('H261', clock=90000, pt=31)
+PT_MPV =        VideoPTMarker('MPV',  clock=90000, pt=32)
+PT_MP2T =       VideoPTMarker('MP2T', clock=90000, pt=33)
+PT_H263 =       VideoPTMarker('H263', clock=90000, pt=34)
 
 
 class SDPGenerator:
