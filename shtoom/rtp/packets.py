@@ -25,8 +25,6 @@ class RTPPacket:
         return "<RTPPacket containing %r at %x>"%(self.pt, id(self))
 
 
-# XXX Note that the MediaLayer will create it's own RTPPackets - this is
-# purely for packets coming off the network.
 class RTPParser:
     """ An RTPParser creates RTPPacket objects from a bytestring. It is
         created with a mapping of RTP PT bytes to PT markers"""
@@ -44,6 +42,8 @@ class RTPParser:
         # Padding?
         return hdr + packet.data
 
+    # XXX Note that the MediaLayer will create it's own RTPPackets - this is
+    # purely for packets coming off the network.
     def fromnet(self, bytes, fromaddr):
         hdr = struct.unpack('!BBHII', bytes[:12])
         padding = hdr[0]&32 and 1 or 0
