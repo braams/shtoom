@@ -821,7 +821,7 @@ class SipPhone(DatagramProtocol, object):
     def __init__(self, app, *args, **kwargs):
         self.app = app
         self._calls = {}
-        super(SipPhone, self, *args, **kwargs)
+        super(SipPhone, self).__init__(*args, **kwargs)
 
     def getCalls(self):
         return [c for c in self._calls.values() if not isinstance(c, Registration)]

@@ -21,7 +21,7 @@ class RecordingApp(VoiceApp):
             raise ValueError, "must supply announceFile"        
         if not self.menuFile:
             raise ValueError, "must supply menuFile"        
-        super(self, RecordingApp).__init__(self, **kwargs)
+        super(RecordingApp, self).__init__(self, **kwargs)
 
     def __start__(self):
         return ( (CallStartedEvent, self.playAnnounce),
