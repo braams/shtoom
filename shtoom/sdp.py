@@ -198,6 +198,7 @@ class MediaDescription:
         self.formats.append(str(payload))
 
     def intersect(self, other):
+        # See RFC 3264
         map1 = self.rtpmap
         d1 = {}
         for code,(e,fmt) in map1.items():
@@ -302,6 +303,7 @@ class SDP:
         return s
 
     def intersect(self, other):
+        # See RFC 3264
         mds = self.mediaDescriptions
         self.mediaDescriptions = []
         for md in mds:
