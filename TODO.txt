@@ -1,39 +1,40 @@
 Before 0.1:
+    - Move SDP generation into the RTP code
     - Hook up STUN for RTP/RTCP
-    - Fix Windows audio
+    - Test and fix Windows audio
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
 
 Before 0.2:
-    - Handle rest of SIP 
+    - UPnP support in order to bust out of NAT. Anthony now has a Netgear
+      that supports UPnP (Thanks, divmod!) Specs are available from
+      http://www.upnp.org/resources/standards.asp
+      See also http://icepick.info/index.php?p=175
+    - Handle more of SIP 
         - registration
         - Lookup servers/proxies using multicast, SRV
         - redirects, auth
         - retransmits &c
         - Merge shtoom.multicast.SDP.SDP and shtoom.multicast.SDP.SimpleSDP 
           into shtoom.sdp, kill shtoom.multicast
-    - Codec switchability - DVI4, Speex
+    - Codec switchability - DVI4?, Speex, GSM
 
 Later:
     - Statistics display
     - Preferences storage
-    - UPnP support in order to bust out of NAT - specs? I (Anthony) don't
-    have anything that does uPnP to test against. Specs are available from
-    http://www.upnp.org/resources/standards.asp
-    See also http://icepick.info/index.php?p=175
     - New codec support: 
-        - http://www.freenet.org.nz/python/pySpeex/
-        - GSM?
         - G723?
         - iLBC?
-    - Support RTP NTE
-        a=rtpmap:101 telephone-event/8000
+    - Support RTP NTE (RFC2833)
+      Uses SDP of 'a=rtpmap:101 telephone-event/8000'
     - More clients - shtam (answering machine), shtoomcu (conferencing server)
     - Putting calls on hold, allowing multiple calls to go at once.
     - Gnome addressbook integration. Gnome notification bar integration.
     - KDE addressbook integration. KDE panel integration.
     - Mac OS X UI and addressbook integration.
+    - Mac OS CoreAudio support for Mac audio
     - Windows address book? Is there such a beast?
     - PGP integration for SIP
     - Crypto for RTP (via codec? what's the standard?)
+
