@@ -1,6 +1,6 @@
 
 # Copyright (C) 2004 Anthony Baxter
-# $Id: tkshtoom.py,v 1.3 2004/01/10 14:54:53 anthonybaxter Exp $
+# $Id: tkshtoom.py,v 1.4 2004/01/14 14:44:54 anthonybaxter Exp $
 #
 
 
@@ -13,7 +13,7 @@ def shutdown():
     from twisted.internet import reactor
     reactor.stop()
 
-def main():
+def main(application):
     import sys
     from twisted.internet import reactor
     from twisted.python import log
@@ -22,15 +22,12 @@ def main():
     from shtoom.ui.tkui import ShtoomMainWindow
     UI = ShtoomMainWindow()
     tksupport.install(UI.getMain())
-    UI.connectSIP()
+    UI.connectApplication(application)
+    print "UI done"
     log.startLogging(sys.stdout)
+    return UI
 
-    #reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
-    #app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
 
-    reactor.run()
-
-    UI.resourceUsage()
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,13 @@
 #
 # Copyright (C) 2004 Anthony Baxter
-# $Id: upnp.py,v 1.2 2004/01/13 14:20:52 anthonybaxter Exp $
+# $Id: upnp.py,v 1.3 2004/01/14 14:44:54 anthonybaxter Exp $
 # 
 # UPnP support.
 
 # We have three modes. No UPnP at all, UPnP only for the SIP port, or 
 # UPnP for the SIP port, followed by UPnP for the RTP/RTCP ports.
+
+# XXX refactor to use twisted.web.client
 
 # UPnP_IGD_WANIPConnection 1.0.doc defines the ExternalPort configuration
 # magic.

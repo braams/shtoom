@@ -3,10 +3,11 @@ from Tkinter import *
 from twisted.python import log
 
 from shtoom.ui.base import ShtoomBaseUI
+from shtoom.exceptions import CallRejected
 
 class ShtoomMainWindow(ShtoomBaseUI):
     def __init__(self):
-        self.connected = False
+        self.cookie = False
 
         self.main = Tk(className='shtoom')
         # also do hangup, shutdown reactor, &c
@@ -47,22 +48,24 @@ class ShtoomMainWindow(ShtoomBaseUI):
             log.msg("Invalid SIP url %s"%(sipURL))
             return
         self._callButton.config(state=DISABLED)
-        self.connected, deferred = self.sip.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callDisconnected)
+        deferred = self.app.placeCall(sipURL)
+        deferred.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
 
-    def callConnected(self, call):
+    def callConnected(self, cookie):
+        self.cookie = cookie
         self._hangupButton.config(state=NORMAL)
 
-    def callDisconnected(self, call):
-        self.errorMessage("call failed", call)
+    def callDisconnected(self, cookie, message):
+        self.errorMessage("call ended %s"%message)
         self._hangupButton.config(state=DISABLED)
         self._callButton.config(state=NORMAL)
+        self.cookie = None
 
     def hangupButton_clicked(self):
-        self.sip.dropCall(self.connected)
+        self.app.dropCall(self.cookie)
         self._callButton.config(state=NORMAL)
         self._hangupButton.config(state=DISABLED)
-        self.connected = False
+        self.cookie = False
 
     def shutdown(self):
         # XXX Hang up any calls
@@ -70,15 +73,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
         reactor.stop()
         self.main.quit()
 
-
-    def incomingCall(self, description, call, defresp, defsetup):
+    def incomingCall(self, description, cookie, defresp):
         import tkMessageBox
         answer = tkMessageBox.askyesno("Shtoom", "Incoming Call: %s\nAnswer?"%description)
         print "GOT ANSWER", answer
         if answer:
-            self.connected = call
+            self.cookie = cookie
             self._callButton.config(state=DISABLED)
-            defsetup.addCallbacks(self.callConnected, self.callDisconnected)
             defresp.callback('yes')
         else:
-            defresp.errback('no')
+            defresp.errback(CallRejected)

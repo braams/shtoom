@@ -35,7 +35,7 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
             return
         self.callButton.setEnabled(False)
         self.connected, defer = self.sip.placeCall(sipURL)
-        defer.addCallbacks(self.callConnected, self.callDisconnected)
+        defer.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
 
     def callConnected(self, call):
         self.hangupButton.setEnabled(True)
@@ -76,9 +76,10 @@ class ShtoomMainWindow(ShtoomMainWindow, ShtoomBaseUI):
         if accept == 0:
             self.connected = call
             self.callButton.setEnabled(False)
-            defsetup.addCallbacks(self.callConnected, self.callDisconnected)
+            defsetup.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
             defresp.callback('yes')
         else:
+            # BOGUS
             defresp.errback('no')
 
 

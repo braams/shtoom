@@ -15,7 +15,7 @@ def findAudioDevice():
     attempts = ( tryOssAudio, tryFastAudio, )
     if prefs.audio_infile and prefs.audio_outfile:
         attempts = ( tryFileAudio, )
-    if prefs.audio:
+    elif prefs.audio:
         if prefs.audio == 'oss':
             attempts = (tryOssAudio,)
         elif prefs.audio == 'fast':
@@ -52,7 +52,13 @@ def tryFastAudio():
     from fast import getAudioDevice
     return getAudioDevice
 
-getAudioDevice = findAudioDevice()
-if getAudioDevice is None:
-    del getAudioDevice
-    # Log an error
+_audioGet = None
+def getAudioDevice(mode):
+    from shtoom.exceptions import NoAudioDevice
+    global _audioGet
+    if _audioGet is None:
+        _audioGet = findAudioDevice()
+        if _audioGet is None:
+            raise NoAudioDevice, "No working audio interface found"
+    return _audioGet('rw')
+

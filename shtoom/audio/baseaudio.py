@@ -32,4 +32,4 @@ class AudioDevice(object):
         return self.dev.listFormats()
 
     def selectFormat(self, format):
-        return self.dev.setFormat(format)
+        return self.dev.selectFormat(format)

@@ -3,8 +3,8 @@
 
 def parseOptions():
     import optparse, sys
-    import shtoom.prefs
-    parser = optparse.OptionParser(version='%prog 0.1')
+    import shtoom.prefs, shtoom
+    parser = optparse.OptionParser(version='%%prog %s'%shtoom.Version)
     parser.add_option('-i', '--localip', dest='localip',
                       help='use LOCALIP for local ip address',
                       metavar='LOCALIP')
@@ -32,6 +32,12 @@ def parseOptions():
     parser.add_option('--audio-out', dest='audio_outfile',
                       help='write audio to file OUTFILE',
                       metavar='OUTFILE')
+    parser.add_option('--stun-policy', dest='stun_policy',
+                  help='STUN policy (never, always, rfc1918) (default rfc1918)',
+                  metavar='STUNPOLICY')
+    parser.add_option('--use-upnp', dest='use_upnp',
+                      help='Use UPnP (yes, no) (default no)',
+                      metavar='USEUPNP')
     (opts, args) = parser.parse_args()
     if opts.localip:
         shtoom.prefs.localip = opts.localip

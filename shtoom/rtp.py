@@ -7,13 +7,11 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.28 2004/01/13 14:20:52 anthonybaxter Exp $
+# $Id: rtp.py,v 1.29 2004/01/14 14:44:54 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
 from time import sleep, time
-
-from shtoom.audio import FMT_PCMU, FMT_GSM, FMT_SPEEX, FMT_DVI4
 
 try:
     import itimer
@@ -23,8 +21,8 @@ except ImportError:
 from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.task import LoopingCall
+from twisted.python import log
 
-from shtoom.audio import getAudioDevice
 from shtoom.multicast.SDP import rtpPTDict
 
 
@@ -42,13 +40,17 @@ class RTPProtocol(DatagramProtocol):
         use_setitimer = 0
     use_setitimer = 0
     _cbDone = None
-    infp = None
-    outfp = None
     collectStats = 0
     statsIn = []
     statsOut = []
     PT_pcmu = rtpPTDict[('PCMU', 8000, 1)]
     PT_gsm = rtpPTDict[('GSM', 8000, 1)]
+
+    def __init__(self, app, cookie, *args, **kwargs):
+        print "rtp"
+        self.app = app
+        self.cookie = cookie
+        #DatagramProtocol.__init__(self, *args, **kwargs)
 
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
@@ -129,7 +131,7 @@ class RTPProtocol(DatagramProtocol):
         stunrtp = StunHook(self)
         stunrtcp = StunHook(self.RTCP)
         dl = defer.DeferredList([rtpDef, rtcpDef])
-        dl.addCallback(self.setStunnedAddress)
+        dl.addCallback(self.setStunnedAddress).addErrback(log.err)
         stunrtp.discoverStun(rtpDef)
         stunrtcp.discoverStun(rtcpDef)
 
@@ -169,41 +171,6 @@ class RTPProtocol(DatagramProtocol):
                 del self._socketCompleteDef
                 d.callback(rtp)
 
-    def getSDP(self):
-        from multicast.SDP import SimpleSDP
-        self.getAudio()
-        s = SimpleSDP()
-        s.setPacketSize(160)
-        addr = self.getVisibleAddress()
-        print "addr = ", addr
-        s.setServerIP(addr[0])
-        s.setLocalPort(addr[1])
-        fmts = self.infp.listFormats()
-        if FMT_PCMU in fmts:
-            s.addRtpMap('PCMU', 8000) # G711 ulaw
-        if FMT_GSM in fmts:
-            s.addRtpMap('GSM', 8000) # GSM 06.10
-        if FMT_SPEEX in fmts:
-            s.addRtpMap('speex', 8000, payload=110)
-            #s.addRtpMap('speex', 16000, payload=111)
-        if FMT_DVI4 in fmts:
-            s.addRtpMap('DVI4', 8000)
-            #s.addRtpMap('DVI4', 16000)
-        return s
-
-    def setFormat(self, rtpmap):
-        for entry in rtpmap:
-            if entry == self.PT_pcmu:
-                self.infp.setFormat(FMT_PCMU)
-                break
-            elif entry == self.PT_gsm:
-                self.infp.setFormat(FMT_GSM)
-                break
-            else:
-                print "couldn't set to %r"%entry
-        else:
-            raise ValueError, "no working formats"
-
     def whenDone(self, cbDone):
         self._cbDone = cbDone
 
@@ -211,35 +178,9 @@ class RTPProtocol(DatagramProtocol):
         self.Done = 1
         self.rtpListener.stopListening()
         self.rtcpListener.stopListening()
-        if self.infp:
-            self.infp.close()
-            self.infp = None
-        if self.outfp:
-            self.outfp.close()
-            self.outfp = None
-
-    def startReceiving(self, fp=None):
-        if fp is None:
-            self.outfp = getAudioDevice('w')
-        else:
-            self.outfp = fp
-
-    def startSending(self, dest, fp=None):
-        self.dest = dest
-        if fp is None:
-            self.infp = getAudioDevice('r')
-        else:
-            self.infp = fp
-        self.sendFirstData()
-
-    def getAudio(self):
-        self.infp = getAudioDevice('rw')
-        self.infp.close()
-        self.outfp = self.infp
 
     def startSendingAndReceiving(self, dest, fp=None):
         self.dest = dest
-        self.infp.reopen()
         self.prevInTime = self.prevOutTime = time()
         self.sendFirstData()
 
@@ -252,7 +193,7 @@ class RTPProtocol(DatagramProtocol):
         self.Done = 0
         self.sent = 0
         try:
-            self.sample = self.infp.read()
+            self.sample = self.app.giveRTP(self.cookie)
         except IOError: # stupid sound devices
             self.sample = None
             pass
@@ -273,25 +214,12 @@ class RTPProtocol(DatagramProtocol):
             if len(self.statsIn) == 100:
                 print "Input", " ".join(self.statsIn)
                 self.statsIn = []
-        if self.outfp:
-            hdr = struct.unpack('!BBHII', datagram[:12])
-            # Don't care about the marker bit.
-            PT = hdr[1]&127
-            fmt = None
-            if PT == 0:
-                fmt = FMT_PCMU
-            elif PT == 3:
-                fmt = FMT_GSM
-            if fmt:
-                try:
-                    self.outfp.write(datagram[12:], fmt)
-                except IOError:
-                    pass
-            elif PT in (13, 19):
-                # comfort noise
-                pass
-            else:
-                print "unexpected RTP PT %s len %d, HDR: %02x %02x"%(rtpPTDict.get(PT,str(PT)), len(datagram),hdr[0],hdr[1])
+        hdr = struct.unpack('!BBHII', datagram[:12])
+        # Don't care about the marker bit.
+        PT = hdr[1]&127
+        data = datagram[12:]
+        self.app.receiveRTP(self.cookie, PT, data)
+
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
@@ -344,13 +272,14 @@ class RTPProtocol(DatagramProtocol):
             return
         self.packets += 1
         if self.sample is not None:
+            fmt, sample = self.sample
             self.sent += 1
             # This bit is hardcoded for G711 ULAW. When other codecs are
             # done, the first two bytes will change (but should be mostly
             # constant across a RTP session).
-            hdr = pack('!BBHII', 0x80, 0x0, self.seq, self.ts, self.ssrc)
+            hdr = pack('!BBHII', fmt, 0x0, self.seq, self.ts, self.ssrc)
             t = time()
-            self.transport.write(hdr+self.sample, self.dest)
+            self.transport.write(hdr+sample, self.dest)
             self.sample = None
         else:
             if (self.packets - self.sent) %10 == 0:
@@ -365,8 +294,7 @@ class RTPProtocol(DatagramProtocol):
         self.seq += 1
         self.ts += 160
         try:
-            if self.infp:
-                self.sample = self.infp.read()
+            self.sample = self.app.giveRTP(self.cookie)
         except IOError:
             pass
 

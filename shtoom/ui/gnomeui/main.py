@@ -35,7 +35,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(0)
         self.address.set_sensitive(0)
         self.connected, deferred = self.sip.placeCall(sipURL)
-        deferred.addCallbacks(self.callConnected, self.callFailed)
+        deferred.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
 
     def on_hangup_clicked(self, w):
         self.sip.dropCall(self.connected)
@@ -106,7 +106,7 @@ class Incoming:
         self.description = description
         self.call = call
         self.deferredResponse = deferredResponse
-        self.deferredSetup = deferredSetup.addCallback(self.main._cbAcceptDone)
+        self.deferredSetup = deferredSetup.addCallback(self.main._cbAcceptDone).addErrback(log.err)
         self.timeoutID = reactor.callLater(30, self._cbTimeout)
         self.current = False
 
@@ -124,7 +124,7 @@ class Incoming:
             self.main.connected = self.call
             self.main.callButton.set_sensitive(0)
             self.main.address.set_sensitive(0)
-            self.deferredResponse.addCallbacks(self.main.callConnected, self.main.callFailed)
+            self.deferredResponse.addCallbacks(self.main.callConnected, self.main.callFailed).addErrback(log.err)
             self.deferredSetup.callback('yes')
         else:
             # XXX no string exceptions!

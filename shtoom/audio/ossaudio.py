@@ -6,6 +6,7 @@ import baseaudio, ossaudiodev
 opened = None
 
 class OSSAudioDevice(baseaudio.AudioDevice):
+
     def openDev(self):
         import ossaudiodev
         dev = ossaudiodev.open(self._mode)
@@ -27,6 +28,7 @@ class Wrapper:
     def __init__(self, d):
         self._d = d
         self.write = self._d.write
+        self.close = self._d.close
 
     def read(self):
         return self._d.read(320)

@@ -63,7 +63,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             return
         self.sipURL = args[1]
         self._connected, deferred = self.sip.placeCall(self.sipURL)
-        deferred.addCallbacks(self.callConnected, self.callDisconnected)
+        deferred.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
 
     def callConnected(self, call):
         log.msg("Call to %s CONNECTED"%(self.sipURL))
@@ -87,7 +87,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             return
         self._connected, resp, setup = self._pending
         self._pending = None
-        setup.addCallbacks(self.callConnected, self.callDisconnected)
+        setup.addCallbacks(self.callConnected, self.callDisconnected).addErrback(log.err)
         resp.callback('yes')
 
     def cmd_reject(self, line):

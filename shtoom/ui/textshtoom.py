@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: textshtoom.py,v 1.2 2004/01/10 14:36:37 anthonybaxter Exp $
+# $Id: textshtoom.py,v 1.3 2004/01/14 14:44:54 anthonybaxter Exp $
 #
 
 from twisted.internet import stdio
@@ -16,12 +16,11 @@ def main():
 
     from shtoom.ui.textui import ShtoomMain
     UI = ShtoomMain()
-    UI.connectSIP()
+    UI.connectApplication(application)
     stdio.StandardIO(UI)
     #log.startLogging(UI.getLogger())
     log.startLogging(sys.stdout)
-    reactor.run()
-    UI.resourceUsage()
+    return UI
 
 if __name__ == "__main__":
     main()

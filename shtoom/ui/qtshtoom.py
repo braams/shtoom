@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: qtshtoom.py,v 1.7 2004/01/10 14:54:53 anthonybaxter Exp $
+# $Id: qtshtoom.py,v 1.8 2004/01/14 14:44:54 anthonybaxter Exp $
 #
 
 
@@ -12,7 +12,7 @@ def shutdown():
     from twisted.internet import reactor
     reactor.stop()
 
-def main():
+def main(application):
     import qt
     from twisted.internet import qtreactor
     app=qt.QApplication([])
@@ -24,7 +24,7 @@ def main():
 
     from shtoom.ui.qtui import ShtoomMainWindow
     UI = ShtoomMainWindow()
-    UI.connectSIP()
+    UI.connectApplication(application)
     UI.show()
     log.startLogging(UI.getLogger())
     #log.startLogging(sys.stdout)
@@ -32,9 +32,7 @@ def main():
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
 
-    reactor.run()
-
-    UI.resourceUsage()
+    return UI
 
 if __name__ == "__main__":
     main()

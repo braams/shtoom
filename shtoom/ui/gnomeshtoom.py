@@ -9,7 +9,7 @@ def shutdown():
     from twisted.internet import reactor
     reactor.stop()
 
-def main():
+def main(application):
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
 
@@ -19,10 +19,8 @@ def main():
 
     from shtoom.ui.gnomeui.main import ShtoomWindow
     UI = ShtoomWindow()
-    UI.connectSIP()
-    log.startLogging(sys.stdout)
-    reactor.run()
-    UI.resourceUsage()
+    UI.connectApplication(application)
+    return UI
 
 
 if __name__ == "__main__":

@@ -2,13 +2,12 @@
 
 # Copyright (C) 2004 Anthony Baxter
 
-def tryTextInterface():
+def tryTextInterface(application):
     import sys
     from shtoom.ui.textshtoom import main
-    main()
-    sys.exit()
+    return main(application)
 
-def tryQtInterface():
+def tryQtInterface(application):
     import sys
     try:
         import qt
@@ -16,10 +15,9 @@ def tryQtInterface():
         qt = None
     if qt is not None:
         from shtoom.ui.qtshtoom import main
-        main()
-        sys.exit()
+        return main(application)
 
-def tryTkInterface():
+def tryTkInterface(application):
     import sys
     try:
         import Tkinter
@@ -27,10 +25,9 @@ def tryTkInterface():
         Tkinter = None
     if Tkinter is not None:
         from shtoom.ui.tkshtoom import main
-        main()
-        sys.exit()
+        return main(application)
 
-def tryGnomeInterface():
+def tryGnomeInterface(application):
     import sys
     try:
         import pygtk
@@ -43,24 +40,27 @@ def tryGnomeInterface():
         gtk = None
     if gtk is not None:
         from shtoom.ui.gnomeshtoom import main
-        main()
-        sys.exit()
+        return main(application)
 
-def findUserInterface():
+def findUserInterface(application):
     from shtoom import prefs
+    ui = None
     if prefs.ui:
         if prefs.ui.lower() == 'qt':
-            tryQtInterface()
+            ui = tryQtInterface(application)
         elif prefs.ui.lower()[:2] == 'tk':
-            tryTkInterface()
+            ui = tryTkInterface(application)
         elif prefs.ui.lower() == "gnome":
-            tryGnomeInterface()
+            ui = tryGnomeInterface(application)
         elif prefs.ui.lower() == "text":
-            tryTextInterface()
-    tryQtInterface()
-    tryGnomeInterface()
-    tryTkInterface()
-    tryTextInterface()
+            ui = tryTextInterface(application)
+    if ui is not None:
+        return ui
+    for attempt in ( tryQtInterface, tryGnomeInterface, tryTkInterface,
+                    tryTextInterface, ):
+        ui = attempt(application)
+        if ui is not None:
+            return ui
     # Other interfaces here
-    print "Error: Couldn't load _any_ userinterfaces"
+    raise RuntimeError,  "Couldn't load _any_ userinterfaces"
 
