@@ -22,7 +22,8 @@ class ShtoomWindow(ShtoomBaseUI):
         self.hangupButton.set_sensitive(0)
         self.status = self.xml.get_widget("appbar").get_children()[0].get_children()[0]
         self.acceptDialog = self.xml.get_widget("acceptdialog")
-
+        self.incoming = []
+    
     # GUI callbacks
     def on_call_clicked(self, w):
         self.statusMessage("Calling...")
@@ -45,8 +46,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.connected = False
         
     def on_acceptdialog_response(self, widget, code):
-        self.incoming.approved(code == gtk.RESPONSE_OK)
-        del self.incoming
+        self.incoming[0].approved(code == gtk.RESPONSE_OK)
 
     def on_copy_activate(self, widget):
         self.address.copy_clipboard()
@@ -81,8 +81,17 @@ class ShtoomWindow(ShtoomBaseUI):
 
     def incomingCall(self, description, call, defresp, defsetup):
         # XXX multiple incoming calls won't work
-        self.incoming = Incoming(self, description, call, defresp, defsetup)  
+        self.incoming.append(Incoming(self, description, call, defresp, defsetup))
+        if len(self.incoming) == 1:
+            self.incoming[0].show()
 
+    def _cbAcceptDone(self, result):
+        """Called when user accepts/denies call."""
+        del self.incoming[0]
+        if self.incoming:
+            self.incoming[0].show()
+        return result
+    
     def debugMessage(self, msg):
         log.msg(msg)
 
@@ -93,15 +102,22 @@ class ShtoomWindow(ShtoomBaseUI):
 class Incoming:
 
     def __init__(self, main, description, call, deferredResponse, deferredSetup):
-        main.xml.get_widget("acceptlabel").set_text("Accept call from %s?" % call)
         self.main = main
         self.description = description
         self.call = call
         self.deferredResponse = deferredResponse
-        self.deferredSetup = deferredSetup
+        self.deferredSetup = deferredSetup.addCallback(self.main._cbAcceptDone)
+        self.timeoutID = reactor.callLater(30, self._cbTimeout)
+        self.current = False
+    
+    def show(self):
+        """Display the dialog."""
+        self.current = True
+        self.main.xml.get_widget("acceptlabel").set_text("Accept call from %s?" % self.call)
         self.main.acceptDialog.show()
-
+    
     def approved(self, answer):
+        self.timeoutID.cancel()
         if answer:
             if self.main.connected:
                 self.main.on_hangup_clicked(None)
@@ -113,5 +129,13 @@ class Incoming:
         else:
             # XXX no string exceptions!
             self.deferredSetup.errback('no')
-        del self.main.incoming
+        del self.deferredSetup
+        del self.deferredResponse
         del self.main
+
+    def _cbTimeout(self):
+        """User didn't answer, same response as user not accepting call."""
+        if self.current:
+            self.main.acceptDialog.hide()
+        self.deferredSetup.errback('no')
+        del self.deferredSetup
