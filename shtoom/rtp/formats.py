@@ -5,11 +5,12 @@ class PTMarker:
     "A marker of a particular payload type"
     media = None
 
-    def __init__(self, name, pt=None, clock=8000, params=1):
+    def __init__(self, name, pt=None, clock=8000, params=1, fmtp=None):
         self.name = name
         self.pt = pt
         self.clock = clock
         self.params = params
+        self.fmtp = fmtp
 
     def __repr__(self):
         if self.pt is None:
@@ -67,7 +68,8 @@ PT_ILBC =       AudioPTMarker('iLBC',    clock=8000,  params=1)
 #PT_L8 =         AudioPTMarker('L8',      clock=None,  params=1)
 #PT_RED =        AudioPTMarker('RED',     clock=8000,  params=1)
 #PT_VDVI =       AudioPTMarker('VDVI',    clock=None,  params=1)
-PT_NTE =        PTMarker('telephone-event', clock=8000, params=None)
+PT_NTE =        PTMarker('telephone-event', clock=8000, params=None, 
+                        fmtp='0-16')
 # Internal shtoom codec. Note that the L16 format, above, is at 44100 KHz.
 PT_RAW =        AudioPTMarker('RAW_L16', clock=8000, params=1)
 
