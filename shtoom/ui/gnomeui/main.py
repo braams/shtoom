@@ -28,6 +28,8 @@ class ShtoomWindow(ShtoomBaseUI):
         self.incoming = []
 
         self.logger = DebugTextView()
+        #h = self.xml.get_widget('hbox2')
+        #h.hide()
 
     def getLogger(self): 
         return self.logger

@@ -24,7 +24,7 @@ def main(application):
     from shtoom.ui.gnomeui.main import ShtoomWindow
     UI = ShtoomWindow()
     UI.connectApplication(application)
-    log.startLogging(sys.stdout)
+    log.startLogging(UI.getLogger(), setStdout=False)
     return UI
 
 
