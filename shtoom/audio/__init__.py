@@ -11,18 +11,17 @@ FMT_SPEEX = 3
 FMT_DVI4 = 4
 FMT_RAW = 5
 
-def findAudioDevice():
-    from shtoom import prefs
+def findAudioDevice(audioPref, audioFiles=None):
     attempts = ( tryOssAudio, tryFastAudio, )
-    if prefs.audio_infile and prefs.audio_outfile:
+    if audioFiles is not None:
         attempts = ( tryFileAudio, )
-    elif prefs.audio:
-        if prefs.audio == 'oss':
+    elif audioPref:
+        if audioPref == 'oss':
             attempts = (tryOssAudio,)
-        elif prefs.audio == 'fast':
+        elif audioPref in ( 'fast', 'port' ):
             attempts = (tryFastAudio,)
         else:
-            raise ValueError("unknown audio %s"%(prefs.audio))
+            raise ValueError("unknown audio %s"%(audioPref))
     for attempt in attempts:
         audio = attempt()
         if audio is not None:
@@ -54,11 +53,11 @@ def tryFastAudio():
     return getAudioDevice
 
 _audioGet = None
-def getAudioDevice(mode):
+def getAudioDevice(mode, audioPref=None, audioFiles=None):
     from shtoom.exceptions import NoAudioDevice
     global _audioGet
     if _audioGet is None:
-        _audioGet = findAudioDevice()
+        _audioGet = findAudioDevice(audioPref, audioFiles)
         if _audioGet is None:
             raise NoAudioDevice, "No working audio interface found"
     return _audioGet('rw')

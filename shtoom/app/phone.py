@@ -14,11 +14,14 @@ from shtoom.audio import getAudioDevice
 class Phone(BaseApplication):
     __implements__ = ( Application, )
 
-    def __init__(self):
+    def __init__(self, ui=None, prefs=None):
         from shtoom.ui.select import findUserInterface
-        import sys
-        self.ui = findUserInterface(self)
-        BaseApplication.__init__(self)
+        self.connectPrefs(prefs)
+        if ui is None:
+            self.ui = findUserInterface(self, self.getPref('ui'))
+        else:
+            self.ui = ui
+        BaseApplication.__init__(self, prefs=prefs)
         # Mapping from callcookies to rtp object
         self._rtp = {}
         # Mapping from callcookies to call objects
@@ -31,7 +34,7 @@ class Phone(BaseApplication):
     def start(self):
         "Start the application."
         from twisted.internet import reactor
-        from shtoom.prefs import register_uri
+        register_uri = self.getPref('register_uri')
         if register_uri is not None:
             d = self.sip.register()
             d.addCallback(log.err).addErrback(log.err)
@@ -120,7 +123,14 @@ class Phone(BaseApplication):
         self.ui.callDisconnected(callcookie, reason)
 
     def openAudioDevice(self):
-        self._audio = getAudioDevice('rw')
+        audioPref = self.getPref('audio')
+        audio_in = self.getPref('audio_infile')
+        audio_out = self.getPref('audio_outfile')
+        if audio_in and audio_out:
+            aF = ( audio_in, audio_out )
+        else:
+            aF = None
+        self._audio = getAudioDevice('rw', audioPref, aF)
         self._audio.close()
 
     def closeAudioDevice(self):

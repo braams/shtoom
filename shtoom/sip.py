@@ -15,8 +15,6 @@ import shtoom
 from twisted.python import log
 import random, sys, socket
 
-from shtoom import prefs
-
 def errhandler(*args):
     print "BANG", args
 
@@ -96,15 +94,15 @@ class Call(object):
         # XXX Allow over-riding
         from shtoom.stun import StunHook, getPolicy
         host, port = dest
-        import prefs
-        if prefs.localip is not None:
-            self._localAddress = (prefs.localip, prefs.localport or 5060)
+        getPref = self.sip.app.getPref
+        if getPref('localip') is not None:
+            self._localAddress = (getPref('localip'), getPref('localport') or 5060)
         else:
             # it is a hack!
             protocol = ConnectedDatagramProtocol()
             port = reactor.connectUDP(host, port, protocol)
             if protocol.transport:
-                locAddress = (protocol.transport.getHost()[1], prefs.localport or 5060)
+                locAddress = (protocol.transport.getHost()[1], getPref('localport') or 5060)
                 remAddress = protocol.transport.getPeer()[1:3]
                 port.stopListening()
                 log.msg("discovered local address %r, remote %r"%(locAddress,
@@ -275,6 +273,8 @@ class Call(object):
 
     def sendInvite(self, toAddr, init=0):
         print "sendInvite"
+        username = self.sip.app.getPref('username')
+        email_address = self.sip.app.getPref('email_address')
         invite = tpsip.Request('INVITE', str(self.remote))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
@@ -283,13 +283,14 @@ class Call(object):
         invite.addHeader('to', str(self.uri))
         invite.addHeader('content-type', 'application/sdp')
         invite.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            prefs.username, prefs.email_address, self.getTag()))
+                            username, email_address, 
+                            self.getTag()))
         invite.addHeader('call-id', self.getCallID())
-        invite.addHeader('subject', 'sip: %s'%(prefs.email_address))
+        invite.addHeader('subject', 'sip: %s'%(getPref('email_address')))
         invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
-                                prefs.username, lhost, lport))
+                                username, lhost, lport))
         s = self.sip.app.getSDP(self.cookie)
         sdp = s.show()
         invite.addHeader('content-length', len(sdp))
@@ -312,6 +313,8 @@ class Call(object):
 
     def sendAck(self, okmessage, startRTP=0):
         from shtoom.multicast.SDP import SDP
+        username = self.sip.app.getPref('username')
+        email_address = self.sip.app.getPref('email_address')
         oksdp = SDP(okmessage.body)
         sdp = self.sip.app.getSDP(self.cookie)
         sdp.intersect(oksdp)
@@ -339,7 +342,7 @@ class Call(object):
         ack.addHeader('cseq', '%s ACK'%self.getCSeq())
         ack.addHeader('to', to)
         ack.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            prefs.username, prefs.email_address, self.getTag()))
+                            username, email_address, self.getTag()))
         ack.addHeader('call-id', self.getCallID())
         ack.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         ack.addHeader('content-length', 0)
@@ -355,6 +358,8 @@ class Call(object):
             self.sip.app.startCall(self.cookie, (oksdp.ipaddr,oksdp.port), cb)
 
     def sendBye(self):
+        username = self.sip.app.getPref('username')
+        email_address = self.sip.app.getPref('email_address')
         dest = self.extractURI(self.contact)
         uri = tpsip.parseURL(dest)
         bye = tpsip.Request('BYE', dest)
@@ -363,7 +368,7 @@ class Call(object):
         bye.addHeader('cseq', '%s BYE'%self.getCSeq(incr=1))
         bye.addHeader('to', self.uri)
         bye.addHeader('from', '"%s" <sip:%s>;tag=%s'%(
-                            prefs.username, prefs.email_address, self.getTag()))
+                            username, email_address, self.getTag()))
         bye.addHeader('call-id', self.getCallID())
         bye.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         bye.addHeader('content-length', 0)
@@ -408,7 +413,7 @@ class Call(object):
         """
 
     def installTeardownTrigger(self):
-        if self.cancel_trigger is None:
+        if 0 and self.cancel_trigger is None:
             t = reactor.addSystemEventTrigger('before', 
                                               'shutdown', 
                                               self.dropCall, 
@@ -436,33 +441,33 @@ class Call(object):
         elif message.code == 200:
             state = self.getState()
             if state == 'SENT_INVITE':
-                self.phone.app.debugMessage(message.body)
+                self.sip.app.debugMessage(message.body)
                 self.sendAck(message, startRTP=1)
             elif state == 'CONNECTED':
-                self.phone.app.debugMessage('Got duplicate OK to our ACK')
+                self.sip.app.debugMessage('Got duplicate OK to our ACK')
                 self.sendAck(message)
             elif state == 'SENT_BYE':
-                self.phone.app.endCall(call.cookie)
-                self.phone._delCallObject(self.getCallID())
-                self.phone.app.debugMessage("Hung up on call %s"%callid)
-                self.phone.app.statusMessage("idle")
+                self.sip.app.endCall(call.cookie)
+                self.sip._delCallObject(self.getCallID())
+                self.sip.app.debugMessage("Hung up on call %s"%callid)
+                self.sip.app.statusMessage("idle")
             else:
-                self.phone.app.debugMessage('Got OK in unexpected state %s'%state)
+                self.sip.app.debugMessage('Got OK in unexpected state %s'%state)
         elif message.code - (message.code%100) == 400:
             # XXX Auth failure (401)
-            self.phone.app.debugMessage(message.toString())
-            self.phone.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
-            self.phone._delCallObject(self.getCallID())
+            self.sip.app.debugMessage(message.toString())
+            self.sip.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.sip._delCallObject(self.getCallID())
         elif message.code - (message.code%100) == 500:
-            self.phone.app.debugMessage(message.toString())
-            self.phone.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
-            self.phone._delCallObject(self.getCallID())
+            self.sip.app.debugMessage(message.toString())
+            self.sip.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.sip._delCallObject(self.getCallID())
         elif message.code - (message.code%100) == 600:
-            self.phone.app.debugMessage(message.toString())
-            self.phone.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
-            self.phone._delCallObject(self.getCallID())
+            self.sip.app.debugMessage(message.toString())
+            self.sip.app.endCall(call.cookie, 'Other end sent %s'%message.toString())
+            self.sip._delCallObject(self.getCallID())
         else:
-            self.phone.app.debugMessage(message.toString())
+            self.sip.app.debugMessage(message.toString())
 
 class Registration(Call):
     "State machine for registering with a server."
@@ -478,24 +483,17 @@ class Registration(Call):
         self.cseq = random.randint(1000,5000)
         self.nonce_count = 0
         self.cancel_trigger = None
-        print "REGISTRATION STARTED"
 
     def startRegistration(self):
-        from shtoom import prefs
         import copy
-        self.regServer = tpsip.parseURL(prefs.register_uri)
+        self.regServer = tpsip.parseURL(self.sip.app.getPref('register_uri'))
         self.regAOR = copy.copy(self.regServer)
-        self.regAOR.username = prefs.username
+        self.regAOR.username = self.sip.app.getPref('username')
         d = self.setupLocalSIP(self.regServer)
         d.addCallback(self.sendRegistration).addErrback(log.err)
 
-    def getRegConfig(self):
-        from shtoom import prefs
-        if prefs.register_aor is None:
-            raise RegistrationUnavailable, "No registration AOR  specified"
-
     def sendRegistration(self, cb=None, auth=None):
-        print "setup done", self._callID
+        username = self.sip.app.getPref('username')
         invite = tpsip.Request('REGISTER', str(self.regServer))
         # XXX refactor all the common headers and the like
         invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
@@ -504,7 +502,11 @@ class Registration(Call):
         invite.addHeader('to', '"anthony baxter" <%s>'%(str(self.regAOR)))
         invite.addHeader('from', '"anthony baxter" <%s>'%(str(self.regAOR)))
         invite.addHeader('content-type', 'application/sdp')
-        invite.addHeader('expires', 900)
+        state =  self.getState() 
+        if state in ( 'NEW', 'SENT_REGISTER', 'REGISTERED' ):
+            invite.addHeader('expires', 900)
+        elif state in ( 'CANCEL_REGISTER' ):
+            invite.addHeader('expires', 0)
         invite.addHeader('event', 'registration')
         invite.addHeader('call-id', self.getCallID())
         if auth is not None:
@@ -512,7 +514,7 @@ class Registration(Call):
         invite.addHeader('user-agent', 'Shtoom/%s'%shtoom.Version)
         lhost, lport = self.getLocalSIPAddress()
         invite.addHeader('contact', '"%s" <sip:%s:%s;transport=udp>'%(
-                                prefs.username, lhost, lport))
+                                username, lhost, lport))
         invite.addHeader('content-length', '0')
         invite.creationFinished()
         try:
@@ -523,34 +525,50 @@ class Registration(Call):
             self.compDef.errback(e(v))
             self.setState('ABORTED')
         else:
-            self.setState('SENT_REGISTER')
+            if self.getState() in ( 'NEW', 'REGISTERED' ):
+                self.setState('SENT_REGISTER')
 
     def recvResponse(self, message):
         state = self.getState()
         if message.code in ( 401, ):
-            auth = self.calcAuth(message.headers['www-authenticate'][0])
-            self.sendRegistration(auth=auth)
+            if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
+                auth = self.calcAuth(message.headers['www-authenticate'][0])
+                self.sendRegistration(auth=auth)
+            else:
+                print "Unknown state '%s' for a 401"%(state)
         elif message.code in ( 200, ):
             # Woo. registration succeeded.
-            self.setState('REGISTERED')
-            reactor.callLater(840, self.sendRegistration)
-            if self.cancel_trigger is None:
-                t = reactor.addSystemEventTrigger('before', 
-                                                  'shutdown', 
-                                                  self.cancelRegistration)
-                self.cancel_trigger = t
+            if state == 'SENT_REGISTER':
+                self.setState('REGISTERED')
+                reactor.callLater(840, self.sendRegistration)
+                if 0 and self.cancel_trigger is None:
+                    t = reactor.addSystemEventTrigger('before', 
+                                                      'shutdown', 
+                                                      self.cancelRegistration)
+                    self.cancel_trigger = t
+            elif state == 'CANCEL_REGISTER':
+                self.setState('UNREGISTERED')
+                d = self._cancelDef
+                del self._cancelDef
+                d.callback('ok')
+            else:
+                print "Unknown state '%s' for a 200"%(state)
         else:
             log.err("don't know about %s for registration"%(message.code))
 
     def cancelRegistration(self):
         # Cancel this outstanding registration. Should return a deferred 
         # to pause the shutdown until we're done.
-        print "XXX todo - cancel registration!"
+        # Send a registration with expires:0
+        d = defer.Deferred()
+        self.setState('CANCEL_REGISTER')
+        self.sendRegistration()
+        self._cancelDef = d
+        return d
 
     def calcAuth(self, authhdr):
         from urllib2 import parse_http_list
         import digestauth
-        from shtoom import prefs
         method, auth = authhdr.split(' ', 1)
         if method.lower() != 'digest':
             raise ValueError, "Unknown auth method %s"%(method)
@@ -569,8 +587,8 @@ class Registration(Call):
         nonce = chal.get('nonce')
         opaque = chal.get('opaque')
         H, KD = self._getHashingImplementation(algorithm)
-        user = prefs.register_authuser
-        passwd = prefs.register_authpasswd
+        user = self.sip.app.getPref('register_authuser')
+        passwd = self.sip.app.getPref('register_authpasswd')
         if user is None or passwd is None:
             raise RuntimeError, "Auth required"
         A1 = '%s:%s:%s'%(user, chal['realm'], passwd)
@@ -620,8 +638,7 @@ class SipPhone(DatagramProtocol, object):
         super(SipPhone, self, *args, **kwargs)
 
     def register(self):
-        from shtoom import prefs
-        if prefs.register_uri is not None:
+        if self.app.getPref('register_uri') is not None:
             d = defer.Deferred()
             r = Registration(self,d)
             r.startRegistration()

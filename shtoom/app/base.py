@@ -6,8 +6,19 @@ class BaseApplication:
 
     __cookieCount = 0
 
-    def __init__(self):
+    def __init__(self, prefs=None):
         self.connectSIP()
+
+
+    def connectPrefs(self, prefs):
+        if prefs:
+            self._prefs = prefs
+        else:
+            from shtoom import prefs
+            self._prefs = prefs
+
+    def getPref(self, pref):
+        return getattr(self._prefs, pref, None)
 
     def connectSIP(self):
         from shtoom import prefs

@@ -42,17 +42,16 @@ def tryGnomeInterface(application):
         from shtoom.ui.gnomeshtoom import main
         return main(application)
 
-def findUserInterface(application):
-    from shtoom import prefs
+def findUserInterface(application, prefui):
     ui = None
-    if prefs.ui:
-        if prefs.ui.lower() == 'qt':
+    if prefui:
+        if prefui.lower() == 'qt':
             ui = tryQtInterface(application)
-        elif prefs.ui.lower()[:2] == 'tk':
+        elif prefui.lower()[:2] == 'tk':
             ui = tryTkInterface(application)
-        elif prefs.ui.lower() == "gnome":
+        elif prefui.lower() == "gnome":
             ui = tryGnomeInterface(application)
-        elif prefs.ui.lower() == "text":
+        elif prefui.lower() == "text":
             ui = tryTextInterface(application)
     if ui is not None:
         return ui
