@@ -49,7 +49,7 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
         EVT_BUTTON(self, self.BUTT_ADVANCED, self.OnAdvanced)
         EVT_BUTTON(self, self.BUTT_CALL, self.OnCall)
         EVT_TEXT_ENTER(self, self.COMBO_ADDRESS, self.PlaceCall)
-        EVT_CLOSE(self, self.DoExit)
+        EVT_CLOSE(self, self.DoClose)
         
         # Advanced mode - whether to display the dtmf buttons or not
         self.advanced_mode = True
@@ -64,15 +64,19 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             self.combo_address.Append("")
             [self.combo_address.Append(v) for v in self.address_history]
 
+        sizex, sizey = self.GetSize()
+        self.minx = sizex
+
         # Initialise the status bar
         self.SetStatusText('Not connected')
+
         # Startup without the "advanced" functionality showing
+        # This also restricts the resizing of the window
         self.OnAdvanced(None)
 
         # Hookup the error log 
         # Calculate initial pos for the message log window
-        (posx,posy) = self.GetPosition()
-        (sizex,sizey) = self.GetSize()
+        posx, posy = self.GetPosition()
         self.errorlog = LogFrameImpl(self, -1, "Message Log", 
             pos=(posx+sizex+5,posy))
         wxLog_SetActiveTarget(wxLogTextCtrl(self.errorlog.text_errorlog))
@@ -210,16 +214,18 @@ class ShtoomMainFrameImpl(ShtoomMainFrame, ShtoomBaseUI):
             self.address_history.append(l)
         hfp.close()
 
-    def DoExit(self, event):
+    def DoClose(self, event):
         # Write out the current address history
         self.saveHistory()
-        #self.Close(True)
         reactor.stop()
+        
+    def DoExit(self, event):
+        self.Close(True)
 
     def UpdateHeight(self, newheight):
         curwidth, curheight = self.GetSize()
-        #self.SetSizeHints(curwidth, newheight, -1, -1)
-        self.SetSize((-1, newheight))
+        self.SetSizeHints(self.minx, newheight, self.minx*2, newheight)
+        self.SetSize((curwidth, newheight))
         self.Show(1)
 
     def debugSize(self):
