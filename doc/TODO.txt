@@ -9,10 +9,14 @@ Definite before 0.3:
     - doug: s.d.conferencing's entrance soundburst bug
     - ui(qt): hide multiple call support for now
     - MediaLayer: playout buffer
-    - documentation, documentation, documentation
     - Some sort of "debug dump" command that dumps relevant info (ui, audio,
       &c) for bugreports.
     - package for Mac, Windows
+    - phone: when on a call, decline a second incoming call?
+    - documentation, documentation, documentation
+    - document Doug API
+    - update website
+    - create shtoom wiki
 
 Maybe before 0.3:
     - doug: placeCall to a broken address doesn't give generate a 
@@ -39,10 +43,12 @@ Not before 0.3:
     - sip: retransmit and timeout of BYE
     - rtp: detect SSRC collisions
     - doug, rtp: when mixing, generate CSRCs
+    - rtcp: finish RTCP encoding -- RR, SR, PRIV. Handle strange extended
+      SR/RR from ciscos.
     - rtcp: participant database
-    - rtcp: sender reports
-    - rtcp: receiver reports
-    - rtcp: sdes
+    - rtcp: generate sender reports
+    - rtcp: generate receiver reports
+    - rtcp: generate sdes
     - rtcp: notice when we get an RTCP BYE 
     - rtcp: generate a goodbye packet. should at least have an SDES and a BYE
     - audio(all) - if the call doesn't close cleanly, the audio isn't closed
@@ -64,9 +70,6 @@ Not before 0.3:
     - ui(all): multi-tab view for multiple calls
     - shtoom: ringing tone for incoming call?
     - Mac UI checked in - dp/bob
-    - Mac OS CoreAudio support for Mac audio - dp/bob
-    - rtcp: finish RTCP encoding -- RR, SR, PRIV. Handle strange extended
-      SR/RR from ciscos.
     - doug: expose the auth headers to/from the call?
 
 Future:
@@ -112,7 +115,6 @@ Later:
     - More clients - shtoomcu (conferencing server)
     - Putting calls on hold, allowing multiple calls to go at once.
     - Alternately, ad-hoc conferencing of new inbound or outbound calls
-    - Generation of RTCP at appropriate times
     - Gnome addressbook integration. Gnome notification bar integration.
     - KDE addressbook integration. KDE panel integration.
     - Mac OS X addressbook integration.
