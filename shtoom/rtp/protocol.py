@@ -351,7 +351,6 @@ class RTPProtocol(DatagramProtocol):
         if self._pendingDTMF:
             payload = self._pendingDTMF[0].getPayload(self.ts)
             if payload:
-                # XXX FIXME FIXME FIXME! telephone-event isn't always 101!
                 ntept = self.ptdict.get(PT_NTE)
                 if ntept is not None:
                     self._send_packet(pt=ntept, data=payload)
