@@ -4,6 +4,8 @@ Linux installer: rpmbuilder??, deb?
 
 Before 0.3:
     - stun: timeout the STUN call
+    - sip/call: the state should become an object, encapsulating the current state.
+      This makes it _much_ easier to handle retransmits and the like.
     - audio(all) - if the call doesn't close cleanly, the audio isn't closed
       properly.
     - rtp, app, audio: pass the SDP to the RTP, so that it can handle 
