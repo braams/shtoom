@@ -98,6 +98,15 @@ GSM 06.10.
 If you install David McNab's pySpeex package, you can handle speex 
 audio.
 
+
+Debugging, Troubleshooting, &c
+------------------------------
+
+See the DEBUGGING.txt file.
+
+Credits
+-------
+
 Shtoom is (C) Copyright 2004 Anthony Baxter and is licensed under
 the GNU Lesser General Public License - see the file LICENSE for
 details.
