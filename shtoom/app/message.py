@@ -128,6 +128,7 @@ class Message(BaseApplication):
 
     def startCall(self, callcookie, remoteAddr, cb):
         self._audioStates[callcookie] = self.startingState 
+        self._audios[callcookie].reopen()
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)
         log.msg("call %s connected"%callcookie)
         cb(callcookie)
