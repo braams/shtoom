@@ -933,6 +933,7 @@ class Registration(Call):
 
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
         # XXX parameterise the retransmit timer!
+        from twisted.internet import reactor
         reactor.callLater(840, self.sendRegistration)
         username = self.sip.app.getPref('username')
         invite = tpsip.Request('REGISTER', str(self.regURI))
