@@ -21,7 +21,7 @@ def buildOptions(app):
     network.addOption(StringOption('localip','listen on this local ip address'))
     network.addOption(NumberOption('listenport','run the sip listener on this port',
                                     shortopt='p'))
-    #network.addOption(StringOption('outbound_proxy','use this outbound proxy to make calls'))
+    network.addOption(StringOption('outbound_proxy','use this outbound proxy to make calls'))
     network.addOption(ChoiceOption('stun_policy','When should STUN be used?', 'rfc1918',
                                     choices=['never','always','rfc1918']))
     network.addOption(BooleanOption('use_upnp','Use UPnP to punch holes in firewalls', False))
