@@ -1,6 +1,11 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.2: NOT YET RELEASED
+  - Additional (non-phone) applications available - shmessage, shtam
+  - Tk interface more featureful - has most of the same stuff as the
+    Qt interface.
+  - DTMF detection in the non-phone apps. They don't do anything with
+    it yet, but the hooks are there.
   - Works against XTen now. Slight mistake in RTP headers. Oh well.
   - Auth against old/broken servers that send challenges without a qop 
     header (for instance, Asterisk) works.
