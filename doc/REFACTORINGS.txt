@@ -36,6 +36,16 @@ The UI/app should create the deferred itself, and return it. It
 should call the callback with True/False for yes/no, and reserve
 the .errback for, well, errors.
 
+Here's the current plan: 
+
+  the SIP layer calls the application for the acceptCall. The application
+  returns a deferred. 
+  the application calls the UI for an incoming call. the UI returns a
+  deferred, which returns (something. need to indicate yes, no, no answer,
+  ...)
+  when the UI deferred is triggered, the application does all the other
+  bits (STUN, rtp, &c), then triggers the deferred that it created.
+
 
 Import testing
 --------------
