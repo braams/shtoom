@@ -12,11 +12,6 @@
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
-  <property name="decorated">True</property>
-  <property name="skip_taskbar_hint">False</property>
-  <property name="skip_pager_hint">False</property>
-  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
-  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
 
   <child>
     <widget class="GtkVBox" id="vbox2">
@@ -175,6 +170,7 @@
 
 	      <child internal-child="entry">
 		<widget class="GtkEntry" id="combo-entry1">
+		  <property name="width_request">200</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="editable">True</property>
@@ -200,6 +196,23 @@
 	      <property name="fill">True</property>
 	    </packing>
 	  </child>
+
+	  <child>
+	    <widget class="GtkButton" id="lookup">
+	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Lookup entry in address book</property>
+	      <property name="can_focus">True</property>
+	      <property name="label" translatable="yes">...</property>
+	      <property name="use_underline">True</property>
+	      <property name="relief">GTK_RELIEF_HALF</property>
+	      <signal name="clicked" handler="on_lookup_clicked" object="on_lookup_address" last_modification_time="Sun, 10 Oct 2004 19:57:11 GMT"/>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">False</property>
+	      <property name="fill">False</property>
+	    </packing>
+	  </child>
 	</widget>
 	<packing>
 	  <property name="padding">5</property>
@@ -211,7 +224,7 @@
       <child>
 	<widget class="GtkHButtonBox" id="hbuttonbox1">
 	  <property name="visible">True</property>
-	  <property name="layout_style">GTK_BUTTONBOX_SPREAD</property>
+	  <property name="layout_style">GTK_BUTTONBOX_START</property>
 	  <property name="spacing">0</property>
 
 	  <child>
@@ -222,7 +235,6 @@
 	      <property name="label" translatable="yes">Call</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_call_clicked" last_modification_time="Sat, 22 Nov 2003 16:31:58 GMT"/>
 	    </widget>
 	  </child>
@@ -235,7 +247,6 @@
 	      <property name="label" translatable="yes">Hang Up</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_hangup_clicked" last_modification_time="Sat, 22 Nov 2003 16:32:14 GMT"/>
 	    </widget>
 	  </child>
@@ -248,7 +259,6 @@
 	      <property name="label" translatable="yes">Register</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_register_clicked" last_modification_time="Tue, 02 Mar 2004 13:13:57 GMT"/>
 	    </widget>
 	  </child>
@@ -282,7 +292,6 @@
 		  <property name="label" translatable="yes">1</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <accessibility>
 		    <atkaction action_name="press" description="1"/>
 		    <atkaction action_name="release" description="1"/>
@@ -307,7 +316,6 @@
 		  <property name="label" translatable="yes">2</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton2_pressed" last_modification_time="Tue, 02 Mar 2004 13:32:32 GMT"/>
 		  <signal name="released" handler="on_dtmfButton2_released" last_modification_time="Tue, 02 Mar 2004 13:32:51 GMT"/>
 		</widget>
@@ -328,7 +336,6 @@
 		  <property name="label" translatable="yes">3</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton3_pressed" last_modification_time="Tue, 02 Mar 2004 13:32:58 GMT"/>
 		  <signal name="released" handler="on_dtmfButton3_released" last_modification_time="Tue, 02 Mar 2004 13:33:03 GMT"/>
 		</widget>
@@ -349,7 +356,6 @@
 		  <property name="label" translatable="yes">4</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton4_pressed" last_modification_time="Tue, 02 Mar 2004 13:33:09 GMT"/>
 		  <signal name="released" handler="on_dtmfButton4_released" last_modification_time="Tue, 02 Mar 2004 13:33:13 GMT"/>
 		</widget>
@@ -370,7 +376,6 @@
 		  <property name="label" translatable="yes">5</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton5_pressed" last_modification_time="Tue, 02 Mar 2004 13:33:26 GMT"/>
 		  <signal name="released" handler="on_dtmfButton5_released" last_modification_time="Tue, 02 Mar 2004 13:33:31 GMT"/>
 		</widget>
@@ -391,7 +396,6 @@
 		  <property name="label" translatable="yes">6</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton6_pressed" last_modification_time="Tue, 02 Mar 2004 13:33:38 GMT"/>
 		  <signal name="released" handler="on_dtmfButton6_released" last_modification_time="Tue, 02 Mar 2004 13:33:42 GMT"/>
 		</widget>
@@ -412,7 +416,6 @@
 		  <property name="label" translatable="yes">7</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton7_pressed" last_modification_time="Tue, 02 Mar 2004 13:33:51 GMT"/>
 		  <signal name="released" handler="on_dtmfButton7_released" last_modification_time="Tue, 02 Mar 2004 13:33:55 GMT"/>
 		</widget>
@@ -433,7 +436,6 @@
 		  <property name="label" translatable="yes">8</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton8_pressed" last_modification_time="Tue, 02 Mar 2004 13:34:01 GMT"/>
 		  <signal name="released" handler="on_dtmfButton8_released" last_modification_time="Tue, 02 Mar 2004 13:34:06 GMT"/>
 		</widget>
@@ -454,7 +456,6 @@
 		  <property name="label" translatable="yes">9</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton9_pressed" last_modification_time="Tue, 02 Mar 2004 13:34:12 GMT"/>
 		  <signal name="released" handler="on_dtmfButton9_released" last_modification_time="Tue, 02 Mar 2004 13:34:16 GMT"/>
 		</widget>
@@ -475,7 +476,6 @@
 		  <property name="label" translatable="yes">*</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButtonStar_pressed" last_modification_time="Tue, 02 Mar 2004 13:34:21 GMT"/>
 		  <signal name="released" handler="on_dtmfButtonStar_released" last_modification_time="Tue, 02 Mar 2004 13:34:26 GMT"/>
 		</widget>
@@ -496,7 +496,6 @@
 		  <property name="label" translatable="yes">0</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButton0_pressed" last_modification_time="Tue, 02 Mar 2004 13:34:32 GMT"/>
 		  <signal name="released" handler="on_dtmfButton0_released" last_modification_time="Tue, 02 Mar 2004 13:34:36 GMT"/>
 		</widget>
@@ -517,7 +516,6 @@
 		  <property name="label" translatable="yes">#</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
-		  <property name="focus_on_click">True</property>
 		  <signal name="pressed" handler="on_dtmfButtonHash_pressed" last_modification_time="Tue, 02 Mar 2004 13:34:41 GMT"/>
 		  <signal name="released" handler="on_dtmfButtonHash_released" last_modification_time="Tue, 02 Mar 2004 13:34:45 GMT"/>
 		</widget>
@@ -566,7 +564,6 @@
 		      <property name="label" translatable="yes">+</property>
 		      <property name="use_underline">True</property>
 		      <property name="relief">GTK_RELIEF_NORMAL</property>
-		      <property name="focus_on_click">True</property>
 		      <signal name="clicked" handler="on_debugButton_clicked" last_modification_time="Wed, 23 Jun 2004 13:06:58 GMT"/>
 		      <accelerator key="d" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
 		    </widget>
@@ -673,11 +670,6 @@
 <widget class="GnomeAbout" id="about">
   <property name="border_width">5</property>
   <property name="destroy_with_parent">False</property>
-  <property name="decorated">True</property>
-  <property name="skip_taskbar_hint">False</property>
-  <property name="skip_pager_hint">False</property>
-  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="comments" translatable="yes">Shtoom, a VoIP client</property>
   <property name="authors">Anthony Baxter
 Itamar Shtull-Trauring
@@ -692,11 +684,6 @@ Jean-Paul Calderone</property>
   <property name="modal">True</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
-  <property name="decorated">True</property>
-  <property name="skip_taskbar_hint">False</property>
-  <property name="skip_pager_hint">False</property>
-  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="has_separator">True</property>
   <signal name="response" handler="on_acceptdialog_response" last_modification_time="Sat, 22 Nov 2003 20:45:45 GMT"/>
 
@@ -719,7 +706,6 @@ Jean-Paul Calderone</property>
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-6</property>
 	    </widget>
 	  </child>
@@ -734,7 +720,6 @@ Jean-Paul Calderone</property>
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
 	      <property name="response_id">-5</property>
 	    </widget>
 	  </child>

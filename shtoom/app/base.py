@@ -48,7 +48,7 @@ class BaseApplication:
         if lport is None:
             lport = 5060
         self.sipListener = reactor.listenUDP(lport, p)
-        listenport = self.sipListener.getHost().port
+        listenport = self.sipListener.getHost()[2]
         if lport == 0:
             self.getOptions().setValue('listenport', listenport, dynamic=True)
         log.msg('sip listener installed on %d'%(listenport), system='app')

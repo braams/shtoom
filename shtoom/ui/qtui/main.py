@@ -61,8 +61,8 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
 
     def callButton_clicked(self):
         sipURL = str(self.addressComboBox.currentText())
-        if not sipURL.startswith('sip:'):
-            sipURL = 'sip:'+ sipURL
+        sipURL = self.addrlookup.lookup(sipURL)
+        self.addressComboBox.setCurrentText(sipURL)
         self.addressComboBox.insertItem(QString(sipURL))
         self._newCallURL = sipURL
         self.callSelectionTab.setTabToolTip(self._newCallTab, QString(sipURL))

@@ -34,13 +34,15 @@ class ShtoomWindow(ShtoomBaseUI):
     def getLogger(self):
         return self.logger
 
+    def setaddress(self,sipurl):
+        self.address.entry.set_text(sipurl)
+
     # GUI callbacks
     def on_call_clicked(self, w):
         self.statusMessage("Calling...")
         sipURL = self.address.entry.get_text()
-        if not sipURL.startswith('sip:'):
-            sipURL = "sip:" + sipURL
-            self.address.entry.prepend_text("sip:")
+        sipURL = self.addrlookup.lookup(sipURL)
+        self.address.entry.set_text(sipURL)
         # Add the item to self.address.list ... argh gtk docs SUCK
         self.hangupButton.set_sensitive(1)
         self.callButton.set_sensitive(0)
@@ -48,7 +50,6 @@ class ShtoomWindow(ShtoomBaseUI):
         deferred = self.app.placeCall(sipURL)
         deferred.addCallbacks(self.callConnected, self.callFailed
                                                         ).addErrback(log.err)
-
     def on_hangup_clicked(self, w):
         self.app.dropCall(self.cookie)
         self.callButton.set_sensitive(1)
@@ -80,6 +81,11 @@ class ShtoomWindow(ShtoomBaseUI):
         from prefs import PreferencesDialog
         p = PreferencesDialog(self.xml.get_widget("callwindow"), self, self.app.getOptions())
         p.show()
+
+    def on_lookup_clicked(self, w):
+        from addressedit import AddressBook
+        self.addressedit = AddressBook(self)
+        self.addressedit.show()
 
     def on_quit_activate(self, widget):
         reactor.stop()
