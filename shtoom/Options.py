@@ -8,6 +8,9 @@ import os
 class OptionValueInvalid(Exception):
     pass
 
+class DuplicateOptionError(Exception):
+    pass
+
 class _NoDefaultOption: pass
 
 NoDefaultOption = _NoDefaultOption()
@@ -180,6 +183,7 @@ class OptionGroup(object):
         self._name = name
         self._description = description
         self._options = []
+        self._optdict = {}
         self._gui = gui
 
     def getGUI(self):
@@ -196,6 +200,10 @@ class OptionGroup(object):
             yield o
 
     def addOption(self, option):
+        n = option.getName()
+        if n in self._optdict:
+            raise DuplicateOptionError(n)
+        self._optdict[n] = option
         self._options.append(option)
 
     def buildOptParse(self, parser):
@@ -205,6 +213,7 @@ class OptionGroup(object):
 class AllOptions(object):
     def __init__(self):
         self._groups = []
+        self._groupdict = {}
         self._filename = None
         self._cached_options = {}
 
@@ -213,6 +222,15 @@ class AllOptions(object):
             yield g
 
     def addGroup(self, group):
+        n = group.getName()
+        if n in self._groupdict:
+            raise DuplicateOptionError(n)
+        # Ick. n^2 behaviour. Oh well, it's only at startup
+        for opt in group._optdict:
+            for g in self:
+                if opt in g._optdict:
+                    raise DuplicateOptionError(n)
+        self._groupdict[n] = group
         self._groups.append(group)
 
     def buildOptParse(self, parser):

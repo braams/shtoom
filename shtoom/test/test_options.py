@@ -29,16 +29,16 @@ class OptionsTests(unittest.TestCase):
         group = O.OptionGroup('testgroup', 'this is a test group')
         group.addOption(O.StringOption('test1', 'this is test1'))
         group.addOption(O.StringOption('test2', 'this is test2'))
-        # XXX This should fail with a DuplicateOptionError, but doesn't
-        group.addOption(O.StringOption('test1', 'this is a duplicate test1'))
+        dupe1 = O.StringOption('test1', 'this is a duplicate test1')
+        self.assertRaises(O.DuplicateOptionError, group.addOption, dupe1)
+
         all.addGroup(group)
         group2 = O.OptionGroup('testgroup', 'this is a duplicate')
-        # XXX This should fail with a DuplicateOptionError, but doesn't
-        all.addGroup(group2)
+        self.assertRaises(O.DuplicateOptionError, all.addGroup, group2)
         group3 = O.OptionGroup('testgroup2', 'a second group')
         group3.addOption(O.StringOption('test1', 'this is a duplicate test1'))
         # XXX This should fail with a DuplicateOptionError, but doesn't
-        all.addGroup(group3)
+        self.assertRaises(O.DuplicateOptionError, all.addGroup, group3)
 
     def test_booleanOptions(self):
         pass
