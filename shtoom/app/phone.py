@@ -48,7 +48,7 @@ class Phone(BaseApplication):
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
         l = self.getPref('logfile')
-        if l is not None:
+        if l:
             log.startLogging(open(l, 'aU'), setStdout=False)
         BaseApplication.boot(self)
 

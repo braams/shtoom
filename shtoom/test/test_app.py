@@ -20,12 +20,13 @@ class AppStartup(unittest.TestCase):
 
     def getMinimalOptions(self):
         from shtoom.Options import AllOptions, OptionGroup, \
-                StringOption, NumberOption
+                StringOption, NumberOption, BooleanOption
         o = AllOptions()
         o.no_config_file = True
         g = OptionGroup('whatever', 'some settings')
         g.addOption(StringOption('ui', 'whatever', 'tk'))
-        g.addOption(StringOption('no_config_file', 'whatever', True))
+        g.addOption(BooleanOption('no_config_file', 'whatever', True))
+        g.addOption(StringOption('logfile', 'whatever', ''))
         g.addOption(NumberOption('listenport', 'port', 0))
         o.addGroup(g)
         return o
