@@ -60,7 +60,7 @@ class BacklogPlayout(_Playout):
         if not isinstance(bytes, basestring):
             raise ValueError("playout got %s instead of bytes"%(type(bytes)))
 
-        if self.expect_seq == None:
+        if self.expect_seq is None:
             self.expect_seq = packet.header.seq # First packet. Initialize seq
 
         backlog = len(self.queue)
@@ -106,5 +106,7 @@ class BacklogPlayout(_Playout):
         return '\0'*320
 
 
-#Playout = BrainDeadPlayout
-Playout = BacklogPlayout
+Playout = BrainDeadPlayout
+# BacklogPlayout is causing audio to "just die" for people a couple of
+# minutes into the call. XXX to fix
+#Playout = BacklogPlayout
