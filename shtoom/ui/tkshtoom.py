@@ -1,6 +1,6 @@
 
 # Copyright (C) 2004 Anthony Baxter
-# $Id: tkshtoom.py,v 1.4 2004/01/14 14:44:54 anthonybaxter Exp $
+# $Id: tkshtoom.py,v 1.5 2004/03/01 13:15:28 anthony Exp $
 #
 
 
@@ -24,7 +24,7 @@ def main(application):
     tksupport.install(UI.getMain())
     UI.connectApplication(application)
     print "UI done"
-    log.startLogging(sys.stdout)
+    log.startLogging(UI.getLogger())
     return UI
 
 

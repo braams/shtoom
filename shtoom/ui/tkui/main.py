@@ -11,6 +11,7 @@ from shtoom.exceptions import CallRejected
 #        
 #        Dialog.__init(self, parent, 'Authentication Required')
         
+from shtoom.ui.logo import b64logo
 
 class ShtoomMainWindow(ShtoomBaseUI):
     def __init__(self):
@@ -20,34 +21,72 @@ class ShtoomMainWindow(ShtoomBaseUI):
         # also do hangup, shutdown reactor, &c
         self.main.protocol("WM_DELETE_WINDOW", self.shutdown)
         self._top1 = Frame(self.main)
-        self._top1.pack(side=TOP, fill=X)
+        self._top1.grid(row=1, column=1, sticky=NW)
         self._label1 = Label(self._top1, text='SIP:')
-        self._label1.pack(side=LEFT)
+        self._label1.grid(row=1,column=1, sticky=W)
         self._urlentry = Entry(self._top1, width=60)
-        self._urlentry.pack(side=LEFT)
+        self._urlentry.grid(row=1, column=2, columnspan=4, sticky=W)
         self._urlentry.bind('<Return>', self.callButton_clicked)
         self._urlentry.focus_set()
-        self._top2 = Frame(self.main)
-        self._top2.pack(side=TOP, fill=X)
-        self._callButton = Button(self._top2, text="Call",
+        self._prefButton = Button(self._top1, text="Prefs",
+                                  command=self.prefButton_clicked)
+        self._prefButton.grid(row=1, column=6, sticky=E)
+        self._img = PhotoImage(data=b64logo)
+        self._logo = Label(self._top1, image=self._img)
+        self._logo.grid(row=1, column=7, rowspan=2, sticky=NE)
+
+        self._top3 = Frame(self._top1)
+        self._callButton = Button(self._top3, text="Call",
                                   command=self.callButton_clicked)
-        self._callButton.pack(side=LEFT)
-        self._hangupButton = Button(self._top2, text="Hang up",
+        self._callButton.grid(row=1, column=1, sticky=NW) 
+        self._hangupButton = Button(self._top3, text="Hang up",
                                     command=self.hangupButton_clicked,
                                     state=DISABLED)
-        self._hangupButton.pack(side=LEFT)
-        self._prefButton = Button(self._top2, text="Prefs",
-                                  command=self.prefButton_clicked)
-        self._prefButton.pack(side=RIGHT)
+        self._hangupButton.grid(row=1, column=2, sticky=NW) 
+        self._top3.grid(row=2,column=1,columnspan=2, sticky=NW)
+        self._statusF = Frame(self._top1)
+        self._statusL = Label(self._statusF, text="Status:")
+        self._statusL.grid(column=1,row=1,sticky=W)
+        self._statusW = Label(self._statusF, text="")
+        self._statusW.grid(column=2,row=1,sticky=W)
+        self._statusF.grid(row=2, column=3, columnspan=3, sticky=W)
+
+        self._top2 = Frame(self.main)
+        self._buttonF = Frame(self._top2)
+        self._dtmfbuttons = {}
+        for row, dtmfs in enumerate(( ( '1', '2', '3' ), 
+                                      ( '4', '5', '6' ), 
+                                      ( '7', '8', '9' ), 
+                                      ( '*', '0', '#' ))):
+            for col, dtmf in enumerate(dtmfs):
+                button = Button(self._buttonF, text=dtmf, padx=4, pady=2)
+                button.bind('<1>', lambda e, d=dtmf: self.startDTMF(d) )
+                button.bind('<ButtonRelease-1>', lambda e, d=dtmf: self.stopDTMF(d) )
+                button.grid(row=row+1, column=col+1, sticky=NW)
+                self._dtmfbuttons[dtmf] = button
+        self._buttonF.grid(row=1,column=1, sticky=NW)
+        self._debugText = Text(self._top2, width=80, height=7, wrap='char')
+        self._debugText.grid(row=1,column=2, sticky=NW)
+        self._top2.grid(row=3,column=1, columnspan=6,sticky=NW)
+        
+
+    def startDTMF(self, key):
+        if self.cookie:
+            self.app.startDTMF(self.cookie, key)
+
+    def stopDTMF(self, key):
+        if self.cookie:
+            self.app.stopDTMF(self.cookie, key)
 
     def getMain(self):
         return self.main
 
     def debugMessage(self, msg):
-        print msg
+        self._debugText.insert('end', msg+'\n')
+        self._debugText.yview('end')
 
     def statusMessage(self, msg):
-        print "status", msg
+        self._statusW.configure(text=msg)
 
     def errorMessage(self, message, exc=None):
         log.msg("error %s"%(message))
@@ -110,3 +149,16 @@ class ShtoomMainWindow(ShtoomBaseUI):
 
     def updateOptions(self, od):
         self.app.updateOptions(od)
+
+    def getLogger(self):
+        return Logger(self._debugText)
+
+class Logger:
+    def __init__(self, textwidget):
+        self._t = textwidget
+    def flush(self):
+        pass
+    def write(self, text):
+        self._t.insert('end', msg+'\n')
+        self._t.yview('end')
+
