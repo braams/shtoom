@@ -1,7 +1,8 @@
+
 Before 0.1:
-    - Fix problem of call close closing the audio device (and not allowing
-      it to be re-opened)
+    - stdio UI
     - Test and fix Windows audio
+    - Hook up GSM codec
     - Finish Tkinter GUI
     - Re-hookup the debugging log to the GUI
     - Integrate existing RTCP code
