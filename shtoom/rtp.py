@@ -7,7 +7,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.31 2004/02/25 16:16:50 anthony Exp $
+# $Id: rtp.py,v 1.32 2004/03/01 10:55:18 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -40,9 +40,6 @@ class RTPProtocol(DatagramProtocol):
         use_setitimer = 0
     use_setitimer = 0
     _cbDone = None
-    collectStats = 0
-    statsIn = []
-    statsOut = []
     PT_pcmu = rtpPTDict[('PCMU', 8000, 1)]
     PT_gsm = rtpPTDict[('GSM', 8000, 1)]
 
@@ -207,19 +204,11 @@ class RTPProtocol(DatagramProtocol):
         reactor.wakeUp()
 
     def datagramReceived(self, datagram, addr, unpack=struct.unpack):
-        if self.collectStats:
-            t = time()
-            self.statsIn.append(str(int((t-self.prevInTime)*1000)))
-            self.prevInTime = t
-            if len(self.statsIn) == 100:
-                print "Input", " ".join(self.statsIn)
-                self.statsIn = []
         hdr = struct.unpack('!BBHII', datagram[:12])
         # Don't care about the marker bit.
         PT = hdr[1]&127
         data = datagram[12:]
         self.app.receiveRTP(self.cookie, PT, data)
-
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
@@ -263,6 +252,7 @@ class RTPProtocol(DatagramProtocol):
         return int(hex[:bits//4],16)
 
     def nextpacket(self, n=None, f=None, pack=struct.pack):
+        tt = time()
         if self.Done:
             self.LC.stop()
             if self.use_setitimer:
@@ -278,19 +268,11 @@ class RTPProtocol(DatagramProtocol):
             # done, the first two bytes will change (but should be mostly
             # constant across a RTP session).
             hdr = pack('!BBHII', 0x80|fmt, 0x0, self.seq, self.ts, self.ssrc)
-            t = time()
             self.transport.write(hdr+sample, self.dest)
             self.sample = None
         else:
             if (self.packets - self.sent) %10 == 0:
                 print "skipping audio, %s/%s sent"%(self.sent, self.packets)
-        if self.collectStats:
-            t = time()
-            self.statsOut.append(str(int((t-self.prevOutTime)*1000)))
-            self.prevOutTime = t
-            if len(self.statsOut) == 100:
-                print "Output", " ".join(self.statsOut)
-                self.statsOut = []
         self.seq += 1
         self.ts += 160
         try:
@@ -301,6 +283,8 @@ class RTPProtocol(DatagramProtocol):
         if (self.sample is not None) and (len(self.sample) == 0):
             print "And we're done!"
             self.Done = 1
+        tt = (time() - tt) * 1000
+        #print "timing: %.3fms"% ( tt )
 
     def startDTMF(self, digit):
         print "start sending %s"%digit
