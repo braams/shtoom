@@ -3,6 +3,8 @@
 """Tests for shtoom.defcache.
 """
 
+from twisted.internet import defer
+
 from shtoom.defcache import DeferredCache
 
 class Dectest:
