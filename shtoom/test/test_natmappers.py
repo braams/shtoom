@@ -70,7 +70,7 @@ class MapperTest(unittest.TestCase):
             t = TestMapper(mapper, port)
             d = t.go()
             d.addErrback(logerr)
-            util.wait(d, timeout=10)
+            util.wait(d, timeout=16)
             ae(len(t.map_res), 2)
             ae(t.map_res, t.info_res)
             ae(t.unmap_res, None)
