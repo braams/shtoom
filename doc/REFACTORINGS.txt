@@ -89,3 +89,11 @@ except:
     _removeModule('foobarbaz')
 
 
+Doug: Leg Refactoring
+---------------------
+
+A bunch of the logic in voiceapp needs to move out to the legs. 
+This is needed to allow multiple legs in a call (e.g. inbound and
+outbound legs). This also gives me an opportunity to refactor and
+unit test a lot of the code. Excellent!
+
