@@ -11,7 +11,7 @@ from twisted.internet import reactor, defer
 from twisted.python.failure import Failure
 
 from shtoom.doug.events import Event, CallStartedEvent
-from shtoom.doug.voiceapp import VoiceApp
+from shtoom.doug.statemachine import StateMachine
 from shtoom.doug.exceptions import *
 
 class DummyEvent1(Event): pass
@@ -19,7 +19,7 @@ class DummyEvent2(Event): pass
 class DummyEvent2_1(DummyEvent2): pass
 class DummyEvent2_2(DummyEvent2): pass
 
-class StateMachineOne(VoiceApp):
+class StateMachineOne(StateMachine):
     def __init__(self, defer, **kwargs):
         self._out = []
         super(StateMachineOne, self).__init__(defer, **kwargs)
