@@ -13,6 +13,51 @@ from twisted.python import log
 
 from shtoom.multicast.SDP import rtpPTDict
 
+class NTE:
+    "An object representing an RTP NTE"
+    def __init__(self, key, startTS):
+        self.startTS = startTS
+        self.ending = False
+        self.counter = 3
+        self.key = key
+        if key >= '0' and key <= '9':
+            self._payKey = chr(int(key))
+        elif key == '*':
+            self._payKey = chr(10)
+        elif key == '#':
+            self._payKey = chr(11)
+        elif key >= 'A' and key <= 'D':
+            # A - D are 12-15
+            self._payKey = chr(ord(key)-53)
+
+    def getKey(self):
+        return self.key
+
+    def end(self):
+        self.ending = True
+        self.counter = 3
+
+    def getPayload(self, ts):
+        if self.counter > 0:
+            if self.ending:
+                end = 128
+            else:
+                end = 0
+            payload = self._payKey + chr(10|end) + struct.pack('!H', ts - self.startTS)
+            self.counter -= 1
+            return payload
+        else:
+            return None
+
+    def isDone(self):
+        if self.ending and self.counter < 1:
+            return True
+        else:
+            return False
+
+    def __repr__(self):
+        return '<NTE %s%s>'%(self.key, self.ending and ' (ending)')
+
 
 class RTPProtocol(DatagramProtocol):
     """Implementation of the RTP protocol.
@@ -29,6 +74,7 @@ class RTPProtocol(DatagramProtocol):
     def __init__(self, app, cookie, *args, **kwargs):
         self.app = app
         self.cookie = cookie
+        self._pendingDTMF = []
         #DatagramProtocol.__init__(self, *args, **kwargs)
 
     def createRTPSocket(self, locIP, needSTUN=False):
@@ -234,6 +280,15 @@ class RTPProtocol(DatagramProtocol):
         ts = ts & (2**32 - 1)
         return ts
 
+    def startDTMF(self, digit):
+        print "startSending", digit
+        self._pendingDTMF.append(NTE(digit, self.ts))
+
+    def stopDTMF(self, digit):
+        print "stopSending", digit
+        if self._pendingDTMF[-1].getKey() == digit:
+            self._pendingDTMF[-1].end()
+        
     def genRandom(self, bits):
         """Generate up to 128 bits of randomness."""
         if os.path.exists("/dev/urandom"):
@@ -247,12 +302,12 @@ class RTPProtocol(DatagramProtocol):
         return int(hex[:bits//4],16)
 
     def nextpacket(self, n=None, f=None, pack=struct.pack):
-        tt = time()
         if self.Done:
             self.LC.stop()
             if self._cbDone:
                 self._cbDone()
             return
+        self.ts += 160
         self.packets += 1
         if self.sample is not None and self.sample[1] is not None:
             fmt, sample = self.sample
@@ -263,21 +318,21 @@ class RTPProtocol(DatagramProtocol):
         else:
             if (self.packets - self.sent) %10 == 0:
                 hdr = struct.pack('!BBHII', 0x80, 13, self.seq, self.ts, self.ssrc)
+                self.transport.write(hdr+chr(0), self.dest)
         self.seq += 1
-        self.ts += 160
+        # Now send any pending DTMF keystrokes
+        if self._pendingDTMF:
+            payload = self._pendingDTMF[0].getPayload(self.ts)
+            print "dtmf", self._pendingDTMF
+            if payload:
+                # XXX Hack. telephone-event isn't always 101!
+                hdr = struct.pack('!BBHII', 0x80, 101, self.seq, self.ts, self.ssrc)
+                self.transport.write(hdr+payload, self.dest)
+                self.seq += 1
+                if self._pendingDTMF[0].isDone():
+                    self._pendingDTMF = self._pendingDTMF[1:]
         try:
             self.sample = self.app.giveRTP(self.cookie)
         except IOError:
             pass
 
-        if 0 and (self.sample is not None) and (len(self.sample) == 0):
-            print "And we're done!"
-            self.Done = 1
-        tt = (time() - tt) * 1000
-        #print "timing: %.3fms"% ( tt )
-
-    def startDTMF(self, digit):
-        print "start sending %s"%digit
-
-    def stopDTMF(self, digit):
-        print "stop sending %s"%digit
