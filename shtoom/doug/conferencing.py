@@ -43,13 +43,17 @@ class Room:
         self._audioIn = {}
         self._audioOut = {}
         self._audioOutDefault = ''
-        self._audioCalcLoop = LoopingCall(self.mixAudio)
         self._maxSpeakers = MaxSpeakers
+        self._audioCalcLoop = LoopingCall(self.mixAudio)
+        self._audioCalcLoop.start(0.020)
 
     def shutdown(self):
-        self._audioCalcLoop.cancel()
+        if hasattr(self._audioCalcLoop, 'cancel'):
+            self._audioCalcLoop.cancel()
+        else:
+            self._audioCalcLoop.stop()
         # XXX close down any running sources!
-        del self._members
+        self._members = Set()
         del self._audioIn
         del self._audioOut
 
@@ -57,7 +61,8 @@ class Room:
         self._members.add(confsource)
 
     def removeMember(self, confsource):
-        self._members.remove(confsource)
+        if len(self._members) and confsource in self._members:
+            self._members.remove(confsource)
         if not len(self._members):
             self.shutdown()
 
@@ -84,7 +89,10 @@ class Room:
         # not a speaker in the room.
         samples = [ x[1] for x in power[:self._maxSpeakers] ]
         divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples ]
-        out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+        if divsamples:
+            out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+        else:
+            out = ''
         self._audioOutDefault = out
 
         # Now calculate output for each speaker.
@@ -100,8 +108,11 @@ class Room:
             power = all.values()
             power.sort() ; power.reverse()
             samples = [ x[1] for x in power[:self._maxSpeakers] ]
-            divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples ]
-            out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+            if samples:
+                divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples]
+                out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+            else:
+                out = ''
             self._audioOut[speaker] = out
         self._audioIn = {}
 
