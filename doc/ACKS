@@ -6,6 +6,7 @@ remind me. <wink>
     Amir Bakhtiar - much patient debugging, hosting for the project, advice
     Jp Calderone - LoopingCall, debugging, bug fixes
     Johan Dahlin - much Gtk/Gnome clue
+    David Ferlier - doug statemachine work
     Phil Frost - bug fixes
     Travis Hartwell - improvements to the Gtk/Gnome UI
     James Henstridge - Much Gtk/Gnome clue

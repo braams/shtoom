@@ -1,6 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - doug statemachine change: a state can return a deferred. Events
+    during this deferred are queued up to be triggered after the deferred
+    is finished.
   - refactoring the call setup code to suck much less
   - Universal Plug n Play support. This works with Microsoft Internet
     Connection Sharing and many off-the-shelf firewalls.
