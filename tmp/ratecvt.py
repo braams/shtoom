@@ -8,6 +8,7 @@ import numarray, ossaudiodev, time, audioop
 
 HZ = 44100
 OUTHZ = 8000
+SAMPLESIZE = 1024
 
 class SineGenerator:
     freq = 440.0
@@ -16,8 +17,8 @@ class SineGenerator:
     def callback(self, buffer):
         from math import sin
         offset = self.offset
-        self.offset += 512
-        for frame in xrange(512):
+        self.offset += SAMPLESIZE
+        for frame in xrange(SAMPLESIZE):
             v = 0.5 * sin(3.1415*self.freq/HZ*(frame+offset))
             # Stereo
             buffer[2*frame] = v
@@ -41,28 +42,28 @@ class CoreAudioConverter:
 
     def fromStdFmt(self, buffer):
         from numarray import fromstring, Int16, Float32
-        buffer = audioop.stereo(buffer, 2, 1, 1)
+        b = audioop.tostereo(buffer, 2, 1, 1)
         b, self.fromstate = audioop.ratecv(b, 2, 2, OUTHZ, HZ, self.fromstate)
-        buffer = fromstring(x, Int16)
-        buffer = buffer.astype(Float32)
-        buffer = ( buffer + 32768/2 ) / self.SCALE
-        return buffer
+        b = fromstring(b, Int16)
+        b = b.astype(Float32)
+        b = ( b + 32768/2 ) / self.SCALE
+        return b
         
 
 
 def main():
-    buffer = numarray.array([0.0]*1024)
+    buffer = numarray.array([0.0]*SAMPLESIZE*2)
     dev = ossaudiodev.open('w')
     dev.speed(OUTHZ)
     dev.nonblock()
     dev.channels(1)
     dev.setfmt(ossaudiodev.AFMT_S16_LE)
     sine = SineGenerator()
-    cvt = MacConverter()
+    cvt = CoreAudioConverter()
     while True:
         # get more audio
         sine.callback(buffer)
-        out = cvt.cvt(buffer)
+        out = cvt.toStdFmt(cvt.fromStdFmt(cvt.toStdFmt(buffer)))
         dev.write(out)
 
 if __name__ == "__main__":
