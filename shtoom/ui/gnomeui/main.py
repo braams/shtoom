@@ -142,7 +142,7 @@ class Incoming:
             self.main.callButton.set_sensitive(0)
             self.main.address.set_sensitive(0)
             self.main.acceptDialog.hide()
-            self.deferredResponse.callback('yes')
+            self.deferredResponse.callback(self.cookie)
         else:
             self.main.acceptDialog.hide()
             self.deferredResponse.errback(CallRejected)

@@ -26,8 +26,8 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         from twisted.internet import reactor
         reactor.stop()
 
-    def incomingCall(self, description, call, defresp, defsetup):
-        self._pending = ( call, defresp, defsetup )
+    def incomingCall(self, description, cookie, defresp):
+        self._pending = ( cookie, defresp )
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
 
@@ -95,7 +95,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         self._cookie, resp, setup = self._pending
         self._pending = None
         setup.addCallbacks(self.callConnected, self.callFailed).addErrback(log.err)
-        resp.callback('yes')
+        resp.callback(self._cookie)
 
     def cmd_reject(self, line):
         if not self._pending:

@@ -51,7 +51,7 @@ class BaseApplication:
         del self.sip
         del self.sipListener
 
-    def acceptCall(self, callcookie, calldesc):
+    def acceptCall(self, call, **calldesc):
         raise NotImplementedError
 
     def startCall(self, callcookie, cb):

@@ -8,16 +8,17 @@ class ApplicationSIPInterface(Interface):
        the SIP layer uses.
     """
 
-    def acceptCall(self, **calldesc):
+    def acceptCall(self, call, **calldesc):
         """ Setup a new call. 
             calldesc describes the new call, it's a dictionary with the 
             following entries:
                 calltype : 'outbound' or 'inbound'
 
-            Returns  (callcookie,deferred) - .callback() will be invoked if 
+            Returns  deferred - .callback() will be invoked if 
             the call is to be accepted, or .errback() if the call is to be 
-            rejected.  'callcookie' is a unique identifier used for all 
-            dealings with the Application in the future about this call.
+            rejected.  The callback will return the callcookie - callcookie 
+            is a unique identifier used for all dealings with the Application 
+            in the future about this call.
         """
 
     def startCall(self, callcookie, cb):

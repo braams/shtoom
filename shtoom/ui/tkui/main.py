@@ -158,7 +158,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         if answer:
             self.cookie = cookie
             self._callButton.config(state=DISABLED)
-            defresp.callback('yes')
+            defresp.callback(cookie)
         else:
             defresp.errback(CallRejected)
 

@@ -96,18 +96,17 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def preferences_discard(self):
         self.prefs.hide()
 
-    def incomingCall(self, description, call, defresp):
+    def incomingCall(self, description, cookie, defresp):
         from shtoom.exceptions import CallRejected
         accept = QMessageBox.information(self, 'Shtoom',
                 'Incoming Call: %s\nAnswer?'%description,
                 'Yes', 'No', '', 0, 1)
         print "accept is", accept
         if accept == 0:
-            self.cookie = call
+            self.cookie = cookie
             self.callButton.setEnabled(False)
-            defresp.callback('yes')
+            defresp.callback(cookie)
         else:
-            # BOGUS
             defresp.errback(CallRejected)
 
     def dtmfButtonHash_pressed(self):

@@ -90,7 +90,7 @@ class RTPProtocol(DatagramProtocol):
             self._extIP = locIP
             d = self._socketCompleteDef
             del self._socketCompleteDef
-            d.callback((locIP, rtpPort))
+            d.callback(self.cookie)
         else:
             # If the NAT is doing port translation as well, we will just
             # have to try STUN and hope that the RTP/RTCP ports are on
@@ -156,7 +156,7 @@ class RTPProtocol(DatagramProtocol):
                 self._stunAttempts = 0
                 d = self._socketCompleteDef
                 del self._socketCompleteDef
-                d.callback(rtp)
+                d.callback(self.cookie)
 
     def whenDone(self, cbDone):
         self._cbDone = cbDone

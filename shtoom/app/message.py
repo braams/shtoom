@@ -60,18 +60,18 @@ class Message(BaseApplication):
 	print "ACCEPTED", self._calls.keys()
         self.openAudioDevice(cookie)
         d.addCallback(lambda x: self._createRTP(cookie,
-                                                calldesc['fromIP'],
+                                                calldesc['localIP'],
                                                 calldesc['withSTUN']))
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
-            d.callback('')
+            d.callback(cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
             log.msg("accepting incoming call from %s"%calldesc['desc'])
-            d.callback('ok')
+            d.callback(cookie)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
-        return cookie, d
+        return d
 
     def _createRTP(self, cookie, fromIP, withSTUN):
         from shtoom.rtp import RTPProtocol

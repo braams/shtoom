@@ -61,8 +61,8 @@ class RTP(Interface):
         """ Create an RTP instance. The RTP object should use the 'cookie'
             for calls back into the Application (to request data, for instance)
         """
-    def createRTPSocket(self, fromIP, withSTUN):
-        """ Create the RTP socket. Use 'fromIP' as this end's IP address
+    def createRTPSocket(self, localIP, withSTUN):
+        """ Create the RTP socket. Use 'localIP' as this end's IP address
             (note that it may be a different address to the system's - it's
             the externally visible address, as reported by STUN. If 
             withSTUN is true, use STUN to discover the external port numbers

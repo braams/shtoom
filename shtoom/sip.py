@@ -135,7 +135,7 @@ class Call(object):
             if not self._callID:
                 self.setCallID()
             self.sip.updateCallObject(self, self.getCallID())
-            self.setupDeferred.callback((host,port))
+            self.setupDeferred.callback((self._localIP, self._localPort))
         else:
             # None. STUN stuff failed. Abort.
             from shtoom.exceptions import HostNotKnown
@@ -168,7 +168,9 @@ class Call(object):
     def getRemoteSIPAddress(self):
         return (self.remote.host, (self.remote.port or 5060))
 
-    def acceptedCall(self, junk):
+    def acceptedCall(self, cookie):
+        print "acceptedCall setting cookie to", cookie
+        self.cookie = cookie
         self.sendResponse(self._invite, 200)
         self.setState('INVITE_OK')
 
@@ -231,7 +233,7 @@ class Call(object):
             resp.addHeader('content-length', 0)
         resp.creationFinished()
         try:
-            self.sip.transport.write(resp.toString(), self.getRemoteSIPAddress())
+            self.sip.transport.write(resp.toString(),self.getRemoteSIPAddress())
             self.sip.app.debugMessage("Response sent\n"+resp.toString())
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
@@ -244,7 +246,8 @@ class Call(object):
         # XXX Set up a timeout for the call completion
         uri = tpsip.parseURL(toAddr)
         d = self.setupLocalSIP(uri=uri)
-        d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)).addErrback(log.err)
+        d.addCallback(lambda x:self.startSendInvite(toAddr, init=1)
+                                                        ).addErrback(log.err)
 
 
     def startInboundCall(self, invite):
@@ -256,17 +259,15 @@ class Call(object):
         else:
             name,uri,params =  tpsip.parseAddress(invite.headers['from'][0])
             desc = "From: %s %s" %(name,uri)
-        self.cookie, defaccept = \
-                    self.sip.app.acceptCall(self,
-                                            calltype='inbound',
-                                            desc=desc,
-                                            fromIP=self.getRemoteSIPAddress()[0],
-                                            withSTUN=self.getSTUNState() ,
-                                            toAddr=invite.headers.get('to'),
-                                            fromAddr=invite.headers.get('from'),
+        d = self.sip.app.acceptCall(self,
+                                    calltype='inbound',
+                                    desc=desc,
+                                    localIP=self.getRemoteSIPAddress()[0],
+                                    withSTUN=self.getSTUNState() ,
+                                    toAddr=invite.headers.get('to'),
+                                    fromAddr=invite.headers.get('from'),
                                            )
-        defaccept.addCallbacks(self.acceptedCall, self.rejectCall).addErrback(
-                                                                        log.err)
+        d.addCallbacks(self.acceptedCall, self.rejectCall).addErrback(log.err)
         #self.app.incomingCall(subj, call, defaccept, defsetup)
 
     def recvInvite(self, invite):
@@ -291,18 +292,20 @@ class Call(object):
     def startSendInvite(self, toAddr, init=0):
         print "startSendInvite", init
         if init:
-            print "ok"
-            cookie, d = self.sip.app.acceptCall(self,
-                                            calltype='outbound', 
-                                            fromIP=self.getLocalSIPAddress()[0],
-                                            withSTUN=self.getSTUNState(),
-                                                )
-            self.cookie = cookie
-            d.addCallback(lambda x:self.sendInvite(toAddr, init=init)).addErrback(log.err)
+            d = self.sip.app.acceptCall(self,
+                                        calltype='outbound', 
+                                        localIP=self.getLocalSIPAddress()[0],
+                                        withSTUN=self.getSTUNState(),
+                                        )
+            d.addCallback(lambda x:self.sendInvite(toAddr, cookie=x, init=init)
+                                                        ).addErrback(log.err)
         else:
             self.sendInvite(toAddr, init=0)
 
-    def sendInvite(self, toAddr, auth=None, authhdr=None, init=0):
+    def sendInvite(self, toAddr, cookie=None, auth=None, authhdr=None, init=0):
+        if cookie:
+            print "sendinvite setting cookie to", cookie
+            self.cookie = cookie
         if self.getState() == "ABORTED":
             d = self.compDef
             del self.compDef

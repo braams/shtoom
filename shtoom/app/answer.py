@@ -41,16 +41,16 @@ class AnsweringMachine(Message):
         cookie = self.getCookie()
         self.openAudioDevice(cookie, toAddress, fromAddress)
         d.addCallback(lambda x: self._createRTP(cookie,
-                                                calldesc['fromIP'],
+                                                calldesc['localIP'],
                                                 calldesc['withSTUN']))
         self._calls[cookie] = call
         if calltype == 'inbound':
             # Otherwise we chain callbacks
             log.msg("accepting incoming call from %s"%calldesc['desc'])
-            d.callback('ok')
+            d.callback(cookie)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
-        return cookie, d
+        return d
 
     def openAudioDevice(self, callcookie, toAddress, fromAddress):
         import os, os.path

@@ -59,26 +59,26 @@ class Phone(BaseApplication):
         calltype = calldesc.get('calltype')
         d = defer.Deferred()
         d.addCallback(lambda x: self._createRTP(cookie,
-                                                calldesc['fromIP'],
+                                                calldesc['localIP'],
                                                 calldesc['withSTUN']))
         cookie = self.getCookie()
         self._calls[cookie] = call
         if calltype == 'outbound':
             # Outbound call, trigger the callback immediately
             self.ui.callStarted(cookie)
-            d.callback('')
+            d.callback(cookie)
         elif calltype == 'inbound':
             # Otherwise we chain callbacks
             self.ui.incomingCall(calldesc['desc'], cookie, d)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
-        return cookie, d
+        return d
 
-    def _createRTP(self, cookie, fromIP, withSTUN):
+    def _createRTP(self, cookie, localIP, withSTUN):
         from shtoom.rtp import RTPProtocol
         rtp = RTPProtocol(self, cookie)
         self._rtp[cookie] = rtp
-        d = rtp.createRTPSocket(fromIP,withSTUN)
+        d = rtp.createRTPSocket(localIP,withSTUN)
         return d
 
     def selectFormat(self, callcookie, rtpmap):
