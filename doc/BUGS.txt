@@ -140,5 +140,14 @@ openDev
             dev = ossaudiodev.open('rw')
         exceptions.IOError: [Errno 16] Device or resource busy: '/dev/dsp'
         
+name: dropcall in state 'SENT_RINGING' not handled
+to reproduce: Make a call. Wait until in state 180: Ringing. On the other end, reject the call.
+details:
+[02:51] 	<fezzae>	2004/11/10 02:51 PST [-] dropcall in state 'SENT_RINGING'
+[02:52] 	<fezzae>	but the other side still says 180: Ringing
+[02:58] 	<fezzae>	the 'SENT_RINGING' state isn't handled
+[02:58] 	*	fezzae adds it to the 'SENT_INVITE' tuple and sees
+[02:58] 	<`anthony>	not sure whether you're meant to send back a BYE or a CANCEL in that state.
+[03:00] 	<fezzae>	ah.
 
 
