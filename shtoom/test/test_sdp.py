@@ -1,8 +1,15 @@
+"""Tests for SDP.
+
+You can run this with command-line:
+
+  $ trial shtoom.test.test_sdp
+"""
+
+from twisted.trial import unittest
 
 
-from unittest import TestCase, TestSuite, main, makeSuite
-
-class SDPGeneration(TestCase):
+class SDPGeneration(unittest.TestCase):
+    
     def testSimpleSDP(self):
         from shtoom.multicast.SDP import SDP, SimpleSDP
         s = SimpleSDP()
@@ -19,15 +26,3 @@ class SDPGeneration(TestCase):
         ae(sdpout.formats, [0,3])
         ae(sdpout.media, 'audio')
         ae(sdpout.transport, 'RTP/AVP')
-        
-
-
-
-def test_suite():
-    return TestSuite((
-        makeSuite(SDPGeneration),
-        ))
-
-if __name__ == '__main__':
-    main(defaultTest='test_suite')
-

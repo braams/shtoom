@@ -1,4 +1,4 @@
-#
+# -*- test-case-name: shtoom.test.test_sdp -*-#
 #
 # Copyright (c) 1998 Anthony Baxter.
 #
