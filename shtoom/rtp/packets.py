@@ -6,11 +6,6 @@
 import struct, random, os, md5, socket
 from time import sleep, time
 
-from twisted.internet import defer
-from twisted.internet.protocol import DatagramProtocol
-from twisted.internet.task import LoopingCall
-from twisted.python import log
-
 class RTPPacket:
     "An RTPPacket contains RTP data to/from the RTP object"
     def __init__(self, pt, data, ts, marker=0):
