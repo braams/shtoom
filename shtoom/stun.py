@@ -190,10 +190,12 @@ class RFC1918Stun:
                   NetAddress('172.16/12'), 
                   NetAddress('192.168/16'), 
                   NetAddress('127/8') )
+    localhost = NetAddress('127/8')
 
     def checkStun(self, localip, remoteip):
         localIsRFC1918 = False
         remoteIsRFC1918 = False
+        remoteIsLocalhost = False
         # Yay. getPeer() returns a name, not an IP
         # Since (according to radix), I should use "a non-existant 
         # high-level interface to twisted.names.client", and I have
@@ -203,7 +205,7 @@ class RFC1918Stun:
         if remoteip[0] not in '0123456789':
             import socket
             ai = socket.getaddrinfo(remoteip, None)
-            remoteips = [x[4][1] for x in ai]
+            remoteips = [x[4][0] for x in ai]
         else:
             remoteips = [remoteip,]
         for net in self.addresses:
@@ -215,7 +217,9 @@ class RFC1918Stun:
             for remoteip in remoteips:
                 if remoteip in net:
                     remoteIsRFC1918 = True
-        if localIsRFC1918 and not remoteIsRFC1918:
+                if remoteip in self.localhost:
+                    remoteIsLocalhost = True
+        if localIsRFC1918 and not (remoteIsRFC1918 or remoteIsLocalhost):
             return True
         else:
             return False
