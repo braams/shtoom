@@ -143,6 +143,7 @@ class Phone(BaseApplication):
         ipaddr = md.ipaddr or remoteSDP.ipaddr
         remoteAddr = (ipaddr, md.port)
         if not self._currentCall:
+            print "self._audio", self._audio
             self._audio.reopen()
         log.msg("call Start %r %r"%(callcookie, remoteAddr))
         self._rtp[callcookie].startSendingAndReceiving(remoteAddr)

@@ -1,67 +1,48 @@
-"""Find appropriate audio device and expose via getAudioDevice().
-
-getAudioDevice() accepts either 'r', 'w' or 'rw' as arguments,
-and result will implement shtoom.audio.interfaces.IAudioReader
-and/or IAudioWriter, as appropriate.
+"""
 """
 
-def findAudioDevice(audioPref, audioFiles=None):
-    attempts = ( tryOssAudio, tryFastAudio,  tryCoreAudio, )
-    if audioFiles is not None:
-        attempts = ( tryFileAudio, )
-    elif audioPref:
-        if audioPref == 'oss':
-            attempts = (tryOssAudio,)
-        elif audioPref in ( 'fast', 'port' ):
-            attempts = (tryFastAudio,)
-        elif audioPref == 'core':
-            attempts = (tryCoreAudio,)
+from shtoom.avail import audio as av_audio
+from twisted.python import log
+from shtoom.audio.converters import MediaLayer
+
+audioOptions = { 'oss': av_audio.ossaudio,
+                 'fast': av_audio.fastaudio,
+                 'port': av_audio.fastaudio,
+                 'osx': av_audio.osxaudio,
+                 'core': av_audio.osxaudio,
+                 'file': av_audio.fileaudio,
+               }
+
+allAudioOptions = [ av_audio.ossaudio, av_audio.fastaudio, av_audio.osxaudio ]
+
+
+def findAudioInterface():
+    from __main__ import app
+    audioPref = attempts = None
+
+    if app is not None:
+        files = app.getPref('audio_infile') or app.getPref('audio_outfile')
+        if files is not None:
+            audioPref = 'file'
         else:
-            raise ValueError("unknown audio %s"%(audioPref))
-    for attempt in attempts:
-        audio = attempt()
-        if audio is not None:
-            return audio
-    return None
+            audioPref = app.getPref('audio')
 
-def tryFileAudio():
-    try:
-        import fileaudio
-    except ImportError:
-        return None
-    from fileaudio import getAudioDevice
-    return getAudioDevice
+    if audioPref:
+        audioint = audioOptions.get(audioPref)
+        if not audioint:
+            log.msg("requested oss audio interface unavailable")
 
-def tryOssAudio():
-    try:
-        import ossaudiodev
-    except ImportError:
-        return None
-    from ossaudio import getAudioDevice
-    return getAudioDevice
+    for audioint in allAudioOptions:
+        if audioint:
+            return audioint
 
-def tryCoreAudio():
-    try:
-        import coreaudio
-    except ImportError:
-        return None
-    from osxaudio import getAudioDevice
-    return getAudioDevice
+_device = None
 
-def tryFastAudio():
-    try:
-        import fastaudio
-    except ImportError:
-        return None
-    from fast import getAudioDevice
-    return getAudioDevice
-
-_audioGet = None
-def getAudioDevice(mode, audioPref=None, audioFiles=None):
-    from shtoom.exceptions import NoAudioDevice
-    global _audioGet
-    if _audioGet is None:
-        _audioGet = findAudioDevice(audioPref, audioFiles)
-        if _audioGet is None:
-            raise NoAudioDevice, "No working audio interface found"
-    return _audioGet('rw')
+def getAudioDevice(mode='ignored'):
+    global _device
+    if _device is None:
+        audioint = findAudioInterface()
+        print "using", audioint
+        dev = audioint.Device()
+        _device = MediaLayer(dev)
+    return _device

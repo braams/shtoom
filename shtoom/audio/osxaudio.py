@@ -136,9 +136,4 @@ class OSXAudio(object):
             traceback.print_tb(t)
         return
 
-def getAudioDevice(mode):
-    global opened
-    if opened is None:
-        opened = MediaLayer(OSXAudio())
-    return opened
-
+Device = OSXAudio

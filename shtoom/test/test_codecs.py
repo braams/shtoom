@@ -6,7 +6,9 @@ from shtoom.audio.converters import MulawCodec, NullCodec, PassthruCodec
 from shtoom.rtp.formats import PT_PCMU, PT_RAW, PT_CN, PT_QCELP
 from shtoom.rtp.packets import RTPPacket
 
-from shtoom import avail
+from shtoom.avail import codecs
+
+instr = ''.join([chr(x*32) for x in range(8)]) * 40
 
 class DummyDev: 
     # Should have read/write
@@ -59,6 +61,30 @@ class CodecTest(unittest.TestCase):
 
     # XXX testing other codecs - endianness issues? crap.
 
+    def testMuLawCodec(self):
+        if codecs.mulaw is None:
+            raise unittest.SkipTest("no mulaw support")
+        ae = self.assertEquals
+        c = Codecker()
+        c.setDefaultFormat(PT_PCMU)
+        ae(c.getDefaultFormat(), PT_PCMU)
+        ae(len(c.encode(instr).data), 160)
+        ae(c.encode(instr).data, ulawout)
+        ae(c.encode(instr).pt, PT_PCMU)
+
+    def testGSMCodec(self):
+        if codecs.gsm is None:
+            raise unittest.SkipTest("no gsm support")
+        ae = self.assertEquals
+        c = Codecker()
+        c.setDefaultFormat(PT_GSM)
+        ae(c.getDefaultFormat(), PT_GSM)
+        p = c.encode(instr)
+        ae(len(p.data), 33)
+        ae(p.pt, PT_GSM)
+        ae(len(c.decode(p)), 320)
+
+
     def testMediaLayer(self):
         ae = self.assertEquals
         dev = DummyDev()
@@ -76,3 +102,5 @@ class CodecTest(unittest.TestCase):
         test='froooooooooooogle'
         ae(d.convertOutbound(test).data, test)
         
+
+ulawout = '\x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 \x9f\x87\x07 '

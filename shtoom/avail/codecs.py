@@ -1,12 +1,10 @@
+# Copyright (C) 2004 Anthony Baxter
+
 # This file will eventually contain all of the horrors of import magic
+# for codecs
 
 
-def _removeImport(mod):
-    # Prior to 2.4, you could end up with broken crap in sys.modules
-    import sys
-    if sys.version_info < (2,4):
-        if mod in sys.modules:
-            del sys.modules[mod]
+from shtoom.avail import _removeImport
 
 try:
     import gsm

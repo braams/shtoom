@@ -13,6 +13,8 @@ class BrainDeadPlayout(_Playout):
         self.b2 = ''
 
     def write(self, bytes, packet=None):
+        if not isinstance(bytes, basestring):
+            raise ValueError("playout got %s instead of bytes"%(type(bytes)))
         if not self.b2:
             # underrun
             self.b2 = bytes

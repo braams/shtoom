@@ -72,3 +72,17 @@ class TestRTP(unittest.TestCase):
             ae(rpack.seq, seq)
             ae(rpack.ts, ts)
             ae(rpack.ssrc, ssrc)
+
+    def testSDPGen(self):
+        from shtoom.rtp.formats import SDPGenerator, PTMarker
+        from shtoom.sdp import SDP
+        a_ = self.assert_
+        class DummyRTP:
+            def getVisibleAddress(self):
+                return ('127.0.0.1', 23456)
+        rtp = DummyRTP()
+        sdp = SDP(SDPGenerator().getSDP(rtp).show())
+        rtpmap = sdp.getMediaDescription('audio').rtpmap
+        for pt, (entry, ptmarker) in rtpmap.items():
+            a_(isinstance(ptmarker, PTMarker))
+

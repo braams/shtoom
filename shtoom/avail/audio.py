@@ -1,0 +1,47 @@
+# Copyright (C) 2004 Anthony Baxter
+
+# This file will eventually contain all of the horrors of import magic
+# for audio interfaces
+
+from shtoom.avail import _removeImport
+
+try:
+    import ossaudiodev
+except ImportError:
+    ossaudiodev = None
+    _removeImport('ossaudiodev')
+
+if ossaudiodev is not None:
+    from shtoom.audio import ossaudio
+    del ossaudiodev
+else:
+    ossaudio = None
+
+
+try:
+    import fastaudio
+except ImportError:
+    fastaudio = None
+    _removeImport('fastaudio')
+
+if fastaudio is not None:
+    del fastaudio
+    from shtoom.audio import fast as fastaudio
+else:
+    fastaudio = None
+    
+
+try:
+    import coreaudio
+except ImportError:
+    coreaudio = None
+    _removeImport('coreaudio')
+
+if coreaudio is not None:
+    from shtoom.audio import osxaudio
+    del coreaudio
+else:
+    osxaudio = None
+
+from shtoom.audio import fileaudio
+

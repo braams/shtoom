@@ -2,7 +2,11 @@
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4, PT_RAW
 from shtoom.rtp.formats import PT_CN, PT_xCN
 from shtoom.rtp.packets import RTPPacket
-from shtoom import avail
+from shtoom.avail import codecs
+from shtoom.audio.playout import Playout
+
+from twisted.python import log
+
 try:
     import audioop
 except ImportError:
@@ -28,7 +32,7 @@ class NullConv:
         print "audio: close"
         return self._d.close()
     def reopen(self):
-        print "audio: reopen"
+        print "audio: reopen ..."
         return self._d.reopen()
     def isClosed(self):
         return self._d.isClosed()
@@ -51,11 +55,11 @@ class _Codec:
 class GSMCodec(_Codec):
     def __init__(self):
         if isLittleEndian():
-            self.enc = avail.gsm.gsm(gsm.LITTLE)
-            self.dec = avail.gsm.gsm(gsm.LITTLE)
+            self.enc = codecs.gsm.gsm(gsm.LITTLE)
+            self.dec = codecs.gsm.gsm(gsm.LITTLE)
         else:
-            self.enc = avail.gsm.gsm(gsm.BIG)
-            self.dec = avail.gsm.gsm(gsm.BIG)
+            self.enc = codecs.gsm.gsm(gsm.BIG)
+            self.dec = codecs.gsm.gsm(gsm.BIG)
 
     def encode(self, bytes):
         if len(bytes) != 320:
@@ -126,17 +130,17 @@ class Codecker:
         self.codecs[PT_CN] = NullCodec()
         self.codecs[PT_xCN] = NullCodec()
         self.codecs[PT_RAW] = PassthruCodec()
-        if avail.mulaw is not None:
+        if codecs.mulaw is not None:
             self.codecs[PT_PCMU] = MulawCodec()
-        if avail.alaw is not None:
+        if codecs.alaw is not None:
             self.codecs[PT_PCMA] = AlawCodec()
-        if avail.gsm is not None:
+        if codecs.gsm is not None:
             self.codecs[PT_GSM] = GSMCodec()
-        if avail.speex is not None: 
+        if codecs.speex is not None: 
             self.codecs[PT_GSM] = SpeexCodec()
-        if avail.dvi4 is not None:
+        if codecs.dvi4 is not None:
             self.codecs[PT_DVI4] = DVI4Codec()
-        if avail.ilbc is not None:
+        if codecs.ilbc is not None:
             self.codecs[PT_ILBC] = ILBCCodec()
 
     def getDefaultFormat(self):
@@ -177,6 +181,8 @@ class MediaLayer(NullConv):
         devices (16 bit signed ints at 8KHz).
     """
     def __init__(self, device, defaultFormat=PT_PCMU, *args, **kwargs):
+        self.playout = None
+        self.audioLC = None
         self.codecker = Codecker()
         self.codecker.setDefaultFormat(defaultFormat)
         NullConv.__init__(self, device, *args, **kwargs)
@@ -192,10 +198,34 @@ class MediaLayer(NullConv):
         return self.codecker.encode(bytes)
 
     def write(self, packet):
-        audio = self.codecker.encode(packet.data)
-        if not audio:
+        if self.playout is None:
+            log.msg("write before reopen, discarding")
             return 0
-        return self._d.write(packet.data)
+        audio = self.codecker.decode(packet)
+        if not audio:
+            self.playout.write('', packet)
+            return 0
+        return self.playout.write(audio, packet)
+
+    def reopen(self):
+        from twisted.internet.task import LoopingCall
+        if self.playout is not None:
+            log.msg("duplicate ACK? playout already started")
+            return
+        self.playout = Playout()
+        print "initialising playout", self.playout
+        self.audioLC = LoopingCall(self.playoutAudio)
+        self.audioLC.start(0.020)
+
+    def playoutAudio(self):
+        au = self.playout.read()
+        self._d.write(au)
+
+    def close(self):
+        if self.audioLC is not None:
+            self.audioLC.stop()
+            self.audioLC = None
+        self.playout = None
 
 class DougConverter(MediaLayer):
     "Specialised converter for Doug."
