@@ -32,6 +32,9 @@ from shtoom.defcache import DeferredCache
 
 from shtoom.interfaces import NATMapper as INATMapper
 from shtoom.nat import BaseMapper
+
+UPNP_PORT = 1900
+UPNP_MCAST = '239.255.255.250'
 #from zope.interface import implements
 
 class UPnPError(Exception): pass
@@ -39,12 +42,12 @@ class NoUPnPFound(UPnPError): pass
 
 def cannedUPnPSearch():
     return """M-SEARCH * HTTP/1.1\r
-Host:239.255.255.250:1900\r
+Host:%s:%s\r
 ST:urn:schemas-upnp-org:device:InternetGatewayDevice:1\r
 Man:"ssdp:discover"\r
 MX:3\r
 \r
-"""
+"""%(UPNP_MCAST, UPNP_PORT)
 
 class UPnPProtocol(DatagramProtocol, object):
 
@@ -103,9 +106,9 @@ class UPnPProtocol(DatagramProtocol, object):
         self._discDef = defer.Deferred()
         search = cannedUPnPSearch()
         try:
-            self.transport.write(search, ('239.255.255.250', 1900))
-            self.transport.write(search, ('239.255.255.250', 1900))
-            self.transport.write(search, ('239.255.255.250', 1900))
+            self.transport.write(search, (UPNP_MCAST, UPNP_PORT))
+            self.transport.write(search, (UPNP_MCAST, UPNP_PORT))
+            self.transport.write(search, (UPNP_MCAST, UPNP_PORT))
         except socket.error:
             del self._discDef
             return defer.fail(NoUPnPFound('no network available'))
