@@ -73,6 +73,6 @@ class NetAddressTests(unittest.TestCase):
         d = getSTUN()
         s = Saver()
         d.addCallback(s.save)
-        util.wait(d)
+        util.wait(d, timeout=16)
         a_(isinstance(s.arg, _NatType))
 

@@ -70,7 +70,7 @@ class MapperTest(unittest.TestCase):
             t = TestMapper(mapper, port)
             d = t.go()
             d.addErrback(logerr)
-            util.wait(d, timeout=5)
+            util.wait(d, timeout=10)
             ae(len(t.map_res), 2)
             ae(t.map_res, t.info_res)
             ae(t.unmap_res, None)
@@ -91,7 +91,7 @@ class MapperTest(unittest.TestCase):
         d = getSTUN()
         s = Saver()
         d.addCallback(s.save)
-        util.wait(d)
+        util.wait(d, timeout=16)
         if not s.arg.useful:
             raise unittest.SkipTest('No useful STUN')
 
@@ -109,7 +109,7 @@ class MapperTest(unittest.TestCase):
         ar(ValueError, mapper.info, port)
         t = TestMapper(mapper, port)
         d = t.go()
-        util.wait(d)
+        util.wait(d, timeout=16)
         ae(len(t.map_res), 2)
         ae(t.map_res, t.info_res)
         ae(t.unmap_res, None)

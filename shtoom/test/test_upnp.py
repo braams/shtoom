@@ -102,7 +102,7 @@ class UPnPTest(unittest.TestCase):
         checkUPnP()
         test = TestUPnP()
         d = test.go()
-        util.wait(d)
+        util.wait(d, timeout=8)
 
     def test_upnp_mapper(self):
         from shtoom.upnp import UPnPMapper
