@@ -8,6 +8,8 @@ class NullConv:
         return self._d.read(count)
     def write(self, bytes):
         return self._d.write(bytes)
+    def close(self):
+        self._d.close()
 
 class PCM16toULAWConv(NullConv):
     """ Wraps an audio device that returns Linear PCM and turns it into
