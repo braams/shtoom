@@ -106,10 +106,10 @@ class Phone(BaseApplication):
         s.setServerIP(addr[0])
         s.setLocalPort(addr[1])
         fmts = self._audio.listFormats()
-        if FMT_PCMU in fmts:
-            s.addRtpMap('PCMU', 8000) # G711 ulaw
         if FMT_GSM in fmts:
             s.addRtpMap('GSM', 8000) # GSM 06.10
+        if FMT_PCMU in fmts:
+            s.addRtpMap('PCMU', 8000) # G711 ulaw
         if FMT_SPEEX in fmts:
             s.addRtpMap('speex', 8000, payload=110)
             #s.addRtpMap('speex', 16000, payload=111)

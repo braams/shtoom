@@ -97,10 +97,11 @@ class MultipleConv(NullConv):
             if self._gsmencoder:
                 indata = self._d.read()
                 if len(indata) != 320:
-                    print "Uh oh, GSM got short read len = %s"%len(indata)
+                    print "GSM: got short read len = %s"%len(indata)
                     return ''
-                outdata = self._gsmencoder.encode(indata)
-                return outdata
+                else:
+                    outdata = self._gsmencoder.encode(indata)
+                    return outdata
             else:
                 print "No GSM available"
         else:
@@ -114,8 +115,10 @@ class MultipleConv(NullConv):
         elif format == FMT_GSM:
             if self._gsmdecoder:
                 if len(data) != 33:
-                    print "warning: ! 33 bytes of data, but %s"%len(data)
-                    decdata = self._decoder.decode(data)
+                    print "GSM: warning: %d bytes of data, not 33"%len(data)
+                    return 0
+                else:
+                    decdata = self._gsmdecoder.decode(data)
                     self._d.write(decdata)
                     return 33
             else:
