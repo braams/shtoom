@@ -1,5 +1,5 @@
 # Copyright (C) 2003 Anthony Baxter
-# $Id: qtshtoom.py,v 1.4 2003/11/16 07:57:35 anthonybaxter Exp $
+# $Id: qtshtoom.py,v 1.5 2004/01/07 13:50:59 anthonybaxter Exp $
 #
 
 
@@ -26,8 +26,8 @@ def main():
     UI = ShtoomMainWindow()
     UI.connectSIP()
     UI.show()
-    #log.startLogging(UI.getLogger())
-    log.startLogging(sys.stdout)
+    log.startLogging(UI.getLogger())
+    #log.startLogging(sys.stdout)
     
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), shutdown)
