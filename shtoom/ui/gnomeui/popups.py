@@ -1,9 +1,6 @@
 
 # Based on code originally by Glyph 
 
-import gobject
-import gtk
-import gtk.gdk
 
 import sys
 
@@ -16,6 +13,7 @@ class PopupNotice:
         self.deferred = None
 
     def popup(self, text, buttons=('OK',), timeout=5000):
+	import gtk
         from twisted.internet import defer
         self.deferred = defer.Deferred()
         self.win = gtk.Window(gtk.WINDOW_POPUP)
@@ -121,6 +119,10 @@ if __name__ == "__main__":
     from twisted.internet import gtk2reactor
     gtk2reactor.install()
     import pygtk
+    pygtk.require("2.0")
+    import gobject
+    import gtk
+    import gtk.gdk
     import gnome
     global gnomeProgram
     gnomeProgram = gnome.init("popups", "Whatever Version")
