@@ -27,22 +27,22 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._menu = Menu(self.main)
         self.main.config(menu=self._menu)
         filemenu = Menu(self._menu)
-        filemenu.add_command(label="Quit", command = self.shutdown)
-        self._menu.add_cascade(label="File", menu=filemenu)
+        filemenu.add_command(label=_("Exit"), command = self.shutdown)
+        self._menu.add_cascade(label=_("File"), menu=filemenu)
         
         editmenu = Menu(self._menu)
-        editmenu.add_command(label="Preferences", command = self.prefmenuitem_selected)
-        self._menu.add_cascade(label="Edit", menu=editmenu)
+        editmenu.add_command(label=_("Preferences"), command = self.prefmenuitem_selected)
+        self._menu.add_cascade(label=_("Edit"), menu=editmenu)
 
         helpmenu = Menu(self._menu)
-        helpmenu.add_command(label="About")
-        self._menu.add_cascade(label="Help", menu=helpmenu)
+        helpmenu.add_command(label=_("About"))
+        self._menu.add_cascade(label=_("Help"), menu=helpmenu)
 
         # also do hangup, shutdown reactor, &c
         self.main.protocol("WM_DELETE_WINDOW", self.shutdown)
         self._top1 = Frame(self.main)
         self._top1.grid(row=1, column=1, sticky=NW)
-        self._label1 = Label(self._top1, text='SIP:')
+        self._label1 = Label(self._top1, text=_('Address')+':')
         self._label1.grid(row=1,column=1, sticky=W)
         self._urlentry = Entry(self._top1, width=60)
         self._urlentry.grid(row=1, column=2, columnspan=4, sticky=W)
@@ -56,23 +56,23 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._logo.grid(row=1, column=7, rowspan=2, sticky=NE)
 
         self._top3 = Frame(self._top1)
-        self._callButton = Button(self._top3, text="Call",
+        self._callButton = Button(self._top3, text=_("Call"),
                                   command=self.callButton_clicked)
         self._callButton.grid(row=1, column=1, sticky=NW)
-        self._hangupButton = Button(self._top3, text="Hang up",
+        self._hangupButton = Button(self._top3, text=_("Hang Up"),
                                     command=self.hangupButton_clicked,
                                     state=DISABLED)
         self._hangupButton.grid(row=1, column=2, sticky=NW)
-        self._registerButton = Button(self._top3, text="Register",
+        self._registerButton = Button(self._top3, text=_("Register"),
                                   command=self.registerButton_clicked)
         self._registerButton.grid(row=1, column=3, sticky=NW)
-        self._muteButton = Checkbutton(self._top3, text="Mute",
+        self._muteButton = Checkbutton(self._top3, text=_("Mute"),
                                   variable=self._muted,
                                   command=self.muteButton_clicked)
         self._muteButton.grid(row=1, column=4, sticky=W)
         self._top3.grid(row=2,column=1,columnspan=2, sticky=NW)
         self._statusF = Frame(self._top1)
-        self._statusL = Label(self._statusF, text="Status:")
+        self._statusL = Label(self._statusF, text='%s:'%(_("Status"),))
         self._statusL.grid(column=1,row=1,sticky=W)
         self._statusW = Label(self._statusF, text="")
         self._statusW.grid(column=2,row=1,sticky=W)
@@ -126,7 +126,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._statusW.configure(text=msg)
 
     def errorMessage(self, message, exc=None):
-        log.msg("error %s"%(message), system='ui')
+        log.msg("%s: %s"%(_('ERROR'), message), system='ui')
 
     def callButton_clicked(self, evt=None):
         sipURL = self._urlentry.get()
@@ -141,13 +141,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self.app.register()
 
     def callConnected(self, cookie):
-        self.statusMessage("Call connected")
+        self.statusMessage(_("Call Connected"))
         self._connected = True
         if self._muted:
             self.app.muteCall(self.cookie)
 
     def callDisconnected(self, cookie, message):
-        status = "Call disconnected"
+        status = _("Call Disconnected")
         self._connected = False
         if message:
             lines = message.split('\n')
@@ -165,7 +165,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
         self._hangupButton.config(state=NORMAL)
 
     def callFailed(self, e, message=None):
-        self.statusMessage("call failed %s"%e.getErrorMessage())
+        self.statusMessage("%s %s"%(_("Call Failed"), e.getErrorMessage()))
         self._connected = False
         self._hangupButton.config(state=DISABLED)
         self._callButton.config(state=NORMAL)
