@@ -107,7 +107,7 @@ def _getLocalIPAddressViaConnectedUDP(ip):
     del prot, p
 
     if _Debug: print "connected UDP socket says", locip
-    if locip.startswith('127.') or locip.startswith('0.'):
+    if isBogusAddress(locip):
         # #$#*(&??!@#$!!!
         if _Debug: print "connected UDP socket gives crack, trying mcast instead"
         return _getLocalIPAddressViaMulticast()
