@@ -32,9 +32,10 @@ class BaseApplication:
     def getOptions(self):
         return self._options
 
-    def getPref(self, pref):
+    def getPref(self, pref, default=None):
         if self._options.hasValue(pref):
-            return self._options.getValue(pref, None)
+            return self._options.getValue(pref, default)
+        return default
 
     def updateOptions(self, dict, forceSave=False):
         m = self._options.updateOptions(dict)

@@ -14,6 +14,7 @@ import time
 import audioop
 
 opened = None
+DEFAULT_ALSA_DEVICE = 'default'
 
 class ALSAAudioDevice(baseaudio.AudioDevice):
 
@@ -21,28 +22,29 @@ class ALSAAudioDevice(baseaudio.AudioDevice):
         baseaudio.AudioDevice.__init__(self)
 
     def openDev(self):
-        device = 'default'
         try:
             from __main__ import app
         except:
             app = None
-        if app is not None:
-            device = app.getPref('audio_device')
-        log.msg("alsaaudiodev opening device %s"%(device))
+        if app is None:
+            device = DEFAULT_ALSA_DEVICE
+        else:
+            device = app.getPref('audio_device', DEFAULT_ALSA_DEVICE)
+        log.msg("alsaaudiodev opening device %s" % (device))
         writedev = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK,
                                  alsaaudio.PCM_NONBLOCK, device)
         self.writechannels = writedev.setchannels(1)
         writedev.setrate(8000)
-        writedev.setperiodsize(160)
         writedev.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+        writedev.setperiodsize(160)
         self.writedev = writedev
 
         readdev = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,
                                 alsaaudio.PCM_NONBLOCK, device)
         self.readchannels = readdev.setchannels(1)
         readdev.setrate(8000)
-        readdev.setperiodsize(160)
         readdev.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+        readdev.setperiodsize(160)
         self.readdev = readdev
 
         self.LC = LoopingCall(self._push_up_some_data)
