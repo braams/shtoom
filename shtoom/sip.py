@@ -901,9 +901,8 @@ class Call(object):
 class Registration(Call):
     "State machine for registering with a server."
 
-    def __init__(self, phone, deferred):
+    def __init__(self, phone):
         self.sip = phone
-        self.compDef = deferred
         self.regServer = None
         self.regAOR = None
         self.state = 'NEW'
@@ -916,6 +915,7 @@ class Registration(Call):
         self._outboundProxyURI = None
 
     def startRegistration(self):
+        self.compDef = defer.Deferred()
         self.regServer = Address(self.sip.app.getPref('register_uri'))
         self.regURI = copy.copy(self.regServer)
         self.regAOR = copy.copy(self.regServer.getURI(parsed=True))
@@ -927,6 +927,7 @@ class Registration(Call):
         #self.regURI.port = None
         d = self.setupLocalSIP(self.regServer)
         d.addCallback(self.sendRegistration).addErrback(log.err)
+        return self.compDef
 
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
@@ -1090,9 +1091,8 @@ class SipProtocol(DatagramProtocol, object):
                     d.addCallbacks(self.register, log.err)
             else:
                 log.msg("no outstanding registrations, registering", system="sip")
-                d = defer.Deferred()
-                r = Registration(self,d)
-                r.startRegistration()
+                r = Registration(self)
+                d = r.startRegistration()
                 return d
 
     def _newCallObject(self, to=None, callid=None):
