@@ -91,14 +91,13 @@ class VoiceApp(object):
         for e, a in self.getCurrentEvents():
             if isinstance(event, e):
                 action = a
+                self._doState(action, event)
                 break
         else:
-            print "fell off the end"
             self.returnError(EventNotSpecifiedError(
                             "No matching event for %s in state %s"
                             %(event.getEventName(), self.getCurrentState())))
             return
-        self._doState(action, event)
 
     def getCurrentState(self):
         return self._curState

@@ -25,7 +25,6 @@ class StateMachineOne(VoiceApp):
         super(StateMachineOne, self).__init__(defer, **kwargs)
 
     def __start__(self):
-        print "starting"
         return ( (CallStartedEvent, self.begin),
                  (Event, self.unknown),
                )
@@ -63,7 +62,6 @@ class StateMachineOne(VoiceApp):
 
 class StateMachineTwo(StateMachineOne):
     def second(self, evt):
-        print "second"
         self.raiseEvent(DummyEvent2_2())
         return ()
 
