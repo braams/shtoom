@@ -5,7 +5,7 @@
 # See also rtprecv.py for something that listens to a port and dumps it to
 # the audio device
 #
-# $Id: rtp.py,v 1.34 2004/03/03 14:39:04 anthony Exp $
+# $Id: rtp.py,v 1.35 2004/03/04 13:07:35 anthony Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -252,9 +252,6 @@ class RTPProtocol(DatagramProtocol):
         if self.sample is not None:
             fmt, sample = self.sample
             self.sent += 1
-            # This bit is hardcoded for G711 ULAW. When other codecs are
-            # done, the first two bytes will change (but should be mostly
-            # constant across a RTP session).
             hdr = pack('!BBHII', 0x80, fmt, self.seq, self.ts, self.ssrc)
             self.transport.write(hdr+sample, self.dest)
             self.sample = None
