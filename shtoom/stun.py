@@ -18,7 +18,7 @@ from shtoom.nat import BaseMapper
 
 STUNVERBOSE = False
 # If we're going to follow RFC recommendation, make this 7
-MAX_RETRANSMIT = 5
+MAX_RETRANSMIT = 7
 
 # Work to be done:
 #  - Reverse engineer the C code stun client - why is it giving up so fast?
@@ -39,10 +39,21 @@ DefaultServers = [
     ('stun.xten.net', 3478),
     ('sip.iptel.org', 3478),
     ('stun2.wirlab.net', 3478),
-#    ('stun.wirlab.net', 3478),
-#    ('stun1.vovida.org', 3478),
-#    ('tesla.divmod.net', 3478),
-#    ('erlang.divmod.net', 3478),
+#    ('stun.fwdnet.net', 3478),
+#    ('stun2.fwdnet.net', 3478),
+#    ('stun.wirlab.net', 3478), # 
+#    ('stun1.vovida.org', 3478), # 
+#    ('tesla.divmod.net', 3478), # 
+#    ('erlang.divmod.net', 3478), # 
+#    ('69.90.168.13', 3478), # stun.fednet.net
+#    ('69.90.168.14', 3478), # stun2.fednet.net
+#    ('64.69.76.23', 3478), # stun.xten.net
+#    ('195.37.77.99', 3478), # sip.iptel.org
+#    ('192.98.81.87', 3478), # stun2.wirlab.net
+#    ('192.98.81.66', 3478), # stun.wirlab.net
+#    ('128.107.250.38', 3478), # stun1.vovida.org
+#    ('204.91.10.94', 3478), # tesla.divmod.net
+#    ('204.91.10.93', 3478), # erlang.divmod.net
 ]
 
 StunTypes = {
@@ -108,6 +119,7 @@ def _parseStunResponse(dgram, address, expectedTID=None):
         mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
         if expectedTID is not None and expectedTID != tid:
             # a response from an earlier request
+            log.msg("%s got unexpected STUN response %s != %s from %s"% (ts(), `expectedTID`, `tid`, repr(address),), system='stun')
             return
         resdict = {}
         if mt == 0x0101:
