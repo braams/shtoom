@@ -11,6 +11,8 @@ from nevow import static
 
 from shtoom import Options
 
+import os
+
 
 def switcher(*args):
     """Take any number of (interface, (badgeName, headerText), body) tuples, and return html which
@@ -157,7 +159,7 @@ class PreferencesPage(rend.Page):
     def render_passwordOption(self, ctx, password):
         return T.input(type="password", name=password.getName())
 
-    child_images = static.File('/Users/dp/Projects/Shtoom/shtoom/shtoom/ui/webui/images')
+    child_images = static.File(os.path.join(os.path.dirname(__file__), 'images'))
 
     docFactory = loaders.stan(T.html[
     T.head[
