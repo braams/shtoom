@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.16 2003/11/20 09:42:50 anthonybaxter Exp $
+# $Id: rtp.py,v 1.17 2003/11/20 22:22:30 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -193,8 +193,9 @@ class RTPProtocol(DatagramProtocol):
         # Python-ish hack at RFC1889, Appendix A.6
         m = md5.new()
         m.update(str(time()))
-        m.update(str(os.getuid()))
-        m.update(str(os.getgid()))
+        if hasttr(os, 'getuid'):
+            m.update(str(os.getuid()))
+            m.update(str(os.getgid()))
         m.update(str(socket.gethostname()))
         hex = m.hexdigest()
         nums = hex[:8], hex[8:16], hex[16:24], hex[24:]
