@@ -932,6 +932,8 @@ class Registration(Call):
         return self.compDef
 
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
+        # XXX parameterise the retransmit timer!
+        reactor.callLater(840, self.sendRegistration)
         username = self.sip.app.getPref('username')
         invite = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
@@ -1025,7 +1027,6 @@ class Registration(Call):
             self.register_attempts = 0
             if state == 'SENT_REGISTER':
                 self.setState('REGISTERED')
-                reactor.callLater(840, self.sendRegistration)
                 if 0 and self.cancel_trigger is None:
                     t = reactor.addSystemEventTrigger('before',
                                                       'shutdown',
