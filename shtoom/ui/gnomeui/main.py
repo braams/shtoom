@@ -22,7 +22,8 @@ class ShtoomWindow(ShtoomBaseUI):
         self.hangupButton.set_sensitive(0)
         self.status = self.xml.get_widget("appbar").get_children()[0]
         self.acceptDialog = self.xml.get_widget("acceptdialog")
-        
+
+    # GUI callbacks
     def on_call_clicked(self, w):
         self.statusMessage("Calling...")
         sipURL = self.address.get_text()
@@ -34,15 +35,6 @@ class ShtoomWindow(ShtoomBaseUI):
         self.address.set_sensitive(0)
         self.connected, deferred = self.sip.placeCall(sipURL)
         deferred.addCallbacks(self.callConnected, self.callFailed)
-
-    def callConnected(self, call):
-        self.hangupButton.set_sensitive(1)
-
-    def callFailed(self, reason):
-        self.statusMessage("Call failed: %s" % reason.value)
-        self.hangupButton.set_sensitive(0)
-        self.callButton.set_sensitive(1)
-        self.address.set_sensitive(1)
     
     def on_hangup_clicked(self, w):
         self.sip.dropCall(self.connected)
@@ -55,7 +47,38 @@ class ShtoomWindow(ShtoomBaseUI):
     def on_acceptdialog_response(self, widget, code):
         self.incoming.approved(code == gtk.RESPONSE_OK)
         del self.incoming
+
+    def on_copy_activate(self, widget):
+        self.address.copy_clipboard()
+
+    def on_cut_activate(self, widget):
+        self.address.cut_clipboard()
+
+    def on_paste_activate(self, widget):
+        self.address.paste_clipboard()
+
+    def on_clear_activate(self, widget):
+        self.address.set_text("")
     
+    def on_preferences_activate(self, widget):
+        self.statusMessage("Preferences are not supported yet.")
+
+    def on_quit_activate(self, widget):
+        reactor.stop()
+
+    def on_about_activate(self, widget):
+        self.xml.get_widget("about").show()
+    
+    # event callbacks
+    def callConnected(self, call):
+        self.hangupButton.set_sensitive(1)
+
+    def callFailed(self, reason):
+        self.statusMessage("Call failed: %s" % reason.value)
+        self.hangupButton.set_sensitive(0)
+        self.callButton.set_sensitive(1)
+        self.address.set_sensitive(1)
+
     def incomingCall(self, description, call, defresp, defsetup):
         # XXX multiple incoming calls won't work
         self.incoming = Incoming(self, description, call, defresp, defsetup)  
