@@ -18,8 +18,9 @@ class Event(object):
 class    DTMFReceivedEvent(Event):
     """ Received some DTMF keystrokes.
     """
-    def __init__(self, digits):
+    def __init__(self, digits, leg):
         self.digits = digits
+        self.leg = leg
 
     def _extraRepr(self):
         return str(self.digits)
@@ -34,8 +35,9 @@ class        DTMFTimeoutEvent(DTMFReceivedEvent):
 class    MediaDoneEvent(Event):
     """ A media play/record completed
     """
-    def __init__(self, source):
+    def __init__(self, source, leg):
         self.source = source
+        self.leg = leg
 
     def _extraRepr(self):
         return repr(self.source)

@@ -4,10 +4,10 @@ import sys
 class Source(object):
     "A Source object is a source and sink of audio data"
     def __init__(self):
-        self.app = None
+        self.leg = None
 
-    def getVoiceApp(self):
-        return self.app
+    def getLeg(self):
+        return self.leg
 
     def isPlaying(self):
         return NotImplementedError
@@ -100,7 +100,7 @@ class FileSource(Source):
         else:
             bytes = self._fp.read(320)
             if not bytes:
-                self.app._va_sourceDone(self)
+                self.leg._sourceDone(self)
             else:
                 return bytes
 
@@ -111,7 +111,7 @@ class FileSource(Source):
             except:
                 e,v,t = sys.exc_info()
                 print "write failed %s: %r"%(e,v)
-                self.app._va_sourceDone(self)
+                self.leg._sourceDone(self)
 
 def convertToSource(thing, mode='r'):
     if isinstance(thing, Source):

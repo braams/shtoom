@@ -8,8 +8,10 @@
     many legs (for some more exotic use-case).
 """
 
-from shtoom.doug.source import Source
-from shtoom.doug.events import CallAnsweredEvent, CallRejectedEvent
+from shtoom.doug.source import Source, SilenceSource, convertToSource
+from shtoom.audio.converters import DougConverter
+from shtoom.doug.events import *
+from shtoom.doug.exceptions import *
 from twisted.python import log
 
 class Leg(object):
@@ -25,6 +27,16 @@ class Leg(object):
         self._cookie = cookie
         self._dialog = dialog
         self._acceptDeferred = None
+        self.__converter = DougConverter()
+        self.__playoutList = []
+        self.__recordDest = None
+        self.__silenceSource = SilenceSource()
+        self.__connected = None
+        self.__currentDTMFKey = None
+        self.__collectedDTMFKeys = ''
+        self.__dtmfSingleMode = True
+        self.__inbandDTMFdetector = None
+        self._connectSource(self.__silenceSource)
 
     def getDialog(self):
         return self._dialog
@@ -90,6 +102,118 @@ class Leg(object):
         self._voiceapp.sendDTMF(digits, cookie=self._cookie,
                                 duration=duration, delay=delay)
 
+    def _playNextItem(self):
+        if not self.__playoutList:
+            last = self._connectSource(self.__silenceSource)
+            self._voiceapp._triggerEvent(MediaPlayContentDoneEvent(last, self))
+        else:
+            next = self.__playoutList.pop(0)
+            next = convertToSource(next, 'r')
+            self._connectSource(next)
+
+    def _sourceDone(self, source):
+        if self.__connected is source:
+            self._playNextItem()
+
+    def _connectSource(self, target):
+        target.leg = self
+        old, self.__connected = self.__connected, target
+        if old:
+            old.leg = None
+        return old
+
+    def _maybeStartPlaying(self):
+        "Check if we're currently playing silence, and switch out if so"
+        if self.__connected is self.__silenceSource:
+            self._playNextItem()
+
+    def mediaPlay(self, playlist):
+        if isinstance(playlist, basestring):
+            playlist = [playlist]
+        self.__playoutList.extend(playlist)
+        self._maybeStartPlaying()
+
+    def mediaRecord(self, dest):
+        dest = convertToSource(dest, 'w')
+        self._connectSource(dest)
+
+    def mediaStop(self):
+        old = self._connectSource(self.__silenceSource)
+        if old.isPlaying():
+            old.close()
+            self.__playoutList = []
+            if old.isRecording():
+                self.__recordDest = None
+        elif old.isRecording():
+            old.close()
+            self.__recordDest = None
+
+    def leg_startDTMFevent(self, dtmf):
+        c = self.__currentDTMFKey
+        if dtmf:
+            if c is not dtmf:
+                self.leg_stopDTMFevent(c)
+                self.__currentDTMFKey = dtmf
+                self._inboundDTMFKeyPress(dtmf)
+            else:
+                # repeat
+                pass
+
+    def _inboundDTMFKeyPress(self, dtmf):
+        if self.__dtmfSingleMode:
+            self._voiceapp._triggerEvent(DTMFReceivedEvent(dtmf, self))
+        else:
+            self.__collectedDTMFKeys += dtmf
+            if dtmf in ('#', '*'):
+                dtmf, self.__collectedDTMFKeys = self.__collectedDTMFKeys, ''
+                self._voiceapp._triggerEvent(DTMFReceivedEvent(dtmf, self))
+
+    def selectDefaultFormat(self, ptlist):
+        return self.__converter.selectDefaultFormat(ptlist)
+
+    def leg_stopDTMFevent(self, dtmf):
+        # For now, I only care about dtmf start events
+        if dtmf == self.__currentDTMFKey:
+            self.__currentDTMFKey = None
+
+    def leg_giveRTP(self):
+        data = self.__connected.read()
+        if data:
+            packet = self.__converter.convertOutbound(data)
+            return packet
+        return None # comfort noise
+
+    def leg_receiveRTP(self, packet):
+        data = self.__converter.convertInbound(packet)
+        if self.__inbandDTMFdetector is not None:
+            self.__inbandDTMFdetector(data)
+        self.__connected.write(data)
+
+    def isPlaying(self):
+        return self.__connected.isPlaying()
+
+    def isRecording(self):
+        return self.__connected.isRecording()
+
+    def dtmfMode(self, single=False, inband=False, timeout=0):
+        self.__dtmfSingleMode = single
+        if inband:
+            if numarray is False:
+                raise RuntimeError, "need numarray to do inband DTMF"
+            else:
+                self.__inbandDTMFdetector = InbandDtmfDetector(self)
+        else:
+            self.__inbandDTMFdetector = None
+        # XXX handle timeout
+
+
+
+
+
+
+
+
+
 class BridgeSource(Source):
     "A BridgeSource connects a leg to another leg via a bridge"
     def __init__(self, app, bridge):
@@ -141,3 +265,35 @@ class Bridge:
         # Nothing for now.
         pass
         
+try:
+    import numarray
+except ImportError:
+    numarray = None
+
+if numarray is not None:
+    class InbandDtmfDetector:
+        def __init__(self, leg):
+            from shtoom.doug.dtmfdetect import DtmfDetector
+            self.leg = leg
+            self.prev = None
+            self.D = DtmfDetector()
+            self.digit = ''
+        def __call__(self, samp):
+            if self.prev is None:
+                self.prev = samp
+                return
+            nd = self.D.detect(self.prev+samp)
+            if nd != self.digit:
+                if self.digit == '':
+                    self.digit = nd
+                    self.leg.leg_startDTMFevent(nd)
+                elif nd == '':
+                    old, self.digit = self.digit, nd
+                    self.leg.leg_stopDTMFevent(old)
+                else:
+                    old, self.digit = nd, self.digit
+                    self.leg.leg_stopDTMFevent(old)
+                    self.leg.leg_startDTMFevent(self.digit)
+            self.prev = samp
+
+
