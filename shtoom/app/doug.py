@@ -166,11 +166,11 @@ class DougApplication(BaseApplication):
         call = self._calls[callcookie]
         if call.dialog.getDirection() == "inbound":
             self._voiceapps[callcookie].va_callanswered()
-        log.msg("call %s connected"%callcookie)
+        log.msg("call %s connected"%callcookie, system='doug')
         cb(callcookie)
 
     def endCall(self, callcookie, reason=''):
-        log.msg("call %s disconnected"%callcookie, reason)
+        log.msg("call %s disconnected"%callcookie, reason, system='doug')
         if self._rtp.get(callcookie):
             rtp = self._rtp[callcookie]
             rtp.stopSendingAndReceiving()
@@ -232,6 +232,7 @@ class DougApplication(BaseApplication):
         self._voiceapps[voiceappCookie].va_callanswered(outbound)
 
     def dropCall(self, cookie):
+        print "dropCall", cookie
         call = self._calls.get(cookie)
         if not call:
             log.err("Couldn't find cookie %s, have %r, %r"%(cookie, self._calls.keys(), self._voiceapps.keys(), ))
@@ -239,10 +240,10 @@ class DougApplication(BaseApplication):
         call.dropCall()
 
     def statusMessage(self, message):
-        log.msg("STATUS: "+message)
+        log.msg("STATUS: "+message, system='doug')
 
     def debugMessage(self, message):
-        log.msg(message)
+        log.msg(message, system='doug')
 
     def appSpecificOptions(self, opts):
         import os.path
@@ -250,6 +251,8 @@ class DougApplication(BaseApplication):
         from shtoom.Options import OptionGroup, StringOption, ChoiceOption
         app = OptionGroup('doug', 'doug')
         app.addOption(StringOption('logfile','log to this file'))
+        app.addOption(StringOption('dougargs',
+                                'pass these arguments to the voiceapp'))
         opts.addGroup(app)
         opts.setOptsFile('.dougrc')
 
@@ -262,3 +265,12 @@ class DougApplication(BaseApplication):
                                  self.getPref('register_authpasswd')))
         else:
             raise defer.fail(CallFailed("No auth available"))
+
+    def startDTMF(self, cookie, digit):
+        rtp = self._rtp[cookie]
+        rtp.startDTMF(digit)
+
+    def stopDTMF(self, cookie, digit):
+        rtp = self._rtp[cookie]
+        rtp.stopDTMF(digit)
+
