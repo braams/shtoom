@@ -99,7 +99,6 @@ class MultipleConv(NullConv):
             raise ValueError, "Unknown format %s"%(format)
 
     def write(self, data, format):
-        print "%d bytes in %s format"%(len(data), format)
         if format == FMT_PCMU:
             return self._d.write(audioop.ulaw2lin(data, 2))
         elif format == FMT_GSM:
