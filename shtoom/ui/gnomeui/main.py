@@ -204,6 +204,9 @@ class ShtoomWindow(ShtoomBaseUI):
         if self.cookie:
             self.app.stopDTMF(self.cookie, '*')
 
+    def save_preferences(self, options):
+        self.app.updateOptions(options)
+
 class Incoming:
 
     def __init__(self, main, cookie, description, deferredResponse):
