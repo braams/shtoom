@@ -5,7 +5,7 @@
 #
 # 'use_setitimer' will give better results - needs
 # http://polykoira.megabaud.fi/~torppa/py-itimer/
-# $Id: rtp.py,v 1.15 2003/11/16 17:42:41 itamar Exp $
+# $Id: rtp.py,v 1.16 2003/11/20 09:42:50 anthonybaxter Exp $
 #
 
 import signal, struct, random, os, md5, socket
@@ -67,7 +67,7 @@ class RTPProtocol(DatagramProtocol):
         use_setitimer = 0
     use_setitimer = 0
     _cbDone = None
-    fp = None
+    infp = None
     outfp = None
     collectStats = 0
     statsIn = []
@@ -116,10 +116,12 @@ class RTPProtocol(DatagramProtocol):
         self.Done = 1
         self.rtpListener.stopListening()
         self.rtcpListener.stopListening()
-        if hasattr(self, "fp"):
-            del self.infp
-        if hasattr(self, "outfp"):
-            del self.outfp
+        if self.infp:
+            self.infp.close()
+            self.infp = None
+        if self.outfp:
+            self.outfp.close()
+            self.outfp = None
 
     def startReceiving(self, fp=None):
         if fp is None:
@@ -168,7 +170,7 @@ class RTPProtocol(DatagramProtocol):
     def reactorWakeUp(self, n, f, reactor=reactor):
         reactor.wakeUp()
 
-    def datagramReceived(self, datagram, addr):
+    def datagramReceived(self, datagram, addr, unpack=struct.unpack):
         if self.collectStats:
             t = time()
             self.statsIn.append(str(int((t-self.prevInTime)*1000)))
@@ -177,12 +179,15 @@ class RTPProtocol(DatagramProtocol):
                 print "Input", " ".join(self.statsIn)
                 self.statsIn = []
         if self.outfp:
-            if len(datagram) != 172:
-                print "datagram len %d!!"%(len(datagram))
-            try:
-                self.outfp.write(datagram[12:])
-            except IOError:
-                pass
+            hdr = struct.unpack('!BBHII', datagram[:12])
+            if hdr[1] != 0:
+                # Non-mulaw.
+                print "datagram len %d, HDR: %02x %02x"%(len(datagram),hdr[0],hdr[1])
+            else:
+                try:
+                    self.outfp.write(datagram[12:])
+                except IOError:
+                    pass
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6
