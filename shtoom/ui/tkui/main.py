@@ -5,6 +5,13 @@ from twisted.python import log
 from shtoom.ui.base import ShtoomBaseUI
 from shtoom.exceptions import CallRejected
 
+#class AuthDialog(Dialog):
+#
+#    def __init__(self, prompt, parent):
+#        
+#        Dialog.__init(self, parent, 'Authentication Required')
+        
+
 class ShtoomMainWindow(ShtoomBaseUI):
     def __init__(self):
         self.cookie = False
@@ -79,9 +86,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
     def getAuth(self, message):
         from tkSimpleDialog import askstring
         from twisted.internet import defer
-        answer = askstring('Authentication Required', message)
-        user, passwd = answer.split(',',1)
-        return defer.succeed((user.strip(), passwd.strip()))
+        answer = askstring('Authentication Required', message+'\nEnter as user,passwd')
+        if answer:
+            user, passwd = answer.split(',',1)
+            user, passwd = user.strip(), passwd.strip()
+        else:
+            user, passwd = None, None
+        return defer.succeed((user, passwd))
 
     def incomingCall(self, description, cookie, defresp):
         import tkMessageBox
