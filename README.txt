@@ -5,7 +5,7 @@ quickly:
 
   - Qt, Tk, Gnome or text user interface (others coming soon)
   - Can make simple calls and hang them up - tested with kphone, linphone and
-    cisco AS5x00 running 12.3(3a), as well as with Asterisk and Quotient
+    cisco AS5x00 running 12.3, as well as with Asterisk and Quotient.
   - Can receive calls
   - Uses the G711 ULAW codec by default, or GSM 06.10 (with additional
     pygsm module installed).
@@ -31,12 +31,10 @@ and the fastaudio wrapper for PortAudio, available from
 http://www.freenet.org.nz/python/pyPortAudio/
 
 Windows installer for Python2.3 fastaudio is available from the 
-shtoom.sf.net website.
+shtoom.sf.net website. If someone wants to package up a Mac OSX 
+installer, that would be great.
 
 Note that, for me, portaudio doesn't work - I'm using ALSA on linux.
-The audio produced by portaudio/fastaudio looks like 16 bit linear 
-PCM - need to convert (using audioop.lin2ulaw? Does this get distributed
-with Mac and Windows installers of Python?)
 
 Codecs
 ======
@@ -47,9 +45,7 @@ pygsm module (available from shtoom CVS as module 'pygsm', it will
 also handle GSM 06.10. Additional codecs will be added later.
 
 
-
-
-Shtoom is (C) Copyright 2003 Anthony Baxter and is licensed under
+Shtoom is (C) Copyright 2004 Anthony Baxter and is licensed under
 the GNU Lesser General Public License - see the file LICENSE for
 details.
 
