@@ -50,7 +50,7 @@ setup(
                 'shtoom.ui.gnomeui', 'shtoom.ui.qtui',
                 'shtoom.ui.textui', 'shtoom.ui.tkui', 'shtoom.ui.wxui',
                 # 'shtoom.ui.mfcui', 'shtoom.ui.macui',
-                'shtoom.audio', 'shtoom.app', 'shtoom.doug' ],
+                'shtoom.audio', 'shtoom.app', 'shtoom.doug', 'shtoom.compat' ],
     requires = ( 'twisted', 'python-2.3' ),
     provides = ( 'shtoom-%s'%__version__, ),
     scripts = ['scripts/shtoomphone.py', 'scripts/shtam.py',
