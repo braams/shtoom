@@ -47,6 +47,9 @@ class ShtoomWindow(ShtoomBaseUI):
         self.statusMessage("")
         self.cookie = None
 
+    def on_register_clicked(self, w):
+        self.app.register()
+
     def on_acceptdialog_response(self, widget, code):
         self.incoming[0].approved(code == gtk.RESPONSE_OK)
 
