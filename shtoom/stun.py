@@ -1,5 +1,5 @@
 # Copyright (C) 2004 Anthony Baxter
-# $Id: stun.py,v 1.11 2004/01/14 17:08:00 itamar Exp $
+# $Id: stun.py,v 1.12 2004/02/24 10:43:01 anthony Exp $
 
 import struct, socket, time
 from twisted.internet import reactor, defer
@@ -54,7 +54,7 @@ class StunProtocol(DatagramProtocol, object):
         if self._pending.has_key(tid):
             del self._pending[tid]
         else:
-            log.error("error, unknown transaction ID!")
+            log.err("error, unknown transaction ID!")
             return
         if mt == 0x0101:
             log.msg("got STUN response from %s"%repr(address))
