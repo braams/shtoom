@@ -26,6 +26,20 @@ def tryTkInterface():
         main()
         sys.exit()
 
+def tryGnomeInterface():
+    import sys
+    try:
+        import pygtk
+        pygtk.require("2.0")
+        import gtk
+    except ImportError:
+        gtk = None
+    if gtk is not None:
+        from shtoom.ui.gnomeshtoom import main
+        main()
+        sys.exit()
+
+
 def findUserInterface():
     from shtoom import prefs
     if prefs.ui:
@@ -33,6 +47,8 @@ def findUserInterface():
             tryQtInterface()
         elif prefs.ui.lower()[:2] == 'tk':
             tryTkInterface()
+        elif prefs.ui.lower() == "gnome":
+            tryGnomeInterface()
     tryQtInterface()
     tryTkInterface()
     # Other interfaces here
