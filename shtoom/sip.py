@@ -10,20 +10,24 @@
 # And yes, a redesign (to make it unit testable, for one thing) is very
 # much planned and it is gradually being refactored.
 
+import copy, digestauth, md5, random, sha, socket, sys, time
+from urllib2 import parse_http_list
+
 from interfaces import SIP as ISip
 
 from twisted.internet.protocol import DatagramProtocol, ConnectedDatagramProtocol
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.protocols import sip as tpsip
+from twisted.python import log
 
-import shtoom
+from shtoom.exceptions import CallRejected, CallFailed, HostNotKnown
 from shtoom import __version__ as ShtoomVersion
+from shtoom.stun import StunHook, getPolicy
+from shtoom.sdp import SDP
 
 _CACHED_LOCAL_IP = None
 
-from twisted.python import log
-import random, sys, socket
 
 def errhandler(*args):
     print "BANG", args
@@ -32,7 +36,6 @@ def genCallId():
     return 400000000 + random.randint(0,2000000)
 
 def genStandardDate(t=None):
-    import time
     if t is None:
         t = time.gmtime()
     return time.strftime("%a, %d %b %Y %H:%M:%S GMT", t)
@@ -266,7 +269,6 @@ class Call(object):
             with multiple interfaces, we'll get the right one
         """
         # XXX Allow over-riding
-        from shtoom.stun import StunHook, getPolicy
         global _CACHED_LOCAL_IP
         host, port = dest
         getPref = self.sip.app.getPref
@@ -317,7 +319,6 @@ class Call(object):
         else:
             print "STUN policy %r failed for %r %r"%(pol, locAddress[0], remAddress[0])
             # None. STUN stuff failed. Abort.
-            from shtoom.exceptions import HostNotKnown
             d = self.compDef
             del self.compDef
             d.errback(HostNotKnown)
@@ -374,14 +375,12 @@ class Call(object):
     def rejectCall(self, message=None):
         ''' Accept currently pending call.
         '''
-        from shtoom.exceptions import CallRejected
         print "rejecting because", message
         self.sendResponse(self._invite, 603)
         self.setState('ABORTED')
         self.compDef.errback(CallRejected)
 
     def terminateCall(self, message):
-        from shtoom.exceptions import CallRejected, CallFailed
         if self.getState() == 'SENT_INVITE':
             d, self.compDef = self.compDef, None
             if d is not None:
@@ -400,8 +399,6 @@ class Call(object):
         ''' Send a response to a message. message is the response body,
             code is the response code (e.g.  200 for OK)
         '''
-
-        from shtoom.sdp import SDP
         body = None
         if message.method == 'INVITE' and code == 200:
             sdp = self.sip.app.getSDP(self.cookie)
@@ -541,7 +538,6 @@ class Call(object):
         return uri.toString()
 
     def sendAck(self, okmessage, startRTP=0):
-        from shtoom.sdp import SDP
         username = self.sip.app.getPref('username')
         oksdp = SDP(okmessage.body)
         sdp = self.sip.app.getSDP(self.cookie)
@@ -641,7 +637,6 @@ class Call(object):
         ''' The remote UAC has ACKed our response to their INVITE.
             Start sending and receiving audio.
         '''
-        from shtoom.sdp import SDP
         sdp = SDP(self._invite.body)
         self.setState('CONNECTED')
         if hasattr(self, 'compDef'):
@@ -688,8 +683,6 @@ class Call(object):
             return defer.succeed('aborted')
 
     def _getHashingImplementation(self, algorithm):
-        # lambdas assume digest modules are imported at the top level
-        import md5, sha
         if algorithm.lower() == 'md5':
             H = lambda x: md5.new(x).hexdigest()
         elif algorithm.lower() == 'sha':
@@ -700,8 +693,6 @@ class Call(object):
 
     def calcAuth(self, method, uri, authchal, cred):
         (user, passwd) = cred
-        from urllib2 import parse_http_list
-        import digestauth
         authmethod, auth = authchal.split(' ', 1)
         if authmethod.lower() != 'digest':
             raise ValueError, "Unknown auth method %s"%(authmethod)
@@ -863,7 +854,6 @@ class Registration(Call):
         self._outboundProxyURI = None
 
     def startRegistration(self):
-        import copy
         self.regServer = Address(self.sip.app.getPref('register_uri'))
         self.regAOR = self.regServer.getURI(parsed=True)
         self._remoteURI = self._remoteAOR = self.regAOR
@@ -1079,7 +1069,6 @@ class SipPhone(DatagramProtocol, object):
             return defer.fail(v)
         print "call is", call
         if call is None:
-            from shtoom.exceptions import CallFailed
             _d.errback(CallFailed)
             return _d
         if cookie is not None:
