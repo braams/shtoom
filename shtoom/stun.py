@@ -358,7 +358,8 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         if isBogusAddress(localAddress):
             d = getLocalIPAddress()
             d.addCallback(self._resolveStunServers)
-        self._resolveStunServers(localAddress)
+        else:
+            self._resolveStunServers(localAddress)
 
 
     def _resolveStunServers(self, localAddress):
