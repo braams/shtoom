@@ -38,7 +38,6 @@ class ConfSource(Source):
             self._quiet = False
         return ret
 
-
     def close(self):
         self._room.removeMember(self)
 
@@ -139,42 +138,45 @@ class Room:
 
     def mixAudio(self):
         import audioop
-        # short-circuit this case
         self._audioOut = {}
         audioIn, self._audioIn = self._audioIn, {}
+        # short-circuit this case
         if len(self._members) < 2:
             self._audioOutDefault = ''
             return
+        # Samples is (confsource, audio)
         samples = audioIn.items()
+        # power is three-tuples of (rms,audio,confsource)
         power = [ (audioop.rms(x[1],2),x[1], x[0]) for x in samples ]
         power.sort(); power.reverse()
+        # Speakers is a list of the _maxSpeakers loudest speakers
         speakers = Set([x[2] for x in power[:self._maxSpeakers]])
         # First we calculate the 'default' audio. Used for everyone who's
         # not a speaker in the room.
         samples = [ x[1] for x in power[:self._maxSpeakers] ]
-        divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples ]
-        if divsamples:
-            out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+        scaledsamples = [ audioop.mul(x, 2, 1.0/len(samples)) for x in samples ]
+        if scaledsamples:
+            # ooo. a use of reduce. first time for everything...
+            combined = reduce(lambda x,y: audioop.add(x, y, 2), scaledsamples)
         else:
-            out = ''
-        self._audioOutDefault = out
-
+            combined = ''
+        self._audioOutDefault = combined
         # Now calculate output for each speaker.
         allsamples = {}
         for p,sample,speaker in power:
             allsamples[speaker] = p, sample
         for s in speakers:
-            # For each, take the set of (other speakers), grab the
-            # top N speakers, and combine them. Add to the _audioOut
-            # dictionary.
+            # For each speaker, take the set of (other speakers), grab 
+            # the top N speakers, and combine them. Add to the _audioOut
+            # dictionary 
             all = allsamples.copy()
             del all[s]
             power = all.values()
             power.sort() ; power.reverse()
             samples = [ x[1] for x in power[:self._maxSpeakers] ]
             if samples:
-                divsamples = [ audioop.mul(x, 2, len(samples)) for x in samples]
-                out = reduce(lambda x,y: audioop.add(x, y, 2), divsamples)
+                scaled = [ audioop.mul(x, 2, 1.0/len(samples)) for x in samples]
+                out = reduce(lambda x,y: audioop.add(x, y, 2), scaled)
             else:
                 out = ''
             self._audioOut[speaker] = out
