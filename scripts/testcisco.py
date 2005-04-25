@@ -114,19 +114,26 @@ class PlayingApp(VoiceApp):
         self.where = 'main menu'
         if event.digits == '4':
             print "pin ok!"
-            self.leg.sendDTMF('9')
             self.timestats.append(time.time())
-            self.leg.hangupCall()
-            self.doneDoneAndDone(None)
+            print "dialling"
+            self.leg.sendDTMF('2,,,,12138672411#')
             return ( (MediaDoneEvent, self.messageDone),
+                     (DTMFReceivedEvent, self.dtmfVoicemailLogin),
                      (TimeoutEvent, self.callTimedOut),
-                     (CallEndedEvent, self.doneDoneAndDone),
+                     (CallEndedEvent, self.callFailed),
                    )
         elif event.digits == '0':
             print "account nak!"
             self.callFailed(event)
         else:
             print "unknown result", event.digits
+
+    def dtmfVoicemailLogin(self, event):
+        self.where = 'voicemail'
+        print "voicemail login", event.digits
+        self.leg.hangupCall()
+        self.doneDoneAndDone(None)
+        return ( (CallEndedEvent, self.callFailed), )
 
     def callTimedOut(self, event):
         return self.callFailed(event, 'timeout')

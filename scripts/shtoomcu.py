@@ -86,10 +86,13 @@ class ConferencingApp(VoiceApp):
 
 
 
-from shtoom.doug.service import DougService
-global app
-srv = DougService(ConferencingApp)
-srv.startService()
-app = srv.app
-#app.boot()
-#app.start()
+if __name__ == "__main__":
+    from shtoom import i18n
+    i18n.install()
+    from shtoom.doug.service import DougService
+    global app
+    srv = DougService(ConferencingApp)
+    srv.startService()
+    app = srv.app
+    #app.boot()
+    #app.start()
