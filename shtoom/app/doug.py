@@ -56,6 +56,11 @@ class DougApplication(BaseApplication):
         if vargs:
             kwargs = [x.split('=') for x in vargs.split(',') ]
             self._voiceappArgs = dict(kwargs)
+            for k in self._voiceappArgs:
+                if isinstance(k, unicode):
+                    v = self._voiceappArgs[k]
+                    del self._voiceappArgs[k]
+                    self._voiceappArgs[k.encode('ascii')] = v
 
         register_uri = self.getPref('register_uri')
         if register_uri is not None:
