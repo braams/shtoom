@@ -160,6 +160,11 @@ class ShtoomWindow(ShtoomBaseUI):
         self.realmLabel = None
         d.callback(None)
 
+    def on_userEntry_activate(self, widget):
+        p = self.xml.get_widget("passwdEntry")
+        p.grab_focus()
+        
+
     def on_authdialog_ok(self, widget):
         # sweeeet.
         user = self.xml.get_widget('userEntry').get_text()
