@@ -138,7 +138,7 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
 
-    def getAuth(self, method, realm):
+    def notGetAuth(self, method, realm):
         msg = _('Enter username and password\nfor "%(method)s" at "%(realm)s"')
         msg = msg % {'method':method, 'realm':realm }
 
