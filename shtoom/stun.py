@@ -488,6 +488,8 @@ class NetAddress:
 
     def inet_aton(self, ipstr):
         "A sane inet_aton"
+        if ':' in ipstr:
+            return 
         net = [ int(x) for x in ipstr.split('.') ] + [ 0,0,0 ]
         net = net[:4]
         return  ((((((0L+net[0])<<8) + net[1])<<8) + net[2])<<8) +net[3]
@@ -509,6 +511,8 @@ class NetAddress:
             return self.check(ip.start) and self.check(ip.end)
         if isinstance(ip, basestring):
             ip = self.inet_aton(ip)
+        if ip is None:
+            return False
         if ip & self.mask == self.net:
             return True
         else:
