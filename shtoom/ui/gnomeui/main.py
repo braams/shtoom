@@ -15,6 +15,7 @@ class ShtoomWindow(ShtoomBaseUI):
     def __init__(self):
         import gettext, shtoom.i18n
         self.cookie = False
+        self.authdialog = None
         d = shtoom.i18n.getLocaleDir()
         domain = gettext.textdomain()
         if d is not None:
@@ -138,9 +139,36 @@ class ShtoomWindow(ShtoomBaseUI):
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
 
-    def notGetAuth(self, method, realm):
+    def getAuth(self, method, realm):
+        # XXX TOFIX We should queue auth requests aaaargh
+        if self.authdialog is not None:
+            # oops
+            return
         msg = _('Enter username and password\nfor "%(method)s" at "%(realm)s"')
         msg = msg % {'method':method, 'realm':realm }
+        self.authdialog = self.xml.get_widget("authdialog")
+        self.realmLabel = self.xml.get_widget("realmLabel")
+        self.realmLabel.set_label(msg)
+        self.authdialog.show_all()
+        self.authdialog_defer = defer.Deferred()
+        return self.authdialog_defer
+
+    def on_authdialog_cancel(self, widget):
+        self.authdialog.hide_all()
+        self.authdialog = None
+        d, self.authdialog_defer = self.authdialog_defer, None
+        self.realmLabel = None
+        d.callback(None)
+
+    def on_authdialog_ok(self, widget):
+        # sweeeet.
+        user = self.xml.get_widget('userEntry').get_text()
+        passwd = self.xml.get_widget('passwdEntry').get_text()
+        self.authdialog.hide_all()
+        self.authdialog = None
+        d, self.authdialog_defer = self.authdialog_defer, None
+        self.realmLabel = None
+        d.callback((user,passwd))
 
     def incomingCall(self, description, cookie):
         # XXX multiple incoming calls won't work
