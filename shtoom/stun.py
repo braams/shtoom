@@ -9,6 +9,8 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
 import warnings
 
+import sets
+
 
 from shtoom.interfaces import NATMapper as INATMapper
 from shtoom.interfaces import StunPolicy as IStunPolicy
@@ -99,6 +101,12 @@ NatTypePortRestricted = _NatType('PortRestricted')
 # For testing - always return this STUN type
 _ForceStunType = None
 
+def hexify(s):
+    if s is None:
+        return 
+    ret = ''.join([ '%x'%(ord(c)) for c in s ])
+    return ret
+
 
 import os
 if hasattr(os, 'urandom'):
@@ -115,16 +123,25 @@ else:
         tid = ''.join(tid)
         return tid
 
-def _parseStunResponse(dgram, address, expectedTID=None):
+def _parseStunResponse(dgram, address, expectedTID=None, oldtids=[]):
     mt, pktlen, tid = struct.unpack('!hh16s', dgram[:20])
     if expectedTID is not None and expectedTID != tid:
         # a response from an earlier request
+        if tid in oldtids:
+            # discard
+            if STUNVERBOSE:
+                log.msg("ignoring belated STUN response to %r from %s"%(
+                            hexify(tid), repr(address)), system='stun')
+            return
         log.msg("got unexpected STUN response %r != %r from %s"% 
-                        (expectedTID, tid, repr(address),), system='stun')
+                        (hexify(expectedTID), hexify(tid), 
+                        repr(address),), system='stun')
         return
     resdict = {}
     if mt == 0x0101:
-        log.msg("got STUN response from %s"%repr(address), system='stun')
+        log.msg("got STUN response to %r from %s"%(hexify(expectedTID),
+                                                   repr(address)), 
+                                                        system='stun')
         # response
         remainder = dgram[20:]
         while remainder:
@@ -174,8 +191,8 @@ class  _StunBase(object):
             raise ValueError, "stun request too big (%d bytes)"%pktlen
         pkt = struct.pack('!hh16s', mt, pktlen, tid) + avstr
         if STUNVERBOSE:
-            print "sending request with %d avpairs to %r (in state %s)"%(
-                                        len(avpairs), server, self._stunState)
+            print "sending request %r with %d avpairs to %r (in state %s)"%(
+                            hexify(tid), len(avpairs), server, self._stunState)
         self.transport.write(pkt, server)
 
 class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
@@ -192,6 +209,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         self.externalAddress = None
         self.localAddress = None
         self.expectedTID = None
+        self.oldTIDs = sets.Set()
         self.natType = None
         self.servers = [(socket.gethostbyname(host), port) for host, port in servers]
         super(StunDiscoveryProtocol, self).__init__(*args, **kwargs)
@@ -200,6 +218,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         tid = getRandomTID()
         delayed = reactor.callLater(0.100, self.retransmitInitial, address, tid)
         self._potentialStuns[tid] = delayed
+        self.oldTIDs.add(tid)
         self.sendRequest(address, tid=tid)
 
     def retransmitInitial(self, address, tid, count=1):
@@ -234,7 +253,8 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                 for k in self._potentialStuns.keys():
                     self._potentialStuns[k].cancel()
                     self._potentialStuns[k] = None
-                resdict = _parseStunResponse(dgram, address, self.expectedTID)
+                resdict = _parseStunResponse(dgram, address, self.expectedTID,
+                                                self.oldTIDs)
                 if not resdict:
                     return
                 self.handleStunState1(resdict, address)
@@ -242,7 +262,8 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                 # We already have a working STUN server to play with.
                 pass
             return
-        resdict = _parseStunResponse(dgram, address, self.expectedTID)
+        resdict = _parseStunResponse(dgram, address, self.expectedTID,
+                                                self.oldTIDs)
         if not resdict:
             return
         if STUNVERBOSE: print 'calling handleStunState%s'%(self._stunState)
@@ -257,6 +278,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
             else:
                 self._stunState = '2b'
             self.expectedTID = tid = getRandomTID()
+            self.oldTIDs.add(tid)
             self.state2DelayedCall = reactor.callLater(0.1,
                                                 self.retransmitStunState2,
                                                 address, tid)
@@ -297,6 +319,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                                                     self.retransmitStunState3,
                                                     address, tid)
             self.expectedTID = tid = getRandomTID()
+            self.oldTIDs.add(tid)
             self.sendRequest(self._altStunAddress, tid)
 
     def handleStunState3(self, resdict, address):
@@ -308,10 +331,12 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
             # State 4! wheee!
             self._stunState = '4'
             self.expectedTID = tid = getRandomTID()
+            self.oldTIDs.add(tid)
             self.state4DelayedCall = reactor.callLater(0.1,
                                                 self.retransmitStunState4,
                                                 address, tid)
             self.expectedTID = tid = getRandomTID()
+            self.oldTIDs.add(tid)
             self.sendRequest(address, tid, avpairs=(
                                     ('CHANGE-REQUEST', CHANGE_PORT),))
         else:
@@ -393,11 +418,13 @@ class StunHook(_StunBase):
         self._pending = {}
         self.servers = servers
         self.expectedTID = None
+        self.oldTIDs = sets.Set()
         self._stunState = 'hook'
         super(StunHook, self).__init__(*args, **kwargs)
 
     def initialStunRequest(self, address):
         tid = getRandomTID()
+        self.oldTIDs.add(tid)
         delayed = reactor.callLater(0.100, self.retransmitInitial, address, tid)
         self._pending[tid] = delayed
         self.sendRequest(address, tid=tid)
@@ -429,7 +456,8 @@ class StunHook(_StunBase):
             if delayed is not None:
                 delayed.cancel()
             del self._pending[tid]
-            resdict = _parseStunResponse(dgram, address)
+            resdict = _parseStunResponse(dgram, address,
+                                                oldtids=self.oldTIDs)
             if not resdict or not resdict.get('externalAddress'):
                 # Crap response, ignore it.
                 return
