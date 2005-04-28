@@ -13,6 +13,7 @@ from shtoom.audio.converters import DougConverter
 from shtoom.doug.events import *
 from shtoom.doug.exceptions import *
 from twisted.python import log
+from twisted.internet.task import LoopingCall
 
 class Leg(object):
 
@@ -37,6 +38,24 @@ class Leg(object):
         self.__dtmfSingleMode = True
         self.__inbandDTMFdetector = None
         self._connectSource(self.__silenceSource)
+        self._startAudio()
+
+    def _startAudio(self):
+        self.LC = LoopingCall(self._get_some_audio)
+        self.LC.start(0.020)
+
+    def _stopAudio(self):
+        try:
+            self.LC.cancel()
+        except AttributeError:
+            # twisted bug
+            pass
+
+    def _get_some_audio(self):
+        if self._voiceapp is not None:
+            data = self.__connected.read()
+            sample = self.__converter.convertOutbound(data)
+            self._voiceapp.va_outgoingRTP(sample)
 
     def getDialog(self):
         return self._dialog
@@ -102,6 +121,7 @@ class Leg(object):
                                                 self._cookie), system='doug')
 
     def hangupCall(self):
+        self._stop_audio()
         self._voiceapp.va_hangupCall(self._cookie)
 
     def sendDTMF(self, digits, duration=0.1, delay=0.05):

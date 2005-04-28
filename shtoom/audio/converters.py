@@ -229,7 +229,11 @@ class Codecker:
             raise ValueError("can't encode format %r"%self.format)
         encaudios = codec.buffer_and_encode(bytes)
         for encaudio in encaudios:
-            self.handler(MediaSample(self.format, encaudio))
+            samp = MediaSample(self.format, encaudio)
+            if self.handler is not None:
+                self.handler(samp)
+            else:
+                return samp
 
     def decode(self, packet):
         "Accepts an RTPPacket, emits audio as bytes"
@@ -352,6 +356,7 @@ class DougConverter(MediaLayer):
     def __init__(self, defaultFormat=PT_PCMU, *args, **kwargs):
         self.codecker = Codecker(defaultFormat)
         self.convertInbound = self.codecker.decode
+        self.convertOutbound = self.codecker.handle_audio
         self.set_handler = self.codecker.set_handler
         if not kwargs.get('device'):
             kwargs['device'] = None

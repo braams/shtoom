@@ -80,11 +80,16 @@ class DougApplication(BaseApplication):
             v.va_start()
         except:
             ee,ev,et = sys.exc_info()
-            log.err("voiceapp error %s, %s, %s"%(ee, ev, traceback.extract_tb(et)))
+            log.err("voiceapp init failed: %s, %s, %s"%(ee, ev, traceback.extract_tb(et)))
             v = None
         if v:
             log.msg("new voiceapp %r"%(v), system='doug')
             self._voiceapps[callcookie] = v
+
+    def bong(self, failure):
+        print failure.value
+        log.err(failure)
+        return failure
 
     def acceptResults(self, callcookie, results):
         log.msg("callcookie %s ended with result %s"%(callcookie, results),
@@ -128,6 +133,7 @@ class DougApplication(BaseApplication):
             d.addCallback(lambda x, ad=ad: ad)
         else:
             raise ValueError, "unknown call type %s"%(calltype)
+        d.addErrback(self.bong)
         return d
 
     def rejectedCall(self, callcookie, reason):
@@ -195,6 +201,11 @@ class DougApplication(BaseApplication):
             self._voiceapps[callcookie].va_incomingRTP(packet, callcookie)
         except IOError:
             pass
+
+    def outgoingRTP(self, cookie, sample):
+        rtp = self._rtp.get(cookie)
+        if rtp:
+            rtp.handle_media_sample(sample)
 
     def placeCall(self, cookie, nleg, sipURL, fromURI=None):
         ncookie = self.getCookie()

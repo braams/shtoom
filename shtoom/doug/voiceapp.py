@@ -56,6 +56,9 @@ class VoiceApp(StateMachine):
     def va_incomingRTP(self, packet, callcookie):
         return self.getLeg(callcookie).leg_incomingRTP(packet)
 
+    def va_outgoingRTP(self, sample):
+        self.__appl.outgoingRTP(self.__cookie, sample)
+
     def va_start(self):
         self._start(callstart=0)
 
@@ -84,6 +87,8 @@ class VoiceApp(StateMachine):
 
     def va_abort(self):
         self.mediaStop()
+        for leg in self.__legs.values():
+            leg._stop_audio()
         self._triggerEvent(CallEndedEvent(None))
 
     def mediaPlay(self, playlist, leg=None):
