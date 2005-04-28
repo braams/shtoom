@@ -453,6 +453,8 @@ class Call(object):
                     exc = CallRejected
                 else:
                     exc = CallFailed
+                print "call terminated on a", message.code
+                log.msg("call terminated on a %s"%message.code, system="sip")
                 d.errback(exc('%s: %s'%(message.code, message.phrase)))
         self.sip.app.endCall(self.cookie,
                              'other end sent\n%s'%message.toString())
@@ -596,20 +598,24 @@ class Call(object):
 
     def sendAck(self, okmessage, startRTP=0):
         username = self.sip.app.getPref('username')
-        oksdp = SDP(okmessage.body)
-        sdp = self.sip.app.getSDP(self.cookie, oksdp)
-        if not sdp.hasMediaDescriptions():
-            self.sendResponse(okmessage, 406)
-            self.setState('ABORTED')
-            # compDef.errback? XXX
-            return
+        if okmessage.code == 200:
+            oksdp = SDP(okmessage.body)
+            sdp = self.sip.app.getSDP(self.cookie, oksdp)
+            if not sdp.hasMediaDescriptions():
+                self.sendResponse(okmessage, 406)
+                self.setState('ABORTED')
+                # compDef.errback? XXX
+                return
         via = okmessage.headers.get('via')
         if type(via) is list: via = via[0]
         via = tpsip.parseViaHeader(via)
         if via.rport and via.rport != True:
             print "correcting local port to %r"%(via.rport)
             self._localPort = int(via.rport)
-        contact = okmessage.headers['contact']
+        if 'contact' in okmessage.headers:
+            contact = okmessage.headers['contact']
+        else:
+            contact = okmessage.headers['from']
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
@@ -903,6 +909,9 @@ class Call(object):
                     d, self.dropDef = self.dropDef, None
                     # XXX failed to drop call. need exception here
                     d.errback(message.code)
+                # We should send an ACK to a failed request.
+                if self.state == 'SENT_INVITE':
+                    self.sendAck(message)
                 self.sip.app.debugMessage(message.toString())
                 self.terminateCall(message)
                 self.sip._delCallObject(self.getCallID())
@@ -915,6 +924,8 @@ class Call(object):
                 d.errback(message.code)
             self.sip.app.debugMessage(message.toString())
             self.terminateCall(message)
+            if self.state == 'SENT_INVITE':
+                self.sendAck(message)
             self.sip._delCallObject(self.getCallID())
             self.sip.app.statusMessage("Call Failed: %s %s"%(message.code,
                                                              message.phrase))
@@ -924,6 +935,8 @@ class Call(object):
                 # XXX failed to drop call. need exception here
                 d.errback(message.code)
             self.sip.app.debugMessage(message.toString())
+            if self.state == 'SENT_INVITE':
+                self.sendAck(message)
             self.terminateCall(message)
             #self.sip.app.endCall(self.cookie, 'Other end sent %s'%message.toString())
             self.sip._delCallObject(self.getCallID())
