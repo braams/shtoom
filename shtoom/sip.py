@@ -438,6 +438,7 @@ class Call(object):
 
     def failedIncoming(self, failure):
         log.msg('failedIncoming because %r'%(failure,), system='sip')
+        log.msg('exception: %r'%(failure.value.args,), system='sip')
         # XXX Can I produce a more specific error than 500?
         self.sendResponse(self._invite, 500)
         self.setState('ABORTED')
