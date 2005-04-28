@@ -1,5 +1,6 @@
 from twisted.python.components import Interface
 
+# XXX TODO update!
 
 class IAudio(Interface):
     '''Lowlevel interface to audio source/sink.'''

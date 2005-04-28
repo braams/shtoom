@@ -15,11 +15,11 @@ try:
 except ImportError:
     audioop = None
 
-class NullSink:
-    def handle_data(self, data):
+class NullEncoder:
+    def handle_audio(self, data):
         pass
 
-nullsink = NullSink()
+nullencoder = NullEncoder()
 
 class MediaSample:
     def __init__(self, ct, data):
@@ -220,7 +220,7 @@ class Codecker:
     def getDefaultFormat(self):
         return self.format
 
-    def handle_data(self, bytes):
+    def handle_audio(self, bytes):
         "Accept audio as bytes, emits MediaSamples."
         if not bytes:
             return None
@@ -251,7 +251,8 @@ class MediaLayer(NullConv):
         self.playout = None
         self.codecker = None
         self.defaultFormat = None
-        NullConv.__init__(self, device, *args, **kwargs) # this sets self._d = device
+        # this sets self._d = device
+        NullConv.__init__(self, device, *args, **kwargs) 
 
     def getFormat(self):
         return self.defaultFormat
@@ -289,16 +290,16 @@ class MediaLayer(NullConv):
         readin buffers *ought* to be flushed by the lower-layer audio device 
         when we call reopen() on it.
         """
-        assert self.defaultFormat, "You are required to selectDefaultFormat()" +\
+        assert self.defaultFormat, "must call selectDefaultFormat()"+\
                                    "before (re-)opening the device."
 
         self.codecker = Codecker(self.defaultFormat)
         self._d.reopen()
         if mediahandler:
             self.codecker.set_handler(mediahandler)
-            self._d.set_sink(self.codecker)
+            self._d.set_encoder(self.codecker)
         else:
-            self._d.set_sink(nullsink)
+            self._d.set_encoder(nullencoder)
 
         if self.playout:
             log.msg("playout already started")
@@ -342,7 +343,7 @@ class MediaLayer(NullConv):
     def close(self):
         self.playout = None
         self.codecker = None
-        self._d.set_sink(nullsink)
+        self._d.set_encoder(nullencoder)
         NullConv.close(self)
 
 class DougConverter(MediaLayer):

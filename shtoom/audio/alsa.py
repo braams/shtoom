@@ -54,8 +54,8 @@ class ALSAAudioDevice(baseaudio.AudioDevice):
         (l, data,) = self.readdev.read()
         if self.readchannels == 2:
             data = audioop.tomono(data, 2, 1, 1)
-        if self.sink and data:
-            self.sink.handle_data(data)
+        if self.encoder and data:
+            self.encoder.handle_audio(data)
 
     def write(self, data):
         if not hasattr(self, 'LC'):

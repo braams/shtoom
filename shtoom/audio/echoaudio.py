@@ -6,22 +6,38 @@ from converters import MediaLayer
 
 opened = None
 
-class EchoAudio:
+class EchoAudioDevice:
+    _open = False
+
     def __init__(self):
         self._data = ''
 
-    def read(self):
+    def _push_up_some_data(self):
         sample, self._data = self._data[-320:], ''
-        return sample
+        if self.encoder and data:
+            self.encoder.handle_audio(data)
 
     def write(self, bytes):
         self._data += bytes
 
     def reopen(self):
+        self._open = True
         self._data = ''
 
     def close(self):
+        if not self._open:
+            return
+        self._open = False
         self._data = ''
+        try:
+            self.LC.stop()
+        except AttributeError:
+            # workaround for twisted bug
+            pass
 
-def getEchoAudio():
-    return MediaLayer(EchoAudio())
+    def openDev(self):
+        self._open = True
+        self.LC = LoopingCall(self._push_up_some_data)
+        self.LC.start(0.020)
+
+Device = EchoAudioDevice

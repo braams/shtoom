@@ -1,17 +1,19 @@
 # Copyright (C) 2004 Anthony Baxter
 
 class AudioDevice(object):
-    sink = None
+    encoder = None
 
     def __init__(self, mode='ignored'):
         self.openDev()
         self._closed = False
 
-    def set_sink(self, sink):
+    def set_encoder(self, encoder):
         """
-        The sink object will subsequently receive calls to its handle_data() method.
+        The encoder object will subsequently receive calls to its 
+        handle_audio() method when audio is available - it passes it on 
+        to the rest of the system (eventually, to the network).
         """
-        self.sink = sink
+        self.encoder = encoder
 
     def close(self):
         if not self._closed:

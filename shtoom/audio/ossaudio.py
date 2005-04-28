@@ -48,8 +48,8 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             return None
         if self._channels == 2:
             data = tomono(data, 2, 1, 1)
-        if self.sink and data:
-            self.sink.handle_data(data)
+        if self.encoder and data:
+            self.encoder.handle_audio(data)
 
     def write(self, data):
         from audioop import tostereo
@@ -63,7 +63,7 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             try:
                 self.LC.stop()
             except AttributeError:
-                # ? bug in Twisted?  Not sure.  This catch-and-ignore is a temporary workaround.  --Zooko
+                # workaround a twisted bug
                 pass
             del self.LC
             baseaudio.AudioDevice.close(self)

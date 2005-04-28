@@ -58,7 +58,7 @@ class CodecTest(unittest.TestCase):
                 ae(sample.data, 'frobozulate')
         c.set_handler(Foo())
 
-        c.handle_data('frobozulate')
+        c.handle_audio('frobozulate')
 
         class Foo:
             def handle_media_sample(self, sample):
@@ -66,7 +66,7 @@ class CodecTest(unittest.TestCase):
                 ae(sample.ct, PT_RAW)
         c.set_handler(Foo())
 
-        c.handle_data('farnarkling')
+        c.handle_audio('farnarkling')
 
     # XXX testing other codecs - endianness issues? crap.
 
@@ -83,7 +83,7 @@ class CodecTest(unittest.TestCase):
                 ae(sample.data, ulawout)
                 ae(sample.ct, PT_PCMU)
         c.set_handler(Foo())
-        c.handle_data(instr)
+        c.handle_audio(instr)
 
     def testGSMCodec(self):
         if codecs.gsm is None:
@@ -100,7 +100,7 @@ class CodecTest(unittest.TestCase):
                 ae(len(c.decode(p)), 320)
         c.set_handler(Foo())
 
-        c.handle_data(instr)
+        c.handle_audio(instr)
 
         c = Codecker(PT_GSM)
         ae(c.getDefaultFormat(), PT_GSM)
@@ -110,7 +110,7 @@ class CodecTest(unittest.TestCase):
                 tester.fail("WRONG.  The decoding of 32 zeroes (a short GSM frame) is required to be None, but it came out: %s" % (sample,))
         c.set_handler(Foo())
 
-        c.handle_data('\0'*32)
+        c.handle_audio('\0'*32)
 
     def testSpeexCodec(self):
         if codecs.gsm is None:
@@ -127,14 +127,14 @@ class CodecTest(unittest.TestCase):
                 ae(len(c.decode(p)), 320)
         c.set_handler(Foo())
 
-        p = c.handle_data(instr)
+        p = c.handle_audio(instr)
 
         class Foo:
             def handle_media_sample(self, sample, tester=self):
                 tester.fail("WRONG.  The decoding of 30 zeroes (a short Speex frame) is required to be None, but it came out: %s" % (sample,))
         c.set_handler(Foo())
 
-        c.handle_data('\0'*30)
+        c.handle_audio('\0'*30)
 
     def testMediaLayer(self):
         ae = self.assertEquals
