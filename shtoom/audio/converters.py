@@ -229,7 +229,7 @@ class Codecker:
             raise ValueError("can't encode format %r"%self.format)
         encaudios = codec.buffer_and_encode(bytes)
         for encaudio in encaudios:
-            self.handler.handle_media_sample(MediaSample(self.format, encaudio))
+            self.handler(MediaSample(self.format, encaudio))
 
     def decode(self, packet):
         "Accepts an RTPPacket, emits audio as bytes"
@@ -283,8 +283,8 @@ class MediaLayer(NullConv):
 
     def reopen(self, mediahandler=None):
         """
-        mediahandler, if not None, will subsequently receive calls to 
-        handle_media_sample().
+        mediahandler, if not None, is a callable that will be called with
+        a media sample is available.
 
         This flushes codec buffers.  The audio playout buffers and microphone 
         readin buffers *ought* to be flushed by the lower-layer audio device 

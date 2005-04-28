@@ -56,7 +56,7 @@ class CodecTest(unittest.TestCase):
         class Foo:
             def handle_media_sample(self, sample):
                 ae(sample.data, 'frobozulate')
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
 
         c.handle_audio('frobozulate')
 
@@ -64,7 +64,7 @@ class CodecTest(unittest.TestCase):
             def handle_media_sample(self, sample):
                 ae(sample.data, 'farnarkling')
                 ae(sample.ct, PT_RAW)
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
 
         c.handle_audio('farnarkling')
 
@@ -82,7 +82,7 @@ class CodecTest(unittest.TestCase):
                 ae(len(sample.data), 160)
                 ae(sample.data, ulawout)
                 ae(sample.ct, PT_PCMU)
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
         c.handle_audio(instr)
 
     def testGSMCodec(self):
@@ -98,7 +98,7 @@ class CodecTest(unittest.TestCase):
                 ae(sample.ct, PT_GSM)
                 p = RTPPacket(0, 0, 0, data=sample.data, ct=sample.ct)
                 ae(len(c.decode(p)), 320)
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
 
         c.handle_audio(instr)
 
@@ -108,7 +108,7 @@ class CodecTest(unittest.TestCase):
         class Foo:
             def handle_media_sample(self, sample, tester=self):
                 tester.fail("WRONG.  The decoding of 32 zeroes (a short GSM frame) is required to be None, but it came out: %s" % (sample,))
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
 
         c.handle_audio('\0'*32)
 
@@ -125,14 +125,14 @@ class CodecTest(unittest.TestCase):
                 ae(sample.ct, PT_SPEEX)
                 p = RTPPacket(0, 0, 0, data=sample.data, ct=sample.ct)
                 ae(len(c.decode(p)), 320)
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
 
         p = c.handle_audio(instr)
 
         class Foo:
             def handle_media_sample(self, sample, tester=self):
                 tester.fail("WRONG.  The decoding of 30 zeroes (a short Speex frame) is required to be None, but it came out: %s" % (sample,))
-        c.set_handler(Foo())
+        c.set_handler(Foo().handle_media_sample)
 
         c.handle_audio('\0'*30)
 

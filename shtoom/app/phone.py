@@ -170,9 +170,15 @@ class Phone(BaseApplication):
         log.msg("call Start %r %r"%(callcookie, remoteAddr))
         self._currentCall = callcookie
         self._rtp[callcookie].start(remoteAddr)
-        self.openAudioDevice([PT_PCMU,], self._rtp[callcookie])
+        mediahandler = lambda x,c=callcookie: self.outgoingRTP(c, x)
+        self.openAudioDevice([PT_PCMU,], mediahandler)
         log.msg("startCall opened %r %r"%(self._currentCall, self._audio))
         cb(callcookie)
+
+    def outgoingRTP(self, cookie, sample):
+        # XXX should the mute/nonmute be in the audio layer?
+        if not self._muted:
+            self._rtp[cookie].handle_media_sample(sample)
 
     def endCall(self, callcookie, reason=''):
         rtp = self._rtp.get(callcookie)
@@ -198,7 +204,6 @@ class Phone(BaseApplication):
         self._audio.close()
 
     def incomingRTP(self, callcookie, packet):
-        # XXX the mute/nonmute should be in the AudioLayer
         from shtoom.rtp.formats import PT_NTE
         if packet.header.ct == PT_NTE:
             return None
