@@ -144,7 +144,8 @@ class Phone(BaseApplication):
         return d
 
     def selectDefaultFormat(self, callcookie, sdp, format=None):
-        oldmediahandler = self._audio and self._audio.codecker and self._audio.codecker.handler
+        oldmediahandler = (self._audio and self._audio.codecker 
+                                       and self._audio.codecker.handler)
         self._audio.close()
         if not sdp:
             self._audio.selectDefaultFormat([format,])
@@ -235,18 +236,21 @@ class Phone(BaseApplication):
 
     def appSpecificOptions(self, opts):
         app = OptionGroup('shtoom', 'Shtoom')
-        app.add(ChoiceOption('ui',_('use UI for interface'), choices=['qt','gnome','wx', 'tk','text']))
-        app.add(ChoiceOption('audio',_('use AUDIO for interface'), choices=['oss', 'fast', 'port', 'alsa']))
+        app.add(ChoiceOption('ui',_('use UI for interface'), 
+                            choices=['qt','gnome','wx', 'tk', 'text']))
+        app.add(ChoiceOption('audio',_('use AUDIO for interface'), 
+                            choices=['oss', 'fast', 'port', 'alsa', 'echo']))
         app.add(StringOption('audio_device',_('use this audio device')))
         app.add(StringOption('audio_infile',_('read audio from this file')))
         app.add(StringOption('audio_outfile',_('write audio to this file')))
         # XXX TOFIX: This next option Must Die.
         app.add(StringOption('shtoomdir',_('root dir of shtoom installation')))
         app.add(StringOption('incoming_ring_file',
-                    _('play this wave file when a call comes in'),'ring.wav'))
+                                _('play this wav file when a call comes in'),
+                                    'ring.wav'))
         app.add(StringOption('ring_back_file',
-                    _('play this wave file when remote phone is ringing'),
-                    'ringback.wav'))
+                    _('play this wav file when remote phone is ringing'),
+                                    'ringback.wav'))
 
 
         app.add(StringOption('logfile',_('log to this file')))
@@ -259,18 +263,23 @@ class Phone(BaseApplication):
         "Place holder for now"
         user = self.getPref('register_authuser')
         passwd = self.getPref('register_authpasswd')
+        # XXX get value from credentials cache
         if user is not None and passwd is not None and retry is False:
             return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
+        # Not all user interfaces can prompt for auth yet
         elif hasattr(self.ui, 'getAuth'):
             def processAuth(res):
                 if not res:
+                    # No auth provided
                     return res
                 if len(res) == 2:
+                    # user, password
                     return res
                 elif len(res) == 3:
+                    # user, password, save (bool)
                     user,pw,saveok = res
-                    # XXX save
+                    # XXX TOFIX save the credentials
                     return user, pw
             d = self.ui.getAuth(method, realm)
             d.addCallback(processAuth)
@@ -280,13 +289,15 @@ class Phone(BaseApplication):
 
     def muteCall(self, callcookie):
         if self._currentCall is not callcookie:
-            raise ValueError, "call %s is current call, not %s"%(self._currentCall, callcookie)
+            raise ValueError("call %s is current call, not %s"%(
+                                    self._currentCall, callcookie))
         else:
             self._muted = True
 
     def unmuteCall(self, callcookie):
         if self._currentCall is not callcookie:
-            raise ValueError, "call %s is current call, not %s"%(self._currentCall, callcookie)
+            raise ValueError("call %s is current call, not %s"%(
+                                    self._currentCall, callcookie))
         else:
             self._muted = False
 

@@ -230,7 +230,8 @@ class DougApplication(BaseApplication):
         log.msg("dropCall %r"%(cookie), system='doug')
         call = self._calls.get(cookie)
         if not call:
-            log.err("Couldn't find cookie %s, have %r, %r"%(cookie, self._calls.keys(), self._voiceapps.keys(), ))
+            log.err("Couldn't find cookie %s, have %r, %r"%(cookie, 
+                                self._calls.keys(), self._voiceapps.keys(), ))
             return
         d = call.dropCall()
 
