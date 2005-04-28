@@ -185,7 +185,7 @@ class Leg(object):
     def set_handler(self, handler):
         self.__converter.set_handler(handler)
 
-    def leg_receiveRTP(self, packet):
+    def leg_incomingRTP(self, packet):
         data = self.__converter.convertInbound(packet)
         if self.__inbandDTMFdetector is not None:
             self.__inbandDTMFdetector(data)

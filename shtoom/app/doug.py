@@ -179,7 +179,7 @@ class DougApplication(BaseApplication):
             self._voiceapps[callcookie].va_abort()
             del self._voiceapps[callcookie]
 
-    def receiveRTP(self, callcookie, packet):
+    def incomingRTP(self, callcookie, packet):
         from shtoom.rtp.formats import PT_NTE
         v = self._voiceapps[callcookie]
         if packet.header.pt is PT_NTE:
@@ -192,7 +192,7 @@ class DougApplication(BaseApplication):
                 v.va_stopDTMFevent(nteMap[key], callcookie)
             return
         try:
-            self._voiceapps[callcookie].va_receiveRTP(packet, callcookie)
+            self._voiceapps[callcookie].va_incomingRTP(packet, callcookie)
         except IOError:
             pass
 

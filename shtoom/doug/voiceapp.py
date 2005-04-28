@@ -53,8 +53,8 @@ class VoiceApp(StateMachine):
     def va_selectDefaultFormat(self, ptlist, callcookie):
         return self.getLeg(callcookie).selectDefaultFormat(ptlist)
 
-    def va_receiveRTP(self, packet, callcookie):
-        return self.getLeg(callcookie).leg_receiveRTP(packet)
+    def va_incomingRTP(self, packet, callcookie):
+        return self.getLeg(callcookie).leg_incomingRTP(packet)
 
     def va_start(self):
         self._start(callstart=0)

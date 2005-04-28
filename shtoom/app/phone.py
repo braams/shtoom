@@ -197,7 +197,7 @@ class Phone(BaseApplication):
     def closeAudioDevice(self):
         self._audio.close()
 
-    def receiveRTP(self, callcookie, packet):
+    def incomingRTP(self, callcookie, packet):
         # XXX the mute/nonmute should be in the AudioLayer
         from shtoom.rtp.formats import PT_NTE
         if packet.header.ct == PT_NTE:

@@ -293,7 +293,7 @@ class RTPProtocol(DatagramProtocol):
                 return # drop the packet on the floor
 
         packet.header.ct = self.ptdict[packet.header.pt]
-        self.app.receiveRTP(self.cookie, packet)
+        self.app.incomingRTP(self.cookie, packet)
 
     def genSSRC(self):
         # Python-ish hack at RFC1889, Appendix A.6

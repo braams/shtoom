@@ -193,7 +193,7 @@ class EchoRTP:
         self.echo = self.app.giveSample(self.cookie)
         if self.echo is not None:
             packet = self.echo
-            reactor.callLater(0, lambda : self.app.receiveRTP(self.cookie,
+            reactor.callLater(0, lambda : self.app.incomingRTP(self.cookie,
                                                               packet))
 
 def main():

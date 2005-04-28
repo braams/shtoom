@@ -32,7 +32,7 @@ class ApplicationRTPInterface(Interface):
        uses to talk to the Application instance
     """
 
-    def receiveRTP(self, callcookie, payloadType, payloadData):
+    def incomingRTP(self, callcookie, payloadType, payloadData):
         """ Pass an RTP packet that was received from the network to the
             application. This might be audio, comfort noise (CN), an NTE
             packet, or something else.

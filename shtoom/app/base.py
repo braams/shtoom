@@ -97,7 +97,7 @@ class BaseApplication:
     def endCall(self, callcookie, reason):
         raise NotImplementedError
 
-    def receiveRTP(self, callcookie, payloadType, payloadData):
+    def incomingRTP(self, callcookie, payloadType, payloadData):
         raise NotImplementedError
 
     def getCookie(self):
