@@ -192,16 +192,13 @@ class ShtoomMainWindow(ShtoomBaseUI):
         reactor.stop()
         self.main.quit()
 
-    def getAuth(self, message):
-        from tkSimpleDialog import askstring
+    def getAuth(self, method, realm):
+        from popups import AuthDialog
         from twisted.internet import defer
-        answer = askstring('Authentication Required', message+'\nEnter as user,passwd')
-        if answer:
-            user, passwd = answer.split(',',1)
-            user, passwd = user.strip(), passwd.strip()
-        else:
-            user, passwd = None, None
-        return defer.succeed((user, passwd))
+        
+        d = defer.Deferred()
+        auth = AuthDialog(self.main, d, method, realm)
+        return d
 
     def incomingCall(self, description, cookie):
         return self.popupIncoming(description, cookie)
