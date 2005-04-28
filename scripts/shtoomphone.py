@@ -35,6 +35,7 @@ def main():
     log.msg("Getting new audio device", system='phone')
 
     from shtoom.audio import getAudioDevice
+    # XXX Aarrgh.
     app._audio = getAudioDevice()
     log.msg("Got new audio device %s :: %s" % (app._audio, type(app._audio),))
 
