@@ -18,7 +18,7 @@ from shtoom.interfaces import StunPolicy as IStunPolicy
 from shtoom.defcache import DeferredCache
 from shtoom.nat import BaseMapper
 
-STUNVERBOSE = True
+STUNVERBOSE = False
 # If we're going to follow RFC recommendation, make this 7
 MAX_RETRANSMIT = 7
 
@@ -632,19 +632,25 @@ class _DetectSTUNProt(StunDiscoveryProtocol):
     def finishedStun(self):
         self.d.callback(self.natType)
 
+_cached_stuntype = None
+
 def _getSTUN():
     #print "getSTUN triggering startDiscovery!"
+    if _cached_stuntype is not None:
+        return defer.succeed(_cached_stuntype)
     stunClient = _DetectSTUNProt()
     stunClient.d = defer.Deferred()
     l = reactor.listenUDP(0, stunClient)
     reactor.callLater(0, stunClient.startDiscovery)
     def _stundone(x, l=l):
+        global _cached_stuntype
+        _cached_stuntype = x
         l.stopListening()
         return x
     stunClient.d.addCallback(_stundone)
     return stunClient.d
 
-getSTUN = DeferredCache(_getSTUN, inProgressOnly=False)
+getSTUN = DeferredCache(_getSTUN)
 
 _cached_mapper = None
 def getMapper():
@@ -654,10 +660,10 @@ def getMapper():
     return _cached_mapper
 
 def clearCache():
-    global _cached_mapper
+    global _cached_mapper, _cached_stuntype
+    _cached_stuntype = None
     _cached_mapper = None
     getSTUN.clearCache()
-
 
 class STUNMapper(BaseMapper):
     __implements__ = INATMapper
