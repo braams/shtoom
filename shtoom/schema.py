@@ -232,7 +232,7 @@ class Choice(List):
     value = property(_getValue, _setValue)
 
     def getChoices(self):
-        warnings.warn("object.optionValue", DeprecationWarning, stacklevel=2)
+        warnings.warn("Choice.getChoices", DeprecationWarning, stacklevel=2)
         return [ x.value for x in self ]
 
 class Dict(_BackwardsCompatMixin, ObjectGroup):

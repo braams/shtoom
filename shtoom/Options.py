@@ -55,8 +55,11 @@ def _optParseBuilder(opt, parser):
         else:
             raise ValueError("Boolean must default to True or False, not %r"%
                                                                 self._default)
+    help = opt.description
+    if isinstance(opt, Choice):
+        help = help+ ' (%s)'%(','.join([ str(x.value) for x in opt ]))
     args.update({'dest': opt.name,
-                 'help': opt.description,
+                 'help': help,
                  'default':opt.default})
     cmdopt = '--' + opt.name.replace('_', '-')
     if hasattr(opt, 'shortopt'):
