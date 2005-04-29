@@ -8,6 +8,8 @@ class ConferenceError(Exception): pass
 class ConferenceClosedError(ConferenceError): pass
 class ConferenceMemberNotFoundError(ConferenceError): pass
 
+CONFDEBUG = False
+
 class ConfSource(Source):
     "A ConfSource connects a voiceapp, and via that, a leg, to a room"
 
@@ -48,8 +50,8 @@ class ConfSource(Source):
             self.app._va_sourceDone(self)
 
     def __repr__(self):
-        return "<ConferenceUser %s in room %s (at %s)>"%(self._user,
-                            self._room.getName(), hex(id(self)))
+        return "<ConferenceUser %s in room %s>"%(self._user,
+                            self._room.getName())
 
 
 class Room:
@@ -86,8 +88,8 @@ class Room:
             o = ''
         else:
             o = ' (closed)'
-        return "<ConferenceRoom %s%s with %d members (at %s)>"%(self._name,o,
-                                            len(self._members), hex(id(self)))
+        return "<ConferenceRoom %s%s with %d members>"%(self._name, o,
+                                            len(self._members))
 
     def shutdown(self):
         print "SHUTDOWN"
@@ -142,6 +144,8 @@ class Room:
         audioIn, self._audioIn = self._audioIn, {}
         # short-circuit this case
         if len(self._members) < 2:
+            if CONFDEBUG:
+                print "less than 2 members, no sound"
             self._audioOutDefault = ''
             return
         # Samples is (confsource, audio)
@@ -149,6 +153,9 @@ class Room:
         # power is three-tuples of (rms,audio,confsource)
         power = [ (audioop.rms(x[1],2),x[1], x[0]) for x in samples ]
         power.sort(); power.reverse()
+        if CONFDEBUG:
+            for rms,audio,confsource in power:
+                print confsource, rms
         # Speakers is a list of the _maxSpeakers loudest speakers
         speakers = Set([x[2] for x in power[:self._maxSpeakers]])
         # First we calculate the 'default' audio. Used for everyone who's
@@ -179,7 +186,9 @@ class Room:
                 out = reduce(lambda x,y: audioop.add(x, y, 2), scaled)
             else:
                 out = ''
-            self._audioOut[speaker] = out
+            if CONFDEBUG:
+                print "calc for", s, "is", audioop.rms(out, 2)
+            self._audioOut[s] = out
 
 _RegisterOfAllRooms = {}
 
