@@ -22,7 +22,6 @@ class AudioDevice(object):
 
     def reopen(self):
         self.close()
-        print "baseaudio: reopen"
         self.openDev()
         self._closed = False
 
