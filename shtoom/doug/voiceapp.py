@@ -42,13 +42,15 @@ class VoiceApp(StateMachine):
         super(VoiceApp, self).__init__(defer, **kwargs)
 
     def getDefaultLeg(self):
-        return self.__legs.values()[0]
+        if self.__legs:
+            return self.__legs.values()[0]
 
     def getLeg(self, cookie):
         return self.__legs.get(cookie)
 
     def setLeg(self, leg, cookie):
         self.__legs[cookie] = leg
+        #self.leg.hijackLeg(self)
 
     def va_selectDefaultFormat(self, ptlist, callcookie):
         return self.getLeg(callcookie).selectDefaultFormat(ptlist)
@@ -85,10 +87,18 @@ class VoiceApp(StateMachine):
                                     system='doug')
         self._triggerEvent(CallRejectedEvent(leg))
 
+    def _clear_legs(self):
+        from shtoom.util import stack
+        #print self, "clearing running legs %r"%(self.__legs.items())#,stack(8)
+        for name, leg in self.__legs.items():
+            leg._stopAudio()
+            del self.__legs[name]
+
+    _cleanup = _clear_legs 
+
     def va_abort(self):
         self.mediaStop()
-        for leg in self.__legs.values():
-            leg._stop_audio()
+        self._clear_legs()
         self._triggerEvent(CallEndedEvent(None))
 
     def mediaPlay(self, playlist, leg=None):
@@ -104,7 +114,8 @@ class VoiceApp(StateMachine):
     def mediaStop(self, leg=None):
         if leg is None:
             leg = self.getDefaultLeg()
-        leg.mediaStop()
+        if leg is not None:
+            leg.mediaStop()
 
     def setTimer(self, delay):
         return Timer(self, delay)
@@ -126,7 +137,7 @@ class VoiceApp(StateMachine):
 
     def placeCall(self, toURI, fromURI=None):
         from shtoom.doug.leg import Leg
-        nleg = Leg(cookie=None, dialog=None)
+        nleg = Leg(cookie=None, dialog=None, voiceapp=self)
         self.__appl.placeCall(self.__cookie, nleg, toURI, fromURI)
 
     def va_hangupCall(self, cookie):

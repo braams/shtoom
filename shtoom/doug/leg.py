@@ -22,7 +22,7 @@ class Leg(object):
     _acceptDeferred = None
     _voiceapp = None
 
-    def __init__(self, cookie, dialog):
+    def __init__(self, cookie, dialog, voiceapp=None):
         """ Create a new leg
         """
         self._cookie = cookie
@@ -37,19 +37,20 @@ class Leg(object):
         self.__collectedDTMFKeys = ''
         self.__dtmfSingleMode = True
         self.__inbandDTMFdetector = None
+        self._voiceapp = voiceapp
         self._connectSource(self.__silenceSource)
         self._startAudio()
 
     def _startAudio(self):
+        #print self, "starting audio"
         self.LC = LoopingCall(self._get_some_audio)
         self.LC.start(0.020)
 
     def _stopAudio(self):
-        try:
-            self.LC.cancel()
-        except AttributeError:
-            # twisted bug
-            pass
+        if self.LC is not None:
+            #print self, "stopping audio", self.LC, self.LC.call
+            self.LC.stop()
+            self.LC = None
 
     def _get_some_audio(self):
         if self._voiceapp is not None:
@@ -121,8 +122,9 @@ class Leg(object):
                                                 self._cookie), system='doug')
 
     def hangupCall(self):
-        self._stop_audio()
-        self._voiceapp.va_hangupCall(self._cookie)
+        self._stopAudio()
+        if self._voiceapp:
+            self._voiceapp.va_hangupCall(self._cookie)
 
     def sendDTMF(self, digits, duration=0.1, delay=0.05):
         self._voiceapp.sendDTMF(digits, cookie=self._cookie,
@@ -228,6 +230,9 @@ class Leg(object):
             self.__inbandDTMFdetector = None
         # XXX handle timeout
 
+    def __repr__(self):
+        return '<Leg at %x connected to %r>'%(id(self), self._voiceapp)
+
 
 class BridgeSource(Source):
     "A BridgeSource connects a leg to another leg via a bridge"
@@ -288,6 +293,8 @@ class Bridge:
         # Nothing for now.
         pass
 
+
+
 try:
     import numarray
 except ImportError:
@@ -318,3 +325,4 @@ if numarray is not None:
                     self.leg.leg_stopDTMFevent(old)
                     self.leg.leg_startDTMFevent(self.digit)
             self.prev = samp
+

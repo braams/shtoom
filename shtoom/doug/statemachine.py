@@ -17,16 +17,20 @@ from twisted.python import log
 
 class StateMachine(object):
 
+    _statemachine_debug = False
+
     def __init__(self, defer, **kwargs):
         self._doneDeferred = defer
         self._deferredState = None
 
     def returnResult(self, result):
+        self._cleanup()
         d, self._doneDeferred = self._doneDeferred, None
         if d:
             d.callback(result)
 
     def returnError(self, exc):
+        self._cleanup()
         d, self._doneDeferred = self._doneDeferred, None
         if d:
             d.errback(exc)
@@ -53,6 +57,8 @@ class StateMachine(object):
         else:
             log.msg("No matching event for %s in state %s"%(
                             event.getEventName(), self.getCurrentState()))
+            if self._statemachine_debug:
+                log.msg("current transitions: %r"%(self.getCurrentEvents()))
             self.returnError(EventNotSpecifiedError(
                             "No matching event for %s in state %s"
                             %(event.getEventName(), self.getCurrentState())))
@@ -69,6 +75,14 @@ class StateMachine(object):
 
     def _doState(self, callable, evt=None):
         self._curState = callable.__name__
+        if self._statemachine_debug:
+            if evt is not None:
+                log.msg("%s switching to state %s (no event)"%(
+                                self.__class__.__name__, self._curState))
+            else:
+                log.msg("%s switching to state %s (%s)"%(
+                                self.__class__.__name__, self._curState, 
+                                evt.__class__.__name__))
         if evt:
             em = callable(evt)
         else:
@@ -100,3 +114,7 @@ class StateMachine(object):
 
     def __start__(self):
         raise NotImplementedError
+
+    def _cleanup(self):
+        # Override in subclass if needed
+        pass
