@@ -204,7 +204,7 @@ class DougApplication(BaseApplication):
 
     def outgoingRTP(self, cookie, sample):
         rtp = self._rtp.get(cookie)
-        if rtp:
+        if rtp and sample:
             rtp.handle_media_sample(sample)
 
     def placeCall(self, cookie, nleg, sipURL, fromURI=None):
