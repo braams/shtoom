@@ -52,6 +52,8 @@ except ImportError:
 if alsaaudio is not None:
     from shtoom.audio import alsa as alsaaudio
 
+from shtoom.audio import fileaudio, echoaudio
+
 
 def listAudio():
     all = globals().copy()
