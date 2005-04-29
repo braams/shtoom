@@ -18,9 +18,13 @@ from shtoom.interfaces import StunPolicy as IStunPolicy
 from shtoom.defcache import DeferredCache
 from shtoom.nat import BaseMapper
 
-STUNVERBOSE = False
+STUNVERBOSE = True
 # If we're going to follow RFC recommendation, make this 7
 MAX_RETRANSMIT = 7
+
+INITIAL_TIMEOUT = 0.100
+BACKOFF_TIME = 0.050
+MAX_BACKOFF = 4
 
 # Work to be done:
 #  - Reverse engineer the C code stun client - why is it giving up so fast?
@@ -211,20 +215,23 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         self.expectedTID = None
         self.oldTIDs = sets.Set()
         self.natType = None
-        self.servers = [(socket.gethostbyname(host), port) for host, port in servers]
+        self.servers = [(socket.gethostbyname(host), port) 
+                                            for host, port in servers]
         super(StunDiscoveryProtocol, self).__init__(*args, **kwargs)
 
     def initialStunRequest(self, address):
         tid = getRandomTID()
-        delayed = reactor.callLater(0.100, self.retransmitInitial, address, tid)
+        delayed = reactor.callLater(INITIAL_TIMEOUT, 
+                                    self.retransmitInitial, address, tid)
         self._potentialStuns[tid] = delayed
         self.oldTIDs.add(tid)
         self.sendRequest(address, tid=tid)
 
     def retransmitInitial(self, address, tid, count=1):
         if count <= MAX_RETRANSMIT:
-            t = 0.1 * 2**min(count,4)
-            delayed = reactor.callLater(t, self.retransmitInitial, address, tid, count+1)
+            t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
+            delayed = reactor.callLater(t, self.retransmitInitial, 
+                                                address, tid, count+1)
             self._potentialStuns[tid] = delayed
             self.sendRequest(address, tid=tid)
         else:
@@ -279,7 +286,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
                 self._stunState = '2b'
             self.expectedTID = tid = getRandomTID()
             self.oldTIDs.add(tid)
-            self.state2DelayedCall = reactor.callLater(0.1,
+            self.state2DelayedCall = reactor.callLater(INITIAL_TIMEOUT,
                                                 self.retransmitStunState2,
                                                 address, tid)
             self.sendRequest(address, tid, avpairs=(
@@ -303,7 +310,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
 
     def retransmitStunState2(self, address, tid, count=1):
         if count <= MAX_RETRANSMIT:
-            t = 0.1 * 2**min(count,4)
+            t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
             self.state2DelayedCall = reactor.callLater(t,
                                                     self.retransmitStunState2,
                                                     address, tid, count+1)
@@ -315,7 +322,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         else: # 2b
             # Off to state 3 we go!
             self._stunState = '3'
-            self.state3DelayedCall = reactor.callLater(0.1,
+            self.state3DelayedCall = reactor.callLater(INITIAL_TIMEOUT,
                                                     self.retransmitStunState3,
                                                     address, tid)
             self.expectedTID = tid = getRandomTID()
@@ -332,7 +339,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
             self._stunState = '4'
             self.expectedTID = tid = getRandomTID()
             self.oldTIDs.add(tid)
-            self.state4DelayedCall = reactor.callLater(0.1,
+            self.state4DelayedCall = reactor.callLater(INITIAL_TIMEOUT,
                                                 self.retransmitStunState4,
                                                 address, tid)
             self.expectedTID = tid = getRandomTID()
@@ -345,7 +352,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
 
     def retransmitStunState3(self, address, tid, count=1):
         if count <= (2 * MAX_RETRANSMIT):
-            t = 0.1 * 2**min(count,4)
+            t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
             self.state3DelayedCall = reactor.callLater(t,
                                                     self.retransmitStunState3,
                                                     address, tid, count+1)
@@ -365,7 +372,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
 
     def retransmitStunState4(self, address, tid, count = 1):
         if count < MAX_RETRANSMIT:
-            t = 0.1 * 2**min(count,4)
+            t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
             self.state4DelayedCall = reactor.callLater(t,
                                                     self.retransmitStunState4,
                                                     address, tid, count+1)
@@ -425,14 +432,16 @@ class StunHook(_StunBase):
     def initialStunRequest(self, address):
         tid = getRandomTID()
         self.oldTIDs.add(tid)
-        delayed = reactor.callLater(0.100, self.retransmitInitial, address, tid)
+        delayed = reactor.callLater(INITIAL_TIMEOUT, 
+                                    self.retransmitInitial, address, tid)
         self._pending[tid] = delayed
         self.sendRequest(address, tid=tid)
 
     def retransmitInitial(self, address, tid, count=1):
         if count <= MAX_RETRANSMIT:
-            t = 0.1 * 2**min(count,4)
-            delayed = reactor.callLater(t, self.retransmitInitial, address, tid, count+1)
+            t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
+            delayed = reactor.callLater(t, self.retransmitInitial, 
+                                            address, tid, count+1)
             self._pending[tid] = delayed
             self.sendRequest(address, tid=tid)
         else:
@@ -446,6 +455,8 @@ class StunHook(_StunBase):
                 self.finishedStun()
 
     def datagramReceived(self, dgram, address):
+        if STUNVERBOSE:
+            print "hook got a datagram from", address
         if self.deferred is None:
             # We're already done
             return
@@ -535,10 +546,12 @@ class NetAddress:
 
     def check(self, ip):
         "Check if an IP or network is contained in this network address"
+        print "ping", ip
         if isinstance(ip, NetAddress):
             return self.check(ip.start) and self.check(ip.end)
         if isinstance(ip, basestring):
             ip = self.inet_aton(ip)
+        print "pong"
         if ip is None:
             return False
         if ip & self.mask == self.net:
@@ -620,6 +633,7 @@ class _DetectSTUNProt(StunDiscoveryProtocol):
         self.d.callback(self.natType)
 
 def _getSTUN():
+    #print "getSTUN triggering startDiscovery!"
     stunClient = _DetectSTUNProt()
     stunClient.d = defer.Deferred()
     l = reactor.listenUDP(0, stunClient)
@@ -630,7 +644,7 @@ def _getSTUN():
     stunClient.d.addCallback(_stundone)
     return stunClient.d
 
-getSTUN = DeferredCache(_getSTUN)
+getSTUN = DeferredCache(_getSTUN, inProgressOnly=False)
 
 _cached_mapper = None
 def getMapper():
