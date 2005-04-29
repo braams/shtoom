@@ -59,8 +59,8 @@ def _optParseBuilder(opt, parser):
                  'help': opt.description,
                  'default':opt.default})
     cmdopt = '--' + opt.name.replace('_', '-')
-    if hasattr(opt, 'shortOpt'):
-        shortopt = '-' + opt.shortOpt
+    if hasattr(opt, 'shortopt'):
+        shortopt = '-' + opt.shortopt
     else:
         shortopt = ''
     parser.add_option(shortopt, cmdopt, **args)
