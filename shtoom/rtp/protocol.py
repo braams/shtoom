@@ -345,7 +345,6 @@ class RTPProtocol(DatagramProtocol):
         return int(hex[:bits//4],16)
 
     def handle_media_sample(self, sample):
-        print "got sample", self.Done, self.sending
         if self.Done:
             if self._cbDone:
                 self._cbDone()
