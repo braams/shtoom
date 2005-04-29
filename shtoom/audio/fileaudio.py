@@ -39,11 +39,11 @@ class AudioFromFiles(baseaudio.AudioDevice):
             return self._outfp.write(bytes)
 
     def reopen(self):
-        if self.infile is not None:
+        if self.infile:
             self._infp = open(self.infile, 'rb')
         else:
             self._infp = None
-        if self.outfile is not None:
+        if self.outfile:
             self._outfp = open(self.outfile, 'wb')
         else:
             self._outfp = None
