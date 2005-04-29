@@ -18,9 +18,6 @@ DEFAULT_ALSA_DEVICE = 'default'
 
 class ALSAAudioDevice(baseaudio.AudioDevice):
 
-    def __init__(self):
-        baseaudio.AudioDevice.__init__(self)
-
     def openDev(self):
         try:
             from __main__ import app

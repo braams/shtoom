@@ -7,7 +7,7 @@ from converters import MediaLayer
 opened = None
 
 class EchoAudioDevice:
-    _open = False
+    _closed = True
 
     def __init__(self):
         self._data = ''
@@ -21,13 +21,13 @@ class EchoAudioDevice:
         self._data += bytes
 
     def reopen(self):
-        self._open = True
+        self._closed = False
         self._data = ''
 
     def close(self):
-        if not self._open:
+        if self._closed:
             return
-        self._open = False
+        self._closed = True
         self._data = ''
         try:
             self.LC.stop()

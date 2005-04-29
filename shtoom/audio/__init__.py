@@ -16,6 +16,7 @@ def findAudioInterface():
                      'osx': av_audio.osxaudio,
                      'core': av_audio.osxaudio,
                      'file': av_audio.fileaudio,
+                     'echo': av_audio.echoaudio,
                    }
     allAudioOptions = [
                         av_audio.alsaaudio,
@@ -31,13 +32,10 @@ def findAudioInterface():
     except:
         app = None
 
-    if app is not None:
-        files = app.getPref('audio_infile') or app.getPref('audio_outfile')
-        if files is not None:
-            audioPref = 'file'
-        else:
-            audioPref = app.getPref('audio')
+    if app:
+        audioPref = app.getPref('audio')
 
+    print "audioPref is", audioPref
     if audioPref:
         audioint = audioOptions.get(audioPref)
         if not audioint:

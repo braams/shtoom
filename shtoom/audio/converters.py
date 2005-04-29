@@ -275,8 +275,7 @@ class MediaLayer(NullConv):
     def selectDefaultFormat(self, fmts=[PT_PCMU,]):
         assert isinstance(fmts, (list, tuple,)), fmts
         assert not self._d or not self._d.isOpen(), \
-            "You are required to close the device before calling "+\
-            "selectDefaultFormat(). self._d: %s" % (self._d,)
+            "close device %r before calling selectDefaultFormat()" % (self._d,)
 
         for f in fmts:
             if f in known_formats:
