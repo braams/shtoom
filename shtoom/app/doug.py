@@ -9,6 +9,7 @@ from twisted.python import log
 from twisted.protocols import sip as tpsip
 from shtoom.exceptions import CallFailed
 import sys, traceback
+import shtoom.log
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 
@@ -42,11 +43,11 @@ class DougApplication(BaseApplication):
             pass
         elif not self.getPref('logfile'):
             print "logging to stdout"
-            log.startLogging(sys.stdout)
+            shtoom.log.startLogging(sys.stdout)
         else:
             file = open(self.getPref('logfile'), 'aU')
             #print "logging to file", file
-            log.startLogging(file)
+            shtoom.log.startLogging(file)
         BaseApplication.boot(self)
 
     def start(self):
