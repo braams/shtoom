@@ -126,6 +126,7 @@ class RecordingApp(VoiceApp):
 
 
 from shtoom.doug.service import DougService
+from shtoom.i18n import install ; install()
 global app
 srv = DougService(RecordingApp)
 srv.startService()
