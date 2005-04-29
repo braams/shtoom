@@ -28,7 +28,7 @@ class AudioFromFiles(baseaudio.AudioDevice):
         baseaudio.AudioDevice.__init__(self)
 
     def _push_up_some_data(self):
-        if not self.encoder:
+        if not self.encoder or self._infp is None:
             return
         data = self._infp.read(320)
         if self.encoder and data:
