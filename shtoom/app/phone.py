@@ -244,10 +244,8 @@ class Phone(BaseApplication):
         app.add(ChoiceOption('ui',_('use UI for interface'), 
                             choices=['qt','gnome','wx', 'tk', 'text']))
         app.add(ChoiceOption('audio',_('use AUDIO for interface'), 
-                            choices=['oss', 'fast', 'port', 'alsa', 'echo']))
+                    choices=['oss', 'fast', 'port', 'alsa', 'echo', 'file']))
         app.add(StringOption('audio_device',_('use this audio device')))
-        app.add(StringOption('audio_infile',_('read audio from this file')))
-        app.add(StringOption('audio_outfile',_('write audio to this file')))
         # XXX TOFIX: This next option Must Die.
         app.add(StringOption('shtoomdir',_('root dir of shtoom installation')))
         app.add(StringOption('incoming_ring_file',
