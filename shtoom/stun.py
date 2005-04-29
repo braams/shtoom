@@ -546,12 +546,10 @@ class NetAddress:
 
     def check(self, ip):
         "Check if an IP or network is contained in this network address"
-        print "ping", ip
         if isinstance(ip, NetAddress):
             return self.check(ip.start) and self.check(ip.end)
         if isinstance(ip, basestring):
             ip = self.inet_aton(ip)
-        print "pong"
         if ip is None:
             return False
         if ip & self.mask == self.net:
