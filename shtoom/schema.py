@@ -223,8 +223,8 @@ class Choice(List):
                 self._value = sub
                 break
         else:
-            vals = [x.value for x in self]
-            raise ValueError('%s is not a known value (know: %r)'%(value,vals))
+            vals = ', '.join([x.value for x in self])
+            raise ValueError('%s is not a known value (know: %s)'%(value,vals))
 
     def _getValue(self):
         return self._value.value
