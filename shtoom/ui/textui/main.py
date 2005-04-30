@@ -53,6 +53,8 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
                 getattr(self, "cmd_%s"%(cmd))(line)
             elif cmd == "?":
                 self.cmd_help(line)
+            elif cmd.startswith('sip:'):
+                self.cmd_call('call %s'%(cmd))
             else:
                 self.transport.write("Unknown command '%s'\n"%(cmd))
         self.transport.write(">> ")
