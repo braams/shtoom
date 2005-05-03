@@ -10,7 +10,7 @@ from twisted.internet import reactor, defer
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
 
-from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN, PT_NTE
+from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN, PT_NTE, PT_PCMU
 from shtoom.rtp.packets import RTPPacket, parse_rtppacket
 from shtoom.audio.converters import MediaSample
 
@@ -60,6 +60,11 @@ class RTPProtocol(DatagramProtocol):
         for pt, (text, marker) in rtpmap.items():
             self.ptdict[pt] = marker
             self.ptdict[marker] = pt
+        if PT_PCMU not in self.ptdict:
+            # Goddam Asterisk has no idea about content negotiation
+            self.ptdict[0] = PT_PCMU
+            self.ptdict[PT_PCMU] = 0
+        
 
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
@@ -359,6 +364,9 @@ class RTPProtocol(DatagramProtocol):
                 self.warnedaboutthis = True
             return
 
+        if sample.ct not in self.ptdict:
+            log.msg('received packet with CT %r, which was not in the negotiated SDP'%(sample.ct,), system='rtp')
+            return
         pt = self.ptdict[sample.ct]
         self._send_packet(pt, sample.data)
         self.ts += 160
