@@ -365,7 +365,7 @@ class RTPProtocol(DatagramProtocol):
             return
 
         if sample.ct not in self.ptdict:
-            log.msg('received packet with CT %r, which was not in the negotiated SDP'%(sample.ct,), system='rtp')
+            log.msg('trying to send packet with CT %r, which was not in the negotiated SDP'%(sample.ct,), system='rtp')
             return
         pt = self.ptdict[sample.ct]
         self._send_packet(pt, sample.data)
