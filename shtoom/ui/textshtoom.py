@@ -11,6 +11,22 @@ def shutdown():
 
 def main(application):
     import sys
+
+    try:
+        import dbus
+    except:
+        dbus = None
+    if dbus:
+        try:
+            from twisted.internet import glib2reactor
+            glib2reactor.install()
+        except: 
+            try:
+                from twisted.internet import gtk2reactor
+                gtk2reactor.install()
+            except:
+                pass
+
     from twisted.internet import reactor
     from __main__ import app
 

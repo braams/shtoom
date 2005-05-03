@@ -15,6 +15,9 @@ def shutdown():
 
 def main(application):
     import sys
+    from shtoom.ui.util import maybeInstallDBus
+    maybeInstallDBus()
+
     from twisted.internet import reactor
     from twisted.internet import tksupport
 
