@@ -1,4 +1,13 @@
 
+Bug:
+
+testdoug on the Mac generates static. Probably a byte ordering issue
+
+Bug:
+
+audio device goes mental - yay! At random moments, the audio device 
+devolves to static. Happens with alsa and oss.
+
 When the audio device is busy, bad things happen:
 
 2004/09/26 17:53 EST [shtoom.sip.SipPhone (UDP)] startCall reopening None
