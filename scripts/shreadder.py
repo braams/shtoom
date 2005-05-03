@@ -73,7 +73,7 @@ def main(Recorder = Recorder):
     else:
         dev.selectDefaultFormat([formats.PT_RAW,])
     rec = Recorder(dev, play=True)
-    dev.reopen(mediahandler=rec)
+    dev.reopen(mediahandler=rec.handle_media_sample)
 
     reactor.run()
 
