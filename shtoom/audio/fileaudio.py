@@ -1,4 +1,4 @@
-# Copyright (C) 2004 Anthony Baxter
+# Copyright (C) 2005 Anthony Baxter
 
 from twisted.python import log
 from shtoom.audio import baseaudio
@@ -8,6 +8,7 @@ from twisted.internet.task import LoopingCall
 class AudioFromFiles(baseaudio.AudioDevice):
     _infp = _outfp = None
     _closed = True
+    LC = None
 
     def __init__(self):
         try:
@@ -26,11 +27,13 @@ class AudioFromFiles(baseaudio.AudioDevice):
             raise ValueError("device spec should be infile,outfile")
         self.infile, self.outfile = files
         baseaudio.AudioDevice.__init__(self)
+        self.close()
 
     def _push_up_some_data(self):
         if not self.encoder or self._infp is None:
             return
         data = self._infp.read(320)
+        #log.msg("pushing %d bytes from file"%(len(data)), system="audio")
         if self.encoder and data:
             self.encoder.handle_audio(data)
 
@@ -39,6 +42,13 @@ class AudioFromFiles(baseaudio.AudioDevice):
             return self._outfp.write(bytes)
 
     def reopen(self):
+        if not self._closed:
+            self.close()
+        self._getFiles()
+        self.openDev()
+
+
+    def _getFiles(self):
         if self.infile:
             self._infp = open(self.infile, 'rb')
         else:
@@ -47,9 +57,9 @@ class AudioFromFiles(baseaudio.AudioDevice):
             self._outfp = open(self.outfile, 'wb')
         else:
             self._outfp = None
-        self.openDev()
 
     def close(self):
+        #print "close called", self._closed, self.LC
         if self._closed:
             return
         if self._infp is not None:
@@ -58,16 +68,19 @@ class AudioFromFiles(baseaudio.AudioDevice):
             self._outfp.close()
         self._closed = True
         self._infp = self._outfp = None
-        try:
-            self.LC.stop()
-        except AttributeError:
-            pass
+        self.LC.stop()
+        self.LC = None
 
     def openDev(self):
+        from shtoom.util import stack
+        #print "openDev called!", self._closed, self.LC, stack()
+        if self.LC is not None:
+            return
         if self._infp is None and self._outfp is None:
-            self.reopen()
+            self._getFiles()
         self._closed = False
         self.LC = LoopingCall(self._push_up_some_data)
+        #print self, "creating LoopingCall", self.LC, stack()
         self.LC.start(0.020)
 
 
