@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 
+"""
+This is a small client program that can be used to manipulate UPnP mappings
+on your local UPnP-enabled firewall. It supports list, add and remove 
+operations.
+
+For instance, if you wanted to expose your sshd to the world, 
+'upnpclient.py add TCP/22'
+would do the trick. Additional options to control things like specifying a
+different external port or a different internal IP than the one the client
+is running on could be added easily if someone felt the need to do so.
+"""
+
 from twisted.internet import reactor, defer
 import sys, os
 # Hack for running from svn checkout
