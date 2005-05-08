@@ -195,7 +195,7 @@ class ShtoomMainWindow(ShtoomBaseUI):
     def getAuth(self, method, realm):
         from popups import AuthDialog
         from twisted.internet import defer
-        
+
         d = defer.Deferred()
         auth = AuthDialog(self.main, d, method, realm)
         return d
