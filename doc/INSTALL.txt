@@ -1,10 +1,14 @@
 [XXX note that this document is for the 0.3 release, so some things 
 (like the binary installer for OSX) aren't done yet]
 
+This document isn't complete or up-to-date. There's additional information
+in the toplevel README.txt
+
 Installation Choices
 --------------------
 
-If you're on Windows or OSX, there are binary installers available. 
+If you're on Windows or OSX, there are ancient binary installers available
+for 0.2. 
 For other platforms, grab the source tarball or zip, unpack and run 
 "python setup.py install". See the distutils documentation in the 
 Python documentation for more on this.
@@ -61,8 +65,8 @@ not already a binary version.
 
 Q. setup.py fails with 'ImportError: no such module distutils.core'
 
-Debian (and other distributions derived from it, such as Knoppix and    
-Ubuntu) made the stupid decision to split their python installation     
+Debian (and other distributions derived from it, such as Knoppix)
+made the stupid decision to split their python installation     
 into two parts, and put an essential part of the standard library into  
 the python-dev package. You'll need to install that package as well.
 Feel free to log a bug report with your distribution vendor to ask
@@ -70,7 +74,8 @@ them to fix this idiocy.
 
 Q. How do I get started?
 
-See the user guide.
+See the user guide, which doesn't exist. There's some info in the FAQ on
+the shtoom site.
 
 Q. How do I make free phone calls?
 
