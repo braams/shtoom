@@ -8,7 +8,7 @@ class ConferenceError(Exception): pass
 class ConferenceClosedError(ConferenceError): pass
 class ConferenceMemberNotFoundError(ConferenceError): pass
 
-CONFDEBUG = False
+CONFDEBUG = True
 
 class ConfSource(Source):
     "A ConfSource connects a voiceapp, and via that, a leg, to a room"
@@ -50,8 +50,8 @@ class ConfSource(Source):
             self.app._va_sourceDone(self)
 
     def __repr__(self):
-        return "<ConferenceUser %s in room %s>"%(self._user,
-                            self._room.getName())
+        return "<ConferenceUser %s in room %s at %x>"%(self._user,
+                            self._room.getName(), id(self))
 
 
 class Room:
@@ -128,6 +128,9 @@ class Room:
 
     def writeAudio(self, confsource, audio):
         if self._open:
+            if CONFDEBUG:
+                if confsource in self._audioIn:
+                    print "Warning: replacing audio,",confsource,"running fast?"
             self._audioIn[confsource] = audio
         else:
             raise ConferenceClosedError()
