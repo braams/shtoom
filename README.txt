@@ -49,6 +49,15 @@ In addition, there are a number of other programs, including shtam
 (an answering machine/voicemail), shmessage (a simple announcement 
 server) and shtoomcu (a conferencing server).
 
+Further Reading
+---------------
+
+The paper "Scripting Language My Arse" was presented at PyCon 2004, and 
+again in an expanded and updated form as a keynote for OSDC 2005. The latter
+paper and slides are available from 
+
+      http://www.interlink.com.au/anthony/tech/talks/OSDC/
+
 Dependencies
 ------------
 
