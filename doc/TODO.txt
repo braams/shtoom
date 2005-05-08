@@ -7,17 +7,19 @@ New to-do before 0.3:
       in form sip://user@rego.server[:port] - auto-add sip:// if necessary.
     - make sure to do async lookups everywhere (twisted2.0 compat!)
     - generate a default identity (not None!)
+    - phone: UIs should show "my address"
     - handle insane/broken UPnP gateways
     - firewall-seeding OPTIONS
-    - finish wizards, switch preferences to it
-    - credential cache hookup
+    - phone: finish wizards, switch preferences to it
+    - phone: wx UI updates, including auth dialog
+    - phone: qt address book
+    - phone: mac UI getAuth?
     - hook up lwc code
     - all interfaces must be current and correct
     - (maybe) DirectSound interface
-    - doug: s.d.conferencing's entrance soundburst bug
     - phone: when on a call, decline a second incoming call?
     - set up a decent roundup instance, load all entries from TODO into it.
-    - write prefs UI for an OptionDict
+    - phone: write prefs UI for an OptionDict
     - package for Windows
 
 Old to-do before 0.3:
