@@ -90,6 +90,10 @@ Optional:
 
     CocoaShtoom
 
+On Ubuntu Hoary, most of the above are already packaged for you - get the
+packages python2.4-alsaaudio, python2.4-pygsm, python2.4-numarray, and
+python2.4-speex.
+
 Audio
 =====
 
