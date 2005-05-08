@@ -6,9 +6,13 @@ testdoug on the Mac generates static. Probably a byte ordering issue
 Bug:
 
 audio device goes mental - yay! At random moments, the audio device 
-devolves to static. Happens with alsa and oss.
+devolves to static. Happens with alsa and oss. The problem is with 
+audio _sending_, particularly under load.
 
-When the audio device is busy, bad things happen:
+
+Bug:
+
+When the audio device is busy (something else has it open), bad things happen:
 
 2004/09/26 17:53 EST [shtoom.sip.SipPhone (UDP)] startCall reopening None
 <MediaLayer wrapped around <shtoom.audio.ossaudio.OSSAudioDevice object at

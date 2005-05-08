@@ -1,6 +1,12 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - new scripts/upnpclient - a small command line client.
+  - Gnome and Tk UIs have a decent authentication dialog.
+  - New code for saving credentials - death to register_auth* options!
+  - Conferencing code has had a fair bit of TLC.
+  - New shtoom.schema module added as base class for Options code, with 
+    far saner API.
   - doug statemachine change: a state can return a deferred. Events
     during this deferred are queued up to be triggered after the deferred
     is finished.

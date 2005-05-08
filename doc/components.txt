@@ -16,20 +16,23 @@ Just Work.
 Already, we have the following objects that are suitable for this sort of
 registration:
 
+    PreferencesStorage! Application* SIP* RTP? AudioCodec* UserInterface* 
+    AddressBook! NATMapper* AudioDevice* CredentialsStore! AudioPlayout* 
     * == more than one, already
     ! == will be more than one
     ? == might be more than one
 
-    PreferencesStorage! 
-    Phone* -- s.app.phone, s.app.doug
-    SIP* -- real one, test harness one
-    RTP? -- e.g. RTP, SRTP
-    AudioCodec* -- ulaw, alaw, gsm, speex
-    UserInterface* -- lots
-    AddressBook! -- LDAP, Outlook, KDE, GNOME, ...
-    NATMapper* -- STUN, UPnP, TURN?
-    CredentialsStore! -- Add a more secure store 
-    AudioPlayout* -- Several already implemented
+    PreferencesStorage -- multiple ways to store prefs
+    Application -- s.app.phone, s.app.doug
+    SIP -- real one, test harness one
+    RTP -- e.g. RTP, SRTP
+    AudioCodec -- ulaw, alaw, gsm, speex
+    AudioDevice -- lots
+    AudioPlayout -- Several already implemented
+    UserInterface -- lots
+    AddressBook -- LDAP, Outlook, KDE, GNOME, ...
+    NATMapper -- STUN, UPnP, TURN?
+    CredentialsStore -- Add a more secure store 
 
 
 Rough API:
@@ -44,3 +47,13 @@ Rough API:
     saver.updatePreferences(...)
 
 See also: PEP 246
+
+
+# class Codecable(Faceted):
+#    def registerCodec(self, new):
+#        current = IAudioCodecs(self, ())
+#        self[IAudioCodecs] = current + (new, )
+#c = Codecable()
+#c.registerCodec(1)
+#c.registerCodec(2)
+#IAudioCodecs(c)
