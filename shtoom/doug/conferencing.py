@@ -9,6 +9,7 @@ class ConferenceClosedError(ConferenceError): pass
 class ConferenceMemberNotFoundError(ConferenceError): pass
 
 CONFDEBUG = True
+CONFDEBUG = False
 
 class ConfSource(Source):
     "A ConfSource connects a voiceapp, and via that, a leg, to a room"
