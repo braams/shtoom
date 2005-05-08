@@ -1,0 +1,23 @@
+This is a really rough start to using Shtoom.
+
+Registering an account
+----------------------
+
+To make it easier for people to reach you, you'll need to get an account on
+a SIP service - both FWD and Stanaphone offer free accounts. Once you have 
+an account, enter the server name into the register_uri option (make sure you
+include the sip: part!), for instance 'sip:sip.stanaphone.com' or 
+'sip:fwd.pulver.com'. You'll also need to enter your username into the 
+register_user option. Assuming you're using the Gnome or Tk interfaces, you
+can ignore the register_authuser and register_authpasswd options. 
+
+
+Outbound Proxies and NAT
+------------------------
+
+If you're behind a Restricted Cone or Port Restricted NAT, you'll need to 
+use either UPnP or an outbound proxy. Assuming you have a FWD account, you
+can use their proxy - set the option 'outbound proxy url' to::
+
+  sip:fwdnat.pulver.com:5082
+
