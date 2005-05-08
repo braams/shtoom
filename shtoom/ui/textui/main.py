@@ -132,12 +132,11 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
 
     def cmd_auth(self, line):
         "auth realm user password -- add a user/password"
-        self.transport.write("note not hooked up yet\n")
         toks = line.split(' ')
         if len(toks) != 4:
             self.transport.write("usage: auth realm user password")
             return
-        auth, realm, user, password = toks
+        cmd, realm, user, password = toks
         self.app.creds.addCred(realm, user, password, save=True)
 
     def cmd_dtmf(self, line, duration=0.1, delay=0.1):
