@@ -266,22 +266,30 @@ class Phone(BaseApplication):
         "Place holder for now"
         user = self.getPref('register_authuser')
         passwd = self.getPref('register_authpasswd')
-        # XXX get value from credentials cache
+        cachedcreds = self.creds.getCred(realm)
+        print "checking for cached creds for %s: %r (retry %s)"%(realm, cachedcreds, retry)
         if user is not None and passwd is not None and retry is False:
+            # for upgrades of people using the old option.
+            if not self.creds.getCred(realm):
+                self.creds.addCred(realm, user, pw, True)
             return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
+        elif retry is False and cachedcreds:
+            return defer.succeed(cachedcreds)
         # Not all user interfaces can prompt for auth yet
         elif hasattr(self.ui, 'getAuth'):
-            def processAuth(res):
+            def processAuth(res, realm=realm):
                 if not res:
                     # No auth provided
                     return res
                 if len(res) == 2:
                     # user, password
+                    self.creds.addCred(realm, res[0], res[1], False)
                     return res
                 elif len(res) == 3:
                     # user, password, save (bool)
                     user,pw,saveok = res
+                    self.creds.addCred(realm, user, pw, saveok)
                     # XXX TOFIX save the credentials
                     return user, pw
             d = self.ui.getAuth(method, realm)
