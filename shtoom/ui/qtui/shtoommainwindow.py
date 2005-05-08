@@ -29,12 +29,12 @@ class ShtoomMainWindow(QMainWindow):
         layout4.addWidget(self.textLabel1)
 
         self.addressComboBox = QComboBox(0,self.centralWidget(),"addressComboBox")
-        self.addressComboBox.setSizePolicy(QSizePolicy(7,0,0,0,self.addressComboBox.sizePolicy().hasHeightForWidth()))
+        self.addressComboBox.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Minimum,0,0,self.addressComboBox.sizePolicy().hasHeightForWidth()))
         self.addressComboBox.setEditable(1)
         layout4.addWidget(self.addressComboBox)
 
         self.lookupButton = QPushButton(self.centralWidget(),"lookupButton")
-        self.lookupButton.setSizePolicy(QSizePolicy(0,0,0,0,self.lookupButton.sizePolicy().hasHeightForWidth()))
+        self.lookupButton.setSizePolicy(QSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum,0,0,self.lookupButton.sizePolicy().hasHeightForWidth()))
         self.lookupButton.setMaximumSize(QSize(25,32767))
         layout4.addWidget(self.lookupButton)
         ShtoomMainWindowLayout.addLayout(layout4)
@@ -42,15 +42,15 @@ class ShtoomMainWindow(QMainWindow):
         layout2 = QHBoxLayout(None,0,6,"layout2")
 
         self.callButton = QPushButton(self.centralWidget(),"callButton")
-        self.callButton.setSizePolicy(QSizePolicy(0,0,0,0,self.callButton.sizePolicy().hasHeightForWidth()))
+        self.callButton.setSizePolicy(QSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum,0,0,self.callButton.sizePolicy().hasHeightForWidth()))
         layout2.addWidget(self.callButton)
 
         self.hangupButton = QPushButton(self.centralWidget(),"hangupButton")
-        self.hangupButton.setSizePolicy(QSizePolicy(0,0,0,0,self.hangupButton.sizePolicy().hasHeightForWidth()))
+        self.hangupButton.setSizePolicy(QSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum,0,0,self.hangupButton.sizePolicy().hasHeightForWidth()))
         layout2.addWidget(self.hangupButton)
 
         self.registerButton = QPushButton(self.centralWidget(),"registerButton")
-        self.registerButton.setSizePolicy(QSizePolicy(0,0,0,0,self.registerButton.sizePolicy().hasHeightForWidth()))
+        self.registerButton.setSizePolicy(QSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum,0,0,self.registerButton.sizePolicy().hasHeightForWidth()))
         layout2.addWidget(self.registerButton)
         ShtoomMainWindowLayout.addLayout(layout2)
 

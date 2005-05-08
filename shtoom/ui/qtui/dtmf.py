@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'dtmf.ui'
 #
-# Created: Wed Jan 19 01:53:50 2005
+# Created: Mon May 9 00:02:08 2005
 #      by: The PyQt User Interface Compiler (pyuic) 3.13
 #
 # WARNING! All changes made in this file will be lost!
@@ -24,62 +24,62 @@ class DTMF(QDialog):
         layout11 = QGridLayout(None,1,1,0,6,"layout11")
 
         self.dtmfButton8 = QPushButton(self,"dtmfButton8")
-        self.dtmfButton8.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton8.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton8.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton8.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton8,2,1)
 
         self.dtmfButton2 = QPushButton(self,"dtmfButton2")
-        self.dtmfButton2.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton2.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton2.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton2.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton2,0,1)
 
         self.dtmfButtonStar = QPushButton(self,"dtmfButtonStar")
-        self.dtmfButtonStar.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButtonStar.sizePolicy().hasHeightForWidth()))
+        self.dtmfButtonStar.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButtonStar.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButtonStar,3,0)
 
         self.dtmfButtonHash = QPushButton(self,"dtmfButtonHash")
-        self.dtmfButtonHash.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButtonHash.sizePolicy().hasHeightForWidth()))
+        self.dtmfButtonHash.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButtonHash.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButtonHash,3,2)
 
         self.dtmfButton3 = QPushButton(self,"dtmfButton3")
-        self.dtmfButton3.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton3.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton3.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton3.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton3,0,2)
 
         self.dtmfButton6 = QPushButton(self,"dtmfButton6")
-        self.dtmfButton6.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton6.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton6.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton6.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton6,1,2)
 
         self.dtmfButton5 = QPushButton(self,"dtmfButton5")
-        self.dtmfButton5.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton5.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton5.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton5.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton5,1,1)
 
         self.dtmfButton4 = QPushButton(self,"dtmfButton4")
-        self.dtmfButton4.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton4.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton4.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton4.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton4,1,0)
 
         self.dtmfButton7 = QPushButton(self,"dtmfButton7")
-        self.dtmfButton7.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton7.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton7.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton7.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton7,2,0)
 
         self.dtmfButton9 = QPushButton(self,"dtmfButton9")
-        self.dtmfButton9.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton9.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton9.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton9.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton9,2,2)
 
         self.dtmfButton1 = QPushButton(self,"dtmfButton1")
-        self.dtmfButton1.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton1.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton1.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton1.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton1,0,0)
 
         self.dtmfButton0 = QPushButton(self,"dtmfButton0")
-        self.dtmfButton0.setSizePolicy(QSizePolicy(7,7,0,0,self.dtmfButton0.sizePolicy().hasHeightForWidth()))
+        self.dtmfButton0.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding,0,0,self.dtmfButton0.sizePolicy().hasHeightForWidth()))
 
         layout11.addWidget(self.dtmfButton0,3,1)
         DTMFLayout.addLayout(layout11)
