@@ -75,7 +75,6 @@ class Phone(BaseApplication):
             self.creds.loadCreds(saved)
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
-        print "self.ui is", self.ui
         l = self.getPref('logfile')
         if l:
             log.startLogging(open(l, 'aU'))
@@ -292,12 +291,14 @@ class Phone(BaseApplication):
                     return res
                 if len(res) == 2:
                     # user, password
-                    self.creds.addCred(realm, res[0], res[1], False)
+                    if res[0]:
+                        self.creds.addCred(realm, res[0], res[1], False)
                     return res
                 elif len(res) == 3:
                     # user, password, save (bool)
                     user,pw,saveok = res
-                    self.creds.addCred(realm, user, pw, saveok)
+                    if res[0]:
+                        self.creds.addCred(realm, user, pw, saveok)
                     # XXX TOFIX save the credentials
                     return user, pw
             d = self.ui.getAuth(method, realm)
