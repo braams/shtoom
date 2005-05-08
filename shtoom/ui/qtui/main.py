@@ -7,7 +7,10 @@ if __name__ == "__main__":
 
 from shtoommainwindow import ShtoomMainWindow as ShtoomBaseWindow
 from dtmf import DTMF
+from authdialog import ShtoomAuthDialog
 from debugging import Debugging
+from about import AboutDialog
+from about import image0_data as LogoData
 
 from shtoom.ui.base import ShtoomBaseUI
 
@@ -17,6 +20,49 @@ from qt import *
 
 import sys
 from twisted.python import log
+
+class AboutDialog(AboutDialog):
+    def closeButton_pressed(self):
+        self.hide()
+
+class AuthDialog(ShtoomAuthDialog):
+
+    def getAuth(self, method, realm):
+        from twisted.internet import defer
+        msg = _('Enter username and password\nfor "%(method)s" at "%(realm)s"')
+        msg = msg % {'method':method, 'realm':realm }
+        self.realmLabel.setText(msg)
+        self.d = defer.Deferred()
+        print "deferred is", self.d
+        self.show()
+        print "showed!"
+        return self.d
+
+    def userEntry_returnPressed(self):
+        # Move the focus to the passwdEntry widget
+        self.passwdEntry.setFocus()
+
+    def passwdEntry_returnPressed(self):
+        self.acceptDialog()
+
+    def cancelButton_pressed(self):
+        self.dismissDialog()
+
+    def okButton_pressed(self):
+        self.acceptDialog()
+
+    def acceptDialog(self):
+        # accept the dialog, collect info, trigger deferred
+        user, passwd =  self.userEntry.text(), self.passwdEntry.text()
+        saveOK = self.saveButton.isChecked()
+        d, self.d = self.d, None
+        self.hide()
+        d.callback((str(user), str(passwd), saveOK))
+
+    def dismissDialog(self):
+        # throw the dialog away, trigger the deferred
+        self.hide()
+
 
 class DTMF(DTMF):
     main = None
@@ -117,7 +163,6 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     _muted = False
 
     def __init__(self, *args, **kwargs):
-        from shtoom.ui.logo import logoGif
         self._newCallURL = None
         self.dtmf = DTMF()
         self.dtmf.main = self
@@ -236,8 +281,31 @@ class ShtoomMainWindow(ShtoomBaseWindow, ShtoomBaseUI):
     def fileDebugging(self, *args):
         self.debugging.show()
 
+    def _gotAuth(self, res):
+        self._authdialog = None
+        return res
+
+    def getAuth(self, method, realm):
+        # XXX tofix we should queue auth requests
+        self._authdialog = AuthDialog()
+        d = self._authdialog.getAuth(method, realm)
+        d.addCallback(self._gotAuth)
+        return d
+
     def __tr(self, str):
         return QString(_(str))
+
+    def registerButton_clicked(self):
+        self.app.register()
+
+    def fileExit(self):
+        from twisted.internet import reactor
+        reactor.stop()
+
+    def helpAbout(self):
+        self.aboutDialog = AboutDialog()
+        self.aboutDialog.show()
+
 
 class Logger:
     def __init__(self, textwidget):

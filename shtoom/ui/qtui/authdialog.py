@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'authdialog.ui'
 #
-# Created: Mon May 9 00:35:44 2005
+# Created: Mon May 9 01:39:10 2005
 #      by: The PyQt User Interface Compiler (pyuic) 3.13
 #
 # WARNING! All changes made in this file will be lost!
@@ -60,12 +60,8 @@ class ShtoomAuthDialog(QDialog):
         LayoutWidget.setGeometry(QRect(-1,1,311,190))
         layout8 = QVBoxLayout(LayoutWidget,11,6,"layout8")
 
-        self.textLabel1 = QLabel(LayoutWidget,"textLabel1")
-        self.textLabel1.setAlignment(QLabel.AlignCenter)
-        layout8.addWidget(self.textLabel1)
-
         self.realmLabel = QLabel(LayoutWidget,"realmLabel")
-        self.realmLabel.setAlignment(QLabel.AlignCenter)
+        self.realmLabel.setAlignment(QLabel.WordBreak | QLabel.AlignCenter)
         layout8.addWidget(self.realmLabel)
 
         layout2 = QGridLayout(None,1,1,0,6,"layout2")
@@ -80,26 +76,26 @@ class ShtoomAuthDialog(QDialog):
 
         layout2.addWidget(self.textLabel3,1,0)
 
+        self.userEntry = QLineEdit(LayoutWidget,"userEntry")
+        self.userEntry.setMinimumSize(QSize(200,0))
+        self.userEntry.setAlignment(QLineEdit.AlignLeft)
+
+        layout2.addWidget(self.userEntry,0,1)
+
         self.passwdEntry = QLineEdit(LayoutWidget,"passwdEntry")
         self.passwdEntry.setMinimumSize(QSize(200,0))
         self.passwdEntry.setEchoMode(QLineEdit.Password)
         self.passwdEntry.setAlignment(QLineEdit.AlignLeft)
 
         layout2.addWidget(self.passwdEntry,1,1)
-
-        self.userEntry = QLineEdit(LayoutWidget,"userEntry")
-        self.userEntry.setMinimumSize(QSize(200,0))
-        self.userEntry.setAlignment(QLineEdit.AlignLeft)
-
-        layout2.addWidget(self.userEntry,0,1)
         layout8.addLayout(layout2)
 
         layout7 = QHBoxLayout(None,0,6,"layout7")
         spacer1_3 = QSpacerItem(20,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
         layout7.addItem(spacer1_3)
 
-        self.checkBox1 = QCheckBox(LayoutWidget,"checkBox1")
-        layout7.addWidget(self.checkBox1)
+        self.saveButton = QCheckBox(LayoutWidget,"saveButton")
+        layout7.addWidget(self.saveButton)
         spacer1_2 = QSpacerItem(30,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
         layout7.addItem(spacer1_2)
         layout8.addLayout(layout7)
@@ -134,11 +130,10 @@ class ShtoomAuthDialog(QDialog):
 
     def languageChange(self):
         self.setCaption(self.__tr("Shtoom Authentication"))
-        self.textLabel1.setText(self.__tr("Some authentication information is required"))
-        self.realmLabel.setText(QString.null)
+        self.realmLabel.setText(self.__tr("Some authentication information is required"))
         self.textLabel2.setText(self.__tr("Username"))
         self.textLabel3.setText(self.__tr("Password"))
-        self.checkBox1.setText(self.__tr("Save this username and password"))
+        self.saveButton.setText(self.__tr("Save this username and password"))
         self.pushButton1.setText(self.__tr("Cancel"))
         self.pushButton2.setText(self.__tr("OK"))
 
