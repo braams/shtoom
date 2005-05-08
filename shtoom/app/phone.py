@@ -75,6 +75,7 @@ class Phone(BaseApplication):
             self.creds.loadCreds(saved)
         if self.ui is None:
             self.ui = findUserInterface(self, self.getPref('ui'))
+        print "self.ui is", self.ui
         l = self.getPref('logfile')
         if l:
             log.startLogging(open(l, 'aU'))
@@ -100,7 +101,14 @@ class Phone(BaseApplication):
             self.ui.startUI()
         else:
             from twisted.internet import reactor
-            if not hasattr(reactor,'running') or not reactor.running:
+            # AAaaaargh the QTReactor has the suck.
+            try: 
+                from twisted.internet.qtreactor import QTReactor
+            except:
+                class QTReactor: pass
+            if (isinstance(reactor, QTReactor) 
+                        or not hasattr(reactor,'running') 
+                        or not reactor.running):
                 reactor.run()
 
     def ringBack(self):
