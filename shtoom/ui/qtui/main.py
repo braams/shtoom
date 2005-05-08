@@ -25,6 +25,9 @@ class AboutDialog(AboutDialog):
     def closeButton_pressed(self):
         self.hide()
 
+    def __tr(self, str):
+        return QString(_(str))
+
 class AuthDialog(ShtoomAuthDialog):
 
     def getAuth(self, method, realm):
@@ -63,6 +66,8 @@ class AuthDialog(ShtoomAuthDialog):
         # throw the dialog away, trigger the deferred
         self.hide()
 
+    def __tr(self, str):
+        return QString(_(str))
 
 class DTMF(DTMF):
     main = None
