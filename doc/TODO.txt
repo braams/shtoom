@@ -3,15 +3,18 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 New to-do before 0.3:
+    - Go through the i18n output and merge the various strings.
+    - add a new credential cmdline option, remove register_auth* options
     - replace email_address and register_uri with a list of identities,
       in form sip://user@rego.server[:port] - auto-add sip:// if necessary.
     - make sure to do async lookups everywhere (twisted2.0 compat!)
+    - make the enable_upnp option work
     - generate a default identity (not None!)
     - phone: UIs should show "my address"
     - handle insane/broken UPnP gateways
-    - firewall-seeding OPTIONS
+    - firewall-seeding OPTIONS, handle OPTIONS packet
     - phone: finish wizards, switch preferences to it
-    - phone: wx UI updates, including auth dialog
+    - phone: wx UI updates, including auth dialog, addressbook
     - phone: qt address book
     - phone: mac UI getAuth?
     - hook up lwc code
