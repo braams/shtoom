@@ -200,7 +200,7 @@ def make_codec_set():
     #    format_to_codec[PT_ILBC] = ILBCCodec()
     return format_to_codec
 
-known_formats = (sets.ImmutableSet(make_codec_set().keys()) - 
+known_formats = (sets.ImmutableSet(make_codec_set().keys()) -
                                   sets.ImmutableSet([PT_CN, PT_xCN,]))
 
 class Codecker:
@@ -256,7 +256,7 @@ class MediaLayer(NullConv):
         self.codecker = None
         self.defaultFormat = None
         # this sets self._d = device
-        NullConv.__init__(self, device, *args, **kwargs) 
+        NullConv.__init__(self, device, *args, **kwargs)
 
     def getFormat(self):
         return self.defaultFormat
@@ -289,8 +289,8 @@ class MediaLayer(NullConv):
         mediahandler, if not None, is a callable that will be called with
         a media sample is available.
 
-        This flushes codec buffers.  The audio playout buffers and microphone 
-        readin buffers *ought* to be flushed by the lower-layer audio device 
+        This flushes codec buffers.  The audio playout buffers and microphone
+        readin buffers *ought* to be flushed by the lower-layer audio device
         when we call reopen() on it.
         """
         assert self.defaultFormat, "must call selectDefaultFormat()"+\
@@ -317,7 +317,7 @@ class MediaLayer(NullConv):
             Hopefully this is good enough for now. In the future it would
             be nice if we could just initiate a playout here, the way Doug
             does. That would also allow you to answer the phone before the
-            ring file finishes playing... --Zooko 2004-10-21 
+            ring file finishes playing... --Zooko 2004-10-21
             P.S. Oh, and if your output device is ALSA, this will
             immediately overflow the output FIFO, so only the first few
             milliseconds of the wav file will be heard. Whoops. This
@@ -329,12 +329,12 @@ class MediaLayer(NullConv):
         try:
             wavefileobj = aufile.WavReader(fname)
             data = wavefileobj.read()
-            # Note that calling write() in a while loop like this effectively 
-            # blocks the whole Twisted app until the audio file is all buffered 
-            # up by the underlying audio output device.  Hopefully this is good 
-            # enough for now.  In the future it would be nice if we could just 
-            # initiate a playout here, the way doug does.  That would also 
-            # allow you to answer the phone before the ring file finishes 
+            # Note that calling write() in a while loop like this effectively
+            # blocks the whole Twisted app until the audio file is all buffered
+            # up by the underlying audio output device.  Hopefully this is good
+            # enough for now.  In the future it would be nice if we could just
+            # initiate a playout here, the way doug does.  That would also
+            # allow you to answer the phone before the ring file finishes
             # playing...  --Zooko 2004-10-21
             while data:
                 self._d.write(data)

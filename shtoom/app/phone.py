@@ -101,12 +101,12 @@ class Phone(BaseApplication):
         else:
             from twisted.internet import reactor
             # AAaaaargh the QTReactor has the suck.
-            try: 
+            try:
                 from twisted.internet.qtreactor import QTReactor
             except:
                 class QTReactor: pass
-            if (isinstance(reactor, QTReactor) 
-                        or not hasattr(reactor,'running') 
+            if (isinstance(reactor, QTReactor)
+                        or not hasattr(reactor,'running')
                         or not reactor.running):
                 reactor.run()
 
@@ -151,7 +151,7 @@ class Phone(BaseApplication):
         return d
 
     def selectDefaultFormat(self, callcookie, sdp, format=None):
-        oldmediahandler = (self._audio and self._audio.codecker 
+        oldmediahandler = (self._audio and self._audio.codecker
                                        and self._audio.codecker.handler)
         self._audio.close()
         if not sdp:
@@ -248,9 +248,9 @@ class Phone(BaseApplication):
 
     def appSpecificOptions(self, opts):
         app = OptionGroup('shtoom', 'Shtoom')
-        app.add(ChoiceOption('ui',_('use UI for interface'), 
+        app.add(ChoiceOption('ui',_('use UI for interface'),
                             choices=['qt','gnome','wx', 'tk', 'text']))
-        app.add(ChoiceOption('audio',_('use AUDIO for interface'), 
+        app.add(ChoiceOption('audio',_('use AUDIO for interface'),
                     choices=['oss', 'fast', 'port', 'alsa', 'echo', 'file']))
         app.add(StringOption('audio_device',_('use this audio device')))
         # XXX TOFIX: This next option Must Die.

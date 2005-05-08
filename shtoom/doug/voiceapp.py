@@ -94,7 +94,7 @@ class VoiceApp(StateMachine):
             leg._stopAudio()
             del self.__legs[name]
 
-    _cleanup = _clear_legs 
+    _cleanup = _clear_legs
 
     def va_abort(self):
         self.mediaStop()

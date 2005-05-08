@@ -14,7 +14,7 @@ class AudioFromFiles(baseaudio.AudioDevice):
         try:
             from __main__ import app
         except:
-            log.msg("couldn't find app preferences, no file audio", 
+            log.msg("couldn't find app preferences, no file audio",
                     system="audio")
             raise ValueError('no app for filename preferences?')
         device = app.getPref('audio_device')

@@ -107,7 +107,7 @@ _ForceStunType = None
 
 def hexify(s):
     if s is None:
-        return 
+        return
     ret = ''.join([ '%x'%(ord(c)) for c in s ])
     return ret
 
@@ -137,14 +137,14 @@ def _parseStunResponse(dgram, address, expectedTID=None, oldtids=[]):
                 log.msg("ignoring belated STUN response to %r from %s"%(
                             hexify(tid), repr(address)), system='stun')
             return
-        log.msg("got unexpected STUN response %r != %r from %s"% 
-                        (hexify(expectedTID), hexify(tid), 
+        log.msg("got unexpected STUN response %r != %r from %s"%
+                        (hexify(expectedTID), hexify(tid),
                         repr(address),), system='stun')
         return
     resdict = {}
     if mt == 0x0101:
         log.msg("got STUN response to %r from %s"%(hexify(expectedTID),
-                                                   repr(address)), 
+                                                   repr(address)),
                                                         system='stun')
         # response
         remainder = dgram[20:]
@@ -215,13 +215,13 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
         self.expectedTID = None
         self.oldTIDs = sets.Set()
         self.natType = None
-        self.servers = [(socket.gethostbyname(host), port) 
+        self.servers = [(socket.gethostbyname(host), port)
                                             for host, port in servers]
         super(StunDiscoveryProtocol, self).__init__(*args, **kwargs)
 
     def initialStunRequest(self, address):
         tid = getRandomTID()
-        delayed = reactor.callLater(INITIAL_TIMEOUT, 
+        delayed = reactor.callLater(INITIAL_TIMEOUT,
                                     self.retransmitInitial, address, tid)
         self._potentialStuns[tid] = delayed
         self.oldTIDs.add(tid)
@@ -230,7 +230,7 @@ class StunDiscoveryProtocol(DatagramProtocol, _StunBase):
     def retransmitInitial(self, address, tid, count=1):
         if count <= MAX_RETRANSMIT:
             t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
-            delayed = reactor.callLater(t, self.retransmitInitial, 
+            delayed = reactor.callLater(t, self.retransmitInitial,
                                                 address, tid, count+1)
             self._potentialStuns[tid] = delayed
             self.sendRequest(address, tid=tid)
@@ -432,7 +432,7 @@ class StunHook(_StunBase):
     def initialStunRequest(self, address):
         tid = getRandomTID()
         self.oldTIDs.add(tid)
-        delayed = reactor.callLater(INITIAL_TIMEOUT, 
+        delayed = reactor.callLater(INITIAL_TIMEOUT,
                                     self.retransmitInitial, address, tid)
         self._pending[tid] = delayed
         self.sendRequest(address, tid=tid)
@@ -440,7 +440,7 @@ class StunHook(_StunBase):
     def retransmitInitial(self, address, tid, count=1):
         if count <= MAX_RETRANSMIT:
             t = BACKOFF_TIME * 2**min(count, MAX_BACKOFF)
-            delayed = reactor.callLater(t, self.retransmitInitial, 
+            delayed = reactor.callLater(t, self.retransmitInitial,
                                             address, tid, count+1)
             self._pending[tid] = delayed
             self.sendRequest(address, tid=tid)
@@ -528,7 +528,7 @@ class NetAddress:
     def inet_aton(self, ipstr):
         "A sane inet_aton"
         if ':' in ipstr:
-            return 
+            return
         net = [ int(x) for x in ipstr.split('.') ] + [ 0,0,0 ]
         net = net[:4]
         return  ((((((0L+net[0])<<8) + net[1])<<8) + net[2])<<8) +net[3]

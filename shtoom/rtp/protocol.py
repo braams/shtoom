@@ -40,10 +40,10 @@ class RTPProtocol(DatagramProtocol):
         self.seq = self.genRandom(bits=16)
         self.ts = self.genInitTS()
         self.ssrc = self.genSSRC()
-        # only for debugging -- the way to prevent the sending of RTP packets 
-        # onto the Net is to reopen the audio device with a None (default) 
+        # only for debugging -- the way to prevent the sending of RTP packets
+        # onto the Net is to reopen the audio device with a None (default)
         # media sample handler instead of this RTP object as the media sample handler.
-        self.sending = False 
+        self.sending = False
 
     def getSDP(self, othersdp=None):
         sdp = SDPGenerator().getSDP(self)
@@ -64,7 +64,7 @@ class RTPProtocol(DatagramProtocol):
             # Goddam Asterisk has no idea about content negotiation
             self.ptdict[0] = PT_PCMU
             self.ptdict[PT_PCMU] = 0
-        
+
 
     def createRTPSocket(self, locIP, needSTUN=False):
         """ Start listening on UDP ports for RTP and RTCP.
@@ -243,7 +243,7 @@ class RTPProtocol(DatagramProtocol):
         packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
 
         self.seq += 1
-        # Note that seqno gets modulo 2^16 in RTPPacket, so it doesn't need 
+        # Note that seqno gets modulo 2^16 in RTPPacket, so it doesn't need
         # to be wrapped at 16 bits here.
         if self.seq >= TWO_TO_THE_48TH:
             self.seq = self.seq - TWO_TO_THE_48TH
@@ -264,7 +264,7 @@ class RTPProtocol(DatagramProtocol):
             # We need to send SOMETHING!?!
             cnpt = 0
 
-        log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt, 
+        log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt,
                                         self.dest[0], self.dest[1]), system='rtp')
 
         self._send_packet(cnpt, chr(127))
@@ -292,7 +292,7 @@ class RTPProtocol(DatagramProtocol):
                 packet.header.pt = 13
                 packet.header.ct = self.ptdict[packet.header.pt]
             else:
-                # XXX This could overflow the log.  Ideally we would have a 
+                # XXX This could overflow the log.  Ideally we would have a
                 # "previous message repeated N times" feature...  --Zooko 2004-10-18
                 log.msg("received packet with unknown PT %s" % packet.header.pt)
                 return # drop the packet on the floor

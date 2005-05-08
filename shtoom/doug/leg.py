@@ -325,4 +325,3 @@ if numarray is not None:
                     self.leg.leg_stopDTMFevent(old)
                     self.leg.leg_startDTMFevent(self.digit)
             self.prev = samp
-

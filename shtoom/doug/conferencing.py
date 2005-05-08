@@ -177,9 +177,9 @@ class Room:
         for p,sample,speaker in power:
             allsamples[speaker] = p, sample
         for s in speakers:
-            # For each speaker, take the set of (other speakers), grab 
+            # For each speaker, take the set of (other speakers), grab
             # the top N speakers, and combine them. Add to the _audioOut
-            # dictionary 
+            # dictionary
             all = allsamples.copy()
             del all[s]
             power = all.values()

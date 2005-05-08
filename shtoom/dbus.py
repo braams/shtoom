@@ -18,7 +18,7 @@ def isAvailable():
     return t_i_dbus is not None
 
 def _setUnavailable():
-    # We're not running under the gtk or glib reactors, so kill the dbus 
+    # We're not running under the gtk or glib reactors, so kill the dbus
     # support
     global t_i_dbus, method, signal
     t_i_dbus = None
@@ -26,11 +26,10 @@ def _setUnavailable():
         return lambda x: x
     def signal(dbus_interface):
         return lambda x: x
-    
+
 
 if t_i_dbus is None:
     def method(dbus_interface):
         return lambda x: x
     def signal(dbus_interface):
         return lambda x: x
-

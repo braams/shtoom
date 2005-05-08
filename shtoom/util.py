@@ -13,4 +13,3 @@ def stack(n=None):
                 file = file[file.rfind(shorten+'/'):]
         out.append('%s:%s:%s'%(file,method,line))
     return ' '.join(out)
-

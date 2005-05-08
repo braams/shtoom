@@ -29,7 +29,7 @@ def buildOptions(app):
     network.add(BooleanOption('use_upnp',
                 _('Use UPnP to punch holes in firewalls'), False))
 
-    network.add(NumberOption('force_rtp_port', 
+    network.add(NumberOption('force_rtp_port',
                             _('force RTP to use this port')))
     opts.add(network)
 
@@ -49,7 +49,7 @@ def buildOptions(app):
     register.add(StringOption('register_user', _('Username to register')))
     register.add(StringOption('register_authuser',
                                         _('Username to use for auth')))
-    register.add(PasswordOption('register_authpasswd', 
+    register.add(PasswordOption('register_authpasswd',
                                         _('Passwd to use for auth')))
     opts.add(register)
 

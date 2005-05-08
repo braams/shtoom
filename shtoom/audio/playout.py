@@ -29,15 +29,15 @@ from twisted.python import log
 
 if 'darwin' in sys.platform.lower():
     # stuff up to this many seconds worth of packets into the audio output buffer
-    PLAYOUT_BUFFER_SECONDS=0.8 
+    PLAYOUT_BUFFER_SECONDS=0.8
 else:
-    PLAYOUT_BUFFER_SECONDS=0.03 
-# store up to this many seconds worth of packets in the jitter buffer before 
+    PLAYOUT_BUFFER_SECONDS=0.03
+# store up to this many seconds worth of packets in the jitter buffer before
 # switching to playout mode
-JITTER_BUFFER_SECONDS=0.8 
-# if we have this many or more seconds worth of packets, drop the oldest ones 
+JITTER_BUFFER_SECONDS=0.8
+# if we have this many or more seconds worth of packets, drop the oldest ones
 # in order to catch up
-CATCHUP_TRIGGER_SECONDS=1.4 
+CATCHUP_TRIGGER_SECONDS=1.4
 
 EPSILON=0.0001
 
@@ -48,7 +48,7 @@ DEBUG=False
 
 def is_run(packets, i, runsecs):
     """
-        Returns True iff packets contains a run of sequential packets starting at 
+        Returns True iff packets contains a run of sequential packets starting at
         index i and extending at least runsecs seconds in aggregate length.
     """
     runbytes = runsecs * 16000
@@ -91,11 +91,11 @@ class Playout:
     def __init__(self, medialayer):
         self.medialayer = medialayer
         self.b = [] # (seqno, bytes,)
-        # the sequence number of the (most recent) packet which has gone to 
+        # the sequence number of the (most recent) packet which has gone to
         # the output device
-        self.s = 0 
+        self.s = 0
         # the time at which the audio output device will have nothing to play
-        self.drytime = None 
+        self.drytime = None
         self.refillmode = True # we start in refill mode
         self.nextcheckscheduled = None
         self.st = time.time()
@@ -109,15 +109,15 @@ class Playout:
             return
         self.nextcheckscheduled = reactor.callLater(delta, self._do_scheduled_check)
         if DEBUG:
-            log.msg("scheduling next check. now: %0.3f, then: %0.3f, drytime: %0.3f" % 
-                    (t() - self.st, self.nextcheckscheduled.getTime() - self.st, 
+            log.msg("scheduling next check. now: %0.3f, then: %0.3f, drytime: %0.3f" %
+                    (t() - self.st, self.nextcheckscheduled.getTime() - self.st,
                     self.drytime - self.st,))
 
     def _do_scheduled_check(self, t=time.time):
         if self.stopping:
             return
         if DEBUG:
-            log.msg("doing scheduled check at %0.3f == %0.3f late" % 
+            log.msg("doing scheduled check at %0.3f == %0.3f late" %
                     (t() - self.st, t()-self.nextcheckscheduled.getTime()))
         self.nextcheckscheduled = None
         self._consider_playing_out_sample()
@@ -129,15 +129,15 @@ class Playout:
                 self._switch_to_refill_mode()
             return
 
-        if self.drytime and (t() >= self.drytime) and ((not newsampseqno) or 
+        if self.drytime and (t() >= self.drytime) and ((not newsampseqno) or
                                                     (newsampseqno != (self.s + 1))):
             log.msg(("output device ran dry unnecessarily! now: %0.3f, "+
-                    "self.drytime: %s, nextseq: %s, newsampseqno: %s") % 
+                    "self.drytime: %s, nextseq: %s, newsampseqno: %s") %
                     (t() - self.st, self.drytime - self.st, self.b[0][0], newsampseqno,))
 
-        # While the output device would run dry within PLAYOUT_BUFFER_SECONDS from 
+        # While the output device would run dry within PLAYOUT_BUFFER_SECONDS from
         # now, then play out another sample.
-        while ((t() + PLAYOUT_BUFFER_SECONDS >= self.drytime) 
+        while ((t() + PLAYOUT_BUFFER_SECONDS >= self.drytime)
                             and self.b and self.b[0][0] == (self.s + 1)):
             (seq, bytes,) = self.b.pop(0)
             self.medialayer._d.write(bytes)
@@ -148,17 +148,17 @@ class Playout:
             else:
                 self.drytime = max(self.drytime + packetlen, t() + packetlen)
             if DEBUG:
-                log.msg("xxxxx %0.3f played %s, playbuflen ~= %0.3f, jitterbuf: %d:%s" 
-                        % (t() - self.st, seq, self.drytime and 
-                        (self.drytime - t()) or 0, len(self.b), 
+                log.msg("xxxxx %0.3f played %s, playbuflen ~= %0.3f, jitterbuf: %d:%s"
+                        % (t() - self.st, seq, self.drytime and
+                        (self.drytime - t()) or 0, len(self.b),
                         [x[0] for x in self.b],))
 
-        # If we filled the playout buffer then come back and consider refilling it 
-        # after it has an open slot big enough to hold the next packet.  (If we 
-        # didn't just fill it then when the next packet comes in from the network 
+        # If we filled the playout buffer then come back and consider refilling it
+        # after it has an open slot big enough to hold the next packet.  (If we
+        # didn't just fill it then when the next packet comes in from the network
         # self.write() will invoke self._consider_playing_out_sample().)
         if self.b and self.b[0][0] == (self.s + 1):
-            # Come back and consider playing out again after we've played out an 
+            # Come back and consider playing out again after we've played out an
             # amount of audio equal to the next packet.
             self._schedule_next_check(len(self.b[0][1]) / float(16000) + EPSILON)
 
@@ -168,7 +168,7 @@ class Playout:
         self._consider_switching_to_play_mode()
 
     def _consider_switching_to_play_mode(self):
-        # If we have enough sequential packets ready, then we'll make them be the 
+        # If we have enough sequential packets ready, then we'll make them be the
         # current packets and switch to play mode.
         for i in range(len(self.b) - 1):
             if is_run(self.b, i, JITTER_BUFFER_SECONDS):
@@ -192,14 +192,14 @@ class Playout:
         self.b.insert(i, (seq, bytes,))
 
         if DEBUG:
-            log.msg("xxxxx %0.3f added  %s, playbuflen ~= %0.3f, jitterbuf: %d:%s" 
-                % (t() - self.st, seq, self.drytime and (self.drytime - t()) or 0, 
+            log.msg("xxxxx %0.3f added  %s, playbuflen ~= %0.3f, jitterbuf: %d:%s"
+                % (t() - self.st, seq, self.drytime and (self.drytime - t()) or 0,
                 len(self.b), [x[0] for x in self.b],))
         if self.refillmode:
             self._consider_switching_to_play_mode()
         else:
             self._consider_playing_out_sample(newsampseqno=seq)
-            if (self.b and (self.b[0][0] == self.s + 1) and 
+            if (self.b and (self.b[0][0] == self.s + 1) and
                         is_run(self.b, 0, CATCHUP_TRIGGER_SECONDS)):
                 (seq, bytes,) = self.b.pop(0) # catch up
                 log.msg("xxxxxxx catchup! dropping %s" % seq)

@@ -9,8 +9,8 @@ class AudioDevice(object):
 
     def set_encoder(self, encoder):
         """
-        The encoder object will subsequently receive calls to its 
-        handle_audio() method when audio is available - it passes it on 
+        The encoder object will subsequently receive calls to its
+        handle_audio() method when audio is available - it passes it on
         to the rest of the system (eventually, to the network).
         """
         self.encoder = encoder

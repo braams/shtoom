@@ -81,7 +81,7 @@ class StateMachine(object):
                                 self.__class__.__name__, self._curState))
             else:
                 log.msg("%s switching to state %s (%s)"%(
-                                self.__class__.__name__, self._curState, 
+                                self.__class__.__name__, self._curState,
                                 evt.__class__.__name__))
         if evt:
             em = callable(evt)
