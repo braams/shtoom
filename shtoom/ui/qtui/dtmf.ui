@@ -15,6 +15,9 @@
     <property name="caption">
         <string>DTMF</string>
     </property>
+    <property name="icon">
+        <pixmap>image0</pixmap>
+    </property>
     <vbox>
         <property name="name">
             <cstring>unnamed</cstring>
@@ -275,6 +278,11 @@
         </widget>
     </vbox>
 </widget>
+<images>
+    <image name="image0">
+        <data format="PNG" length="314">89504e470d0a1a0a0000000d49484452000000320000001e08060000006e514dfc00000101494441545885d5984b0ec3200c051f1139537bff557aa528125db9422811f887e9ac13e4a9c18f349552b02a47ce0500ded7957acfa668112a560a49669b727858155f334de4b3ef45d3fddef6721791fefa23e7a2c64d649600612e325b80d8342fb7444900861d91485808106a91c82ed4a8442c25dab5b8a2e264b7d84abd353832a28e6825b4c97ec7946427090f01823d7ea5c5784a004c11e9969a319a4d03b1453a6225efb99c11ef837d87a90877bc8eac310a3b4746822b22edcd3f75a3ae2ca65b2bf2e26822b2c2c5513d7e579000141d594580608b447f403dd115d1045ada36bcced35d027810f1f803cd9b9fc83f165f33148847ce25bad01e5fab2ca14b6fae64e30000000049454e44ae426082</data>
+    </image>
+</images>
 <connections>
     <connection>
         <sender>dtmfButton1</sender>
