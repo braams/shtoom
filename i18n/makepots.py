@@ -23,7 +23,7 @@ def main():
             if os.path.isdir(t):
                 pyfiles.extend(getMatchingFiles(t, '*.py'))
                 break
-    print "found %d python files", len(pyfiles)
+    print "found %d python files" %(len(pyfiles))
     if os.path.isdir(t):
         gladepath = os.path.join(t, 'ui/gnomeui/shtoom.glade')
     print "found glade file %s"%(gladepath)

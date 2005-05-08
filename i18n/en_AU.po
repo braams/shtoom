@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-03-31 21:56+1000\n"
+"POT-Creation-Date: 2005-05-09 02:37+1000\n"
 "PO-Revision-Date: 2005-01-19 20:40+1100\n"
 "Last-Translator:  <anthony@interlink.com.au>\n"
 "Language-Team: English\n"
@@ -83,8 +83,8 @@ msgid "Passwd to use for auth"
 msgstr ""
 
 #: ../shtoom/opts.py:56 ../shtoom/ui/qtui/debugging.py:52
-#: ../shtoom/ui/wxui/main.py:81 ../shtoom/ui/gnomeui/shtoom.glade:52
-#: ../shtoom/ui/gnomeui/shtoom.glade:1022
+#: ../shtoom/ui/wxui/main.py:81 ../shtoom/ui/gnomeui/shtoom.glade:54
+#: ../shtoom/ui/gnomeui/shtoom.glade:1063
 msgid "Debugging"
 msgstr "Debugging"
 
@@ -96,107 +96,96 @@ msgstr ""
 msgid "Don't read from or write to config file"
 msgstr ""
 
-#: ../shtoom/app/phone.py:238
+#: ../shtoom/app/phone.py:251
 msgid "use UI for interface"
 msgstr ""
 
-#: ../shtoom/app/phone.py:239
+#: ../shtoom/app/phone.py:253
 msgid "use AUDIO for interface"
 msgstr ""
 
-#: ../shtoom/app/phone.py:240
+#: ../shtoom/app/phone.py:255
 msgid "use this audio device"
 msgstr ""
 
-#: ../shtoom/app/phone.py:241
-msgid "read audio from this file"
-msgstr ""
-
-#: ../shtoom/app/phone.py:242
-msgid "write audio to this file"
-msgstr ""
-
-#: ../shtoom/app/phone.py:244
+#: ../shtoom/app/phone.py:257
 msgid "root dir of shtoom installation"
 msgstr ""
 
-#: ../shtoom/app/phone.py:246
-msgid "play this wave file when a call comes in"
+#: ../shtoom/app/phone.py:259
+msgid "play this wav file when a call comes in"
 msgstr ""
 
-#: ../shtoom/app/phone.py:248
-msgid "play this wave file when remote phone is ringing"
+#: ../shtoom/app/phone.py:262
+msgid "play this wav file when remote phone is ringing"
 msgstr ""
 
-#: ../shtoom/app/phone.py:252
+#: ../shtoom/app/phone.py:266
 msgid "log to this file"
 msgstr ""
 
-#: ../shtoom/app/phone.py:254
+#: ../shtoom/app/phone.py:268
 msgid "cached credentials"
 msgstr ""
 
-#: ../shtoom/ui/qtui/debugging.py:53 ../shtoom/ui/qtui/dtmf.py:143
-msgid "Close"
-msgstr "Close"
-
-#: ../shtoom/ui/qtui/debugging.py:54
-msgid "Clear"
-msgstr "Clear"
-
-#: ../shtoom/ui/qtui/dtmf.py:130 ../shtoom/ui/qtui/shtoommainwindow.py:114
+#: ../shtoom/ui/qtui/dtmf.py:161 ../shtoom/ui/qtui/shtoommainwindow.py:114
 #: ../shtoom/ui/qtui/shtoommainwindow.py:115
-#: ../shtoom/ui/gnomeui/shtoom.glade:42
+#: ../shtoom/ui/gnomeui/shtoom.glade:44
 msgid "DTMF"
 msgstr "DTMF"
 
-#: ../shtoom/ui/qtui/dtmf.py:131 ../shtoom/ui/gnomeui/shtoom.glade:830
+#: ../shtoom/ui/qtui/dtmf.py:162 ../shtoom/ui/gnomeui/shtoom.glade:871
 msgid "8"
 msgstr "8"
 
-#: ../shtoom/ui/qtui/dtmf.py:132 ../shtoom/ui/gnomeui/shtoom.glade:945
+#: ../shtoom/ui/qtui/dtmf.py:163 ../shtoom/ui/gnomeui/shtoom.glade:986
 msgid "2"
 msgstr "2"
 
-#: ../shtoom/ui/qtui/dtmf.py:133 ../shtoom/ui/gnomeui/shtoom.glade:738
+#: ../shtoom/ui/qtui/dtmf.py:164 ../shtoom/ui/gnomeui/shtoom.glade:779
 msgid "*"
 msgstr "*"
 
-#: ../shtoom/ui/qtui/dtmf.py:134 ../shtoom/ui/gnomeui/shtoom.glade:761
+#: ../shtoom/ui/qtui/dtmf.py:165 ../shtoom/ui/gnomeui/shtoom.glade:802
 msgid "#"
 msgstr "#"
 
-#: ../shtoom/ui/qtui/dtmf.py:135 ../shtoom/ui/gnomeui/shtoom.glade:968
+#: ../shtoom/ui/qtui/dtmf.py:166 ../shtoom/ui/gnomeui/shtoom.glade:1009
 msgid "3"
 msgstr "3"
 
-#: ../shtoom/ui/qtui/dtmf.py:136 ../shtoom/ui/gnomeui/shtoom.glade:876
+#: ../shtoom/ui/qtui/dtmf.py:167 ../shtoom/ui/gnomeui/shtoom.glade:917
 msgid "6"
 msgstr "6"
 
-#: ../shtoom/ui/qtui/dtmf.py:137 ../shtoom/ui/gnomeui/shtoom.glade:899
+#: ../shtoom/ui/qtui/dtmf.py:168 ../shtoom/ui/gnomeui/shtoom.glade:940
 msgid "5"
 msgstr "5"
 
-#: ../shtoom/ui/qtui/dtmf.py:138 ../shtoom/ui/gnomeui/shtoom.glade:922
+#: ../shtoom/ui/qtui/dtmf.py:169 ../shtoom/ui/gnomeui/shtoom.glade:963
 msgid "4"
 msgstr "4"
 
-#: ../shtoom/ui/qtui/dtmf.py:139 ../shtoom/ui/gnomeui/shtoom.glade:853
+#: ../shtoom/ui/qtui/dtmf.py:170 ../shtoom/ui/gnomeui/shtoom.glade:894
 msgid "7"
 msgstr "7"
 
-#: ../shtoom/ui/qtui/dtmf.py:140 ../shtoom/ui/gnomeui/shtoom.glade:807
+#: ../shtoom/ui/qtui/dtmf.py:171 ../shtoom/ui/gnomeui/shtoom.glade:848
 msgid "9"
 msgstr "9"
 
-#: ../shtoom/ui/qtui/dtmf.py:141 ../shtoom/ui/gnomeui/shtoom.glade:991
+#: ../shtoom/ui/qtui/dtmf.py:172 ../shtoom/ui/gnomeui/shtoom.glade:1032
 msgid "1"
 msgstr "1"
 
-#: ../shtoom/ui/qtui/dtmf.py:142 ../shtoom/ui/gnomeui/shtoom.glade:784
+#: ../shtoom/ui/qtui/dtmf.py:173 ../shtoom/ui/gnomeui/shtoom.glade:825
 msgid "0"
 msgstr "0"
+
+#: ../shtoom/ui/qtui/dtmf.py:174 ../shtoom/ui/qtui/debugging.py:53
+#: ../shtoom/ui/qtui/about.py:156
+msgid "Close"
+msgstr "Close"
 
 #: ../shtoom/ui/qtui/prefs.py:96 ../shtoom/ui/qtui/shtoommainwindow.py:136
 #: ../shtoom/ui/tkui/main.py:39
@@ -215,33 +204,46 @@ msgstr "Save"
 msgid "Alt+S"
 msgstr "Alt+S"
 
-#: ../shtoom/ui/qtui/prefs.py:100 ../shtoom/ui/tkui/popups.py:132
+#: ../shtoom/ui/qtui/prefs.py:100 ../shtoom/ui/qtui/authdialog.py:137
+#: ../shtoom/ui/tkui/popups.py:132
 msgid "Cancel"
 msgstr "Cancel"
 
-#: ../shtoom/ui/qtui/main.py:135 ../shtoom/ui/wxui/main.py:94
-#: ../shtoom/ui/tkui/main.py:129
+#: ../shtoom/ui/qtui/main.py:35 ../shtoom/ui/tkui/popups.py:83
+#: ../shtoom/ui/gnomeui/main.py:147
+#, python-format
+msgid ""
+"Enter username and password\n"
+"for \"%(method)s\" at \"%(realm)s\""
+msgstr ""
+
+#: ../shtoom/ui/qtui/main.py:185 ../shtoom/ui/tkui/main.py:129
+#: ../shtoom/ui/wxui/main.py:94
 msgid "ERROR"
 msgstr "ERROR"
 
-#: ../shtoom/ui/qtui/main.py:161
+#: ../shtoom/ui/qtui/main.py:211
 msgid "Calling..."
 msgstr "Calling..."
 
-#: ../shtoom/ui/qtui/main.py:165 ../shtoom/ui/wxui/main.py:147
-#: ../shtoom/ui/tkui/main.py:168
+#: ../shtoom/ui/qtui/main.py:215 ../shtoom/ui/tkui/main.py:168
+#: ../shtoom/ui/wxui/main.py:147
 msgid "Call Failed"
 msgstr "Call Failed"
 
-#: ../shtoom/ui/qtui/main.py:172 ../shtoom/ui/wxui/main.py:131
-#: ../shtoom/ui/tkui/main.py:144
+#: ../shtoom/ui/qtui/main.py:222 ../shtoom/ui/tkui/main.py:144
+#: ../shtoom/ui/wxui/main.py:131
 msgid "Call Connected"
 msgstr "Call Connected"
 
-#: ../shtoom/ui/qtui/main.py:177 ../shtoom/ui/wxui/main.py:139
-#: ../shtoom/ui/tkui/main.py:150
+#: ../shtoom/ui/qtui/main.py:227 ../shtoom/ui/tkui/main.py:150
+#: ../shtoom/ui/wxui/main.py:139
 msgid "Call Disconnected"
 msgstr "Call Disconnected"
+
+#: ../shtoom/ui/qtui/debugging.py:54
+msgid "Clear"
+msgstr "Clear"
 
 #: ../shtoom/ui/qtui/shtoommainwindow.py:107
 #: ../shtoom/ui/gnomeui/shtoom.glade:9
@@ -254,22 +256,22 @@ msgid "Address"
 msgstr "Address:"
 
 #: ../shtoom/ui/qtui/shtoommainwindow.py:109
-#: ../shtoom/ui/gnomeui/shtoom.glade:200
+#: ../shtoom/ui/gnomeui/shtoom.glade:206
 msgid "..."
 msgstr "..."
 
-#: ../shtoom/ui/qtui/shtoommainwindow.py:110 ../shtoom/ui/wxui/main.py:99
-#: ../shtoom/ui/tkui/main.py:59 ../shtoom/ui/gnomeui/shtoom.glade:231
+#: ../shtoom/ui/qtui/shtoommainwindow.py:110 ../shtoom/ui/tkui/main.py:59
+#: ../shtoom/ui/wxui/main.py:99 ../shtoom/ui/gnomeui/shtoom.glade:237
 msgid "Call"
 msgstr "Call"
 
-#: ../shtoom/ui/qtui/shtoommainwindow.py:111 ../shtoom/ui/wxui/main.py:102
-#: ../shtoom/ui/tkui/main.py:62 ../shtoom/ui/gnomeui/shtoom.glade:244
+#: ../shtoom/ui/qtui/shtoommainwindow.py:111 ../shtoom/ui/tkui/main.py:62
+#: ../shtoom/ui/wxui/main.py:102 ../shtoom/ui/gnomeui/shtoom.glade:250
 msgid "Hang Up"
 msgstr "Hang Up"
 
 #: ../shtoom/ui/qtui/shtoommainwindow.py:112 ../shtoom/ui/tkui/main.py:66
-#: ../shtoom/ui/gnomeui/shtoom.glade:258
+#: ../shtoom/ui/gnomeui/shtoom.glade:264
 msgid "Register"
 msgstr "Register"
 
@@ -300,7 +302,8 @@ msgid "Exit"
 msgstr "Exit"
 
 #: ../shtoom/ui/qtui/shtoommainwindow.py:125
-#: ../shtoom/ui/qtui/shtoommainwindow.py:126 ../shtoom/ui/tkui/main.py:38
+#: ../shtoom/ui/qtui/shtoommainwindow.py:126 ../shtoom/ui/qtui/about.py:150
+#: ../shtoom/ui/tkui/main.py:38
 msgid "About"
 msgstr "About"
 
@@ -321,25 +324,50 @@ msgstr "File"
 msgid "Edit"
 msgstr "Edit"
 
-#: ../shtoom/ui/wxui/main.py:72 ../shtoom/ui/wxui/main.py:157
+#: ../shtoom/ui/qtui/authdialog.py:132
 #, fuzzy
-msgid "Not connected"
-msgstr "Call disconnected"
+msgid "Shtoom Authentication"
+msgstr "Shtoom - Authentication"
 
-#: ../shtoom/ui/wxui/main.py:117
-msgid "is a invalid address. The address must begin with \"sip\"."
+#: ../shtoom/ui/qtui/authdialog.py:133 ../shtoom/ui/gnomeui/shtoom.glade:485
+msgid "Some authentication information is required"
+msgstr "Some authentication information is required"
+
+#: ../shtoom/ui/qtui/authdialog.py:134 ../shtoom/ui/gnomeui/shtoom.glade:592
+msgid "Username"
+msgstr "Username"
+
+#: ../shtoom/ui/qtui/authdialog.py:135 ../shtoom/ui/tkui/popups.py:117
+#: ../shtoom/ui/gnomeui/shtoom.glade:564
+msgid "Password"
+msgstr "Password"
+
+#: ../shtoom/ui/qtui/authdialog.py:136 ../shtoom/ui/tkui/popups.py:128
+#: ../shtoom/ui/gnomeui/shtoom.glade:660
+#, fuzzy
+msgid "Save this username and password"
+msgstr "Save username and password"
+
+#: ../shtoom/ui/qtui/authdialog.py:138 ../shtoom/ui/tkui/popups.py:135
+msgid "OK"
 msgstr ""
 
-#: ../shtoom/ui/wxui/main.py:118
-#, fuzzy
-msgid "Address error"
-msgstr "Address:"
+#: ../shtoom/ui/qtui/about.py:152
+msgid "<font size=\"+1\"><p><b>Shtoom</b>, a Python VoIP Softphone</p></font>"
+msgstr ""
 
-#: ../shtoom/ui/gnomeui/main.py:142 ../shtoom/ui/tkui/popups.py:83
-#, python-format
+#: ../shtoom/ui/qtui/about.py:153
 msgid ""
-"Enter username and password\n"
-"for \"%(method)s\" at \"%(realm)s\""
+"<p>(C) 2005 Anthony Baxter and contributors. See <tt>doc/ACKS</tt> for a "
+"full list.</p>"
+msgstr ""
+
+#: ../shtoom/ui/qtui/about.py:154
+msgid "<p>Home page: <tt>http://shtoom.divmod.org</tt></p>"
+msgstr ""
+
+#: ../shtoom/ui/qtui/about.py:155
+msgid "Licensed under the LGPL"
 msgstr ""
 
 #: ../shtoom/ui/tkui/main.py:69
@@ -356,54 +384,47 @@ msgstr "Status:"
 msgid "User Name"
 msgstr "Username"
 
-#: ../shtoom/ui/tkui/popups.py:117 ../shtoom/ui/gnomeui/shtoom.glade:541
-msgid "Password"
-msgstr "Password"
-
-#: ../shtoom/ui/tkui/popups.py:128 ../shtoom/ui/gnomeui/shtoom.glade:625
+#: ../shtoom/ui/wxui/main.py:72 ../shtoom/ui/wxui/main.py:157
 #, fuzzy
-msgid "Save this username and password"
-msgstr "Save username and password"
+msgid "Not connected"
+msgstr "Call disconnected"
 
-#: ../shtoom/ui/tkui/popups.py:135
-msgid "OK"
+#: ../shtoom/ui/wxui/main.py:117
+msgid "is a invalid address. The address must begin with \"sip\"."
 msgstr ""
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:91
+#: ../shtoom/ui/wxui/main.py:118
+#, fuzzy
+msgid "Address error"
+msgstr "Address:"
+
+#: ../shtoom/ui/gnomeui/shtoom.glade:93
 #, fuzzy
 msgid "Address Book"
 msgstr "Address_Book"
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:157
+#: ../shtoom/ui/gnomeui/shtoom.glade:159
 msgid "Address:"
 msgstr "Address:"
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:198
+#: ../shtoom/ui/gnomeui/shtoom.glade:204
 msgid "Lookup entry in address book"
 msgstr "Lookup entry in address book"
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:303
+#: ../shtoom/ui/gnomeui/shtoom.glade:311
 msgid "Shtoom, a VoIP client"
 msgstr "Shtoom, a VoIP client"
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:311
+#: ../shtoom/ui/gnomeui/shtoom.glade:319
 msgid "Accept call?"
 msgstr "Accept call?"
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:398
+#: ../shtoom/ui/gnomeui/shtoom.glade:412
 #, fuzzy
 msgid "Authentication"
 msgstr "Shtoom - Authentication"
 
-#: ../shtoom/ui/gnomeui/shtoom.glade:468
-msgid "Some authentication information is required"
-msgstr "Some authentication information is required"
-
-#: ../shtoom/ui/gnomeui/shtoom.glade:565
-msgid "Username"
-msgstr "Username"
-
-#: ../shtoom/ui/gnomeui/shtoom.glade:679
+#: ../shtoom/ui/gnomeui/shtoom.glade:718
 msgid "Shtoom - dtmf"
 msgstr "Shtoom - dtmf"
 
