@@ -24,12 +24,6 @@ def main():
     app.boot(args=sys.argv[1:])
 
     audioPref = app.getPref('audio')
-    audio_in = app.getPref('audio_infile')
-    audio_out = app.getPref('audio_outfile')
-    if audio_in and audio_out:
-        aF = ( audio_in, audio_out )
-    else:
-        aF = None
 
     from twisted.python import log
     log.msg("Getting new audio device", system='phone')
