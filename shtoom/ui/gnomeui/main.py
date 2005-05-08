@@ -169,11 +169,12 @@ class ShtoomWindow(ShtoomBaseUI):
         # sweeeet.
         user = self.xml.get_widget('userEntry').get_text()
         passwd = self.xml.get_widget('passwdEntry').get_text()
+        saveok = self.xml.get_widget('saveButton').get_active()
         self.authdialog.hide_all()
         self.authdialog = None
         d, self.authdialog_defer = self.authdialog_defer, None
         self.realmLabel = None
-        d.callback((user,passwd))
+        d.callback((user, passwd, saveok))
 
     def incomingCall(self, description, cookie):
         # XXX multiple incoming calls won't work
