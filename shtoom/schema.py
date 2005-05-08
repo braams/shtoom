@@ -93,6 +93,8 @@ class SchemaObject(_BackwardsCompatMixin, object):
         if self._requiredType and not isinstance(value, self._requiredType):
             raise SchemaValueError('expected %s, got %r'%(
                                                 self._requiredType, value))
+    def __repr__(self):
+        return "<%s object '%s' at %x>"%(self.__class__.__name__, self.name, id(self))
 
 class Integer(SchemaObject):
     "An integer"
