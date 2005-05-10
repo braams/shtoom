@@ -218,7 +218,7 @@ class RTPProtocol(DatagramProtocol):
                 #self._socketCreationAttempt()
             else:
                 # phew. working NAT
-                log.msg("stun: sane NAT for RTP/RTCP", system='rtp')
+                log.msg("stun: sane NAT for RTP/RTCP; rtp addr: %s" % (rtp,), system='rtp')
                 self._extIP, self._extRTPPort = rtp
                 self._stunAttempts = 0
                 d = self._socketCompleteDef
