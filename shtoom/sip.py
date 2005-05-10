@@ -323,6 +323,7 @@ class Call(object):
                 peer = protocol.transport.getPeer()
                 remAddress = (peer.host,peer.port)
                 port.stopListening()
+                self.sip.app.notifyEvent('discoveredIP', locAddress[0])
                 log.msg("discovered local address %r, remote %r"%(locAddress,
                                                                   remAddress), system='sip')
                 _CACHED_LOCAL_IP = locAddress[0]
@@ -362,6 +363,7 @@ class Call(object):
         else:
             host,port = '',''
         log.msg("after NAT mapping,external address is %s:%s"%(host, port), system='sip')
+        self.sip.app.notifyEvent('discoveredStunnedIP', host, port)
         self._localIP = host
         self._localPort = port
         # XXX Check for multiple firings!
@@ -1068,9 +1070,8 @@ class Registration(Call):
                 log.err("Unknown registration state '%s' for a 401/407"%(state))
         elif message.code in ( 200, ):
             self.sip.app.statusMessage("Registration: OK")
-            if hasattr(self.sip.app, 'registrationOK'):
-                self.sip.app.registrationOK(self)
             # Woo. registration succeeded.
+            self.sip.app.notifyEvent('registrationOK', self)
             self.register_attempts = 0
             if state == 'SENT_REGISTER':
                 self.setState('REGISTERED')

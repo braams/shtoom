@@ -35,6 +35,11 @@ class Phone(BaseApplication):
         self._rtpProtocolClass = None
         self._debugrev = 10
 
+    def notifyEvent(self, methodName, *args, **kw):
+        method = getattr(self, methodName, None)
+        if method is not None:
+            method(*args, **kw)
+
     def find_resource_file(self, fname):
         """ Return the fully-qualified path to the desired resource file that came bundled with Shtoom.  On failure, it returns fname.
         fname must be relative to the appropriate directory for storing this kind of file.

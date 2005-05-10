@@ -284,3 +284,7 @@ class DougApplication(BaseApplication):
         rtp = self._rtp.get(cookie)
         if rtp:
             rtp.stopDTMF(digit)
+
+    def notifyEvent(self, methodName, *args, **kw):
+         pass
+

@@ -24,6 +24,10 @@ class TestDougApplication(DougApplication):
         # ring ring
         pass
 
+    def notifyEvent(self, event, arg):
+        # Okay.
+        pass
+    
     def acceptErrors(self, cookie, error):
         #print "cookie %s got error %r"%(cookie, error)
         if self._trial_def is not None:
