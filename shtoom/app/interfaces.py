@@ -27,6 +27,12 @@ class ApplicationSIPInterface(Interface):
         """ Other end has terminated the call.
         """
 
+    def ringBack(self):
+        """ The other side sent a "180 Ringing".  This is purely informational 
+            -- the app may wish to, for example, play a ringback sound to the 
+            user.
+        """
+
 class ApplicationRTPInterface(Interface):
     """This interface describes the interface that an RTP implementation
        uses to talk to the Application instance
