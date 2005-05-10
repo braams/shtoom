@@ -18,6 +18,9 @@ DEFAULT_ALSA_DEVICE = 'default'
 
 class ALSAAudioDevice(baseaudio.AudioDevice):
 
+    def __repr__(self):
+        return "ALSAAudioDevice %s" % (self.isOpen() and "open" or "closed")
+
     def openDev(self):
         try:
             from __main__ import app
