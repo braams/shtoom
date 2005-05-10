@@ -39,6 +39,7 @@ class Phone(BaseApplication):
         self._rtpProtocolClass = None
         self._develrevision = "Shtoom v" + DEVELREV
         print "Shtoom devel revision %s, platform: %s" % (self._develrevision, platform.platform(),)
+        self.statusMessage('Ready.')
 
     def notifyEvent(self, methodName, *args, **kw):
         method = getattr(self, methodName, None)
@@ -93,7 +94,8 @@ class Phone(BaseApplication):
     def register(self):
         register_uri = self.getPref('register_uri')
         if register_uri is not None:
-            return self.sip.register()
+            self.sip.register()
+            self.statusMessage('Registering...')
 
     def start(self):
         "Start the application."
@@ -208,6 +210,7 @@ class Phone(BaseApplication):
             if self._calls.get(callcookie):
                 del self._calls[callcookie]
             self.closeAudioDevice()
+        self.statusMessage("Call disconnected")
         self.ui.callDisconnected(callcookie, reason)
 
     def openAudioDevice(self, fmts=[PT_PCMU,], mediahandler=None):
