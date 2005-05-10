@@ -255,7 +255,10 @@ class Phone(BaseApplication):
         rtp.stopDTMF(digit)
 
     def statusMessage(self, message):
-        self.ui.statusMessage(message)
+        if self.ui:
+            self.ui.statusMessage(message)
+        else:
+            log.msg("Phone got statusMessage but there is no self.ui (yet?).  message: %s" % (message,))
 
     def debugMessage(self, message):
         self.ui.debugMessage(message)
