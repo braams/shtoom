@@ -14,9 +14,9 @@ from shtoom.rtp.formats import SDPGenerator, PT_CN, PT_xCN, PT_NTE, PT_PCMU
 from shtoom.rtp.packets import RTPPacket, parse_rtppacket
 from shtoom.audio.converters import MediaSample
 
-TWO_TO_THE_16TH = 2<<16
-TWO_TO_THE_32ND = 2<<32
-TWO_TO_THE_48TH = 2<<48
+TWO_TO_THE_16TH = 2L<<16
+TWO_TO_THE_32ND = 2L<<32
+TWO_TO_THE_48TH = 2L<<48
 
 from shtoom.rtp.packets import NTE
 
