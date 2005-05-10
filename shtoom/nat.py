@@ -175,15 +175,35 @@ _forcedMapper = None
 
 def getMapper():
     # We prefer UPnP when available, as it's more robust
+    try:
+        from __main__ import app
+    except:
+        app = None
+    natPref = 'both'
+    if app is not None:
+        print "app is", app
+        natPref = app.getPref('nat')
+        log.msg('NAT preference says to use %s'%(natPref))
     if _forcedMapper is not None:
         return defer.succeed(_forcedMapper)
     from shtoom.upnp import getUPnP
     from shtoom.stun import getSTUN
-    ud = getUPnP()
-    sd = getSTUN()
-    dl = defer.DeferredList([ud, sd])
-    dl.addCallback(cb_getMapper).addErrback(log.err)
-    return dl
+    if natPref == 'both':
+        ud = getUPnP()
+        sd = getSTUN()
+        d = defer.DeferredList([ud, sd])
+    elif natPref == 'upnp':
+        ud = getUPnP()
+        d = defer.DeferredList([ud, defer.succeed(None) ])
+    elif natPref == 'stun':
+        ud = getSTUN()
+        d = defer.DeferredList([defer.succeed(None), sd])
+    else:
+        nm = NullMapper()
+        d = defer.DeferredList([defer.succeed(None), 
+                                defer.succeed(None)])
+    d.addCallback(cb_getMapper).addErrback(log.err)
+    return d
 getMapper = DeferredCache(getMapper, inProgressOnly=False)
 
 def _forceMapper(mapper):

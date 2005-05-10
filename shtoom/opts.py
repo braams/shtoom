@@ -26,8 +26,9 @@ def buildOptions(app):
     network.add(ChoiceOption('stun_policy',
                         _('When should STUN be used?'), 'rfc1918',
                                     choices=['never','always','rfc1918']))
-    network.add(BooleanOption('use_upnp',
-                _('Use UPnP to punch holes in firewalls'), False))
+    network.add(ChoiceOption('nat',
+                _('Use this NAT traversal technique'), 'both',
+                                    choices=['both', 'upnp', 'stun', 'none']))
 
     network.add(NumberOption('force_rtp_port',
                             _('force RTP to use this port')))

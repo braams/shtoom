@@ -1,7 +1,9 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
-  - new scripts/upnpclient - a small command line client.
+  - new network option 'nat' - can be set to both, upnp, stun or none.
+  - new scripts/upnpclient.py - a small command line client for adding,
+    removing and listing UPnP mappings.
   - Gnome, Tk, and Qt UIs have a decent authentication dialog.
   - Text UI gets new 'auth' command to add auth credentials
   - New code for saving credentials - death to register_auth* options!
