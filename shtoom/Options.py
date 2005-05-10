@@ -57,7 +57,9 @@ def _optParseBuilder(opt, parser):
                                                                 self._default)
     help = opt.description
     if isinstance(opt, Choice):
-        help = help+ ' (%s)'%(','.join([ str(x.value) for x in opt ]))
+        help = help+ ' (%s) (default %s)'%(
+                                ', '.join([ str(x.value) for x in opt ]), 
+                                opt.default)
     args.update({'dest': opt.name,
                  'help': help,
                  'default':opt.default})
