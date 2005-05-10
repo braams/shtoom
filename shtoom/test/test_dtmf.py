@@ -11,6 +11,7 @@ class DTMFDetectTest(unittest.TestCase):
     def setUp(self):
         try:
             import numarray
+            import numarray.fft
         except:
             raise unittest.SkipTest('numarray needed for dtmf detection')
 
