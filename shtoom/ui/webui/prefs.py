@@ -175,7 +175,9 @@ class PreferencesPage(rend.Page):
             checked = "checked"
         else:
             checked = None
-        return T.input(type="checkbox", name=boolean.getName(), checked=checked)
+        return (
+            T.input(type="checkbox", name=boolean.getName(), checked=checked),
+            T.input(type="hidden", name=boolean.getName(), value="off"))
 
     render_numberOption = render_stringOption
 
@@ -190,7 +192,7 @@ class PreferencesPage(rend.Page):
         T.h1[
             T.span(_class="mode-switch")[
                 T.a(href="/")[T.span(_class="tab")["Basic"]],
-                T.a(href="/advanced")[T.span(_class="tab-selected")["Advanced"]]],
+                T.a(href="/advanced/")[T.span(_class="tab-selected")["Advanced"]]],
                 "Shtoom Configuration"],
         render_switcher,
         render_message]])
@@ -207,6 +209,10 @@ class Configure(rend.Page):
         for O in mine:
             name = O.getName()
             value = ctx.arg(name)
+            if value == 'on':
+                value = True
+            if value == 'off':
+                value = False
             if value is not None:
                 O.setValue(value)
             else:
@@ -281,7 +287,7 @@ class WizardConfiguration(rend.Page):
         T.h1[
             T.span(_class="mode-switch")[
                 T.a(href="/")[T.span(_class="tab-selected")["Basic"]],
-                T.a(href="/advanced")[T.span(_class="tab")["Advanced"]]],
+                T.a(href="/advanced/")[T.span(_class="tab")["Advanced"]]],
                 "Shtoom Configuration"],
         webform.renderForms(bindingNames=['currentConfiguration'])[
             T.form(pattern='freeform-form',
