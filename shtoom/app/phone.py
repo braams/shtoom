@@ -1,8 +1,12 @@
+DEVELREV="481"
+DEVELREVTAG="unstable"
+DEVELREV=DEVELREV+"-"+DEVELREVTAG
+
 # Copyright (C) 2004 Anthony Baxter
 
 # The Phone app.
 
-import os, sys, threading
+import os, platform, sys, threading, time
 
 from twisted.internet import defer, protocol
 from twisted.python import log, threadable
@@ -33,7 +37,8 @@ class Phone(BaseApplication):
         self._currentCall = None
         self._muted = False
         self._rtpProtocolClass = None
-        self._debugrev = 10
+        self._develrevision = "Shtoom v" + DEVELREV
+        print "Shtoom devel revision %s, platform: %s" % (self._develrevision, platform.platform(),)
 
     def notifyEvent(self, methodName, *args, **kw):
         method = getattr(self, methodName, None)
