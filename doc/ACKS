@@ -18,6 +18,7 @@ remind me. <wink>
     Lars Immisch - bug fixes, DirectSound
     Bob Ippolito - CocoaAudio, CocoaShtoom
     Glyph Lefkowitz - debugging
+    Charles Majola - bugfix for qt api change
     Zooko O'Whielacronx - bug fixes, code
     Donovan Preston - CocoaAudio, CocoaShtoom, code
     Allen Short - debugging, advice, maintenance of the hosting
