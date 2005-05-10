@@ -241,6 +241,7 @@ class Phone(BaseApplication):
         call = self._calls.get(cookie)
         if call:
             d = call.dropCall()
+        self.endCall(cookie)
         # xxx Add callback.
         #else:
         #    self.ui.callDisconnected(None, "no call")
