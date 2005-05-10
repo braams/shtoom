@@ -240,7 +240,8 @@ class Phone(BaseApplication):
         call = self._calls.get(cookie)
         if call:
             d = call.dropCall()
-        self.endCall(cookie)
+        # Don't need to call endCall, the sip stack calls it.
+        #self.endCall(cookie)
         # xxx Add callback.
         #else:
         #    self.ui.callDisconnected(None, "no call")
