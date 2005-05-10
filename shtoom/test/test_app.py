@@ -5,7 +5,9 @@
 from twisted.trial import unittest
 
 class TestUI:
-    pass
+    def statusMessage(self, mess):
+        # mess
+        pass
 
 class TestAudio:
     pass
