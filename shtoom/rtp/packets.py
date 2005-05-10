@@ -63,7 +63,7 @@ class RTPPacket:
         if self.header.ct is not None:
             ptrepr = "%r" % (self.header.ct,)
         else:
-            ptrepr = "pt %d" % (self.header.pt,)
+            ptrepr = "pt %s" % (self.header.pt,)
 
         if self.header.xhdrtype is not None:
             return "<%s #%d (%s) %s [%s] at %x>"%(self.__class__.__name__,

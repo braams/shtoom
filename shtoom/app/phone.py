@@ -38,7 +38,7 @@ class Phone(BaseApplication):
         self._muted = False
         self._rtpProtocolClass = None
         self._develrevision = "Shtoom v" + DEVELREV
-        print "Shtoom devel revision %s, platform: %s" % (self._develrevision, platform.platform(),)
+        log.msg("Shtoom devel revision %s, platform: %s" % (self._develrevision, platform.platform(),))
         self.statusMessage('Ready.')
 
     def notifyEvent(self, methodName, *args, **kw):
@@ -144,7 +144,6 @@ class Phone(BaseApplication):
                                            call.getSTUNState())
         else:
             raise ValueError, "unknown call type %s"%(calltype)
-        return d
 
     def _createRTP(self, cookie, localIP, withSTUN):
         from shtoom.rtp.protocol import RTPProtocol

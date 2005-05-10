@@ -406,9 +406,11 @@ class Call(object):
         if isinstance(response, CallFailed):
             return self.rejectedIncoming(response)
         else:
+            assert isinstance(response, basestring)
             return self.acceptedIncoming(response)
 
     def acceptedIncoming(self, cookie):
+        assert isinstance(cookie, basestring)
         log.msg("acceptIncoming setting cookie to %r"%(cookie), system='sip')
         self.cookie = cookie
         lhost, lport = self.getLocalSIPAddress()
@@ -427,7 +429,7 @@ class Call(object):
         self.setState('INVITE_OK')
 
     def rejectedIncoming(self, response):
-        ''' Accept currently pending call.
+        ''' Reject currently pending call.
         '''
         log.msg("rejecting because %r"%(response,), system='sip')
         if hasattr(response, 'sipCode'):
@@ -551,7 +553,8 @@ class Call(object):
 
     def sendInvite(self, toAddr, cookie=None, auth=None, authhdr=None, init=0):
         if cookie:
-            #print "sendinvite setting cookie to", cookie
+            assert isinstance(cookie, basestring)
+            print "sendinvite setting cookie to", cookie
             self.cookie = cookie
         lhost, lport = self.getLocalSIPAddress()
         username = self.sip.app.getPref('username')
@@ -679,6 +682,9 @@ class Call(object):
         bye = bye.toString()
         log.msg("sending BYE to %r\n%s"%(dest, bye), system="sip")
         self.sip.transport.write(bye, _hostportToIPPort(dest))
+        #for i in range(5):
+        #    super-klooge: send five copies of this because it is unreliable
+        #    self.sip.transport.write(bye, dest)
         self.setState('SENT_BYE')
 
     def sendCancel(self):
@@ -1161,7 +1167,7 @@ class SipProtocol(DatagramProtocol, object):
     def _getCallObject(self, callid):
         if type(callid) is list:
             callid = callid[0]
-        if callid.startswith('<') and callid.endswith('>'):
+        if callid and callid.startswith('<') and callid.endswith('>'):
             callid = callid[1:-1]
         return self._calls.get(callid)
 
@@ -1219,13 +1225,16 @@ class SipProtocol(DatagramProtocol, object):
         if message.response:
             self.app.debugMessage("got SIP response %s: %s"%(
                                         message.code, message.phrase))
-            self.app.statusMessage("%s: %s"%(message.code,message.phrase))
+            if message.code == 401:
+                self.app.statusMessage("Trying SIP registration password...")
+            else:
+                self.app.statusMessage("%s: %s"%(message.code,message.phrase))
             self.app.debugMessage("got SIP response\n %s"%( message.toString()))
         else:
             self.app.debugMessage("got SIP request %s: %s"%(
                                         message.method, message.uri))
             self.app.debugMessage("got SIP request\n %s"%( message.toString()))
-        callid = message.headers['call-id']
+        callid = message.headers.get('call-id')
         call = self._getCallObject(callid)
         if message.response and not call:
             # XXX  should keep a cache of recently discarded calls

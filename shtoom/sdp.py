@@ -282,6 +282,11 @@ class SDP:
     def setServerIP(self, l):
         self._o_ipaddr = self.ipaddr = l
 
+    def addSessionAttribute(self, attrname, attrval):
+        if not isinstance(attrval, (list, tuple)):
+            attrval = (attrval,)
+        self._a[attrname] = attrval
+
     def addMediaDescription(self, md):
         self.mediaDescriptions.append(md)
     def removeMediaDescription(self, md):

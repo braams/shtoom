@@ -134,6 +134,7 @@ class RTPProtocol(DatagramProtocol):
         ''' returns the local IP address used for RTP (as visible from the
             outside world if STUN applies) as ( 'w.x.y.z', rtpPort)
         '''
+        # XXX got an exception at runtime here as mapper hasn't finished yet and attribute _extIP doesn't exist.  I guess this means this should be triggered by the mapper instead of being a return value... --Zooko 2005-04-05
         return (self._extIP, self._extRTPPort)
 
     def natMapping(self):
