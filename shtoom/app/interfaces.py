@@ -43,6 +43,7 @@ class ApplicationSIPInterface(Interface):
             depends on the event.
             discoveredIP : local IP address (a string)
             discoveredStunnedIP : externally visible address (host, port)
+            registrationOK: a Registration object
         """
 
     def authCred(self, method, uri, realm, retry=False):
