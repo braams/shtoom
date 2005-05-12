@@ -608,7 +608,7 @@ class Call(object):
             oksdp = SDP(okmessage.body)
             sdp = self.sip.app.getSDP(self.cookie, oksdp)
             if not sdp.hasMediaDescriptions():
-                self.sendResponse(okmessage, 406)
+                self.sendResponse(okmessage, 488)
                 self.setState('ABORTED')
                 # compDef.errback? XXX
                 return
