@@ -295,7 +295,7 @@ class Phone(BaseApplication):
         if user is not None and passwd is not None and retry is False:
             # for upgrades of people using the old option.
             if not self.creds.getCred(realm):
-                self.creds.addCred(realm, user, pw, True)
+                self.creds.addCred(realm, user, passwd, True)
             return defer.succeed((self.getPref('register_authuser'),
                                  self.getPref('register_authpasswd')))
         elif retry is False and cachedcreds:
