@@ -226,7 +226,7 @@ class Choice(List):
                 break
         else:
             vals = ', '.join([x.value for x in self])
-            raise ValueError('%s is not a known value (know: %s)'%(value,vals))
+            raise ValueError('%s is not a known value for %s (should be one of %s)'%(value, self.name, vals))
 
     def _getValue(self):
         return self._value.value
