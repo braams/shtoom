@@ -15,6 +15,8 @@ from shtoom.doug import VoiceApp
 from shtoom.doug.events import *
 
 from shtoom.exceptions import CallRejected
+from shtoom.i18n import install as i18n_install
+i18n_install()
 
 from twisted.python import log
 
