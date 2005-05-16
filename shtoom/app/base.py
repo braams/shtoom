@@ -80,7 +80,7 @@ class BaseApplication:
             self._cb_unmapSipPort(None)
 
     def _cb_unmapSipPort(self, mapper):
-        log.msg("unmapping sip (%r)"%(mapper,))
+        log.msg("unmapping sip using %r"%(mapper,))
         if hasattr(self, 'sipListener'):
             if mapper:
                 mapper.unmap(self.sipListener)
