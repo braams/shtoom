@@ -85,6 +85,7 @@ def clearCache():
     "Clear cached NAT settings (e.g. when moving to a different network)"
     from shtoom.upnp import clearCache as uClearCache
     from shtoom.stun import clearCache as sClearCache
+    print "clearing all NAT caches"
     getLocalIPAddress.clearCache()
     getMapper.clearCache()
     uClearCache()
@@ -173,8 +174,16 @@ def cb_getMapper(res):
 
 _forcedMapper = None
 
+_installedShutdownHook = False
 def getMapper():
     # We prefer UPnP when available, as it's more robust
+    global _installedShutdownHook
+    if not _installedShutdownHook:
+        from twisted.internet import reactor
+        t = reactor.addSystemEventTrigger('after',
+                                          'shutdown',
+                                          clearCache)
+        _installedShutdownHook = True
     try:
         from __main__ import app
     except:
