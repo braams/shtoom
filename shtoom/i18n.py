@@ -17,7 +17,7 @@ def install(domain='shtoom'):
         gettext.textdomain(domain)
         gettext.install(domain)
     else:
-        print "found localedir", d
+        #print "found localedir", d
         _installDir = d
         gettext.bindtextdomain(domain, d)
         gettext.textdomain(domain)
