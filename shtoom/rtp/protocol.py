@@ -1,4 +1,4 @@
-# Copyright (C) 2004 Anthony Baxter
+# Copyright (C) 2004-2005 Anthony Baxter
 
 # $Id: rtp.py,v 1.40 2004/03/07 14:41:39 anthony Exp $
 #
@@ -40,6 +40,7 @@ class RTPProtocol(DatagramProtocol):
         self.seq = self.genRandom(bits=16)
         self.ts = self.genInitTS()
         self.ssrc = self.genSSRC()
+        self._silent = None
         # only for debugging -- the way to prevent the sending of RTP packets
         # onto the Net is to reopen the audio device with a None (default)
         # media sample handler instead of this RTP object as the media sample handler.
@@ -240,8 +241,10 @@ class RTPProtocol(DatagramProtocol):
         d.addCallback(lambda x: self.rtpListener.stopListening())
         d.addCallback(lambda x: self.rtcpListener.stopListening())
 
-    def _send_packet(self, pt, data, xhdrtype=None, xhdrdata=''):
-        packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt, xhdrtype=xhdrtype, xhdrdata=xhdrdata)
+    def _send_packet(self, pt, data, marker=0, xhdrtype=None, xhdrdata=''):
+        packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt, 
+                                    marker=marker, 
+                                    xhdrtype=xhdrtype, xhdrdata=xhdrdata)
 
         self.seq += 1
         # Note that seqno gets modulo 2^16 in RTPPacket, so it doesn't need
@@ -254,7 +257,7 @@ class RTPProtocol(DatagramProtocol):
         except Exception, le:
             pass
 
-    def _send_cn_packet(self):
+    def _send_cn_packet(self, logit=False):
         assert hasattr(self, 'dest'), "_send_cn_packet called before start %r" % (self,)
         # PT 13 is CN.
         if self.ptdict.has_key(PT_CN):
@@ -265,8 +268,9 @@ class RTPProtocol(DatagramProtocol):
             # We need to send SOMETHING!?!
             cnpt = 0
 
-        log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt,
-                                        self.dest[0], self.dest[1]), system='rtp')
+        if logit:
+            log.msg("sending CN(%s) to seed firewall to %s:%d"%(cnpt,
+                                    self.dest[0], self.dest[1]), system='rtp')
 
         self._send_packet(cnpt, chr(127))
 
@@ -280,7 +284,7 @@ class RTPProtocol(DatagramProtocol):
 
         # Now send a single CN packet to seed any firewalls that might
         # need an outbound packet to let the inbound back.
-        self._send_cn_packet()
+        self._send_cn_packet(logit=True)
 
     def datagramReceived(self, datagram, addr, t=time):
         packet = parse_rtppacket(datagram)
@@ -355,6 +359,9 @@ class RTPProtocol(DatagramProtocol):
             if self._cbDone:
                 self._cbDone()
             return
+
+        incrTS = False
+
         # We need to keep track of whether we were in silence mode or not -
         # when we go from silent->talking, set the marker bit. Other end
         # can use this as an excuse to adjust playout buffer.
@@ -365,22 +372,43 @@ class RTPProtocol(DatagramProtocol):
                 self.warnedaboutthis = True
             return
 
-        if sample.ct not in self.ptdict:
-            log.msg('trying to send packet with CT %r, which was not in the negotiated SDP'%(sample.ct,), system='rtp')
-            return
-        pt = self.ptdict[sample.ct]
-        self._send_packet(pt, sample.data)
-        self.ts += 160
-        # Wrapping
-        if self.ts >= TWO_TO_THE_32ND:
-            self.ts = self.ts - TWO_TO_THE_32ND
+        marker = 0
+        if sample is not None:
+            if self._silent is not None:
+                # Set the marker bit
+                marker = 1
+            self._silent = None
+            if sample.ct not in self.ptdict:
+                log.msg('trying to send packet with CT %r, which was not in the negotiated SDP'%(sample.ct,), system='rtp')
+                return
+            pt = self.ptdict[sample.ct]
+            self._send_packet(pt, sample.data, marker=marker)
+            incrTS = True
+
+        else:
+            if self._silent is None:
+                self._silent = 0
+            if (self._silent % 25) == 0:
+                incrTS = True
+                self._send_cn_packet()
+            self._silent += 1
+
 
         # Now send any pending DTMF keystrokes
         if self._pendingDTMF:
+            incrTS = True
             payload = self._pendingDTMF[0].getPayload(self.ts)
             if payload:
                 ntept = self.ptdict.get(PT_NTE)
                 if ntept is not None:
                     self._send_packet(pt=ntept, data=payload)
+                else:
+                    print "no PT_NTE? can't send packet", payload
                 if self._pendingDTMF[0].isDone():
                     self._pendingDTMF = self._pendingDTMF[1:]
+
+        if incrTS:
+            self.ts += 160
+            # Wrapping
+            if self.ts >= TWO_TO_THE_32ND:
+                self.ts = self.ts - TWO_TO_THE_32ND

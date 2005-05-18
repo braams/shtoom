@@ -56,7 +56,7 @@ class Leg(object):
         if self._voiceapp is not None:
             data = self.__connected.read()
             sample = self.__converter.convertOutbound(data)
-            self._voiceapp.va_outgoingRTP(sample)
+            self._voiceapp.va_outgoingRTP(sample, self._cookie)
 
     def getDialog(self):
         return self._dialog
@@ -222,7 +222,7 @@ class Leg(object):
     def dtmfMode(self, single=False, inband=False, timeout=0):
         self.__dtmfSingleMode = single
         if inband:
-            if numarray is False:
+            if numarray is None:
                 raise RuntimeError, "need numarray to do inband DTMF"
             else:
                 self.__inbandDTMFdetector = InbandDtmfDetector(self)

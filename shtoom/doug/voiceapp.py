@@ -64,8 +64,10 @@ class VoiceApp(StateMachine):
         else:
             return leg.leg_incomingRTP(packet)
 
-    def va_outgoingRTP(self, sample):
-        self.__appl.outgoingRTP(self.__cookie, sample)
+    def va_outgoingRTP(self, sample, cookie=None):
+        if cookie is None:
+            cookie = self.__cookie
+        self.__appl.outgoingRTP(cookie, sample)
 
     def va_start(self):
         self._start(callstart=0)

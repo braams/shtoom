@@ -194,8 +194,10 @@ class DougApplication(BaseApplication):
             key = ord(data[0])
             start = (ord(data[1]) & 128) and True or False
             if start:
+                #print "start inbound dtmf", key
                 v.va_startDTMFevent(nteMap[key], callcookie)
             else:
+                #print "stop inbound dtmf", key
                 v.va_stopDTMFevent(nteMap[key], callcookie)
             return
         try:
@@ -204,8 +206,9 @@ class DougApplication(BaseApplication):
             pass
 
     def outgoingRTP(self, cookie, sample):
+        #print "outgoingRTP", cookie, self._rtp.keys()
         rtp = self._rtp.get(cookie)
-        if rtp and sample:
+        if rtp:
             rtp.handle_media_sample(sample)
 
     def placeCall(self, cookie, nleg, sipURL, fromURI=None):
@@ -276,11 +279,13 @@ class DougApplication(BaseApplication):
             raise defer.fail(CallFailed("No auth available"))
 
     def startDTMF(self, cookie, digit):
+        #print "app.startDTMF", cookie, digit
         rtp = self._rtp.get(cookie)
         if rtp:
             rtp.startDTMF(digit)
 
     def stopDTMF(self, cookie, digit):
+        #print "app.stopDTMF", cookie, digit
         rtp = self._rtp.get(cookie)
         if rtp:
             rtp.stopDTMF(digit)
