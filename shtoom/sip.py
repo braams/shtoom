@@ -957,6 +957,9 @@ class Call(object):
 class Registration(Call):
     "State machine for registering with a server."
 
+    # XXX make the retransmit timer an option?
+    REGISTER_REFRESH_TIME = 20
+
     def __init__(self, phone):
         self.sip = phone
         self.regServer = None
@@ -971,6 +974,7 @@ class Registration(Call):
         self._outboundProxyURI = None
 
     def startRegistration(self):
+        from twisted.internet import reactor
         self.compDef = defer.Deferred()
         self.regServer = Address(self.sip.app.getPref('register_uri'))
         self.regURI = copy.copy(self.regServer)
@@ -982,13 +986,19 @@ class Registration(Call):
         self._localAOR = self._localFullAOR = Address(self.regAOR)
         #self.regURI.port = None
         d = self.setupLocalSIP(self.regServer)
+        reactor.callLater(self.REGISTER_REFRESH_TIME, self.refreshRegistration)
         d.addCallback(self.sendRegistration).addErrback(log.err)
         return self.compDef
 
-    def sendRegistration(self, cb=None, auth=None, authhdr=None):
-        # XXX parameterise the retransmit timer!
+    def refreshRegistration(self):
         from twisted.internet import reactor
-        reactor.callLater(840, self.sendRegistration)
+        reactor.callLater(self.REGISTER_REFRESH_TIME, self.refreshRegistration)
+        self.state = 'NEW'
+        self.register_attempts = 0
+        self.sendRegistration()
+
+    def sendRegistration(self, cb=None, auth=None, authhdr=None):
+        # reset a lot of counters and the like
         username = self.sip.app.getPref('username')
         invite = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
@@ -1015,7 +1025,9 @@ class Registration(Call):
             self.sip.transport.write(invite.toString(), _hostportToIPPort(self.getRemoteSIPAddress()))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
-            self.compDef.errback(e(v))
+            if self.compDef is not None:
+                d, self.compDef = self.compDef, None
+                d.errback(e(v))
             self.setState('ABORTED')
         else:
             if self.getState() in ( 'NEW', 'REGISTERED' ):
@@ -1034,7 +1046,7 @@ class Registration(Call):
                 #print "REGISTRATION FAILED"
                 self.setState('FAILED')
                 return
-            if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER' ):
+            if state in ( 'SENT_REGISTER', 'CANCEL_REGISTER', 'REGISTERED' ):
                 if message.code == 401:
                     inH, outH = 'www-authenticate', 'authorization'
                 else:
@@ -1086,11 +1098,17 @@ class Registration(Call):
                                                       'shutdown',
                                                       self.cancelRegistration)
                     self.cancel_trigger = t
+                if self.compDef is not None:
+                    d, self.compDef = self.compDef, None
+                    d.callback('registered')
             elif state == 'CANCEL_REGISTER':
                 self.setState('UNREGISTERED')
                 d = self._cancelDef
                 del self._cancelDef
                 d.callback(self)
+            elif state == 'REGISTERED':
+                # duplicate, or something
+                pass
             else:
                 log.err("Unknown state '%s' for a 200"%(state))
         elif message.code in ( 100, ):
@@ -1223,13 +1241,12 @@ class SipProtocol(DatagramProtocol, object):
         else:
             raise ValueError("message is neither fish nor fowl %s"%(message))
         if message.response:
-            self.app.debugMessage("got SIP response %s: %s"%(
+            self.app.debugMessage("sip Protocol got SIP response %s: %s"%(
                                         message.code, message.phrase))
             if message.code == 401:
                 self.app.statusMessage("Trying SIP registration password...")
             else:
                 self.app.statusMessage("%s: %s"%(message.code,message.phrase))
-            self.app.debugMessage("got SIP response\n %s"%( message.toString()))
         else:
             self.app.debugMessage("got SIP request %s: %s"%(
                                         message.method, message.uri))
