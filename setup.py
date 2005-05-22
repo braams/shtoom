@@ -23,8 +23,8 @@ except ImportError:
     raise DependencyFailed("You need Twisted - http://www.twistedmatrix.com/")
 
 from twisted.copyright import version as tcversion
-if not tcversion.startswith('SVN') and tcversion < '1.3':
-    raise VersionCheckFailed("Twisted 1.3 or later is required")
+if not tcversion.startswith('SVN') and tcversion < '2':
+    raise VersionCheckFailed("Twisted 2.0 or later is required")
 
 #try:
 #    import zope.interface
