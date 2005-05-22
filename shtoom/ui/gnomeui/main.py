@@ -143,7 +143,7 @@ class ShtoomWindow(ShtoomBaseUI):
         # XXX TOFIX We should queue auth requests aaaargh
         if self.authdialog is not None:
             # oops
-            return
+            return defer.succeed(None)
         msg = _('Enter username and password\nfor "%(method)s" at "%(realm)s"')
         msg = msg % {'method':method, 'realm':realm }
         self.authdialog = self.xml.get_widget("authdialog")
