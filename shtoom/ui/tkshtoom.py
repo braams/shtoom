@@ -26,5 +26,9 @@ def main(application):
     tksupport.install(UI.getMain())
     UI.connectApplication(application)
     from shtoom import log
-    log.startLogging(UI.getLogger(), setStdout=False)
+    if application.getPref('stdout'):
+        import sys
+        log.startLogging(sys.stdout, setStdout=False)
+    else:
+        log.startLogging(UI.getLogger(), setStdout=False)
     return UI

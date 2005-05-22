@@ -18,7 +18,11 @@ def main(application):
     UI.show()
 
     from shtoom import log
-    log.startLogging(UI.getLogger(), setStdout=False)
+    if application.getPref('stdout'):
+        import sys
+        log.startLogging(sys.stdout, setStdout=False)
+    else:
+        log.startLogging(UI.getLogger(), setStdout=False)
 
     reactor.addSystemEventTrigger('after', 'shutdown', app.quit )
     app.connect(app, qt.SIGNAL("lastWindowClosed()"), reactor.stop)
