@@ -70,7 +70,7 @@ class Phone(BaseApplication):
         fname = self.getPref(soundconfigurename)
         if fname:
             fullfname = self.find_resource_file(fname)
-            self._audio.play_wave_file(fullfname)
+            self._audio.playWaveFile(fullfname)
 
     def needsThreadedUI(self):
         return self.ui.threadedUI
@@ -125,6 +125,10 @@ class Phone(BaseApplication):
     def ringBack(self):
         self.play_wav_file('ring_back_file')
 
+    def stopWaveFile(self, x=None):
+        self._audio.stopWaveFile()
+        return x
+
     def acceptCall(self, call):
         log.msg("dialog is %r"%(call.dialog))
         cookie = self.getCookie()
@@ -135,6 +139,7 @@ class Phone(BaseApplication):
             self.play_wav_file('incoming_ring_file')
 
             uidef = self.ui.incomingCall(call.dialog.getCaller(), cookie)
+            uidef.addCallback(self.stopWaveFile)
             uidef.addCallback(lambda x: self._createRTP(x,
                                         call.getLocalSIPAddress()[0],
                                         call.getSTUNState()))
@@ -182,6 +187,7 @@ class Phone(BaseApplication):
 
     def startCall(self, callcookie, remoteSDP, cb):
         log.msg("startCall reopening %r %r"%(self._currentCall, self._audio))
+        self.stopWaveFile()
         md = remoteSDP.getMediaDescription('audio')
         ipaddr = md.ipaddr or remoteSDP.ipaddr
         remoteAddr = (ipaddr, md.port)

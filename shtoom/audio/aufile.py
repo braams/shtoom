@@ -37,10 +37,13 @@ class BaseReader:
         data, self._ratecvt = ratecv(data,2,1,self.sampfreq,8000,self._ratecvt)
         return data
 
-    def read(self):
-        data = self.fp.readframes(160 * (self.sampfreq/8000))
+    def read(self, frames=160):
+        data = self.fp.readframes(frames * (self.sampfreq/8000))
         data = self._cvt(data)
         return data
+
+    def reset(self):
+        self.fp.setpos(0)
 
     def close(self):
         self.fp.close()

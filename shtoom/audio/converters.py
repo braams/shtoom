@@ -251,6 +251,10 @@ class MediaLayer(NullConv):
         the network to the format used by the lower-level audio
         devices (16 bit signed ints at an integer multiple of 8KHz).
     """
+
+    _playfile_LC = None
+    _playfile_fp = None
+
     def __init__(self, device, *args, **kwargs):
         self.playout = None
         self.codecker = None
@@ -309,39 +313,33 @@ class MediaLayer(NullConv):
         else:
             self.playout = playout.Playout(self)
 
-    def play_wave_file(self, fname):
-        """
-            Note that calling write() in a while loop like this
-            effectively blocks the whole Twisted app until we finish
-            spooling the whole audio file into the output audio buffer.
-            Hopefully this is good enough for now. In the future it would
-            be nice if we could just initiate a playout here, the way Doug
-            does. That would also allow you to answer the phone before the
-            ring file finishes playing... --Zooko 2004-10-21
-            P.S. Oh, and if your output device is ALSA, this will
-            immediately overflow the output FIFO, so only the first few
-            milliseconds of the wav file will be heard. Whoops. This
-            really needs to be fixed... --Zooko 2005-02-25
-        """
+    def playWaveFile(self, fname):
+        from twisted.internet.task import LoopingCall
+        # stop any existing wave file playback
+        self.stopWaveFile()
         if not self._d.isOpen():
             self.selectDefaultFormat([PT_PCMU,])
             self.reopen()
-        try:
-            wavefileobj = aufile.WavReader(fname)
-            data = wavefileobj.read()
-            # Note that calling write() in a while loop like this effectively
-            # blocks the whole Twisted app until the audio file is all buffered
-            # up by the underlying audio output device.  Hopefully this is good
-            # enough for now.  In the future it would be nice if we could just
-            # initiate a playout here, the way doug does.  That would also
-            # allow you to answer the phone before the ring file finishes
-            # playing...  --Zooko 2004-10-21
-            while data:
-                self._d.write(data)
-                data = wavefileobj.read()
-        except (IOError, ValueError, EOFError,), le:
-            print "warning: wave file error: %r, %s, %s" % (le, le, le.args,)
-            pass
+        else:
+            self.selectDefaultFormat([PT_PCMU,])
+        self._playfile_fp = aufile.WavReader(fname)
+        self._playfile_LC = LoopingCall(self._playWaveFileLoopingCall)
+        self._playfile_LC.start(0.020)
+        
+    def _playWaveFileLoopingCall(self):
+        if self._playfile_fp is None:
+            return
+        data = self._playfile_fp.read(160)
+        if data:
+            self._d.write(data)
+        else:
+            self._playfile_fp.reset()
+        
+    def stopWaveFile(self):
+        if self._playfile_LC is not None:
+            self._playfile_LC.stop()
+            self._playfile_LC = None
+            self._playfile_fp = None
 
     def close(self):
         self.playout = None
