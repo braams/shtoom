@@ -13,7 +13,6 @@ import sets
 
 
 from shtoom.interfaces import NATMapper as INATMapper
-from shtoom.interfaces import StunPolicy as IStunPolicy
 
 from shtoom.defcache import DeferredCache
 from shtoom.nat import BaseMapper
@@ -503,127 +502,6 @@ class StunHook(_StunBase):
     def uninstallStun(self):
         self._protocol.datagramReceived = self._protocol._mp_datagramReceived
         del self.transport
-
-# XXX should move this class somewhere else.
-class NetAddress:
-    """ A class that represents a net address of the form
-        foo/nbits, e.g. 10/8, or 192.168/16, or whatever
-    """
-    def __init__(self, netaddress):
-        parts = netaddress.split('/')
-        if len(parts) > 2:
-            raise ValueError, "should be of form address/mask"
-        if len(parts) == 1:
-            ip, mask = parts[0], 32
-        else:
-            ip, mask = parts[0], int(parts[1])
-        if mask < 0 or mask > 32:
-            raise ValueError, "mask should be between 0 and 32"
-
-        self.net = self.inet_aton(ip)
-        self.mask = ( 2L**32 -1 ) ^ ( 2L**(32-mask) - 1 )
-        self.start = self.net
-        self.end = self.start | (2L**(32-mask) - 1)
-
-    def inet_aton(self, ipstr):
-        "A sane inet_aton"
-        if ':' in ipstr:
-            return
-        net = [ int(x) for x in ipstr.split('.') ] + [ 0,0,0 ]
-        net = net[:4]
-        return  ((((((0L+net[0])<<8) + net[1])<<8) + net[2])<<8) +net[3]
-
-    def inet_ntoa(self, ip):
-        import socket, struct
-        return socket.inet_ntoa(struct.pack('!I',ip))
-
-    def __repr__(self):
-        return '<NetAddress %s/%s (%s-%s) at %#x>'%(self.inet_ntoa(self.net),
-                                           self.inet_ntoa(self.mask),
-                                           self.inet_ntoa(self.start),
-                                           self.inet_ntoa(self.end),
-                                           id(self))
-
-    def check(self, ip):
-        "Check if an IP or network is contained in this network address"
-        if isinstance(ip, NetAddress):
-            return self.check(ip.start) and self.check(ip.end)
-        if isinstance(ip, basestring):
-            ip = self.inet_aton(ip)
-        if ip is None:
-            return False
-        if ip & self.mask == self.net:
-            return True
-        else:
-            return False
-
-    __contains__ = check
-
-
-class AlwaysStun:
-    __implements__ = IStunPolicy
-
-    def checkStun(self, localip, remoteip):
-        return True
-
-class NeverStun:
-    __implements__ = IStunPolicy
-
-    def checkStun(self, localip, remoteip):
-        return False
-
-class RFC1918Stun:
-    "A sane default policy"
-    __implements__ = IStunPolicy
-
-    addresses = ( NetAddress('10/8'),
-                  NetAddress('172.16/12'),
-                  NetAddress('192.168/16'),
-                  NetAddress('127/8') )
-    localhost = NetAddress('127/8')
-
-    def checkStun(self, localip, remoteip):
-        localIsRFC1918 = False
-        remoteIsRFC1918 = False
-        remoteIsLocalhost = False
-        # Yay. getPeer() returns a name, not an IP
-        #  XXX tofix: grab radix's goodns.py until it
-        # lands in twisted proper.
-        # Until then, use this getaddrinfo() hack.
-        if not remoteip:
-            return None
-        if remoteip[0] not in '0123456789':
-            import socket
-            try:
-                ai = socket.getaddrinfo(remoteip, None)
-            except (socket.error, socket.gaierror):
-                return None
-            remoteips = [x[4][0] for x in ai]
-        else:
-            remoteips = [remoteip,]
-        for net in self.addresses:
-            if localip in net:
-                localIsRFC1918 = True
-            # See comments above. Worse, if the host has an address that's
-            # RFC1918, and externally advertised (which is wrong, and broken),
-            # the STUN check will be incorrect. Bah.
-            for remoteip in remoteips:
-                if remoteip in net:
-                    remoteIsRFC1918 = True
-                if remoteip in self.localhost:
-                    remoteIsLocalhost = True
-        if localIsRFC1918 and not (remoteIsRFC1918 or remoteIsLocalhost):
-            return True
-        else:
-            return False
-
-_defaultPolicy = RFC1918Stun()
-def installPolicy(policy):
-    global _defaultPolicy
-    _defaultPolicy = policy
-
-def getPolicy():
-    return _defaultPolicy
 
 class _DetectSTUNProt(StunDiscoveryProtocol):
     d = None

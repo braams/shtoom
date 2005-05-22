@@ -22,7 +22,6 @@ from twisted.python import log
 
 from shtoom.exceptions import CallRejected, CallFailed, HostNotKnown
 from shtoom import __version__ as ShtoomVersion
-from shtoom.stun import getPolicy
 from shtoom.sdp import SDP
 
 import struct
@@ -289,49 +288,26 @@ class Call(object):
 
 
     def setLocalIP(self, dest):
-        """ Try and determine the local IP address to use. We use a
-            ConnectedDatagramProtocol in the (faint?) hope that on a machine
-            with multiple interfaces, we'll get the right one
-        """
-        # XXX Allow over-riding
         from twisted.internet import reactor
-        from shtoom.nat import getMapper
+        from shtoom.nat import getLocalIPAddress
         global _CACHED_LOCAL_IP
         host, port = dest
         getPref = self.sip.app.getPref
+        lport = self.sip.transport.getHost().port
         if getPref('localip') is not None or _CACHED_LOCAL_IP is not None:
             ip = getPref('localip') or _CACHED_LOCAL_IP
-            lport = getPref('listenport')
-            if lport is None:
-                lport = 5060
             locAddress = (ip, lport)
             remAddress = ( host, port )
+            self._checkNATPolicy(locAddress, remAddress)
             # Argh. Do a DNS lookup on remAddress
         else:
-            # This is a hack. To attempt to get the correct local address
-            # on a box with multiple interfaces, we connect to the remote
-            # end with a ConnectedDatagramProtocol, and get the local address.
+            d = getLocalIPAddress()
+            d.addCallback(lambda lhost, lport=lport, dest=dest: 
+                                self._checkNATPolicy((lhost,lport), dest)
+                         )
 
-            # This code should be removed - code in shtoom.nat does this better
-            protocol = ConnectedDatagramProtocol()
-            port = reactor.connectUDP(socket.gethostbyname(host), port, protocol)
-            if protocol.transport:
-                lport = getPref('listenport')
-                if lport is None:
-                    lport = 5060
-                locAddress = (protocol.transport.getHost().host, lport)
-                peer = protocol.transport.getPeer()
-                remAddress = (peer.host,peer.port)
-                port.stopListening()
-                self.sip.app.notifyEvent('discoveredIP', locAddress[0])
-                log.msg("discovered local address %r, remote %r"%(locAddress,
-                                                                  remAddress), system='sip')
-                _CACHED_LOCAL_IP = locAddress[0]
-            else:
-                self.compDef.errback(ValueError("couldn't connect to %s"%(
-                                            host)))
-                self.abortCall()
-                return None
+    def _checkNATPolicy(self, locAddress, remAddress):
+        from shtoom.nat import getPolicy, getMapper
         pol = getPolicy()
         useNAT = pol.checkStun(locAddress[0], remAddress[0])
         if useNAT is True:
