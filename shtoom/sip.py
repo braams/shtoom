@@ -877,15 +877,10 @@ class Call(object):
                     else:
                         inH, outH = 'proxy-authenticate', 'proxy-authorization'
                     a = message.headers.get(inH)
-                    print 'GOT 401 HDR', repr(inH), repr(a), repr(message.headers)
                     interm1 = a[0].split(' ',1)
-                    print 'INTERM1', repr(interm1)
                     interm2 = interm1[1]
-                    print 'INTERM2', repr(interm2)
                     httpList = parse_http_list(interm2)
-                    print 'HTTPLIST', repr(httpList)
                     chal = digestauth.parse_keqv_list(httpList)
-                    print 'CHAL', repr(chal)
                     if a:
                         uri = str(self._remoteAOR)
                         credDef = self.sip.app.authCred(method, uri,
