@@ -195,6 +195,7 @@ class Phone(BaseApplication):
 
     def outgoingRTP(self, cookie, sample):
         # XXX should the mute/nonmute be in the audio layer?
+        # XXX save-audio-here
         if not self._muted:
             self._rtp[cookie].handle_media_sample(sample)
 
@@ -319,7 +320,8 @@ class Phone(BaseApplication):
                     # XXX TOFIX save the credentials
                     return user, pw
             d = self.ui.getAuth(method, realm)
-            d.addCallback(processAuth)
+            if d:
+                d.addCallback(processAuth)
             return d
         else:
             return defer.fail(CallFailed("No auth available"))
