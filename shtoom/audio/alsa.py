@@ -51,6 +51,8 @@ class ALSAAudioDevice(baseaudio.AudioDevice):
         self.LC.start(0.010)
 
     def _push_up_some_data(self):
+        if not hasattr(self, 'readdev'):
+            return
         (l, data,) = self.readdev.read()
         if self.readchannels == 2:
             data = audioop.tomono(data, 2, 1, 1)
