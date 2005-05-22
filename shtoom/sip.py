@@ -953,7 +953,7 @@ class Registration(Call):
     "State machine for registering with a server."
 
     # XXX make the retransmit timer an option?
-    REGISTER_REFRESH_TIME = 20
+    REGISTER_REFRESH_TIME = 840
 
     def __init__(self, phone):
         self.sip = phone
