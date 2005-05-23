@@ -1,11 +1,6 @@
 """Gnome interface."""
 
 def shutdown():
-    try:
-        import itimer
-        itimer.setitimer(itimer.ITIMER_REAL, 0.0, 0.0)
-    except:
-        pass
     from twisted.internet import reactor
     reactor.stop()
 
