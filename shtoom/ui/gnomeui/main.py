@@ -54,12 +54,12 @@ class ShtoomWindow(ShtoomBaseUI):
         from shtoom.ui.gnomeui import systray
         self.systray = systray.SysTray(self)
 
-    def hideMainWindow(self, w):
+    def hideMainWindow(self, w=None, e=None):
         self.xml.get_widget('callwindow').hide_all()
         self.hidden = True
         return True
 
-    def showMainWindow(self, w):
+    def showMainWindow(self, w=None, e=None):
         self.xml.get_widget('callwindow').show_all()
         self.hidden = False
         return True
