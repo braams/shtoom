@@ -52,9 +52,12 @@ class ShtoomWindow(ShtoomBaseUI):
 
     # GUI callbacks
     def on_call_clicked(self, w):
-        self.statusMessage("Calling...")
         sipURL = self.address.get_text()
         sipURL = self.addrlookup.lookup(sipURL)
+        self.doCall(sipURL)
+
+    def doCall(self, uri):
+        self.statusMessage("Calling...")
         self.address.set_text(sipURL)
         # Add the item to self.address.list ... argh gtk docs SUCK
         self.hangupButton.set_sensitive(1)
@@ -64,6 +67,9 @@ class ShtoomWindow(ShtoomBaseUI):
         deferred.addCallbacks(self.callConnected, self.callFailed
                                                         ).addErrback(log.err)
     def on_hangup_clicked(self, w):
+        self.doHangup()
+
+    def doHangup(self):
         self.app.dropCall(self.cookie)
         self.callButton.set_sensitive(1)
         self.address.set_sensitive(1)
@@ -298,6 +304,29 @@ class ShtoomWindow(ShtoomBaseUI):
 
     def save_preferences(self, options):
         self.app.updateOptions(options)
+
+    def ipcCommand(self, command, args):
+        if command == 'call':
+            if self._cookie is None:
+                sipURL = args
+                self.doCall(sipURL)
+                return _('Calling')
+            else:
+                return _('Already on a call')
+        elif command == 'hangup':
+            if self._cookie is not None:
+                self.doHangup()
+            else:
+                return _('No active call')
+        elif command == 'accept':
+            return _('Not implemented')
+        elif command == 'reject':
+            return _('Not implemented')
+        elif command == 'quit':
+            self.shutdown()
+        else:
+            log.msg('IPC got unknown message %s (args %r)'%(command, args))
+
 
 
 class DebugTextView:
