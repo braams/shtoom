@@ -103,8 +103,14 @@ class Phone(BaseApplication):
 
         if hasattr(self.ui, 'ipcCommand'):
             if self.getPref('ipc') == 'dbus':
-                from shtoom.ipc import dbus
-                self.remote = dbus.start(app='phone')
+                from shtoom.dbus import isAvailable
+                if isAvailable():
+                    from shtoom.ipc import dbus
+                    self.remote = dbus.start(app='phone')
+                    print "installed DBus"
+                else:
+                    log.msg('dbus IPC not available', system='phone')
+                    print "no DBus available"
             elif self.getPref('ipc') == 'pb':
                 log.msg('pb IPC not implemented yet, sorry', system='phone')
             else:
