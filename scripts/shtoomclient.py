@@ -1,12 +1,22 @@
 #!/usr/bin/env python
+# Hack hack hack.
 
-import t_i_dbus
+import sys, os
+f = sys.path.pop(0)
+if f.endswith('scripts') and os.path.isdir(os.path.join(os.path.dirname(f),
+                                                        'shtoom')):
+    sys.path.insert(0, os.path.dirname(f))
+else:
+    sys.path.append(f)
+
+
+import shtoom.dbus
 
 def gotsignal(*args):
     print "client: got a signal", args
     
 def start(args):
-    bus = t_i_dbus.SessionBus()
+    bus = shtoom.dbus.SessionBus()
     remote_object = bus.get_object("net.shtoom.ShtoomPhone", "/ShtoomPhone")
     #remote_object.connect_to_signal('hello', gotsignal, interface='net.shtoom.ShtoomPhone')
     def cb(result):

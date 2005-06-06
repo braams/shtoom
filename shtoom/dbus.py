@@ -25,6 +25,20 @@ def _setUnavailable():
     def signal(dbus_interface):
         return lambda x: x
 
+def installDbusReactor():
+    try:
+        from twisted.internet import glib2reactor
+        glib2reactor.install()
+        return True
+    except:
+        try:
+            from twisted.internet import gtk2reactor
+            gtk2reactor.install()
+            return True
+        except:
+            return False
+
+
 
 if t_i_dbus is None:
     def method(dbus_interface):
