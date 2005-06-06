@@ -16,6 +16,7 @@ class ShtoomWindow(ShtoomBaseUI):
         import gettext, shtoom.i18n
         self.cookie = False
         self.authdialog = None
+        self.hidden = False
         d = shtoom.i18n.getLocaleDir()
         domain = gettext.textdomain()
         if d is not None:
@@ -24,8 +25,6 @@ class ShtoomWindow(ShtoomBaseUI):
         self.xml = gtk.glade.XML(util.sibpath(__file__, "shtoom.glade"), None,
                                                         gettext.textdomain())
         self.xml.signal_autoconnect(self)
-        self.xml.get_widget("callwindow").connect("destroy",
-                                                lambda w: reactor.stop())
         self.address = self.xml.get_widget("address")
         #self.address.set_value_in_list(False, False)
         self.callButton = self.xml.get_widget("call")
@@ -41,8 +40,29 @@ class ShtoomWindow(ShtoomBaseUI):
         debug = self.xml.get_widget("debuglog")
         self.logger = DebugTextView(debug.get_buffer())
         self.logger.set_visible(self.xml.get_widget('debugscroller'))
+        self.setupSystray()
         #h = self.xml.get_widget('hbox2')
         #h.hide()
+
+    def setupSystray(self):
+        try:
+            import egg.trayicon
+        except:
+            return
+        self.xml.get_widget("callwindow").connect("destroy", self.hideMainWindow)
+        self.xml.get_widget("callwindow").connect("delete_event", self.hideMainWindow)
+        from shtoom.ui.gnomeui import systray
+        self.systray = systray.SysTray(self)
+
+    def hideMainWindow(self, w):
+        self.xml.get_widget('callwindow').hide_all()
+        self.hidden = True
+        return True
+
+    def showMainWindow(self, w):
+        self.xml.get_widget('callwindow').show_all()
+        self.hidden = False
+        return True
 
     def getLogger(self):
         return self.logger
