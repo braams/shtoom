@@ -17,7 +17,7 @@ from shtoom.ui.logo import b64logo
 
 class ShtoomMainWindow(ShtoomBaseUI):
     def __init__(self):
-        self.cookie = False
+        self.cookie = None
         self._muted = False
         self._connected = False
 
@@ -131,6 +131,9 @@ class ShtoomMainWindow(ShtoomBaseUI):
     def callButton_clicked(self, evt=None):
         sipURL = self._urlentry.get()
         sipURL = self.addrlookup.lookup(sipURL)
+        self.doCall(sipURL)
+
+    def doCall(self, sipURL):
         self._urlentry.delete(0,END)
         self._urlentry.insert(0,sipURL)
         self._callButton.config(state=DISABLED)
@@ -233,6 +236,29 @@ class ShtoomMainWindow(ShtoomBaseUI):
 
     def getLogger(self):
         return Logger(self._debugText)
+
+    def ipcCommand(self, command, args):
+        if command == 'call':
+            if self.cookie is None:
+                sipURL = args
+                self.doCall(sipURL)
+                return _('Calling')
+            else:
+                return _('Already on a call')
+        elif command == 'hangup':
+            if self.cookie is not None:
+                self.hangupButton_clicked()
+                return _('Hung up call')
+            else:
+                return _('No active call')
+        elif command == 'accept':
+            return _('Not implemented')
+        elif command == 'reject':
+            return _('Not implemented')
+        elif command == 'quit':
+            self.shutdown()
+        else:
+            log.msg('IPC got unknown message %s (args %r)'%(command, args))
 
 class Logger:
     def __init__(self, textwidget):
