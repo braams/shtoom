@@ -18,6 +18,7 @@ def start(app='phone', remote=None):
     sessionBus = SessionBus()
     service = Service(ssp, bus=sessionBus)
     remobj = rem(service) 
+    return remobj
 
 
 class ShtoomPhoneRemote(Object):
