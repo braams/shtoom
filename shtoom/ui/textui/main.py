@@ -37,13 +37,15 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             return defer.fail(UserBusy())
         defresp = defer.Deferred()
         self._pending = ( cookie, defresp )
-        self._incoming_timeout = reactor.callLater(20, lambda :self._timeout_incoming(self._pending))
+        self._incoming_timeout = reactor.callLater(20, 
+                        lambda :self._timeout_incoming(self._pending))
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
         return defresp
 
     def connectionMade(self):
-        self.transport.write("Welcome to shtoom, debug rev. %s\n>> \n" % self.app._develrevision)
+        self.transport.write("Welcome to shtoom, debug rev. %s\n>> \n" % 
+                                                    self.app._develrevision)
 
     def lineReceived(self, line):
         args = line.strip().split()
@@ -164,3 +166,31 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
         cookie, resp = self._pending
         self._pending = None
         resp.callback(CallNotAnswered('not answering', cookie))
+
+    def ipcCommand(self, command, args):
+        if command == 'call':
+            if self._cookie is None:
+                self.sipURL = args
+                deferred = self.app.placeCall(self.sipURL)
+                deferred.addCallbacks(self.callConnected, 
+                                      self.callFailed).addErrback(log.err)
+                return _('Calling')
+            else:
+                return _('Already on a call')
+        elif command == 'hangup':
+            if self._cookie is not None:
+                self.app.dropCall(self._cookie)
+                self._cookie = None
+            else:
+                return _('No active call')
+        elif command == 'accept':
+            return _('Not implemented')
+        elif command == 'reject':
+            return _('Not implemented')
+        elif command == 'quit':
+            self.shutdown()
+        else:
+            log.msg('IPC got unknown message %s (args %r)'%(command, args))
+
+
+

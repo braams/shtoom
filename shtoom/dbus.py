@@ -1,18 +1,16 @@
 try:
-    import t_i_dbus as t_i_dbus
-    modver = 1
+    import twisted.ipc.dbus as t_i_dbus
+    from twisted.ipc.dbus import *
 except:
     try:
-        import twisted.ipc.dbus as t_i_dbus
-        modver = 2
-    except:
-        t_i_dbus = None
-
-if t_i_dbus is not None:
-    if modver == 1:
+        import t_i_dbus
         from t_i_dbus import *
-    elif modver == 2:
-        from twisted.ipc.dbus import *
+    except:
+        try:
+            from shtoom.compat.t_i_dbus import *
+            from shtoom.compat import t_i_dbus
+        except:
+            t_i_dbus = None
 
 def isAvailable():
     return t_i_dbus is not None

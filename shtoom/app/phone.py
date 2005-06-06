@@ -25,6 +25,7 @@ class Phone(BaseApplication):
     __implements__ = ( Application, )
 
     _startReactor = True
+    remote = None
 
     def __init__(self, ui=None, audio=None):
         # Mapping from callcookies to rtp object
@@ -99,10 +100,21 @@ class Phone(BaseApplication):
 
     def start(self):
         "Start the application."
+
+        if hasattr(self.ui, 'ipcCommand'):
+            if self.getPref('ipc') == 'dbus':
+                from shtoom.ipc import dbus
+                self.remote = dbus.start(app='phone')
+            elif self.getPref('ipc') == 'pb':
+                log.msg('pb IPC not implemented yet, sorry', system='phone')
+            else:
+                log.msg('no IPC', system='phone')
+                
         self.register()
         if not self._startReactor:
             log.msg("Not starting reactor - test mode?")
             return
+
         if self.needsThreadedUI():
             threadable.init(1)
             from twisted.internet import reactor
@@ -285,7 +297,9 @@ class Phone(BaseApplication):
         app.add(StringOption('ring_back_file',
                     _('play this wav file when remote phone is ringing'),
                                     'ringback.wav'))
-
+        app.add(ChoiceOption('ipc',_('use IPC for ipc commands'), 
+                                default='none',
+                                choices=['none', 'dbus', 'pb']))
 
         app.add(StringOption('logfile',_('log to this file')))
         opts.add(app)
@@ -348,3 +362,8 @@ class Phone(BaseApplication):
 
     def switchCallAudio(self, callcookie):
         self._currentCall = callcookie
+
+    def ipcCommand(self, command, args):
+        if hasattr(self.ui, 'ipcCommand'):
+            return self.ui.ipcCommand(command, args)
+
