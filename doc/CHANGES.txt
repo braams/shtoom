@@ -1,6 +1,11 @@
 Major changes in the shtoom suite. In reverse chronological order.
 
 0.3:
+  - gnome ui now has an icon in the notification area (system tray) in
+    the panel. Closing the main window simply hides it to the systray. 
+    systray icon has a right-click context menu.
+  - gnome, tk and text UIs now optionally support dbus for IPC. New 
+    scripts/shtoomclient uses dbus to talk to a running shtoom.
   - register refresh got a healthy dose of sanity added.
   - the playing of ringing sounds when making or receiving a call works
     much more sanely now.
