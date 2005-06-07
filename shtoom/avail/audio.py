@@ -63,4 +63,8 @@ def listAudio():
             del all[name]
         elif name.startswith('_'):
             del all[name]
-    return all.keys()
+    out = []
+    for order in ( 'alsaaudio', 'ossaudio', 'fastaudio', 'fileaudio' ):
+        if order in all:
+            out.append(order)
+    return out
