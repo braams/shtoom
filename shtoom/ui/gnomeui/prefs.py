@@ -25,20 +25,11 @@ class PreferencesDialog:
     def saveChanges(self):
         optdict = {}
         for otype, oname, oget in self.widgets:
-            if otype != 'Choice':
-                oval = oget()
-                if oval == True:
-                    oval = True
-                if oval == False:
-                    oval = False
-            else:
-                for c, cget in oget:
-                    if cget() == True:
-                        oval = c
-                        break
-                else:
-                    log.err("No choice selected for %s"%oname)
-                    raise ValueError
+            oval = oget()
+            if oval == True:
+                oval = True
+            if oval == False:
+                oval = False
             optdict[oname] = oval
         self.main.save_preferences(optdict)
         del self.widgets
@@ -96,25 +87,25 @@ class PreferencesDialog:
 
                 elif option.type == 'Choice':
                     choices = option.getChoices()
-                    lb = None
-                    buttons = []
-                    for c in choices[::-1]:
-                        b = gtk.RadioButton(lb, c)
-                        self.tooltips.set_tip(b, option.description, None)
+                    combo = gtk.combo_box_new_text()
+                    combo.append_text(_('Select one'))
+                    active_num = 0
+                    for n, c in enumerate(choices):
+                        combo.append_text(c)
                         if c == option.value:
-                            #print "setting", c
-                            b.set_active(True)
-                        else:
-                            b.set_active(False)
-                        optBox.pack_end(b, False, True)
-                        buttons.append((c,b.get_active))
-                        lb = b
-                    b = gtk.RadioButton(lb, 'default')
-                    optBox.pack_end(b, False, True)
-                    buttons.append((NoDefaultOption,b.get_active))
+                            active_num = n+1
+                    combo.set_active(active_num)
+                    optBox.pack_end(combo, False, True)
+                    self.tooltips.set_tip(combo, option.description, None)
+                    def getter(combo=combo):
+                        model = combo.get_model()
+                        active = combo.get_active()
+                        if active == 0:
+                            return None
+                        return model[active][0]
                     self.widgets.append((option.type,
                                          option.name,
-                                         buttons))
+                                         getter))
 
                 elif option.type == 'Boolean':
                     entry = gtk.CheckButton("")
