@@ -107,7 +107,7 @@ class MessageApp(VoiceApp):
     def outboundEnded(self, event):
         print "got event", event
         self.endCall(event)
-        
+
     def endCall(self, event):
         # The media is finished. Drop the call.
         self.leg.hangupCall()

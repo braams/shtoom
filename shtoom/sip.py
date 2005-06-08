@@ -302,7 +302,7 @@ class Call(object):
             # Argh. Do a DNS lookup on remAddress
         else:
             d = getLocalIPAddress()
-            d.addCallback(lambda lhost, lport=lport, dest=dest: 
+            d.addCallback(lambda lhost, lport=lport, dest=dest:
                                 self._checkNATPolicy((lhost,lport), dest)
                          )
 

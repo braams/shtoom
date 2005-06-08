@@ -293,5 +293,4 @@ class DougApplication(BaseApplication):
             rtp.stopDTMF(digit)
 
     def notifyEvent(self, methodName, *args, **kw):
-         pass
-
+        pass

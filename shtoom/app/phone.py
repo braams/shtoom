@@ -117,7 +117,7 @@ class Phone(BaseApplication):
                 log.msg('pb IPC not implemented yet, sorry', system='phone')
             else:
                 log.msg('no IPC', system='phone')
-                
+
         self.register()
         if not self._startReactor:
             log.msg("Not starting reactor - test mode?")
@@ -305,7 +305,7 @@ class Phone(BaseApplication):
         app.add(StringOption('ring_back_file',
                     _('play this wav file when remote phone is ringing'),
                                     'ringback.wav'))
-        app.add(ChoiceOption('ipc',_('use IPC for ipc commands'), 
+        app.add(ChoiceOption('ipc',_('use IPC for ipc commands'),
                                 default='none',
                                 choices=['none', 'dbus', 'pb']))
 
@@ -374,4 +374,3 @@ class Phone(BaseApplication):
     def ipcCommand(self, command, args):
         if hasattr(self.ui, 'ipcCommand'):
             return self.ui.ipcCommand(command, args)
-

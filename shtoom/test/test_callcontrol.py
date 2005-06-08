@@ -94,7 +94,7 @@ class TestUI:
     def statusMessage(self, mess):
         # mess
         pass
-            
+
     def callStarted(self, cookie):
         self.actions.append(('start',cookie))
         self.cookie = cookie

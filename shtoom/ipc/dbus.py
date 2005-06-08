@@ -17,7 +17,7 @@ def start(app='phone', remote=None):
     ssp = rem.ShtoomServicePath
     sessionBus = SessionBus()
     service = Service(ssp, bus=sessionBus)
-    remobj = rem(service) 
+    remobj = rem(service)
     return remobj
 
 
@@ -38,5 +38,5 @@ class ShtoomPhoneRemote(Object):
         return app.ipcCommand('hangup', uri)
     hangup = method(ShtoomServicePath)(hangup)
 
-    
+
 remoteObjects = dict(phone=ShtoomPhoneRemote)

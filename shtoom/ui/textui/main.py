@@ -37,14 +37,14 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             return defer.fail(UserBusy())
         defresp = defer.Deferred()
         self._pending = ( cookie, defresp )
-        self._incoming_timeout = reactor.callLater(20, 
+        self._incoming_timeout = reactor.callLater(20,
                         lambda :self._timeout_incoming(self._pending))
         self.transport.write("INCOMING CALL: %s\n"%description)
         self.transport.write("Type 'accept' to accept, 'reject' to reject\n")
         return defresp
 
     def connectionMade(self):
-        self.transport.write("Welcome to shtoom, debug rev. %s\n>> \n" % 
+        self.transport.write("Welcome to shtoom, debug rev. %s\n>> \n" %
                                                     self.app._develrevision)
 
     def lineReceived(self, line):
@@ -172,7 +172,7 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             if self._cookie is None:
                 self.sipURL = args
                 deferred = self.app.placeCall(self.sipURL)
-                deferred.addCallbacks(self.callConnected, 
+                deferred.addCallbacks(self.callConnected,
                                       self.callFailed).addErrback(log.err)
                 return _('Calling')
             else:
@@ -191,6 +191,3 @@ class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
             self.shutdown()
         else:
             log.msg('IPC got unknown message %s (args %r)'%(command, args))
-
-
-

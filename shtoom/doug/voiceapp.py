@@ -57,8 +57,8 @@ class VoiceApp(StateMachine):
 
     def va_incomingRTP(self, packet, callcookie):
         leg = self.getLeg(callcookie)
-        if leg is None: 
-            log.msg('no leg for cookie %s for incoming RTP'%(callcookie,), 
+        if leg is None:
+            log.msg('no leg for cookie %s for incoming RTP'%(callcookie,),
                                                                 system='doug')
             return
         else:

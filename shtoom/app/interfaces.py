@@ -22,7 +22,7 @@ class ApplicationSIPInterface(Interface):
         """
 
     def startCall(self, callcookie, oksdp, cb):
-        """ Call setup is complete, the call is now live. 
+        """ Call setup is complete, the call is now live.
             Passed the final SDP for the call, and a callback which should
             be invoked when the application wishes to terminate the call.
             The callback will be passed a reason for the call teardown.
@@ -33,8 +33,8 @@ class ApplicationSIPInterface(Interface):
         """
 
     def ringBack(self):
-        """ The other side sent a "180 Ringing".  This is purely informational 
-            -- the app may wish to, for example, play a ringback sound to the 
+        """ The other side sent a "180 Ringing".  This is purely informational
+            -- the app may wish to, for example, play a ringback sound to the
             user.
         """
 
@@ -64,7 +64,7 @@ class ApplicationSIPInterface(Interface):
         """
 
     def statusMessage(self, message):
-        """ Display a status message. This should replace the previous 
+        """ Display a status message. This should replace the previous
             status message
         """
 

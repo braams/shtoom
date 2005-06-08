@@ -211,7 +211,7 @@ def getMapper():
         d = defer.DeferredList([defer.succeed(None), sd])
     else:
         nm = NullMapper()
-        d = defer.DeferredList([defer.succeed(None), 
+        d = defer.DeferredList([defer.succeed(None),
                                 defer.succeed(None)])
     d.addCallback(cb_getMapper).addErrback(log.err)
     return d

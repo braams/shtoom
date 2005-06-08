@@ -31,7 +31,7 @@ class Bus(dbus.Bus):
 
     def add_signal_receiver(self, handler_function, signal_name=None, interface=None, service=None, path=None):
         d = self._get_match_rule(signal_name, interface, service, path)
-        d.addCallback(lambda x, h=handler_function: 
+        d.addCallback(lambda x, h=handler_function:
                                 self._cb_add_signal_receiver(x, h))
 
     def _cb_add_signal_receiver(self, match_rule, handler_function):
@@ -41,7 +41,7 @@ class Bus(dbus.Bus):
 
     def remove_signal_receiver(self, handler_function, signal_name=None, interface=None, service=None, path=None):
         d = self._get_match_rule(signal_name, interface, service, path)
-        d.addCallback(lambda x, h=handler_function: 
+        d.addCallback(lambda x, h=handler_function:
                                 self._cb_add_signal_receiver(x, h))
 
     def _cb_remove_signal_receiver(self, match_rule, handler_function):
@@ -69,7 +69,7 @@ class Bus(dbus.Bus):
                 bus_object = bus_service.get_object('/org/freedesktop/DBus',
                                                      'org.freedesktop.DBus')
                 d = bus_object.GetServiceOwner(service)
-                d.addCallback(lambda x, m=match_rule, m2=match_rule2: 
+                d.addCallback(lambda x, m=match_rule, m2=match_rule2:
                         m + (",sender='%s'"%(x)) + m2)
                 return d
             else:
@@ -124,9 +124,9 @@ class RemoteService(dbus.RemoteService):
         return ProxyObject(self, object_path, interface)
 
 class ProxyObject(dbus.RemoteObject):
-    def connect_to_signal(self, 
-                          signal_name, 
-                          handler_function, 
+    def connect_to_signal(self,
+                          signal_name,
+                          handler_function,
                           interface=None):
         if interface is None and self._interface is not None:
             interface = self._interface
@@ -158,7 +158,7 @@ class ProxyMethod(dbus.RemoteMethod):
         if (keywords.has_key('dbus_interface')):
             dbus_interface = keywords['dbus_interface']
 
-        message = dbus_bindings.MethodCall(self._object_path, dbus_interface, 
+        message = dbus_bindings.MethodCall(self._object_path, dbus_interface,
                                            self._method_name)
         message.set_destination(self._service_name)
 
@@ -204,7 +204,7 @@ class _PendingCall:
 
 import dbus_bindings, inspect
 
-def method(iface): 
+def method(iface):
     def decorator(func, iface=iface):
         func._dbus_is_method = True
         func._dbus_interface = iface

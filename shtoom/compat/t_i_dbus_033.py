@@ -77,7 +77,7 @@ class ProxyMethod(dbus.ProxyMethod):
         if (keywords.has_key('dbus_interface')):
             dbus_interface = keywords['dbus_interface']
 
-        message = dbus_bindings.MethodCall(self._object_path, dbus_interface, 
+        message = dbus_bindings.MethodCall(self._object_path, dbus_interface,
                                            self._method_name)
         message.set_destination(self._named_service)
 
@@ -87,8 +87,8 @@ class ProxyMethod(dbus.ProxyMethod):
             iter.append(arg)
         d = defer.Deferred()
 
-        result = self._connection.send_with_reply_handlers(message, -1, 
-                                                           d.callback, 
+        result = self._connection.send_with_reply_handlers(message, -1,
+                                                           d.callback,
                                                            d.errback)
         return d
 

@@ -1,6 +1,6 @@
 
 # Code for a system tray icon under Gnome. Yay for Gajim, whose source
-# showed me the way to do this. 
+# showed me the way to do this.
 
 import gtk
 from egg import trayicon
@@ -50,6 +50,6 @@ if __name__ == "__main__":
         def on_hangup_clicked(self, w): pass
         def on_preferences_activate(self, w): pass
         def on_quit_activate(self, w): pass
-    
+
     t = SysTray(ui=FakeUI())
     gtk.main()

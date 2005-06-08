@@ -242,8 +242,8 @@ class RTPProtocol(DatagramProtocol):
         d.addCallback(lambda x: self.rtcpListener.stopListening())
 
     def _send_packet(self, pt, data, marker=0, xhdrtype=None, xhdrdata=''):
-        packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt, 
-                                    marker=marker, 
+        packet = RTPPacket(self.ssrc, self.seq, self.ts, data, pt=pt,
+                                    marker=marker,
                                     xhdrtype=xhdrtype, xhdrdata=xhdrdata)
 
         self.seq += 1

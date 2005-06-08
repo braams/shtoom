@@ -325,7 +325,7 @@ class MediaLayer(NullConv):
         self._playfile_fp = aufile.WavReader(fname)
         self._playfile_LC = LoopingCall(self._playWaveFileLoopingCall)
         self._playfile_LC.start(0.020)
-        
+
     def _playWaveFileLoopingCall(self):
         if self._playfile_fp is None:
             return
@@ -334,7 +334,7 @@ class MediaLayer(NullConv):
             self._d.write(data)
         else:
             self._playfile_fp.reset()
-        
+
     def stopWaveFile(self):
         if self._playfile_LC is not None:
             self._playfile_LC.stop()

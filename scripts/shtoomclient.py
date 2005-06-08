@@ -14,7 +14,7 @@ import shtoom.dbus
 
 def gotsignal(*args):
     print "client: got a signal", args
-    
+
 def start(args):
     bus = shtoom.dbus.SessionBus()
     remote_object = bus.get_object("net.shtoom.ShtoomPhone", "/ShtoomPhone")
@@ -26,7 +26,7 @@ def start(args):
         d = remote_object.call(args[0],
                             dbus_interface = "net.shtoom.ShtoomPhone")
     elif args[0] == 'hangup':
-        d = remote_object.hangup(None, 
+        d = remote_object.hangup(None,
                             dbus_interface = "net.shtoom.ShtoomPhone")
     else:
         print "unknown argument %s"%(args[0])
@@ -43,5 +43,3 @@ if __name__ == "__main__":
     from twisted.internet import reactor
     reactor.callLater(0, start, sys.argv[1:])
     reactor.run()
-
-
