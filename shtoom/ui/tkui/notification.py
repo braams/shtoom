@@ -29,11 +29,11 @@ class TkSlidingWindow:
 def demo():
     from twisted.internet import reactor, tksupport
     from shtoom.ui.slider import SliderDemo
-    from Tkinter import Tk, Label, Button
 
     class TkDemoWindow(TkSlidingWindow):
 
         def __init__(self, parent):
+            from Tkinter import Tk, Label, Button
             self.parent = parent
             self.win = Tk(className='moving')
             self.win.overrideredirect(1)

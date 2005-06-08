@@ -114,7 +114,7 @@ def adapt(obj, protocol, default=_nope):
         return factoryCreated
 
     ## Fourth case: The class knows how to adapt some things
-    adapt = getattr(self, '__adapt__', _nope)
+    adapt = getattr(obj, '__adapt__', _nope)
     if adapt is not _nope:
         adapter = adapt(obj, _nope)
         if adapter is not _nope:

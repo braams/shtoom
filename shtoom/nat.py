@@ -65,7 +65,7 @@ def _cacheLocalIP(res):
 
 # If there's a need to clear the cache, call this method (e.g. DHCP client)
 def _clearCachedLocalIP():
-    _cacheresult(None)
+    _cacheLocalIP(None)
 
 def _getLocalIPAddress():
     # So much pain. Don't even bother with

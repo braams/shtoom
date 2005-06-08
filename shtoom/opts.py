@@ -1,6 +1,6 @@
+# Copyright (C) 2004,2005 Anthony Baxter
 
-# Copyright (C) 2004 Anthony Baxter
-
+from gettext import gettext as _
 def getLocalUsername():
     try:
         import pwd

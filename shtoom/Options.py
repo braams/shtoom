@@ -5,7 +5,6 @@
 
 import os
 import shtoom.schema
-from shtoom.schema import Dict as OptionGroup
 from shtoom.schema import NoDefaultValue as NoDefaultOption
 from shtoom.schema import Boolean, String, List, Choice, Dict, Password, Integer
 
@@ -54,7 +53,7 @@ def _optParseBuilder(opt, parser):
             args['action'] = 'store_false'
         else:
             raise ValueError("Boolean must default to True or False, not %r"%
-                                                                self._default)
+                                                                opt._default)
     help = opt.description
     if isinstance(opt, Choice):
         help = help+ ' (%s) (default %s)'%(
@@ -111,9 +110,9 @@ class AllOptions(object):
 
     def setOptions(self, opts):
         for group in self:
-            if getattr(g, 'variableNames', None):
+            if getattr(group, 'variableNames', None):
                 # Then don't cache everything, just the group
-                setattr(opts, g.name, g)
+                setattr(opts, group.name, group)
                 continue
             for opt in group:
                 key, val = opt.name, opt.value

@@ -9,6 +9,8 @@ from twisted.internet import reactor, defer
 from shtoom.ui.base import ShtoomBaseUI
 from popups import PopupNotice
 
+from gettext import gettext as _
+
 
 class ShtoomWindow(ShtoomBaseUI):
 
@@ -78,12 +80,12 @@ class ShtoomWindow(ShtoomBaseUI):
 
     def doCall(self, uri):
         self.statusMessage("Calling...")
-        self.address.set_text(sipURL)
+        self.address.set_text(uri)
         # Add the item to self.address.list ... argh gtk docs SUCK
         self.hangupButton.set_sensitive(1)
         self.callButton.set_sensitive(0)
         self.address.set_sensitive(0)
-        deferred = self.app.placeCall(sipURL)
+        deferred = self.app.placeCall(uri)
         deferred.addCallbacks(self.callConnected, self.callFailed
                                                         ).addErrback(log.err)
     def on_hangup_clicked(self, w):

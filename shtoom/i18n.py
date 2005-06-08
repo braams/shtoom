@@ -1,5 +1,4 @@
-from shtoom import log
-import os, sys, gettext
+import os, gettext
 
 _installedDomain = None
 _installDir = None
@@ -28,7 +27,7 @@ def getLocaleDir():
     return _installDir
 
 def _findLocaleDir(domain):
-    import gettext, sys, shtoom
+    import gettext, sys
 
     # try default location first
     f = gettext.find(domain)

@@ -13,6 +13,8 @@ import shtoom.log
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 
+from gettext import gettext as _
+
 nteMap = { 0: '0',  1: '1',  2: '2',  3: '3',  4: '4',  5: '5',  6: '6',
            7: '7',  8: '8',  9: '9', 10: '*', 11: '#', 12: 'A', 13: 'B',
           14: 'C', 15: 'D', 16: 'flash' }

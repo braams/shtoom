@@ -21,6 +21,8 @@ from shtoom.Options import OptionGroup, StringOption, ChoiceOption, OptionDict, 
 
 from shtoom.rtp.formats import PT_PCMU, PT_GSM, PT_SPEEX, PT_DVI4
 
+from gettext import gettext as _
+
 class Phone(BaseApplication):
     __implements__ = ( Application, )
 

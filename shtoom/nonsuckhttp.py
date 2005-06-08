@@ -314,7 +314,6 @@ def installAuthSource(obj):
 
 def urlopen(url, factory=None, timeout=300):
     from twisted.internet import reactor
-    import urlparse
 
     if factory is None:
         factory = HTTPClientFactory

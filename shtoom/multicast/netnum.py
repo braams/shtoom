@@ -20,7 +20,7 @@ def num2dq(num):
 class Address:
     def __init__(self,address):
         self.addr = address
-        self._binaddr = dq2num(netnumber, pad = 0)
+        self._binaddr = dq2num(address, pad = 0)
 
 
 class Network(Address):

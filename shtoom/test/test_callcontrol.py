@@ -73,7 +73,7 @@ class TestAudio:
         self.actions.append('write')
         pass
 
-    def play_wave_file(self, file):
+    def playWaveFile(self, file):
         self.actions.append('wave')
         pass
 

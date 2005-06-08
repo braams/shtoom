@@ -3,6 +3,8 @@ import gtk
 from shtoom.Options import NoDefaultOption, getPrettyName
 from twisted.python import log
 
+from gettext import gettext as _
+
 class PreferencesDialog:
     def __init__(self, parent, main, opts):
         self.parent = parent

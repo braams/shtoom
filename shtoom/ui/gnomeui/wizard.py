@@ -90,7 +90,7 @@ class GnomeWizardDisplay:
         elif tpc.implements(next, IPage):
             self._displayPage(next)
         elif tpc.implements(next, IWizard):
-            self.startWizard(wizard)
+            self.startWizard(next)
 
     def _invoke(self, event, callable):
         values = {}

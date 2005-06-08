@@ -203,6 +203,7 @@ if __name__ == "__main__":
         reactor.stop()
 
     def popupWindow():
+        global main
         d = defer.Deferred()
         popup = MovingDialog(main, d, 'hello world', ('OK', 'Cancel'))
         d.addCallback(optionClicked)

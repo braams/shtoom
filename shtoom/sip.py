@@ -396,7 +396,7 @@ class Call(object):
         othersdp = SDP(self._invite.body)
         sdp = self.sip.app.getSDP(self.cookie, othersdp)
         if not sdp.hasMediaDescriptions():
-            self.sendResponse(message, 406)
+            self.sendResponse(self._invite, 406)
             self.setState('ABORTED')
             return
         body = sdp.show()

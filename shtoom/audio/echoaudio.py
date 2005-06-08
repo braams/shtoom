@@ -14,8 +14,8 @@ class EchoAudioDevice:
 
     def _push_up_some_data(self):
         sample, self._data = self._data[-320:], ''
-        if self.encoder and data:
-            self.encoder.handle_audio(data)
+        if self.encoder and self._data:
+            self.encoder.handle_audio(self._data)
 
     def write(self, bytes):
         self._data += bytes
@@ -36,6 +36,7 @@ class EchoAudioDevice:
             pass
 
     def openDev(self):
+        from twisted.internet.task import LoopingCall
         self._open = True
         self.LC = LoopingCall(self._push_up_some_data)
         self.LC.start(0.020)
