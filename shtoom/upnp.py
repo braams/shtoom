@@ -21,11 +21,10 @@
 #    Higher level APIs - check if we've left an entry behind, for instance
 
 
-from twisted.internet import reactor, defer, protocol
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
 
-import sys, socket, random, urlparse
+import socket, random, urlparse
 from nonsuckhttp import urlopen
 from shtoom.soapsucks import BeautifulSoap, SOAPRequestFactory, soapenurl
 from shtoom.defcache import DeferredCache
@@ -75,7 +74,6 @@ class UPnPProtocol(DatagramProtocol, object):
             self.handleSearchResponse(message)
 
     def handleSearchResponse(self, message):
-        import urlparse
         headers, body = self.parseSearchResponse(message)
         loc = headers.get('location')
         if not loc:
@@ -104,6 +102,7 @@ class UPnPProtocol(DatagramProtocol, object):
 
     def discoverUPnP(self):
         "Discover UPnP devices. Returns a Deferred"
+        from twisted.internet import reactor, defer
         self._discDef = defer.Deferred()
         search = cannedUPnPSearch()
         try:
@@ -117,6 +116,7 @@ class UPnPProtocol(DatagramProtocol, object):
         return self._discDef
 
     def isAvailable(self):
+        from twisted.internet import defer
         if hasattr(self, '_discDef'):
             return self._discDef
         elif self.controlURL is not None:
@@ -154,6 +154,7 @@ class UPnPProtocol(DatagramProtocol, object):
                 d.callback(NoUPnPFound())
 
     def listenMulticast(self):
+        from twisted.internet import reactor
         from twisted.internet.error import CannotListenError
         attempt = 0
         while True:
@@ -169,8 +170,9 @@ class UPnPProtocol(DatagramProtocol, object):
         mcast.joinGroup('239.255.255.250', socket.INADDR_ANY)
 
     def handleIGDeviceResponse(self, body, loc):
-        log.msg("before stupidrandomdelaytoworkaroundbug got an IGDevice from %s"%(loc,), system='UPnP')
-        reactor.callLater(4, self.stupidrandomdelaytoworkaroundbug, body, loc)
+        from twisted.internet import reactor
+        #log.msg("before stupidrandomdelaytoworkaroundbug got an IGDevice from %s"%(loc,), system='UPnP')
+        reactor.callLater(0, self.stupidrandomdelaytoworkaroundbug, body, loc)
 
     def stupidrandomdelaytoworkaroundbug(self, body, loc):
         """
@@ -197,7 +199,7 @@ class UPnPProtocol(DatagramProtocol, object):
         tcp connection completing is screwing up the state of the 4th tcp
         connection, which has been initiated by hasn't completed yet.
         """
-        log.msg("after stupidrandomrelaytoworkaroundbug, got an IGDevice from %s"%(loc,), system='UPnP')
+        #log.msg("after stupidrandomrelaytoworkaroundbug, got an IGDevice from %s"%(loc,), system='UPnP')
         if self.controlURL is not None:
             log.msg("already found UPnP, discarding duplicate response",
                                                                 system="UPnP")
@@ -246,6 +248,7 @@ class UPnPProtocol(DatagramProtocol, object):
         self.completedDiscovery()
 
     def getExternalIPAddress(self):
+        from twisted.internet import defer
         cd = defer.Deferred()
         req = self.soap.GetExternalIPAddress()
         d = soapenurl(req)
@@ -261,6 +264,7 @@ class UPnPProtocol(DatagramProtocol, object):
         cd.errback(UPnPError("GetGenericPortMappingEntry got %s"%(err)))
 
     def getPortMappings(self):
+        from twisted.internet import defer
         cd = defer.Deferred()
         self.getGenericPortMappingEntry(0, cd)
         return cd
@@ -293,6 +297,7 @@ class UPnPProtocol(DatagramProtocol, object):
     def addPortMapping(self, intport, extport, desc, proto='UDP', lease=0):
         "add a port mapping. returns a deferred"
         from nat import getLocalIPAddress
+        from twisted.internet import defer
         cd = defer.Deferred()
         d = getLocalIPAddress()
         d.addCallback(lambda locIP: self._cbAddPortMapping(intport, extport,
@@ -324,6 +329,7 @@ class UPnPProtocol(DatagramProtocol, object):
 
     def deletePortMapping(self, extport, proto='UDP'):
         "remove a port mapping"
+        from twisted.internet import defer
         cd = defer.Deferred()
         request = self.soap.DeletePortMapping(NewRemoteHost=None,
                                               NewExternalPort=extport,
@@ -358,6 +364,7 @@ class UPnPMapper(BaseMapper):
 
     def map(self, port):
         "See shtoom.interfaces.NATMapper.map"
+        from twisted.internet import reactor, defer
         self._checkValidPort(port)
 
         if port in self._mapped:

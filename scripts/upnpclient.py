@@ -47,6 +47,7 @@ def doList():
     d = getUPnP()
     d.addCallback(lambda x: x.getPortMappings())
     d.addCallback(gotList)
+    d.addErrback(done)
 
 def doneMapping(res):
     reactor.stop()
@@ -54,6 +55,7 @@ def doneMapping(res):
 def gotMappingNowAdd(mappings, nprot, nport, desc):
     if (nprot,nport) in mappings or (nprot,str(nport)) in mappings:
         print "error: can't replace existing mapping for %s/%s"%(nprot,nport)
+        ddict = mappings.get((nprot,nport)) or mappings.get((nprot,str(nport)))
         desc = mappingDesc%ddict
         print "existing mapping is to %s"%desc
         reactor.stop()
@@ -80,6 +82,7 @@ def doAdd(spec, desc):
     d = getUPnP()
     d.addCallback(lambda x: x.getPortMappings())
     d.addCallback(gotMappingNowAdd, prot, port, desc)
+    d.addErrback(done)
 
 def gotMappingNowRemove(mappings, nprot, nport):
     if not ((nprot,nport) in mappings or (nprot,str(nport)) in mappings):
@@ -95,6 +98,10 @@ def doRemove(spec):
     d = getUPnP()
     d.addCallback(lambda x: x.getPortMappings())
     d.addCallback(gotMappingNowRemove, prot, port)
+    d.addErrback(done)
+
+def done(x):
+    reactor.stop()
 
 def main():
     import sys
