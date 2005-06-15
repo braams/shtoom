@@ -1,0 +1,46 @@
+Enabling SIP URLs on the Desktop
+================================
+
+This document will collect the necessary magic to enable desktop support
+of sip: URLs, for various desktops and applications.
+
+Adding support for sip: to Firefox
+----------------------------------
+
+Go to about:config
+Right click, select New > String
+in the New String Value window, enter the preference name::
+
+  network.protocol-handler.app.sip
+
+click OK. In the Enter string value window::
+
+  /path/to/shtoomclient.py
+
+click OK
+
+
+Adding support for sip: to Gnome
+--------------------------------
+
+Unknown.
+
+
+Adding support for sip: to KDE
+------------------------------
+
+Unknown.
+
+
+Adding support for sip: to OS X
+-------------------------------
+
+Unknown.
+
+
+Adding support for sip: to Windows
+----------------------------------
+
+Unknown.
+
+
