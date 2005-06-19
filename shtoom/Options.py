@@ -254,7 +254,7 @@ class AllOptions(object):
 
 def findOptionsDir():
     try:
-        saveDir = os.path.expanduser('~%s'%os.getlogin())
+        saveDir = os.path.expanduser('~')
     except:
         saveDir = os.getcwd()
     return saveDir
