@@ -1,4 +1,3 @@
-from shtoom.doug.events import *
 import sys
 
 class Source(object):

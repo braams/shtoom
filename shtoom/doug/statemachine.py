@@ -9,8 +9,8 @@
 
 """
 
-from shtoom.doug.events import *
-from shtoom.doug.exceptions import *
+from shtoom.doug.events import Event, IGNORE_EVENT, CallStartedEvent
+from shtoom.doug.exceptions import NonEventError, EventNotSpecifiedError
 
 from twisted.internet import reactor, defer
 from twisted.python import log

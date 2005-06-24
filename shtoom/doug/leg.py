@@ -10,8 +10,8 @@
 
 from shtoom.doug.source import Source, SilenceSource, convertToSource
 from shtoom.audio.converters import DougConverter
-from shtoom.doug.events import *
-from shtoom.doug.exceptions import *
+from shtoom.doug.events import CallAnsweredEvent, CallRejectedEvent
+from shtoom.doug.events import MediaPlayContentDoneEvent, DTMFReceivedEvent
 from twisted.python import log
 from twisted.internet.task import LoopingCall
 

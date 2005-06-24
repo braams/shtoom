@@ -1,4 +1,9 @@
-from shtoom.doug.events import *
+"Conferencing code"
+
+# XXX A relatively simple enhancement to this would be to store the 
+# volumes for each source in the conference, and use an exponential
+# decay type algorithm to determine the "loudest". 
+
 from shtoom.doug.source import Source
 from twisted.internet.task import LoopingCall
 from twisted.python import log
@@ -143,6 +148,10 @@ class Room:
             raise ConferenceClosedError()
 
     def mixAudio(self):
+        # XXX see the comment above about storing a decaying number for the
+        # volume. For instance, each time round the loop, take the calculated
+        # volume, and the stored volume, and do something like:
+        # newStoredVolume = (oldStoredVolume * 0.33) + (thisPacketVolume * 0.66)
         import audioop
         self._audioOut = {}
         audioIn, self._audioIn = self._audioIn, {}
