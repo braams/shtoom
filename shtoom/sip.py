@@ -584,10 +584,13 @@ class Call(object):
             oksdp = SDP(okmessage.body)
             sdp = self.sip.app.getSDP(self.cookie, oksdp)
             if not sdp.hasMediaDescriptions():
+                # Bollocks. Can't 488 a response!
                 self.sendResponse(okmessage, 488)
                 self.setState('ABORTED')
                 # compDef.errback? XXX
                 return
+        else:
+            self.setState('ABORTED')
         via = okmessage.headers.get('via')
         if type(via) is list: via = via[0]
         via = tpsip.parseViaHeader(via)
@@ -597,7 +600,7 @@ class Call(object):
         if 'contact' in okmessage.headers:
             contact = okmessage.headers['contact']
         else:
-            contact = okmessage.headers['from']
+            contact = okmessage.headers['to']
         if type(contact) is list:
             contact = contact[0]
         self.contact = contact
@@ -608,9 +611,17 @@ class Call(object):
             if type(rr) is list: rr = rr[0]
             self._remoteURI = Address(self.extractURI(rr)).getURI(parsed=True)
             print "using record-route header of", self._remoteURI
+            ackdest = self._remoteURI.host, self._remoteURI.port or 5060
+        elif 'contact' in okmessage.headers:
+            self._remoteURI = Address(self.extractURI(contact)
+                                                ).getURI(parsed=True)
+            ackdest = self._remoteURI.host, self._remoteURI.port or 5060
+        elif via:
+            ackdest = via.host, via.port or 5060
         else:
             self._remoteURI = Address(self.extractURI(contact)
                                                 ).getURI(parsed=True)
+            ackdest = self._remoteURI.host, self._remoteURI.port or 5060
 
         self.dialog.setCallee(Address(okmessage.headers['to'][0]))
         ack = tpsip.Request('ACK', str(self._remoteAOR))
@@ -629,14 +640,13 @@ class Call(object):
             del self.compDef
         else:
             cb = lambda *args: None
-        addr = self._remoteURI.host, self._remoteURI.port or 5060
         log.msg("sending ACK to %s %s"%addr, system='sip')
         #print "sending ACK to %s %s"%addr
-        self.sip.transport.write(ack.toString(), _hostportToIPPort(addr))
+        self.sip.transport.write(ack.toString(), _hostportToIPPort(ackdest))
         self.setState('CONNECTED')
         if startRTP:
             self.sip.app.startCall(self.cookie, oksdp, cb)
-        log.msg("sending ACK to %r\n%s"%(addr, ack.toString()), system="sip")
+        log.msg("sending ACK to %r\n%s"%(ackdest, ack.toString()), system="sip")
         self.sip.app.statusMessage("Call Connected")
 
     def sendBye(self, toAddr="ignored", auth=None, authhdr=None):
