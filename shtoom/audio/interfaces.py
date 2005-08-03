@@ -5,14 +5,6 @@ from twisted.python.components import Interface
 class IAudio(Interface):
     '''Lowlevel interface to audio source/sink.'''
 
-    def getFormats(self):
-        '''Retuns a list of the supported audio formats'''
-
-    def selectDefaultFormat(self, format):
-        '''Select a particular format for audio. This format is used for
-           both reading and writing.
-        '''
-
     def close(self):
         '''Close the underlying audio device'''
 

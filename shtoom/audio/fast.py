@@ -20,11 +20,11 @@ from twisted.internet.task import LoopingCall
 
 class FastAudioDevice(baseaudio.AudioDevice):
 
-    def openDev(self):
+    def openDev(self, bitrate=8000):
         if self.dev is None:
             # Thanks to dotz for putting me on the track of the magic
             # options 160, 2
-            fdev = FastAudioWrapper(fastaudio.stream(8000, 1, 'int16', 160, 2))
+            fdev = fastaudio.stream(bitrate, 1, 'int16', bitrate/50, 2)
             fdev.open()
             self.dev = fdev
             self.close = fdev.close
@@ -53,7 +53,7 @@ class FastAudioDevice(baseaudio.AudioDevice):
                 pass
             del self.LC
             baseaudio.AudioDevice.close(self)
-            del self.dev
+            self.dev = None
 
     def _push_up_some_data(self):
         if hasattr(self, 'encoder') and self.encoder:

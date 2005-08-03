@@ -18,7 +18,8 @@ class AudioDevice(object):
     def close(self):
         if not self._closed:
             self._closed = True
-            self.dev.close()
+            if self.dev is not None:
+                self.dev.close()
 
     def reopen(self):
         self.close()
