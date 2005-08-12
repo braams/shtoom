@@ -100,16 +100,14 @@ class Phone(BaseApplication):
             self.sip.register()
             self.statusMessage('Registering...')
 
-    def start(self):
-        "Start the application."
-
+    def installIPC(self):
         if hasattr(self.ui, 'ipcCommand'):
             if self.getPref('ipc') == 'dbus':
                 from shtoom.dbus import isAvailable
                 if isAvailable():
                     from shtoom.ipc import dbus
                     self.remote = dbus.start(app='phone')
-                    print "installed DBus"
+                    print "installed DBus", self.remote
                 else:
                     log.msg('dbus IPC not available', system='phone')
                     print "no DBus available"
@@ -117,7 +115,12 @@ class Phone(BaseApplication):
                 log.msg('pb IPC not implemented yet, sorry', system='phone')
             else:
                 log.msg('no IPC', system='phone')
+        print "done"
 
+    def start(self):
+        "Start the application."
+        from twisted.internet import reactor
+        reactor.callLater(0, self.installIPC)
         self.register()
         if not self._startReactor:
             log.msg("Not starting reactor - test mode?")
