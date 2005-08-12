@@ -4,7 +4,6 @@
 
 from twisted.internet import stdio
 
-
 def shutdown():
     from twisted.internet import reactor
     reactor.stop()
@@ -21,6 +20,7 @@ def main(application):
     from shtoom.ui.textui import ShtoomMain
     UI = ShtoomMain()
     UI.connectApplication(application)
+    # see twisted.conch.stdio for an example of readline-y sort of things.
     stdio.StandardIO(UI)
     if not app.getPref('logfile'):
         from shtoom import log
