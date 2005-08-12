@@ -9,6 +9,7 @@ from twisted.internet.task import LoopingCall
 opened = None
 
 class OSSAudioDevice(baseaudio.AudioDevice):
+    dev = None
 
     def openDev(self):
         try:
@@ -67,9 +68,10 @@ class OSSAudioDevice(baseaudio.AudioDevice):
                 pass
             del self.LC
             baseaudio.AudioDevice.close(self)
-            del self.dev
+            self.dev = None
 
-
+    def isOpen(self):
+        return self.dev is not None
 
 def listFormats(dev):
     import ossaudiodev as O
