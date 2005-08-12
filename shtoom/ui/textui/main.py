@@ -5,6 +5,8 @@ from twisted.internet import stdio, defer
 from twisted.protocols import basic
 from shtoom.exceptions import CallRejected, CallNotAnswered
 
+from gettext import gettext as _
+
 class ShtoomMain(basic.LineReceiver, ShtoomBaseUI):
     _cookie = None
     _pending = None
