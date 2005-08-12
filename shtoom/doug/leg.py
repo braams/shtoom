@@ -30,9 +30,9 @@ class Leg(object):
         self._acceptDeferred = None
         self.__converter = DougConverter()
         self.__playoutList = []
-        self.__recordDest = None
         self.__silenceSource = SilenceSource()
         self.__connected = None
+        self.__sink = None
         self.__currentDTMFKey = None
         self.__collectedDTMFKeys = ''
         self.__dtmfSingleMode = True
@@ -150,6 +150,14 @@ class Leg(object):
             old.leg = None
         return old
 
+    def _connectSink(self, target):
+        if target:
+            target.leg = self
+        old, self.__sink = self.__sink, target
+        if old:
+            old.leg = None
+        return old
+
     def _maybeStartPlaying(self):
         "Check if we're currently playing silence, and switch out if so"
         if self.__connected is self.__silenceSource:
@@ -163,18 +171,18 @@ class Leg(object):
 
     def mediaRecord(self, dest):
         dest = convertToSource(dest, 'w')
-        self._connectSource(dest)
+        self._connectSink(dest)
 
     def mediaStop(self):
         old = self._connectSource(self.__silenceSource)
         if old.isPlaying():
             old.close()
             self.__playoutList = []
-            if old.isRecording():
-                self.__recordDest = None
-        elif old.isRecording():
+
+    def mediaStopRecording(self):
+        old = self._connectSink(None)
+        if old and old.isRecording():
             old.close()
-            self.__recordDest = None
 
     def leg_startDTMFevent(self, dtmf):
         c = self.__currentDTMFKey
@@ -211,13 +219,14 @@ class Leg(object):
         data = self.__converter.convertInbound(packet)
         if self.__inbandDTMFdetector is not None:
             self.__inbandDTMFdetector(data)
-        self.__connected.write(data)
+        if self.__sink:
+            self.__sink.write(data)
 
     def isPlaying(self):
         return self.__connected.isPlaying()
 
     def isRecording(self):
-        return self.__connected.isRecording()
+        return self.__sink and self.__sink.isRecording()
 
     def dtmfMode(self, single=False, inband=False, timeout=0):
         self.__dtmfSingleMode = single

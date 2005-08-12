@@ -134,6 +134,13 @@ See leg.mediaStop() - if no leg is specified, the leg returned by
 getDefaultLeg() is used.
 
 
+mediaStopRecording(leg=None)
+============================
+
+See leg.mediaStopRecording() - if no leg is specified, the leg returned by
+getDefaultLeg() is used.
+
+
 placeCall(toURI, fromURI)
 =========================
 
@@ -240,8 +247,13 @@ XXX TBD
 mediaStop()
 ===========
 
-Stop any mediaPlay or mediaRecords that are currently in progress.
+Stop any mediaPlay that is currently in progress.
 
+
+mediaStopRecording()
+====================
+
+Stop any mediaPlay that is currently in progress.
 
 rejectCall(exception)
 =====================

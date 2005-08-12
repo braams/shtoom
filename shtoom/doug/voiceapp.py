@@ -127,6 +127,12 @@ class VoiceApp(StateMachine):
         if leg is not None:
             leg.mediaStop()
 
+    def mediaStopRecording(self, leg=None):
+        if leg is None:
+            leg = self.getDefaultLeg()
+        if leg is not None:
+            leg.mediaStopRecording()
+
     def setTimer(self, delay):
         return Timer(self, delay)
 
