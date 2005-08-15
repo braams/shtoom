@@ -640,7 +640,7 @@ class Call(object):
             del self.compDef
         else:
             cb = lambda *args: None
-        log.msg("sending ACK to %s %s"%addr, system='sip')
+        log.msg("sending ACK to %s %s"% _hostportToIPPort(ackdest), system='sip')
         #print "sending ACK to %s %s"%addr
         self.sip.transport.write(ack.toString(), _hostportToIPPort(ackdest))
         self.setState('CONNECTED')
