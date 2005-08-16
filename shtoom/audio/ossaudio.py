@@ -18,6 +18,8 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             app = None
         if app is not None:
             device = app.getPref('audio_device')
+        else:
+            device = None
         if device is not None:
             log.msg("ossaudiodev opening device %s")
             dev = ossaudiodev.open(device, 'rw')
