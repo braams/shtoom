@@ -60,8 +60,8 @@ def _optParseBuilder(opt, parser):
                                 ', '.join([ str(x.value) for x in opt ]),
                                 opt.default)
     args.update({'dest': opt.name,
-                 'help': help,
-                 'default':opt.default})
+                 'help': help
+               })
     cmdopt = '--' + opt.name.replace('_', '-')
     if hasattr(opt, 'shortopt'):
         shortopt = '-' + opt.shortopt
