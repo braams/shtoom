@@ -17,6 +17,8 @@ opened = None
 DEFAULT_ALSA_DEVICE = 'default'
 
 class ALSAAudioDevice(baseaudio.AudioDevice):
+    writedev = None
+    readdev = None
 
     def __repr__(self):
         return "ALSAAudioDevice %s" % (self.isOpen() and "open" or "closed")
@@ -80,7 +82,7 @@ class ALSAAudioDevice(baseaudio.AudioDevice):
                 # ? bug in Twisted?  Not sure.  This catch-and-ignore is a temporary workaround.  --Zooko
                 pass
             del self.LC
-            del self.writedev
-            del self.readdev
+            self.writedev = None
+            self.readdev = None
 
 Device = ALSAAudioDevice
