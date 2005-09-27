@@ -587,10 +587,19 @@ class Call(object):
                 # Bollocks. Can't 488 a response!
                 self.sendResponse(okmessage, 488)
                 self.setState('ABORTED')
-                # compDef.errback? XXX
+                cb, self.compDef = self.compDef.errback, None
+                log.msg("call failed, no suitable media", system='sip')
+                e = CallFailed('Call failed: no suitable media')
+                e.sipCode = 488
+                cb(e)
                 return
         else:
             self.setState('ABORTED')
+            cb, self.compDef = self.compDef.errback, None
+            log.msg("call failed with %s"%(okmessage.code), system='sip')
+            e = CallFailed('Call failed: %s'%(okmessage.code))
+            e.sipCode = okmessage.code
+            cb(e)
         via = okmessage.headers.get('via')
         if type(via) is list: via = via[0]
         via = tpsip.parseViaHeader(via)
@@ -641,13 +650,14 @@ class Call(object):
         else:
             cb = lambda *args: None
         log.msg("sending ACK to %s %s"% _hostportToIPPort(ackdest), system='sip')
-        #print "sending ACK to %s %s"%addr
+        if self.getState() != 'ABORTED':
+            self.setState('CONNECTED')
+            if startRTP:
+                self.sip.app.startCall(self.cookie, oksdp, cb)
         self.sip.transport.write(ack.toString(), _hostportToIPPort(ackdest))
-        self.setState('CONNECTED')
-        if startRTP:
-            self.sip.app.startCall(self.cookie, oksdp, cb)
         log.msg("sending ACK to %r\n%s"%(ackdest, ack.toString()), system="sip")
-        self.sip.app.statusMessage("Call Connected")
+        if self.getState() != 'ABORTED':
+            self.sip.app.statusMessage("Call Connected")
 
     def sendBye(self, toAddr="ignored", auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
@@ -801,6 +811,7 @@ class Call(object):
         else:
             noncebit =  "%s:%s" % (nonce,H(A2))
             respdig = KD(H(A1), noncebit)
+        print "auth", A1, H(A1), respdig
         base = '%s username="%s", realm="%s", nonce="%s", uri="%s", ' \
                'response="%s"' % (authmethod, user, realm, nonce,
                                   uri, respdig)
@@ -853,6 +864,8 @@ class Call(object):
                 return
             if message.code in ( 401, 407 ):
                 if state in ( 'SENT_INVITE', 'SENT_BYE'):
+                    # Send an ACK - 3261, S17.1.1
+                    self.sendAck(message)
                     method = message.headers['cseq'][0].split()[1]
                     if method == "BYE":
                         resend = self.sendBye
