@@ -587,19 +587,22 @@ class Call(object):
                 # Bollocks. Can't 488 a response!
                 self.sendResponse(okmessage, 488)
                 self.setState('ABORTED')
-                cb, self.compDef = self.compDef.errback, None
                 log.msg("call failed, no suitable media", system='sip')
-                e = CallFailed('Call failed: no suitable media')
-                e.sipCode = 488
-                cb(e)
-                return
+                if self.compDef is not None:
+                    cb, self.compDef = self.compDef.errback, None
+                    e = CallFailed('Call failed: no suitable media')
+                    e.sipCode = 488
+                    cb(e)
+                    return
         else:
             self.setState('ABORTED')
-            cb, self.compDef = self.compDef.errback, None
             log.msg("call failed with %s"%(okmessage.code), system='sip')
-            e = CallFailed('Call failed: %s'%(okmessage.code))
-            e.sipCode = okmessage.code
-            cb(e)
+            if self.compDef is not None:
+                cb, self.compDef = self.compDef.errback, None
+                e = CallFailed('Call failed: %s'%(okmessage.code))
+                e.sipCode = okmessage.code
+                cb(e)
+                return
         via = okmessage.headers.get('via')
         if type(via) is list: via = via[0]
         via = tpsip.parseViaHeader(via)
