@@ -58,9 +58,9 @@ class FastAudioDevice(baseaudio.AudioDevice):
 
     def _push_up_some_data(self):
         if hasattr(self, 'encoder') and self.encoder:
-            data = self._f.read()
+            data = self.dev.read()
             while data:
                 self.encoder.handle_audio(data)
-                data = self._f.read()
+                data = self.dev.read()
 
 Device = FastAudioDevice
