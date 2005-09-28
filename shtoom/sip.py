@@ -647,7 +647,7 @@ class Call(object):
         ack.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         ack.addHeader('content-length', 0)
         ack.creationFinished()
-        if hasattr(self, 'compDef'):
+        if hasattr(self, 'compDef') and self.compDef is not None:
             cb = self.compDef.callback
             del self.compDef
         else:
