@@ -19,6 +19,7 @@ from twisted.python import log
 from twisted.internet.task import LoopingCall
 
 class FastAudioDevice(baseaudio.AudioDevice):
+    dev = None
 
     def openDev(self, bitrate=8000):
         if self.dev is None:
