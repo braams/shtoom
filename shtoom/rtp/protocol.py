@@ -30,6 +30,8 @@ class RTPProtocol(DatagramProtocol):
 
     _cbDone = None
 
+    dest = None
+
     Done = False
     def __init__(self, app, cookie, *args, **kwargs):
         self.app = app
