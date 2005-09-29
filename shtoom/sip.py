@@ -594,6 +594,8 @@ class Call(object):
                     e.sipCode = 488
                     cb(e)
                     return
+        elif okmessage.code == 407:
+            log.msg("sending Ack for a 407", system='sip') 
         else:
             self.setState('ABORTED')
             log.msg("call failed with %s"%(okmessage.code), system='sip')
