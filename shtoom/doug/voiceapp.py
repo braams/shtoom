@@ -12,6 +12,7 @@
 from shtoom.doug.events import TimeoutEvent, CallStartedEvent
 from shtoom.doug.events import CallAnsweredEvent, CallRejectedEvent
 from shtoom.doug.events import CallEndedEvent
+from shtoom.doug.events import DTMFReceivedEvent
 #from shtoom.doug.exceptions import *
 from shtoom.doug.statemachine import StateMachine
 from twisted.internet import reactor
@@ -41,6 +42,9 @@ class VoiceApp(StateMachine):
         self.__appl = appl
         self.__legs = OrderedDict()
         self.__dict__.update(kwargs)
+        self.__currentDTMFKey = None
+        self.__collectedDTMFKeys = ''
+        self.__dtmfSingleMode = True
         super(VoiceApp, self).__init__(defer, **kwargs)
 
     def getDefaultLeg(self):
@@ -186,3 +190,28 @@ class VoiceApp(StateMachine):
                 lambda k=key: self.__appl.startDTMF(cookie, k))
             reactor.callLater(i+n*(duration+delay)+duration,
                 lambda k=key: self.__appl.stopDTMF(cookie, k))
+
+    def _inboundDTMFKeyPress(self, dtmf):
+        if self.__dtmfSingleMode:
+            self._triggerEvent(DTMFReceivedEvent(dtmf, self))
+        else:
+            self.__collectedDTMFKeys += dtmf
+            if dtmf in ('#', '*'):
+                dtmf, self.__collectedDTMFKeys = self.__collectedDTMFKeys, ''
+                self._triggerEvent(DTMFReceivedEvent(dtmf, self))
+
+    def va_startDTMFevent(self, dtmf, cookie=None):
+        c = self.__currentDTMFKey
+        if dtmf:
+            if c is not dtmf:
+                self.va_stopDTMFevent(c)
+                self.__currentDTMFKey = dtmf
+                self._inboundDTMFKeyPress(dtmf)
+            else:
+                # repeat
+                pass
+
+    def va_stopDTMFevent(self, dtmf, cookie=None):
+        # For now, I only care about dtmf start events
+        if dtmf == self.__currentDTMFKey:
+            self.__currentDTMFKey = None

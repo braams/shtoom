@@ -191,7 +191,7 @@ class DougApplication(BaseApplication):
     def incomingRTP(self, callcookie, packet):
         from shtoom.rtp.formats import PT_NTE
         v = self._voiceapps[callcookie]
-        if packet.header.pt is PT_NTE:
+        if packet.header.ct is PT_NTE:
             data = packet.data
             key = ord(data[0])
             start = (ord(data[1]) & 128) and True or False
