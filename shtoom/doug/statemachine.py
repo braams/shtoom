@@ -107,10 +107,12 @@ class StateMachine(object):
         self._deferredState = None
         self._curEvents = result
 
-    def _start(self, callstart=1):
+    def _start(self, callstart=1, args):
         self._doState(self.__start__)
         if callstart:
-            self._triggerEvent(CallStartedEvent(None))
+            evt = CallStartedEvent(None)
+            evt.args = args
+            self._triggerEvent(evt)
 
     def __start__(self):
         raise NotImplementedError
