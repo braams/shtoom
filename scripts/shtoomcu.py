@@ -71,6 +71,7 @@ class ConferencingApp(VoiceApp):
         self.mediaStop()
         self.conf = newConferenceMember(self.roomname, self.leg)
         self.mediaPlay([self.conf])
+        self.mediaRecord([self.conf])
         return ( (MediaDoneEvent, self.startConference),
                  (CallEndedEvent,  self.allDone),
                  (DTMFReceivedEvent,      IGNORE_EVENT),
