@@ -76,7 +76,7 @@ class VoiceApp(StateMachine):
         self.__appl.outgoingRTP(cookie, sample)
 
     def va_start(self, args):
-        self._start(callstart=0, args)
+        self._start(callstart=0, args=args)
 
     def va_callstart(self, inboundLeg):
         if inboundLeg is not None:
