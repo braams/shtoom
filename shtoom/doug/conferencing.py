@@ -155,6 +155,10 @@ class Room:
         import audioop
         self._audioOut = {}
         audioIn, self._audioIn = self._audioIn, {}
+        if CONFDEBUG:
+            print "room %r has %d members"%(self, len(self._members))
+            print "got %d samples this time"%len(audioIn)
+            print "samples: %r"%(audioIn.items(),)
         # short-circuit this case
         if len(self._members) < 2:
             if CONFDEBUG:
