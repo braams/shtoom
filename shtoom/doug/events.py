@@ -117,6 +117,7 @@ class      CallRejectedEvent(CallLegEvent):
 class      CallStartedEvent(CallLegEvent):
     """ A call started
     """
+    args = None
 
 class        InboundCallStartedEvent(CallStartedEvent):
     """ A new inbound call started
