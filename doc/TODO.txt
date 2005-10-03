@@ -3,6 +3,8 @@ Windows installer: Innoconda, py2exe or cxFreeze. gtk from dropline.net.
 Linux installer: rpmbuilder??, deb?
 
 New to-do before 0.3:
+    - add --no-foobar options to clear existing saved options
+    - add a no_proxy option (defaults to 'localhost')
     - Go through the i18n output and merge the various strings.
     - add a new credential cmdline option, remove register_auth* options
     - replace email_address and register_uri with a list of identities,

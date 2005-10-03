@@ -22,6 +22,7 @@ remind me. <wink>
     Charles Majola - bugfix for qt api change
     Zooko O'Whielacronx - bug fixes, code
     Donovan Preston - CocoaAudio, CocoaShtoom, code
+    Frank Scholz - debugging, patches
     Allen Short - debugging, advice, maintenance of the hosting
     Itamar Shtull-Trauring - original Gtk UI, many bugfixes
     Casper Wilstrup - ALSA interface, new playout code, bugfixes

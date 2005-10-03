@@ -352,7 +352,7 @@ class ShtoomWindow(ShtoomBaseUI):
 
 
 class DebugTextView:
-    MAXLINES = 1000
+    MAXLINES = 5000
     DELETECHUNK = 100
 
     def __init__(self, widget):

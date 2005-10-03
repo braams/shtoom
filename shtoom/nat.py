@@ -194,7 +194,8 @@ def getMapper():
     if app is not None:
         print "app is", app
         natPref = app.getPref('nat')
-        log.msg('NAT preference says to use %s'%(natPref))
+        log.msg('NAT preference says to use %s (%s)'%(natPref, app.getPref('nat')), system='nat')
+        print "NAT pref sez", natPref
     if _forcedMapper is not None:
         return defer.succeed(_forcedMapper)
     from shtoom.upnp import getUPnP

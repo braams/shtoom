@@ -73,14 +73,14 @@ class DougApplication(BaseApplication):
         if not hasattr(reactor,'running') or not reactor.running:
             reactor.run()
 
-    def initVoiceapp(self, callcookie):
+    def initVoiceapp(self, callcookie, args):
         log.msg("creating voiceapp %r"%(self._voiceappClass,), system='doug')
         d = defer.Deferred()
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x),
                        lambda x: self.acceptErrors(callcookie,x))
         try:
             v = self._voiceappClass(d, self, callcookie, **self._voiceappArgs)
-            v.va_start()
+            v.va_start(args)
         except:
             ee,ev,et = sys.exc_info()
             log.err("voiceapp init failed: %s, %s, %s"%(ee, ev, traceback.extract_tb(et)))
@@ -104,10 +104,10 @@ class DougApplication(BaseApplication):
                                                                 system='doug')
         self.dropCall(callcookie)
 
-    def startVoiceApp(self):
+    def startVoiceApp(self, **args):
         "Start a voiceapp (without an inbound leg)"
         cookie = self.getCookie()
-        self.initVoiceapp(cookie)
+        self.initVoiceapp(cookie, args)
         self._voiceapps[cookie].va_callstart(None)
 
     def acceptCall(self, call):
