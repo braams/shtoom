@@ -1,12 +1,17 @@
 
 class DougService:
 
+    configFileName = ''
+
+
     def __init__(self, voiceappClass):
         self.voiceappClass = voiceappClass
 
     def startService(self, mainhack=False):
         from shtoom.app.doug import DougApplication
         self.app = DougApplication(self.voiceappClass)
+        if self.configFileName != '':
+            self.app.configFileName = self.configFileName
         if mainhack:
             import __main__
             __main__.app = self.app
