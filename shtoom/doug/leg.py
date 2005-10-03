@@ -101,8 +101,8 @@ class Leg(object):
 
     def answerCall(self, voiceapp):
         " Answer the (incoming) call on this leg "
-        log.msg("%r answering this call"%(self,), system="doug")
         if self._acceptDeferred is not None:
+            log.msg("%r answering this call"%(self,), system="doug")
             self._voiceapp = voiceapp
             d, self._acceptDeferred = self._acceptDeferred, None
             d.callback(self._cookie)
