@@ -154,6 +154,8 @@ class Room:
         # newStoredVolume = (oldStoredVolume * 0.33) + (thisPacketVolume * 0.66)
         import audioop
         self._audioOut = {}
+        if not self._open:
+            log.msg('mixing closed room %r'%(self,), system='doug')
         audioIn, self._audioIn = self._audioIn, {}
         if CONFDEBUG:
             print "room %r has %d members"%(self, len(self._members))
