@@ -7,7 +7,7 @@ class DougService:
     def __init__(self, voiceappClass):
         self.voiceappClass = voiceappClass
 
-    def startService(self, mainhack=False):
+    def startService(self, mainhack=False, args=None):
         from shtoom.app.doug import DougApplication
         self.app = DougApplication(self.voiceappClass)
         if self.configFileName != '':
@@ -15,7 +15,10 @@ class DougService:
         if mainhack:
             import __main__
             __main__.app = self.app
-        self.app.boot()
+        if args is None:
+            self.app.boot()
+        else:
+            self.app.boot(args=args)
         self.app.start()
 
     def stopService(self):
