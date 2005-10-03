@@ -81,6 +81,7 @@ class ConferencingApp(VoiceApp):
 
     def allDone(self, event):
         self.mediaStop()
+        self.mediaStopRecording()
         del self.leg, self.conf
         self.mediaStop()
         self.returnResult('other end closed')
