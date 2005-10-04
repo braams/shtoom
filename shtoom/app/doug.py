@@ -74,7 +74,7 @@ class DougApplication(BaseApplication):
             reactor.run()
 
     def initVoiceapp(self, callcookie, args):
-        log.msg("creating voiceapp %r"%(self._voiceappClass,), system='doug')
+        log.msg("creating voiceapp %r with start args %r"%(self._voiceappClass,args), system='doug')
         d = defer.Deferred()
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x),
                        lambda x: self.acceptErrors(callcookie,x))
@@ -108,7 +108,7 @@ class DougApplication(BaseApplication):
         "Start a voiceapp (without an inbound leg)"
         cookie = self.getCookie()
         self.initVoiceapp(cookie, args)
-        self._voiceapps[cookie].va_callstart(None)
+        self._voiceapps[cookie].va_callstart(None, args)
 
     def acceptCall(self, call):
         from shtoom.doug.leg import Leg

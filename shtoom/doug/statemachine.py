@@ -107,7 +107,9 @@ class StateMachine(object):
         self._deferredState = None
         self._curEvents = result
 
-    def _start(self, callstart=1, args={}):
+    def _start(self, callstart=True, args=None):
+        if args is None:
+            args = {}
         self._doState(self.__start__)
         if callstart:
             evt = CallStartedEvent(None)
