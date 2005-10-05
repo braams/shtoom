@@ -106,7 +106,7 @@ class ConferencingApp(VoiceApp):
 
     def callAnswered(self, event):
         leg = event.getLeg()
-        self.dtmfMode(single=True, inband=True)
+        self.dtmfMode(single=True, inband=False)
         self.leg = leg
         self.leg.hijackLeg(self)
         self.roomname = roomname = ROOMNAME
