@@ -173,8 +173,7 @@ class DougApplication(BaseApplication):
         remoteAddr = (ipaddr, md.port)
         self._rtp[callcookie].start(remoteAddr)
         call = self._calls[callcookie]
-        if call.dialog.getDirection() == "inbound":
-            self._voiceapps[callcookie].va_callanswered()
+        self._voiceapps[callcookie].va_callanswered()
         log.msg("call %s connected"%callcookie, system='doug')
         cb(callcookie)
 
