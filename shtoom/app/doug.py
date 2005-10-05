@@ -73,7 +73,9 @@ class DougApplication(BaseApplication):
         if not hasattr(reactor,'running') or not reactor.running:
             reactor.run()
 
-    def initVoiceapp(self, callcookie, args):
+    def initVoiceapp(self, callcookie, args=None):
+        if args is None: 
+            args = {}
         log.msg("creating voiceapp %r with start args %r"%(self._voiceappClass,args), system='doug')
         d = defer.Deferred()
         d.addCallbacks(lambda x: self.acceptResults(callcookie,x),
@@ -245,12 +247,14 @@ class DougApplication(BaseApplication):
 
     def dropCall(self, cookie):
         log.msg("dropCall %r"%(cookie), system='doug')
-        call = self._calls.get(cookie)
-        if not call:
+        if cookie in self._calls:
+            return self._calls.get(cookie).dropCall()
+        elif cookie in self._voiceapps:
+                return #self._voiceapps.get(cookie).va_abort()
+        else:
             log.err("Couldn't find cookie %s, have %r, %r"%(cookie,
                                 self._calls.keys(), self._voiceapps.keys(), ))
             return
-        d = call.dropCall()
 
     def statusMessage(self, message):
         log.msg("STATUS: "+message, system='doug')
@@ -293,4 +297,10 @@ class DougApplication(BaseApplication):
             rtp.stopDTMF(digit)
 
     def notifyEvent(self, methodName, *args, **kw):
+        pass
+
+    def ringBack(self):
+        pass
+
+    def ipcCommand(self, command, args):
         pass
