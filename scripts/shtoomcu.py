@@ -52,13 +52,13 @@ class ConferencingApp(VoiceApp):
 
     def answerCall(self, event):
         self.leg = event.getLeg()
+        self.roomname = roomname = ROOMNAME
 
         print "voiceapp.__start__ to user %s"%(roomname)
         if roomname == 'nope':
             self.leg.rejectCall(CallRejected('go away'))
             del self.leg
         else:
-            self.roomname = roomname = ROOMNAME
             self.leg.answerCall(self)
         return ( (CallAnsweredEvent, self.playAnnounce),
                )
