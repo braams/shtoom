@@ -111,7 +111,7 @@ class ConferencingApp(VoiceApp):
         self.leg.hijackLeg(self)
         self.roomname = roomname = ROOMNAME
         username = leg.getDialog().getCallee().getURI().username
-        self.startOutConference(event=None)
+        return self.startOutConference(event=None)
 
     def startOutConference(self, event):
         from shtoom.doug.conferencing import newConferenceMember
