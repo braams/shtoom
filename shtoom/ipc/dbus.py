@@ -21,11 +21,15 @@ def start(app='phone', remote=None):
     return remobj
 
 
+from shtoom.ipc.rpc import PhoneRPC
+phonerpc = PhoneRPC()
+
 class ShtoomPhoneRemote(Object):
-    ShtoomServiceName = 'ShtoomPhone'
+    ShtoomServiceName = phonerpc.name
     ShtoomServicePath = 'net.shtoom.%s'%(ShtoomServiceName,)
 
-    def __init__(self, service):
+    def __init__(self, service, phonerpc=phonerpc):
+        self.phonerpc = phonerpc
         Object.__init__(self, '/%s'%(self.ShtoomServiceName,), service)
 
     def call(self, uri):

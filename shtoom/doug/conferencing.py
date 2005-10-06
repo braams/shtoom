@@ -156,6 +156,7 @@ class Room:
         self._audioOut = {}
         if not self._open:
             log.msg('mixing closed room %r'%(self,), system='doug')
+            return
         audioIn, self._audioIn = self._audioIn, {}
         if CONFDEBUG:
             print "room %r has %d members"%(self, len(self._members))

@@ -26,7 +26,8 @@ XXX TBD
 VoiceApps, Legs, Events and more
 ================================
 
-XXX TBD
+A Voiceapp is a state machine. For each incoming or outgoing call, a new
+voiceapp instance is created. 
 
 
 Miscellenous Concepts
