@@ -137,6 +137,8 @@ class Room:
             if CONFDEBUG:
                 if confsource in self._audioIn:
                     print "Warning: replacing audio,",confsource,"running fast?"
+            if not audio:
+                return
             self._audioIn[confsource] = audio
         else:
             raise ConferenceClosedError()
