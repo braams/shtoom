@@ -3,6 +3,7 @@
 from twisted.internet import defer, stdio
 from twisted.protocols import basic
 from twisted.python import log
+from shtoom.exceptions import CallRejected, CallFailed, HostNotKnown
 
 from time import time
 
@@ -38,6 +39,11 @@ class TestCall:
             # trigger an auth dialog
             d = self.sip.app.authCred('INVITE', uri, realm='fake.realm.here')
             d.addCallback(self._cb_startFakeOutboundWithAuth, uri)
+        if 'reject' in uri:
+            # Any test calls to a URI containing the string 'reject'
+            # will fail. 
+            d, self.d = self.d, None
+            d.errback(CallFailed('rejected call'))
         else:
             d = self.sip.app.acceptCall(call=self)
             d.addCallbacks(self._cb_incomingCall,
