@@ -36,6 +36,8 @@ UPNP_PORT = 1900
 UPNP_MCAST = '239.255.255.250'
 #from zope.interface import implements
 
+DEBUG = False
+
 class UPnPError(Exception): pass
 class NoUPnPFound(UPnPError): pass
 
@@ -232,6 +234,8 @@ class UPnPProtocol(DatagramProtocol, object):
                 break
         else:
             log.msg("upnp response showed no WANIPConnections", system='UPnP')
+            if DEBUG:
+                print "dump of response", bs
             return
 
         self.controlURL = urlparse.urljoin(self.urlbase, controlurl)
@@ -492,6 +496,9 @@ def clearCache():
 if __name__ == "__main__":
     import sys
     from twisted.internet import reactor
+
+    DEBUG = True
+
     log.startLogging(sys.stdout)
     def done(upnp):
         print "got upnp", upnp
