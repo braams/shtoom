@@ -655,14 +655,13 @@ class Call(object):
         else:
             cb = lambda *args: None
         log.msg("sending ACK to %s %s"% _hostportToIPPort(ackdest), system='sip')
-        if self.getState() != 'ABORTED':
+        if self.getState() != 'ABORTED' and okmessage.code == 200:
             self.setState('CONNECTED')
             if startRTP:
                 self.sip.app.startCall(self.cookie, oksdp, cb)
+            self.sip.app.statusMessage("Call Connected")
         self.sip.transport.write(ack.toString(), _hostportToIPPort(ackdest))
         log.msg("sending ACK to %r\n%s"%(ackdest, ack.toString()), system="sip")
-        if self.getState() != 'ABORTED':
-            self.sip.app.statusMessage("Call Connected")
 
     def sendBye(self, toAddr="ignored", auth=None, authhdr=None):
         username = self.sip.app.getPref('username')
