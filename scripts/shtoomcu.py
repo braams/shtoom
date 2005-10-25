@@ -9,7 +9,9 @@ if f.endswith('scripts') and os.path.isdir(os.path.join(os.path.dirname(f),
 else:
     sys.path.append(f)
 
-ROOMNAME="specialmagic"
+ROOMNAME="defaultconf"
+# XXX TOFIX: Should be an option
+SERVERNAME='conference.shtoom.net'
 
 
 from shtoom.doug import VoiceApp
@@ -45,7 +47,7 @@ class ConferencingApp(VoiceApp):
         return ()
 
     def voiceappStarted(self, event):
-        if event.args and 'callurl' in event.args:
+        if event.args and 'calluri' in event.args:
             return self.makeACall(event)
         else:
             return self.answerCall(event)
@@ -69,10 +71,10 @@ class ConferencingApp(VoiceApp):
         # We want to receive the DTMF one keystroke at a time.
         self.dtmfMode(single=True)
         self.mediaPlay(self.announceFile)
-        return ( (MediaDoneEvent, self.startConference),
-                 (CallEndedEvent,  self.allDone),
-                 (DTMFReceivedEvent,      self.startConference),
-                 #(Event,          self.unknownEvent),
+        return ( (MediaDoneEvent,     self.startConference),
+                 (CallEndedEvent,     self.allDone),
+                 (DTMFReceivedEvent,  self.startConference),
+                 #(Event,             self.unknownEvent),
                )
 
     def startConference(self, event):
@@ -81,9 +83,9 @@ class ConferencingApp(VoiceApp):
         self.conf = newConferenceMember(self.roomname, self.leg)
         self.mediaPlay([self.conf])
         self.mediaRecord(self.conf)
-        return ( (MediaDoneEvent, self.startConference),
-                 (CallEndedEvent,  self.allDone),
-                 (DTMFReceivedEvent,      IGNORE_EVENT),
+        return ( (MediaDoneEvent,    self.startConference),
+                 (CallEndedEvent,    self.allDone),
+                 (DTMFReceivedEvent, IGNORE_EVENT),
                  #(Event,          self.unknownEvent),
                )
 
@@ -96,11 +98,14 @@ class ConferencingApp(VoiceApp):
         self.returnResult('other end closed')
 
     def makeACall(self, event):
-        url = event.args['callurl']
-        self.placeCall(url, 'sip:conference@ekit-inc.com')
+        uri = event.args['calluri']
+        self.roomname = event.args.get('room')
+        if not self.roomname: 
+            self.roomname = ROOMNAME
+        self.placeCall(uri, 'sip:%s@%s'%(self.roomname, SERVERNAME))
         return ( (CallAnsweredEvent, self.callAnswered),
                  (CallRejectedEvent, self.callFailed),
-                 (CallEndedEvent, self.callFailed),
+                 (CallEndedEvent,    self.callFailed),
                  (Event,             self.unknownEvent),
                )
 
@@ -109,7 +114,7 @@ class ConferencingApp(VoiceApp):
         self.dtmfMode(single=True, inband=False)
         self.leg = leg
         self.leg.hijackLeg(self)
-        self.roomname = roomname = ROOMNAME
+        roomname = self.roomname 
         username = leg.getDialog().getCallee().getURI().username
         return self.startOutConference(event=None)
 
@@ -119,10 +124,10 @@ class ConferencingApp(VoiceApp):
         self.conf = newConferenceMember(self.roomname, self.leg)
         self.mediaPlay([self.conf])
         self.mediaRecord(self.conf)
-        return ( (MediaDoneEvent, self.startOutConference),
-                 (CallEndedEvent,  self.allDone),
-                 (DTMFReceivedEvent,      IGNORE_EVENT),
-                 #(Event,          self.unknownEvent),
+        return ( (MediaDoneEvent,    self.startOutConference),
+                 (CallEndedEvent,    self.allDone),
+                 (DTMFReceivedEvent, IGNORE_EVENT),
+                 #(Event,             self.unknownEvent),
                )
 
 
@@ -133,15 +138,15 @@ class ConferencingApp(VoiceApp):
         self.returnError('%s %s'%(event, optional))
 
 
-def makeAnOutboundCall(url):
-    srv.app.startVoiceApp(callurl=url)
+def makeAnOutboundCall(uri, room):
+    srv.app.startVoiceApp(calluri=uri, room=room)
 
 
 class ConfXMLRPC(xmlrpc.XMLRPC):
     "Management interface for XMLRPC"
-    def xmlrpc_call(self, url):
-        makeAnOutboundCall(url)
-        return "Called %s"%url
+    def xmlrpc_call(self, uri, room=None):
+        makeAnOutboundCall(uri, room)
+        return "Called %s"%uri
     def xmlrpc_ping(self, x):
         return "OK"
 
