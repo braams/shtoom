@@ -51,6 +51,9 @@ Maybe before 0.3:
       8000Hz assumption.
 
 Not before 0.3:
+    - echo cancellation. See
+        + http://www.openh323.org/pipermail/openh323/2004-August/069715.html
+        + Speex has an aec option. Needs research into this.
     - ui(qt): finish multiple Call UI, including new tab for incoming call
     - doug: more detailed involvement with call establishment (e.g. for auth)
     - a basic preferences object
