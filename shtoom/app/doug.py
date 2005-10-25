@@ -96,6 +96,9 @@ class DougApplication(BaseApplication):
         log.err(failure)
         return failure
 
+    def listVoiceapps(self):
+        return self._voiceapps.values()
+
     def acceptResults(self, callcookie, results):
         log.msg("callcookie %s ended with result %s"%(callcookie, results),
                                                                 system='doug')
