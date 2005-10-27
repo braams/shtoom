@@ -179,6 +179,8 @@ def _parseStunResponse(dgram, address, expectedTID=None, oldtids=[]):
 class  _StunBase(object):
 
     def sendRequest(self, server, tid=None, avpairs=()):
+        if self.transport is None:
+            return
         if tid is None:
             tid = getRandomTID()
         mt = 0x1 # binding request
