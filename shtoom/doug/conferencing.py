@@ -24,7 +24,23 @@ class ConfSource(Source):
         self._room = room
         self._room.addMember(self)
         self._quiet = False
+        self.makeBuffer()
         super(ConfSource, self).__init__()
+
+    def makeBuffer(self):
+        try: 
+            from collections import deque
+        except ImportError:
+            # not optimal, but the queue isn't large
+            self.deque = list()
+            self.popleft = lambda: self.deque.pop(0)
+        else:
+            self.deque = deque()
+            self.popleft = self.deque.popleft
+
+    def truncBuffer(self):
+        while len(self.deque) > 3:
+            self.popleft()
 
     def isPlaying(self):
         return True
@@ -50,6 +66,9 @@ class ConfSource(Source):
         self._room.removeMember(self)
 
     def write(self, bytes):
+        self.deque.append(bytes)
+        bytes = self.popleft()        
+        self.truncBuffer()
         try:
             self._room.writeAudio(self, bytes)
         except ConferenceClosedError:
