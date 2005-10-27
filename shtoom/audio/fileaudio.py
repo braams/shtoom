@@ -7,7 +7,6 @@ from twisted.internet.task import LoopingCall
 # XXX TOFIX: use the audio pref to specify infile,outfile and kill two options
 class AudioFromFiles(baseaudio.AudioDevice):
     _infp = _outfp = None
-    _closed = True
     LC = None
 
     def __init__(self):
@@ -41,13 +40,6 @@ class AudioFromFiles(baseaudio.AudioDevice):
         if self._outfp is not None:
             return self._outfp.write(bytes)
 
-    def reopen(self):
-        if not self._closed:
-            self.close()
-        self._getFiles()
-        self.openDev()
-
-
     def _getFiles(self):
         if self.infile:
             self._infp = open(self.infile, 'rb')
@@ -58,10 +50,8 @@ class AudioFromFiles(baseaudio.AudioDevice):
         else:
             self._outfp = None
 
-    def close(self):
+    def _close(self):
         #print "close called", self._closed, self.LC
-        if self._closed:
-            return
         if self._infp is not None:
             self._infp.close()
         if self._outfp is not None:
@@ -73,12 +63,12 @@ class AudioFromFiles(baseaudio.AudioDevice):
 
     def openDev(self):
         from shtoom.util import stack
+        self._getFiles()
         #print "openDev called!", self._closed, self.LC, stack()
         if self.LC is not None:
             return
         if self._infp is None and self._outfp is None:
             self._getFiles()
-        self._closed = False
         self.LC = LoopingCall(self._push_up_some_data)
         #print self, "creating LoopingCall", self.LC, stack()
         self.LC.start(0.020)

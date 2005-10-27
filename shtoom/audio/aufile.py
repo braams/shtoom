@@ -45,7 +45,7 @@ class BaseReader:
     def reset(self):
         self.fp.setpos(0)
 
-    def close(self):
+    def _close(self):
         self.fp.close()
 
 class WavReader(BaseReader):

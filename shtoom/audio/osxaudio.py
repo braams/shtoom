@@ -60,7 +60,7 @@ class OSXAudio(object):
             coreaudio.installAudioCallback(self)
             self.running = True
 
-    def close(self):
+    def _close(self):
         if self.running:
             print "uninstalling coreaudio callback"
             coreaudio.stopAudio(self)

@@ -60,7 +60,7 @@ class OSSAudioDevice(baseaudio.AudioDevice):
             data = tostereo(data, 2, 1, 1)
         self.dev.write(data)
 
-    def close(self):
+    def _close(self):
         if self.isOpen():
             log.msg("ossaudiodev closing")
             try:
@@ -69,11 +69,7 @@ class OSSAudioDevice(baseaudio.AudioDevice):
                 # workaround a twisted bug
                 pass
             del self.LC
-            baseaudio.AudioDevice.close(self)
             self.dev = None
-
-    def isOpen(self):
-        return self.dev is not None
 
 def listFormats(dev):
     import ossaudiodev as O

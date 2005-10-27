@@ -7,7 +7,6 @@ from converters import MediaLayer
 opened = None
 
 class EchoAudioDevice:
-    _closed = True
 
     def __init__(self):
         self._data = ''
@@ -20,14 +19,7 @@ class EchoAudioDevice:
     def write(self, bytes):
         self._data += bytes
 
-    def reopen(self):
-        self._closed = False
-        self._data = ''
-
-    def close(self):
-        if self._closed:
-            return
-        self._closed = True
+    def _close(self):
         self._data = ''
         try:
             self.LC.stop()
@@ -37,8 +29,8 @@ class EchoAudioDevice:
 
     def openDev(self):
         from twisted.internet.task import LoopingCall
-        self._open = True
         self.LC = LoopingCall(self._push_up_some_data)
         self.LC.start(0.020)
+        self._data = ''
 
 Device = EchoAudioDevice

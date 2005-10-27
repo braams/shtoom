@@ -44,7 +44,7 @@ class FastAudioDevice(baseaudio.AudioDevice):
         self.dev.open()
         self.dev.start()
 
-    def close(self):
+    def _close(self):
         if self.isOpen():
             log.msg("fastaudiodev closing")
             try:
@@ -53,7 +53,6 @@ class FastAudioDevice(baseaudio.AudioDevice):
                 # ? bug in Twisted?  Not sure.  This catch-and-ignore is a temporary workaround.  --Zooko
                 pass
             del self.LC
-            baseaudio.AudioDevice.close(self)
             self.dev = None
 
     def _push_up_some_data(self):

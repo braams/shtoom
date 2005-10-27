@@ -25,7 +25,7 @@ class TCPAudioProtocol(Protocol):
     def open(self):
         self.readbuffer = ''
 
-    def close(self):
+    def _close(self):
         self.readbuffer = None
 
     def read(self, bytes=None):

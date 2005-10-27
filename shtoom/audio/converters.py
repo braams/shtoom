@@ -30,7 +30,7 @@ class MediaSample:
         return "<%s/%s, %s>" % (self.__class__.__name__, self.ct, `self.data`,)
 
 class NullConv:
-    # Should be refactored away
+    # XXX Should be refactored away - MediaLayer is the only derived class
     def __init__(self, device):
         self._d = device
     def getDevice(self):
@@ -132,10 +132,11 @@ class SpeexCodec(_Codec):
         return ostr
 
 class MulawCodec(_Codec):
-    "A codec for mulaw encoded audio (e.g. G.711U)"
+    "A codec for mulaw encoded audio (G.711U, PCMU)"
 
     def __init__(self):
         _Codec.__init__(self, 320)
+        self.buf = ''
 
     def _encode(self, bytes):
         return audioop.lin2ulaw(bytes, 2)
@@ -144,10 +145,17 @@ class MulawCodec(_Codec):
         if len(bytes) != 160:
             log.msg("mulaw: short read on decode, %d != 160"%len(bytes),
                                                             system="codec")
-        return audioop.ulaw2lin(bytes, 2)
+        if 0:
+            bytes = audioop.ulaw2lin(bytes, 2)
+            self.buf += bytes
+            if len(self.buf) > 159:
+                out, self.buf = self.buf[:160], self.buf[160:]
+                return out
+        else:
+            return audioop.ulaw2lin(bytes, 2)
 
 class AlawCodec(_Codec):
-    "A codec for alaw encoded audio (e.g. G.711A)"
+    "A codec for alaw encoded audio (G.711A, PCMA)"
 
     def __init__(self):
         _Codec.__init__(self, 320)

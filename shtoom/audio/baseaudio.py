@@ -2,6 +2,7 @@
 
 class AudioDevice(object):
     encoder = None
+    _closed = True
 
     def __init__(self, mode='ignored'):
         self.openDev()
@@ -16,13 +17,15 @@ class AudioDevice(object):
         self.encoder = encoder
 
     def close(self):
+        print "baseaudio CLOSE", self._closed
         if not self._closed:
+            self._close()
             self._closed = True
-            if self.dev is not None:
-                self.dev.close()
 
     def reopen(self):
-        self.close()
+        print "baseaudio REOPEN", self._closed
+        if not self._closed:
+            self.close()
         self.openDev()
         self._closed = False
 
