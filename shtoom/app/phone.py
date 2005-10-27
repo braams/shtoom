@@ -1,4 +1,4 @@
-DEVELREV="481"
+DEVELREV="1647"
 DEVELREVTAG="unstable"
 DEVELREV=DEVELREV+"-"+DEVELREVTAG
 
@@ -159,7 +159,7 @@ class Phone(BaseApplication):
         calltype = call.dialog.getDirection()
         if calltype == 'inbound':
             self.statusMessage('Incoming call')
-            #self.play_wav_file('incoming_ring_file')
+            self.play_wav_file('incoming_ring_file')
 
             uidef = self.ui.incomingCall(call.dialog.getCaller(), cookie)
             uidef.addCallback(self.stopWaveFile)

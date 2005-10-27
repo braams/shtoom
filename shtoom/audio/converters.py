@@ -329,7 +329,9 @@ class MediaLayer(NullConv):
             self.selectDefaultFormat([PT_PCMU,])
             self.reopen()
         else:
+            self.close()
             self.selectDefaultFormat([PT_PCMU,])
+            self.reopen()
         self._playfile_fp = aufile.WavReader(fname)
         self._playfile_LC = LoopingCall(self._playWaveFileLoopingCall)
         self._playfile_LC.start(0.020)
