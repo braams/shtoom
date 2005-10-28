@@ -3,10 +3,11 @@
 # A special audio device. It merely echoes back what you send it.
 
 from converters import MediaLayer
+import baseaudio
 
 opened = None
 
-class EchoAudioDevice:
+class EchoAudioDevice(baseaudio.AudioDevice):
 
     def __init__(self):
         self._data = ''
