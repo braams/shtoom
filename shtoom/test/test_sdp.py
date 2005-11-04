@@ -101,6 +101,27 @@ class SDPTests(unittest.TestCase):
         ae(rtpmap[101][1], PT_SPEEX)
         ae(rtpmap[102][1], PT_SPEEX_16K)
 
+    def test_multipart_crack(self):
+        # cisco creates multipart/mixed messages. I shit you not.
+        from twisted.protocols import sip as tpsip
+        from shtoom.sip import buildSDP
+        ae = self.assertEquals
+
+        l = []
+        parser = tpsip.MessagesParser(l.append)
+        parser.dataReceived(cisco_multipart_crack)
+        parser.dataDone()
+        ae(len(l), 1)
+        message = l.pop()
+
+        sdp = buildSDP(message)
+        # some very basic testing
+        rtpmap =  sdp.getMediaDescription('audio').rtpmap
+        k = rtpmap.keys() ; k.sort()
+        ae(k, [0,13])
+
+
+
 
 
 sdptext1 = """v=0\r
@@ -213,3 +234,42 @@ a=rtpmap:101 speex/8000\r
 a=rtpmap:102 speex/16000\r
 m=video 51372 RTP/AVP 31\r
 """
+
+cisco_multipart_crack = """SIP/2.0 200 OK
+Via: SIP/2.0/UDP 192.168.41.57:5067;rport
+From: sip:defaultconf@conference.shtoom.net;tag=0260015c
+To: sip:00100661396747015@gw2.off.ekorp.com;tag=7B9DD228-940        
+Date: Fri, 04 Nov 2005 05:20:22 GMT
+Call-ID: 401950999@192.168.41.57
+Server: Cisco-SIPGateway/IOS-12.x        
+CSeq: 3784 INVITE
+Allow: INVITE, OPTIONS, BYE, CANCEL, ACK, PRACK, COMET, REFER, SUBSCRIBE, NOTIFY, INFO
+Allow-Events: telephone-event
+Contact: <sip:00100661396747015@192.168.41.250:5060>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;boundary=uniqueBoundary
+Content-Length: 405
+
+--uniqueBoundary
+Content-Type: application/sdp
+
+v=0
+o=CiscoSystemsSIP-GW-UserAgent 9364 4252 IN IP4 192.168.41.250
+s=SIP Call
+c=IN IP4 192.168.41.250
+t=0 0
+m=audio 18524 RTP/AVP 0 13
+c=IN IP4 192.168.41.250
+a=rtpmap:0 PCMU/8000
+a=rtpmap:13 CN/8000
+--uniqueBoundary
+Content-Type: application/gtd
+Content-Disposition: signal;handling=optional
+
+ANM,
+PRN,isdn*,,NET5*,
+
+--uniqueBoundary--
+""".replace("\n", "\r\n")
+
+

@@ -24,9 +24,36 @@ from shtoom.exceptions import CallRejected, CallFailed, HostNotKnown
 from shtoom import __version__ as ShtoomVersion
 from shtoom.sdp import SDP
 
-import struct
+import struct, email.Parser
 
 _CACHED_LOCAL_IP = None
+
+
+def buildSDP(message):
+    # Takes a message, constructs an SDP object. Has to deal with 
+    # multipart/mixed and the like. Dear gods I hate cisco.
+    if (message.headers.get('content-type') and 
+            message.headers['content-type'][0].lower() != 'application/sdp'):
+        parser = email.Parser.Parser()
+        # strip the header line. rock on :-(
+        txt = '\n'.join(message.toString().split('\n')[1:])
+        m = parser.parsestr(txt)
+        if not m.is_multipart():
+            parts = [m.get_payload(),]
+        else:
+            parts = m.get_payload()
+        # In _theory_ you could have nested multipart/mixeds, but really, who
+        # would be that crackful? 
+        for part in parts:
+            if part['content-type'].lower() == 'application/sdp':
+                sdp = SDP(part.get_payload())
+                print "returning sdp object", sdp
+                return sdp
+        raise ValueError("couldn't find application/sdp in message!")
+    else:
+        sdp = SDP(message.body)
+        return sdp
+
 
 
 def errhandler(*args):
@@ -393,7 +420,7 @@ class Call(object):
         username = self.sip.app.getPref('username')
         self.dialog.setContact(username, lhost, lport)
 
-        othersdp = SDP(self._invite.body)
+        othersdp = buildSDP(self._invite)
         sdp = self.sip.app.getSDP(self.cookie, othersdp)
         if not sdp.hasMediaDescriptions():
             self.sendResponse(self._invite, 406)
@@ -581,7 +608,8 @@ class Call(object):
     def sendAck(self, okmessage, startRTP=0):
         username = self.sip.app.getPref('username')
         if okmessage.code == 200:
-            oksdp = SDP(okmessage.body)
+            oksdp = buildSDP(okmessage)
+            print "oksdp", oksdp
             sdp = self.sip.app.getSDP(self.cookie, oksdp)
             if not sdp.hasMediaDescriptions():
                 # Bollocks. Can't 488 a response!
