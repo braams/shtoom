@@ -67,12 +67,16 @@ class ConfSource(Source):
 
     def write(self, bytes):
         self.deque.append(bytes)
-        bytes = self.popleft()        
         self.truncBuffer()
-        try:
-            self._room.writeAudio(self, bytes)
-        except ConferenceClosedError:
+        if not self._room.isOpen():
             self.app._va_sourceDone(self)
+
+    def getAudioForRoom(self):
+        "get audio into the room"
+        # XXX tofix - might not have enough data (short packets). rock on.
+        if len(self.deque):
+            bytes = self.popleft()
+            return bytes
 
     def __repr__(self):
         return "<ConferenceUser %s in room %s at %x>"%(self._user,
@@ -94,7 +98,6 @@ class Room:
     def __init__(self, name, MaxSpeakers=4):
         self._name = name
         self._members = Set()
-        self._audioIn = {}
         self._audioOut = {}
         self._audioOutDefault = ''
         self._maxSpeakers = MaxSpeakers
@@ -124,7 +127,6 @@ class Room:
             self._audioCalcLoop.stop()
         # XXX close down any running sources!
         self._members = Set()
-        del self._audioIn
         del self._audioOut
         self._open = False
         removeRoom(self._name)
@@ -148,19 +150,11 @@ class Room:
     def isMember(self, confsource):
         return confsource in self._members
 
+    def isOpen(self):
+        return self._open
+
     def memberCount(self):
         return len(self._members)
-
-    def writeAudio(self, confsource, audio):
-        if self._open:
-            if CONFDEBUG:
-                if confsource in self._audioIn:
-                    print "Warning: replacing audio,",confsource,"running fast?"
-            if not audio:
-                return
-            self._audioIn[confsource] = audio
-        else:
-            raise ConferenceClosedError()
 
     def readAudio(self, confsource):
         if self._open:
@@ -178,7 +172,10 @@ class Room:
         if not self._open:
             log.msg('mixing closed room %r'%(self,), system='doug')
             return
-        audioIn, self._audioIn = self._audioIn, {}
+        audioIn = {}
+        for m in self._members:
+            bytes = m.getAudioForRoom()
+            if bytes: audioIn[m] = bytes
         if CONFDEBUG:
             print "room %r has %d members"%(self, len(self._members))
             print "got %d samples this time"%len(audioIn)
@@ -205,7 +202,13 @@ class Room:
         scaledsamples = [ audioop.mul(x, 2, 1.0/len(samples)) for x in samples ]
         if scaledsamples:
             # ooo. a use of reduce. first time for everything...
-            combined = reduce(lambda x,y: audioop.add(x, y, 2), scaledsamples)
+            try:
+                combined = reduce(lambda x,y: audioop.add(x, y, 2), scaledsamples)
+            except audioop.error, exc:
+                # XXX tofix!
+                print "combine got error %s"%(exc,)
+                print "lengths", [len(x) for x in scaledsamples]
+                combined = ''
         else:
             combined = ''
         self._audioOutDefault = combined
@@ -224,7 +227,13 @@ class Room:
             samples = [ x[1] for x in power[:self._maxSpeakers] ]
             if samples:
                 scaled = [ audioop.mul(x, 2, 1.0/len(samples)) for x in samples]
-                out = reduce(lambda x,y: audioop.add(x, y, 2), scaled)
+                try:
+                    out = reduce(lambda x,y: audioop.add(x, y, 2), scaled)
+                except audioop.error, exc:
+                    # XXX tofix!
+                    print "combine got error %s"%(exc,)
+                    print "lengths", [len(x) for x in scaled]
+                    out = ''
             else:
                 out = ''
             if CONFDEBUG:
