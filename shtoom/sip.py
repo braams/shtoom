@@ -83,6 +83,32 @@ def formatAddress(threetuple):
         out = out + params
     return out
 
+VIA_COOKIE = "z9hG4bK"
+
+def computeBranch(msg):
+    """Create a branch tag to uniquely identify this message.  See
+    RFC3261 sections 8.1.1.7 and 16.6.8."""
+    if msg.headers.has_key('via') and msg.headers['via']:
+        oldvia = msg.headers['via'][0]
+    else:
+        oldvia = ''
+    return (VIA_COOKIE + 
+            md5.new(
+                    (tpsip.parseAddress(msg.headers['to'][0])[2].get('tag','') 
+                     +
+                     tpsip.parseAddress(msg.headers['from'][0])[2].get('tag','')
+                     +
+                     msg.headers['call-id'][0] 
+                     +
+                     msg.uri.toString() 
+                     +
+                     oldvia  
+                     +
+                     msg.headers['cseq'][0].split(' ')[0]
+                    )
+            ).hexdigest())
+
+
 class Address:
     def __init__(self, addr, ensureTag=False):
         if isinstance(addr, basestring):
@@ -554,6 +580,17 @@ class Call(object):
         else:
             self.sendInvite(toAddr, init=0)
 
+
+    def addViaHeader(self, msg):
+        # Add the initial Via header. 
+        nathost, natport = self.getLocalSIPAddress()
+        msg.addHeader('via', tpsip.Via(nathost, natport, 
+                                       rport=True, 
+                                       branch=computeBranch(msg)
+                                                               ).toString()
+                     )
+        
+        
     def sendInvite(self, toAddr, cookie=None, auth=None, authhdr=None, init=0):
         if cookie:
             assert isinstance(cookie, basestring)
@@ -569,8 +606,6 @@ class Call(object):
             return
         invite = tpsip.Request('INVITE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
-                                                self.getLocalSIPAddress())
         invite.addHeader('cseq', '%s INVITE'%self.dialog.getCSeq(incr=1))
         invite.addHeader('to', str(self.dialog.getCallee()))
         invite.addHeader('content-type', 'application/sdp')
@@ -588,11 +623,11 @@ class Call(object):
         invite.addHeader('content-length', len(sdp))
         invite.bodyDataReceived(sdp)
         invite.creationFinished()
+        self.addViaHeader(invite)
         self._remoteAOR = self.dialog.getCallee().getURI()
         try:
-            log.msg('Invite\n%s'%invite.toString(), system='sip')
+            log.msg('Sending INVITE to %r:\n%s'%(_hostportToIPPort(self.getRemoteSIPAddress()), invite.toString()), system='sip')
             self.sip.transport.write(invite.toString(), _hostportToIPPort(self.getRemoteSIPAddress()))
-            #print "Invite sent", invite.toString()
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             self.compDef.errback(e(v))
@@ -668,7 +703,6 @@ class Call(object):
         self.dialog.setCallee(Address(okmessage.headers['to'][0]))
         ack = tpsip.Request('ACK', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        ack.addHeader('via', 'SIP/2.0/UDP %s:%s'%self.getLocalSIPAddress())
         ack.addHeader('cseq', '%s ACK'%self.dialog.getCSeq())
         ack.addHeader('to', str(self.dialog.getCallee()))
         ack.addHeader('from', str(self.dialog.getCaller()))
@@ -677,6 +711,7 @@ class Call(object):
         ack.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         ack.addHeader('content-length', 0)
         ack.creationFinished()
+        self.addViaHeader(ack)
         if hasattr(self, 'compDef') and self.compDef is not None \
                                                 and okmessage.code == 200:
             cb = self.compDef.callback
@@ -698,7 +733,6 @@ class Call(object):
         dest = uri.host, (uri.port or 5060)
         bye = tpsip.Request('BYE', str(self._remoteAOR))
         # XXX refactor all the common headers and the like
-        bye.addHeader('via', 'SIP/2.0/UDP %s:%s'%self.getLocalSIPAddress())
         bye.addHeader('cseq', '%s BYE'%self.dialog.getCSeq(incr=1))
         bye.addHeader('from', str(self.dialog.getLocalTag()))
         bye.addHeader('to', str(self.dialog.getRemoteTag()))
@@ -708,6 +742,7 @@ class Call(object):
         if auth:
             bye.addHeader(authhdr, auth)
         bye.creationFinished()
+        self.addViaHeader(bye)
         bye = bye.toString()
         log.msg("sending BYE to %r\n%s"%(dest, bye), system="sip")
         self.sip.transport.write(bye, _hostportToIPPort(dest))
@@ -733,6 +768,7 @@ class Call(object):
         cancel.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         cancel.addHeader('content-length', 0)
         cancel.creationFinished()
+        self.addViaHeader(cancel)
         cancel = cancel.toString()
         log.msg("sending CANCEL to %r\n%s"%(dest, cancel), system="sip")
         self.sip.transport.write(cancel, _hostportToIPPort(dest))
@@ -1027,29 +1063,28 @@ class Registration(Call):
     def sendRegistration(self, cb=None, auth=None, authhdr=None):
         # reset a lot of counters and the like
         username = self.sip.app.getPref('username')
-        invite = tpsip.Request('REGISTER', str(self.regURI))
+        register = tpsip.Request('REGISTER', str(self.regURI))
         # XXX refactor all the common headers and the like
-        invite.addHeader('via', 'SIP/2.0/UDP %s:%s;rport'%
-                                                self.getLocalSIPAddress())
-        invite.addHeader('cseq', '%s REGISTER'%self.dialog.getCSeq(incr=1))
-        invite.addHeader('to', str(self.regAOR))
-        invite.addHeader('from', str(self.regAOR))
+        register.addHeader('cseq', '%s REGISTER'%self.dialog.getCSeq(incr=1))
+        register.addHeader('to', str(self.regAOR))
+        register.addHeader('from', str(self.regAOR))
         state =  self.getState()
         if state in ( 'NEW', 'SENT_REGISTER', 'REGISTERED' ):
-            invite.addHeader('expires', 900)
+            register.addHeader('expires', 900)
         elif state in ( 'CANCEL_REGISTER' ):
-            invite.addHeader('expires', 0)
-        invite.addHeader('call-id', self.getCallID())
+            register.addHeader('expires', 0)
+        register.addHeader('call-id', self.getCallID())
         if auth is not None:
-            invite.addHeader(authhdr, auth)
-        invite.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
+            register.addHeader(authhdr, auth)
+        register.addHeader('user-agent', 'Shtoom/%s'%ShtoomVersion)
         lhost, lport = self.getLocalSIPAddress()
-        invite.addHeader('contact', '<sip:%s@%s:%s>'%(
+        register.addHeader('contact', '<sip:%s@%s:%s>'%(
                                 username, lhost, lport))
-        invite.addHeader('content-length', '0')
-        invite.creationFinished()
+        register.addHeader('content-length', '0')
+        register.creationFinished()
+        self.addViaHeader(register)
         try:
-            self.sip.transport.write(invite.toString(), _hostportToIPPort(self.getRemoteSIPAddress()))
+            self.sip.transport.write(register.toString(), _hostportToIPPort(self.getRemoteSIPAddress()))
         except (socket.error, socket.gaierror):
             e,v,t = sys.exc_info()
             if self.compDef is not None:
@@ -1059,7 +1094,7 @@ class Registration(Call):
         else:
             if self.getState() in ( 'NEW', 'REGISTERED' ):
                 self.setState('SENT_REGISTER')
-        self.sip.app.debugMessage("register sent\n"+invite.toString())
+        self.sip.app.debugMessage("register sent\n"+register.toString())
 
     def sendAuthResponse(self, authhdr, auth):
         self.sendRegistration(auth=auth, authhdr=authhdr)
