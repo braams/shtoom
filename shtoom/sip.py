@@ -900,6 +900,10 @@ class Call(object):
         elif message.code in ( 100, 181, 182 ):
             return
         elif message.code == 183:
+            # Many things are 183. For instance, ciscos with GTD enabled 
+            # send multipart/mixed with an application/gtd part to pass on
+            # ISDN signalling information. XXX handle some of the fascinating
+            # variants at some point.
             self.sip.app.debugMessage('Should handle early media here:\n' + message.toString())
         elif message.code == 200:
             self.auth_attempts = 0
