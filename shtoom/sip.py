@@ -251,8 +251,10 @@ class Dialog:
         if not self.getCaller():
             addr = message.headers['from'][0]
             self.setCaller(Address(addr))
-        resp.addHeader('to', str(self.getCallee()))
-        resp.addHeader('from', str(self.getCaller()))
+        #resp.addHeader('to', str(self.getCallee()))
+        #resp.addHeader('from', str(self.getCaller()))
+        resp.addHeader('to', message.headers['to'][0])
+        resp.addHeader('from', message.headers['from'][0])
         resp.addHeader('date', genStandardDate())
         resp.addHeader('call-id', message.headers['call-id'][0])
         resp.addHeader('server', 'Shtoom/%s'%ShtoomVersion)
