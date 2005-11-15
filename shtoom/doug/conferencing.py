@@ -120,7 +120,6 @@ class Room:
                                             len(self._members))
 
     def shutdown(self):
-        print "SHUTDOWN"
         if hasattr(self._audioCalcLoop, 'cancel'):
             self._audioCalcLoop.cancel()
         else:
@@ -133,18 +132,21 @@ class Room:
 
     def addMember(self, confsource):
         self._members.add(confsource)
-        print "added", confsource, "to room", self
+        if CONFDEBUG:
+            print "added", confsource, "to room", self
         if not self._open:
             self.start()
 
     def removeMember(self, confsource):
         if len(self._members) and confsource in self._members:
             self._members.remove(confsource)
-            print "removed", confsource, "from", self
+            if CONFDEBUG:
+                print "removed", confsource, "from", self
         else:
             raise ConferenceMemberNotFoundError(confsource)
         if not len(self._members):
-            print "No members left, shutting down"
+            if CONFDEBUG:
+                print "No members left, shutting down"
             self.shutdown()
 
     def isMember(self, confsource):
