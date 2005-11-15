@@ -142,9 +142,14 @@ class MulawCodec(_Codec):
         return audioop.lin2ulaw(bytes, 2)
 
     def decode(self, bytes):
-        if len(bytes) != 160:
+        if not bytes:
+            return
+        elif len(bytes) != 160:
             log.msg("mulaw: short read on decode, %d != 160"%len(bytes),
                                                             system="codec")
+            # Pad with silence.
+            extra = (160 - len(bytes)) * bytes[-1]
+            bytes += extra
         if 0:
             bytes = audioop.ulaw2lin(bytes, 2)
             self.buf += bytes
