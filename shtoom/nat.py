@@ -87,7 +87,7 @@ def clearCache():
     "Clear cached NAT settings (e.g. when moving to a different network)"
     from shtoom.upnp import clearCache as uClearCache
     from shtoom.stun import clearCache as sClearCache
-    print "clearing all NAT caches"
+    #print "clearing all NAT caches"
     getLocalIPAddress.clearCache()
     getMapper.clearCache()
     uClearCache()
@@ -192,10 +192,10 @@ def getMapper():
         app = None
     natPref = 'both'
     if app is not None:
-        print "app is", app
+        #print "app is", app
         natPref = app.getPref('nat')
         log.msg('NAT preference says to use %s (%s)'%(natPref, app.getPref('nat')), system='nat')
-        print "NAT pref sez", natPref
+        #print "NAT pref sez", natPref
     if _forcedMapper is not None:
         return defer.succeed(_forcedMapper)
     from shtoom.upnp import getUPnP
