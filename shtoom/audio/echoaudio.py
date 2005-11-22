@@ -11,6 +11,7 @@ class EchoAudioDevice(baseaudio.AudioDevice):
 
     def __init__(self):
         self._data = ''
+        baseaudio.AudioDevice.__init__(self)
 
     def _push_up_some_data(self):
         sample, self._data = self._data[-320:], ''
