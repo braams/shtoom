@@ -56,7 +56,9 @@ class EchoApp(VoiceApp):
 
     def beginEcho(self, event):
         from shtoom.doug.source import EchoSource
-        self.mediaPlay([EchoSource(delay=1.0)])
+        e = EchoSource(delay=1.0)
+        self.mediaPlay([e,])
+        self.mediaRecord(e)
         return ( (CallEndedEvent, self.allDone),
                    )
 
