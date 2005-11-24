@@ -106,8 +106,8 @@ class RTCPPacket:
                 body, maybepad = self._body[2:off], self._body[off:off+maybepadlen]
                 self._body = self._body[length+2:]
                 self._contents[-1][1].append((rtcpSDESdict[type], body))
-                if ord(maybepad[0]) == 0:
-                    # end of list. eat the padding.
+                if maybepad and ord(maybepad[0]) == 0:
+                    # end of list. eat the padding, if any.
                     self._body = self._body[maybepadlen:]
                     break
 
